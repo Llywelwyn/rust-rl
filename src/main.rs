@@ -23,6 +23,10 @@ use damage_system::*;
 mod melee_combat_system;
 use melee_combat_system::MeleeCombatSystem;
 
+rltk::embedded_resource!(TERMINAL8X8, "../resources/terminal8x8.jpg");
+rltk::embedded_resource!(SCANLINESFS, "../resources/scanlines.fs");
+rltk::embedded_resource!(SCANLINESVS, "../resources/scanlines.vs");
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
     AwaitingInput,
@@ -105,10 +109,9 @@ impl GameState for State {
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let mut context = RltkBuilder::simple80x50()
-        .with_gutter(0)
         .with_tile_dimensions(16, 16)
         //.with_fitscreen(true)
-        .with_title("Roguelike Tutorial")
+        .with_title("rust-rltk-llywelwyn.github.io")
         .build()?;
     context.with_post_scanlines(true);
     let mut gs = State { ecs: World::new() };

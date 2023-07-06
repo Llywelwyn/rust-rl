@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <link rel="stylesheet" href="index.css" />
+ <title>Home Page</title>
+</head>
+<body>
+    <figure>
+        <canvas id="canvas" width="640" height="480"></canvas>
+    </figure>
+ <script src="./rust-llyrl.js"></script>
+ <script>
+   window.addEventListener("load", async () => {
+     await wasm_bindgen("./rust-llyrl_bg.wasm");
+   });
+ </script>
+</body>
+</html>
