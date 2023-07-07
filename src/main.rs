@@ -1,4 +1,4 @@
-use rltk::{GameState, Point, Rltk};
+use rltk::{GameState, Point, Rltk, RGB};
 use specs::prelude::*;
 
 mod components;
@@ -82,8 +82,12 @@ impl GameState for State {
             data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
             for (pos, render) in data.iter() {
                 let idx = map.xy_idx(pos.x, pos.y);
+                let mut bg = render.bg;
+                if map.bloodstains.contains(&idx) {
+                    bg = RGB::from_f32(0.4, 0., 0.);
+                }
                 if map.visible_tiles[idx] {
-                    ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+                    ctx.set(pos.x, pos.y, render.fg, bg, render.glyph);
                 }
             }
             gui::draw_ui(&self.ecs, ctx);

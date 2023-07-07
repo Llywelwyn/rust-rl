@@ -2,6 +2,7 @@ use super::Rect;
 use rltk::{Algorithm2D, BaseMap, Point, RandomNumberGenerator, Rltk, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
+use std::collections::HashSet;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
@@ -23,6 +24,7 @@ pub struct Map {
     pub visible_tiles: Vec<bool>,
     pub blocked: Vec<bool>,
     pub tile_content: Vec<Vec<Entity>>,
+    pub bloodstains: HashSet<usize>,
 }
 
 impl Map {
@@ -89,6 +91,7 @@ impl Map {
             visible_tiles: vec![false; MAPCOUNT],
             blocked: vec![false; MAPCOUNT],
             tile_content: vec![Vec::new(); MAPCOUNT],
+            bloodstains: HashSet::new(),
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -198,6 +201,7 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
         if map.revealed_tiles[idx] {
             let glyph;
             let mut fg;
+            let mut bg = RGB::from_f32(0., 0., 0.);
             match tile {
                 TileType::Floor => {
                     glyph = rltk::to_cp437('.');
@@ -208,10 +212,14 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
                     fg = RGB::from_f32(0.0, 1.0, 0.0);
                 }
             }
+            if map.bloodstains.contains(&idx) {
+                bg = RGB::from_f32(0.4, 0., 0.);
+            }
             if !map.visible_tiles[idx] {
                 fg = fg.to_greyscale();
+                bg = bg.desaturate();
             }
-            ctx.set(x, y, fg, RGB::from_f32(0.0, 0.0, 0.0), glyph);
+            ctx.set(x, y, fg, bg, glyph);
         }
 
         // Move the coordinates
