@@ -58,8 +58,8 @@ impl State {
         damage_system.run_now(&self.ecs);
         let mut inventory_system = ItemCollectionSystem {};
         inventory_system.run_now(&self.ecs);
-        let mut potion_system = PotionUseSystem {};
-        potion_system.run_now(&self.ecs);
+        let mut item_use_system = ItemUseSystem {};
+        item_use_system.run_now(&self.ecs);
         let mut drop_system = ItemDropSystem {};
         drop_system.run_now(&self.ecs);
         self.ecs.maintain();
@@ -121,9 +121,9 @@ impl GameState for State {
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
                         let item_entity = result.1.unwrap();
-                        let mut intent = self.ecs.write_storage::<WantsToDrinkPotion>();
+                        let mut intent = self.ecs.write_storage::<WantsToUseItem>();
                         intent
-                            .insert(*self.ecs.fetch::<Entity>(), WantsToDrinkPotion { potion: item_entity })
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item: item_entity })
                             .expect("Unable to insert intent.");
                         new_runstate = RunState::PlayerTurn;
                     }
@@ -160,7 +160,7 @@ fn main() -> rltk::BError {
     let mut context = RltkBuilder::simple80x50()
         .with_tile_dimensions(16, 16)
         //.with_fitscreen(true)
-        .with_title("rust-rltk-llywelwyn.github.io")
+        .with_title("rust-rl")
         .build()?;
     context.with_post_scanlines(true);
     let mut gs = State { ecs: World::new() };
@@ -176,11 +176,12 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToMelee>();
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
-    gs.ecs.register::<Potion>();
+    gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<InBackpack>();
     gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<WantsToDropItem>();
-    gs.ecs.register::<WantsToDrinkPotion>();
+    gs.ecs.register::<WantsToUseItem>();
+    gs.ecs.register::<Consumable>();
 
     let map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].centre();

@@ -1,5 +1,6 @@
 use super::{
-    BlocksTile, CombatStats, Item, Monster, Name, Player, Position, Potion, Rect, Renderable, Viewshed, MAPWIDTH,
+    BlocksTile, CombatStats, Consumable, Item, Monster, Name, Player, Position, ProvidesHealing, Rect, Renderable,
+    Viewshed, MAPWIDTH,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -15,7 +16,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             render_order: 0,
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles: Vec::new(), range: 8, dirty: true })
+        .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: "hero (you)".to_string() })
         .with(CombatStats { max_hp: 30, hp: 30, defence: 2, power: 5 })
         .build()
@@ -26,11 +27,25 @@ pub fn random_monster(ecs: &mut World, x: i32, y: i32) {
     let roll: i32;
     {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        roll = rng.roll_dice(1, 2);
+        roll = rng.roll_dice(1, 3);
     }
     match roll {
         1 => orc(ecs, x, y),
+        2 => goblin_chieftain(ecs, x, y),
         _ => goblin(ecs, x, y),
+    }
+}
+/// Spawns a random item at a given loc
+pub fn random_item(ecs: &mut World, x: i32, y: i32) {
+    let roll: i32;
+    {
+        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+        roll = rng.roll_dice(1, 5);
+    }
+    match roll {
+        1 => health_potion(ecs, x, y),
+        2 => poison_potion(ecs, x, y),
+        _ => weak_health_potion(ecs, x, y),
     }
 }
 
@@ -41,7 +56,7 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable { glyph: glyph, fg: RGB::named(rltk::RED), bg: RGB::named(rltk::BLACK), render_order: 1 })
-        .with(Viewshed { visible_tiles: Vec::new(), range: 8, dirty: true })
+        .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Monster {})
         .with(Name { name: name.to_string() })
         .with(BlocksTile {})
@@ -55,6 +70,10 @@ fn orc(ecs: &mut World, x: i32, y: i32) {
 
 fn goblin(ecs: &mut World, x: i32, y: i32) {
     monster(ecs, x, y, rltk::to_cp437('g'), "goblin");
+}
+
+fn goblin_chieftain(ecs: &mut World, x: i32, y: i32) {
+    monster(ecs, x, y, rltk::to_cp437('G'), "goblin chieftain");
 }
 
 pub fn spawn_room(ecs: &mut World, room: &Rect) {
@@ -103,11 +122,27 @@ pub fn spawn_room(ecs: &mut World, room: &Rect) {
     for idx in item_spawn_points.iter() {
         let x = *idx % MAPWIDTH;
         let y = *idx / MAPWIDTH;
-        health_potion(ecs, x as i32, y as i32);
+        random_item(ecs, x as i32, y as i32);
     }
 }
 
 fn health_potion(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('I'),
+            fg: RGB::named(rltk::MAGENTA),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "potion of health".to_string() })
+        .with(Item {})
+        .with(Consumable {})
+        .with(ProvidesHealing { heal_amount: 12 })
+        .build();
+}
+
+fn weak_health_potion(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
@@ -116,8 +151,25 @@ fn health_potion(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "health potion".to_string() })
+        .with(Name { name: "potion of lesser health".to_string() })
         .with(Item {})
-        .with(Potion { heal_amount: 8 })
+        .with(Consumable {})
+        .with(ProvidesHealing { heal_amount: 6 })
+        .build();
+}
+
+fn poison_potion(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('i'),
+            fg: RGB::named(rltk::SEAGREEN),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "potion of ... health?".to_string() })
+        .with(Item {})
+        .with(Consumable {})
+        .with(ProvidesHealing { heal_amount: -12 })
         .build();
 }
