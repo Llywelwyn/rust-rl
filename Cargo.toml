@@ -10,3 +10,10 @@ rltk = { version = "^0.8.7" }
 bracket-lib = { git = "https://github.com/amethyst/bracket-lib.git", rev = "851f6f08675444fb6fa088b9e67bee9fd75554c6", features = ["serde"] }
 specs = "0.16.1"
 specs-derive = "0.4.1"
+
+[dev-dependencies]
+criterion = { version = "^0.5" }
+
+[[bench]]
+name = "systems_benchmark"
+harness = false

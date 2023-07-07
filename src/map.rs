@@ -212,12 +212,19 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
                     fg = RGB::from_f32(0.0, 1.0, 0.0);
                 }
             }
+            let mut bloody = false;
             if map.bloodstains.contains(&idx) {
                 bg = RGB::from_f32(0.4, 0., 0.);
+                bloody = true;
             }
             if !map.visible_tiles[idx] {
                 fg = fg.to_greyscale();
-                bg = bg.desaturate();
+                // Manually setting desaturated values since we always know what it will be,
+                // since desaturate is an expensive function. If this stops being the case,
+                // will need to switch to using desaturate
+                if bloody {
+                    bg = RGB::from_f32(0.4, 0.4, 0.4)
+                }
             }
             ctx.set(x, y, fg, bg, glyph);
         }
