@@ -42,6 +42,10 @@ impl<'a> System<'a> for MonsterAI {
                     .insert(entity, WantsToMelee { target: *player_entity })
                     .expect("Unable to insert attack.");
             } else if viewshed.visible_tiles.contains(&*player_pos) {
+                // If the player is visible, but the path is obstructed, this will currently search
+                // the entire map (i.e. Will do a huge ASTAR to find an alternate route), and the
+                // mob will follow that path until it leaves vision, then lose sight of the player
+                // and stop.
                 let path = rltk::a_star_search(map.xy_idx(pos.x, pos.y), map.xy_idx(player_pos.x, player_pos.y), &*map);
                 if path.success && path.steps.len() > 1 {
                     let mut idx = map.xy_idx(pos.x, pos.y);

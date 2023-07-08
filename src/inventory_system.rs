@@ -1,6 +1,6 @@
 use super::{
-    gamelog::GameLog, CombatStats, Consumable, InBackpack, Name, Position, ProvidesHealing, WantsToDropItem,
-    WantsToPickupItem, WantsToUseItem,
+    gamelog::GameLog, CombatStats, Consumable, InBackpack, Name, ParticleBuilder, Position, ProvidesHealing,
+    WantsToDropItem, WantsToPickupItem, WantsToUseItem, DEFAULT_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -45,10 +45,23 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Consumable>,
         ReadStorage<'a, ProvidesHealing>,
         WriteStorage<'a, CombatStats>,
+        WriteExpect<'a, ParticleBuilder>,
+        ReadStorage<'a, Position>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut gamelog, entities, mut wants_use, names, consumables, healing, mut combat_stats) = data;
+        let (
+            player_entity,
+            mut gamelog,
+            entities,
+            mut wants_use,
+            names,
+            consumables,
+            healing,
+            mut combat_stats,
+            mut particle_builder,
+            positions,
+        ) = data;
 
         for (entity, use_item, stats) in (&entities, &wants_use, &mut combat_stats).join() {
             let item_heals = healing.get(use_item.item);
@@ -56,6 +69,17 @@ impl<'a> System<'a> for ItemUseSystem {
                 None => {}
                 Some(healer) => {
                     stats.hp = i32::min(stats.max_hp, stats.hp + healer.heal_amount);
+                    let pos = positions.get(entity);
+                    if let Some(pos) = pos {
+                        particle_builder.request(
+                            pos.x,
+                            pos.y,
+                            rltk::RGB::named(rltk::GREEN),
+                            rltk::RGB::named(rltk::BLACK),
+                            rltk::to_cp437('♥'),
+                            DEFAULT_PARTICLE_LIFETIME,
+                        );
+                    }
                     if entity == *player_entity {
                         gamelog.entries.push(format!(
                             "You quaff the {}, and heal {} hp.",

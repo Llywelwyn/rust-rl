@@ -24,6 +24,8 @@ mod melee_combat_system;
 use melee_combat_system::MeleeCombatSystem;
 mod inventory_system;
 use inventory_system::*;
+mod particle_system;
+use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME};
 
 // Embedded resources for use in wasm build
 rltk::embedded_resource!(TERMINAL8X8, "../resources/terminal8x8.jpg");
@@ -62,6 +64,8 @@ impl State {
         item_use_system.run_now(&self.ecs);
         let mut drop_system = ItemDropSystem {};
         drop_system.run_now(&self.ecs);
+        let mut particle_system = particle_system::ParticleSpawnSystem {};
+        particle_system.run_now(&self.ecs);
         self.ecs.maintain();
     }
 }
@@ -70,6 +74,7 @@ impl GameState for State {
     fn tick(&mut self, ctx: &mut Rltk) {
         // Clear screen
         ctx.cls();
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
 
         // Draw map and ui
         draw_map(&self.ecs, ctx);
@@ -186,6 +191,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToDropItem>();
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<Consumable>();
+    gs.ecs.register::<ParticleLifetime>();
 
     let map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].centre();
@@ -202,6 +208,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(gamelog::GameLog { entries: vec!["Here's your welcome message.".to_string()] });
     gs.ecs.insert(RunState::PreRun);
+    gs.ecs.insert(particle_system::ParticleBuilder::new());
 
     rltk::main_loop(context, gs)
 }
