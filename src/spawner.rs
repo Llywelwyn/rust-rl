@@ -7,7 +7,7 @@ use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
 /// Spawns the player and returns his/her entity object.
-pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
+pub fn player(ecs: &mut World, player_x: i32, player_y: i32, player_name: String) -> Entity {
     ecs.create_entity()
         .with(Position { x: player_x, y: player_y })
         .with(Renderable {
@@ -18,7 +18,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         })
         .with(Player {})
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
-        .with(Name { name: "hero (you)".to_string() })
+        .with(Name { name: player_name })
         .with(CombatStats { max_hp: 30, hp: 30, defence: 2, power: 5 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()

@@ -65,6 +65,7 @@ impl ParticleBuilder {
     }
 
     /// Makes a particle request in the shape of a +.
+    #[allow(dead_code)]
     pub fn request_plus(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32) {
         self.request(x, y, fg, bg, glyph, lifetime * 2.0);
         self.request(x + 1, y, fg, bg, rltk::to_cp437('─'), lifetime);

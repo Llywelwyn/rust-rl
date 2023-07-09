@@ -279,8 +279,8 @@ fn main() -> rltk::BError {
 
     let map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].centre();
-
-    let player_entity = spawner::player(&mut gs.ecs, player_x, player_y);
+    let player_name = "wanderer".to_string();
+    let player_entity = spawner::player(&mut gs.ecs, player_x, player_y, player_name);
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
     for room in map.rooms.iter().skip(1) {

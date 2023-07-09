@@ -1,5 +1,5 @@
 use super::{
-    gamelog::GameLog, gui, CombatStats, Item, Map, Player, Position, RunState, State, Viewshed, WantsToMelee,
+    gamelog::GameLog, CombatStats, Item, Map, Player, Position, RunState, State, Viewshed, WantsToMelee,
     WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, Rltk, VirtualKeyCode};
