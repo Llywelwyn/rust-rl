@@ -1,6 +1,6 @@
 use super::{
-    BlocksTile, CombatStats, Consumable, Destructible, InflictsDamage, Item, Monster, Name, Player, Position,
-    ProvidesHealing, Ranged, Rect, Renderable, Viewshed, AOE, MAPWIDTH,
+    BlocksTile, CombatStats, Confusion, Consumable, Destructible, InflictsDamage, Item, Monster, Name, Player,
+    Position, ProvidesHealing, Ranged, Rect, Renderable, Viewshed, AOE, MAPWIDTH,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -40,19 +40,20 @@ pub fn random_item(ecs: &mut World, x: i32, y: i32) {
     let roll: i32;
     {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        roll = rng.roll_dice(1, 5);
+        roll = rng.roll_dice(1, 6);
     }
     match roll {
         1 => health_potion(ecs, x, y),
         2 => poison_potion(ecs, x, y),
         3 => magic_missile_scroll(ecs, x, y),
         4 => fireball_scroll(ecs, x, y),
+        5 => confusion_scroll(ecs, x, y),
         _ => weak_health_potion(ecs, x, y),
     }
 }
 
 const MAX_MONSTERS: i32 = 4;
-const MAX_ITEMS: i32 = 6;
+const MAX_ITEMS: i32 = 3;
 
 fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S) {
     ecs.create_entity()
@@ -213,5 +214,23 @@ fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Ranged { range: 10 })
         .with(InflictsDamage { amount: 20 })
         .with(AOE { radius: 3 })
+        .build();
+}
+
+fn confusion_scroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437(')'),
+            fg: RGB::named(rltk::PURPLE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "scroll of confusion".to_string() })
+        .with(Item {})
+        .with(Consumable {})
+        .with(Destructible {})
+        .with(Ranged { range: 6 })
+        .with(Confusion { turns: 4 })
         .build();
 }

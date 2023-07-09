@@ -89,6 +89,11 @@ pub struct AOE {
     pub radius: i32,
 }
 
+#[derive(Component, Debug)]
+pub struct Confusion {
+    pub turns: i32,
+}
+
 #[derive(Component, Debug, Clone)]
 pub struct InBackpack {
     pub owner: Entity,

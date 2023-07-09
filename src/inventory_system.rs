@@ -1,6 +1,6 @@
 use super::{
-    gamelog::GameLog, CombatStats, Consumable, Destructible, InBackpack, InflictsDamage, Map, Name, ParticleBuilder,
-    Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToUseItem, AOE,
+    gamelog::GameLog, CombatStats, Confusion, Consumable, Destructible, InBackpack, InflictsDamage, Map, Name,
+    ParticleBuilder, Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToUseItem, AOE,
     DEFAULT_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
@@ -53,6 +53,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Position>,
         ReadStorage<'a, InflictsDamage>,
         ReadStorage<'a, AOE>,
+        WriteStorage<'a, Confusion>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -72,6 +73,7 @@ impl<'a> System<'a> for ItemUseSystem {
             positions,
             inflicts_damage,
             aoe,
+            mut confused,
         ) = data;
 
         for (entity, wants_to_use) in (&entities, &wants_to_use).join() {
@@ -122,7 +124,16 @@ impl<'a> System<'a> for ItemUseSystem {
             // HEALING ITEM
             let item_heals = provides_healing.get(wants_to_use.item);
             match item_heals {
-                None => {}
+                None => {
+                    // This is here because the two are mutually exclusive as of now. Later,
+                    // if more items are added (AOE healing scroll?), this'll need to be
+                    // brought out of here.
+                    //
+                    // Ideally, replace it with something that picks the correct verb for
+                    // whatever the item is being used, probably tied to a component.
+                    // i.e. quaffs, uses, reads
+                    gamelog.entries.push(format!("You use the {}!", item_being_used.name));
+                }
                 Some(heal) => {
                     for target in targets.iter() {
                         let stats = combat_stats.get_mut(*target);
@@ -156,7 +167,6 @@ impl<'a> System<'a> for ItemUseSystem {
                 None => {}
                 Some(damage) => {
                     let target_point = wants_to_use.target.unwrap();
-                    gamelog.entries.push(format!("You use the {}!", item_being_used.name));
                     if !aoe_item {
                         particle_builder.request_star(
                             target_point.x,
@@ -190,6 +200,27 @@ impl<'a> System<'a> for ItemUseSystem {
                     }
                 }
             }
+
+            // CONFUSION
+            let mut add_confusion = Vec::new();
+            {
+                let causes_confusion = confused.get(wants_to_use.item);
+                match causes_confusion {
+                    None => {}
+                    Some(confusion) => {
+                        used_item = false;
+                        for mob in targets.iter() {
+                            add_confusion.push((*mob, confusion.turns));
+                            // Gamelog entry for this is handled turn-by-turn in AI.
+                        }
+                    }
+                }
+            }
+            for mob in add_confusion.iter() {
+                confused.insert(mob.0, Confusion { turns: mob.1 }).expect("Unable to insert status");
+            }
+
+            // ITEM DELETION AFTER USE
             if used_item {
                 let consumable = consumables.get(wants_to_use.item);
                 match consumable {
