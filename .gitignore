@@ -1,3 +1,4 @@
 /target
 .rustfmt.toml
 .vscode/*
+savegame.json

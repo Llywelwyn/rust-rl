@@ -142,6 +142,7 @@ dependencies = [
  "byteorder",
  "lazy_static",
  "parking_lot 0.11.2",
+ "serde",
 ]
 
 [[package]]
@@ -169,6 +170,7 @@ version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f31b525fcd65027885f3a1e3a250a5dd397d70de4a6a5a125f03e0bef951499"
 dependencies = [
+ "serde",
  "ultraviolet 0.9.1",
 ]
 
@@ -262,6 +264,7 @@ dependencies = [
  "rand",
  "rand_xorshift",
  "regex",
+ "serde",
  "wasm-bindgen",
 ]
 
@@ -2275,6 +2278,8 @@ dependencies = [
  "bracket-lib 0.8.7 (git+https://github.com/amethyst/bracket-lib.git?rev=851f6f08675444fb6fa088b9e67bee9fd75554c6)",
  "criterion",
  "rltk",
+ "serde",
+ "serde_json",
  "specs",
  "specs-derive",
 ]
@@ -2545,6 +2550,7 @@ dependencies = [
  "hibitset",
  "log",
  "rayon",
+ "serde",
  "shred",
  "shrev",
  "tuple_utils",

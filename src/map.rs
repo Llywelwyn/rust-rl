@@ -1,11 +1,12 @@
 use super::Rect;
 use rltk::{Algorithm2D, BaseMap, Point, RandomNumberGenerator, Rltk, RGB};
+use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use std::collections::HashSet;
 use std::ops::{Add, Mul};
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
     Wall,
     Floor,
@@ -14,9 +15,9 @@ pub enum TileType {
 pub const MAPWIDTH: usize = 80;
 pub const MAPHEIGHT: usize = 43;
 const MAX_OFFSET: u8 = 32;
-const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
+pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rect>,
@@ -28,8 +29,11 @@ pub struct Map {
     pub green_offset: Vec<u8>,
     pub blue_offset: Vec<u8>,
     pub blocked: Vec<bool>,
-    pub tile_content: Vec<Vec<Entity>>,
     pub bloodstains: HashSet<usize>,
+
+    #[serde(skip_serializing)]
+    #[serde(skip_deserializing)]
+    pub tile_content: Vec<Vec<Entity>>,
 }
 
 impl Map {
@@ -98,8 +102,8 @@ impl Map {
             green_offset: vec![0; MAPCOUNT],
             blue_offset: vec![0; MAPCOUNT],
             blocked: vec![false; MAPCOUNT],
-            tile_content: vec![Vec::new(); MAPCOUNT],
             bloodstains: HashSet::new(),
+            tile_content: vec![Vec::new(); MAPCOUNT],
         };
 
         const MAX_ROOMS: i32 = 30;

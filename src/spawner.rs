@@ -1,9 +1,10 @@
 use super::{
     BlocksTile, CombatStats, Confusion, Consumable, Destructible, InflictsDamage, Item, Monster, Name, Player,
-    Position, ProvidesHealing, Ranged, Rect, Renderable, Viewshed, AOE, MAPWIDTH,
+    Position, ProvidesHealing, Ranged, Rect, Renderable, SerializeMe, Viewshed, AOE, MAPWIDTH,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
+use specs::saveload::{MarkedBuilder, SimpleMarker};
 
 /// Spawns the player and returns his/her entity object.
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
@@ -19,6 +20,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: "hero (you)".to_string() })
         .with(CombatStats { max_hp: 30, hp: 30, defence: 2, power: 5 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
 
@@ -64,6 +66,7 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
         .with(Name { name: name.to_string() })
         .with(BlocksTile {})
         .with(CombatStats { max_hp: 16, hp: 16, defence: 1, power: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -143,6 +146,7 @@ fn health_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Consumable {})
         .with(Destructible {})
         .with(ProvidesHealing { amount: 12 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -160,6 +164,7 @@ fn weak_health_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Consumable {})
         .with(Destructible {})
         .with(ProvidesHealing { amount: 6 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -177,6 +182,7 @@ fn poison_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Consumable {})
         .with(Destructible {})
         .with(ProvidesHealing { amount: -12 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -197,6 +203,7 @@ fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Destructible {})
         .with(Ranged { range: 12 }) // Long range - as far as default vision range
         .with(InflictsDamage { amount: 10 }) // Low~ damage
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -216,6 +223,7 @@ fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Ranged { range: 10 })
         .with(InflictsDamage { amount: 20 })
         .with(AOE { radius: 3 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -234,5 +242,6 @@ fn confusion_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Destructible {})
         .with(Ranged { range: 10 })
         .with(Confusion { turns: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
