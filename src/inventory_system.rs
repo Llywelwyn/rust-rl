@@ -1,6 +1,7 @@
 use super::{
-    gamelog::GameLog, CombatStats, Consumable, InBackpack, InflictsDamage, Map, Name, ParticleBuilder, Position,
-    ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME,
+    gamelog::GameLog, CombatStats, Consumable, Destructible, InBackpack, InflictsDamage, Map, Name, ParticleBuilder,
+    Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToUseItem, AOE,
+    DEFAULT_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -44,6 +45,7 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, WantsToUseItem>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Consumable>,
+        ReadStorage<'a, Destructible>,
         ReadStorage<'a, ProvidesHealing>,
         WriteStorage<'a, CombatStats>,
         WriteStorage<'a, SufferDamage>,
@@ -62,6 +64,7 @@ impl<'a> System<'a> for ItemUseSystem {
             mut wants_to_use,
             names,
             consumables,
+            destructibles,
             provides_healing,
             mut combat_stats,
             mut suffer_damage,
@@ -165,13 +168,22 @@ impl<'a> System<'a> for ItemUseSystem {
                         );
                     }
                     for mob in targets.iter() {
-                        SufferDamage::new_damage(&mut suffer_damage, *mob, damage.amount);
-                        if entity == *player_entity {
-                            let mob_name = names.get(*mob).unwrap();
-                            gamelog.entries.push(format!(
-                                "{} takes {} damage from the {}!",
-                                mob_name.name, damage.amount, item_being_used.name
-                            ));
+                        let destructible = destructibles.get(*mob);
+                        let entity_name = names.get(*mob).unwrap();
+                        match destructible {
+                            None => {
+                                SufferDamage::new_damage(&mut suffer_damage, *mob, damage.amount);
+                                if entity == *player_entity {
+                                    gamelog.entries.push(format!(
+                                        "{} takes {} damage from the {}!",
+                                        entity_name.name, damage.amount, item_being_used.name
+                                    ));
+                                }
+                            }
+                            Some(_destructible) => {
+                                gamelog.entries.push(format!("{} is destroyed!", entity_name.name));
+                                entities.delete(*mob).expect("Delete failed");
+                            }
                         }
 
                         used_item = true;

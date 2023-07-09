@@ -1,6 +1,6 @@
 use super::{
-    BlocksTile, CombatStats, Consumable, InflictsDamage, Item, Monster, Name, Player, Position, ProvidesHealing,
-    Ranged, Rect, Renderable, Viewshed, AOE, MAPWIDTH,
+    BlocksTile, CombatStats, Consumable, Destructible, InflictsDamage, Item, Monster, Name, Player, Position,
+    ProvidesHealing, Ranged, Rect, Renderable, Viewshed, AOE, MAPWIDTH,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -140,6 +140,7 @@ fn health_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Name { name: "potion of health".to_string() })
         .with(Item {})
         .with(Consumable {})
+        .with(Destructible {})
         .with(ProvidesHealing { amount: 12 })
         .build();
 }
@@ -156,6 +157,7 @@ fn weak_health_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Name { name: "potion of lesser health".to_string() })
         .with(Item {})
         .with(Consumable {})
+        .with(Destructible {})
         .with(ProvidesHealing { amount: 6 })
         .build();
 }
@@ -172,6 +174,7 @@ fn poison_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Name { name: "potion of ... health?".to_string() })
         .with(Item {})
         .with(Consumable {})
+        .with(Destructible {})
         .with(ProvidesHealing { amount: -12 })
         .build();
 }
@@ -188,6 +191,7 @@ fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Name { name: "scroll of magic missile".to_string() })
         .with(Item {})
         .with(Consumable {})
+        .with(Destructible {})
         .with(Ranged { range: 12 })
         .with(InflictsDamage { amount: 10 })
         .build();
@@ -205,6 +209,7 @@ fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Name { name: "scroll of fireball".to_string() })
         .with(Item {})
         .with(Consumable {})
+        .with(Destructible {})
         .with(Ranged { range: 10 })
         .with(InflictsDamage { amount: 20 })
         .with(AOE { radius: 3 })

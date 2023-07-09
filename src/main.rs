@@ -265,6 +265,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToDropItem>();
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<Consumable>();
+    gs.ecs.register::<Destructible>();
     gs.ecs.register::<ParticleLifetime>();
 
     let map = Map::new_map_rooms_and_corridors();

@@ -114,6 +114,9 @@ pub struct WantsToUseItem {
 #[derive(Component, Debug)]
 pub struct Consumable {}
 
+#[derive(Component, Debug)]
+pub struct Destructible {}
+
 #[derive(Component, Clone)]
 pub struct ParticleLifetime {
     pub lifetime_ms: f32,
