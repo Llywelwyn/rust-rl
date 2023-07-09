@@ -102,7 +102,7 @@ impl GameState for State {
                         let mut bg = render.bg.add(RGB::from_u8(26, 45, 45)).add(offsets);
                         //bg = bg.add(offsets);
                         if map.bloodstains.contains(&idx) {
-                            bg = RGB::from_f32(0.4, 0., 0.);
+                            bg = bg.add(RGB::from_f32(0.6, 0., 0.));
                         }
                         if map.visible_tiles[idx] {
                             ctx.set(pos.x, pos.y, render.fg, bg, render.glyph);

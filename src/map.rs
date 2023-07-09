@@ -3,7 +3,7 @@ use rltk::{Algorithm2D, BaseMap, Point, RandomNumberGenerator, Rltk, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use std::collections::HashSet;
-use std::ops::Add;
+use std::ops::{Add, Mul};
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
@@ -222,7 +222,7 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
         // Get our colour offsets. Credit to Brogue for the inspiration here.
         let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
         if map.revealed_tiles[idx] {
-            let mut fg = offsets;
+            let mut fg = offsets.mul(2.0);
             // Right now, everything always has the same background. It's a
             // very dark green, just to distinguish it slightly from the
             // black that is tiles we've *never* seen.
@@ -235,24 +235,15 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
                 }
                 TileType::Wall => {
                     glyph = wall_glyph(&*map, x, y);
-                    fg = fg.add(RGB::from_f32(0.1, 0.8, 0.1));
+                    fg = fg.add(RGB::from_f32(0.6, 0.5, 0.25));
                 }
             }
-            let mut bloody = false;
             if map.bloodstains.contains(&idx) {
-                bg = bg.add(RGB::from_f32(0.4, 0., 0.));
-                bloody = true;
+                bg = bg.add(RGB::from_f32(0.6, 0., 0.));
             }
             if !map.visible_tiles[idx] {
-                fg = fg.to_greyscale();
-                // Manually setting desaturated values since we always know what it will be,
-                // since desaturate is an expensive function. If this stops being the case,
-                // will need to switch to using desaturate
-                if bloody {
-                    bg = RGB::from_f32(0.4, 0.4, 0.4);
-                } else {
-                    bg = bg.to_greyscale();
-                }
+                fg = fg.mul(0.6);
+                bg = bg.mul(0.6);
             }
             ctx.set(x, y, fg, bg, glyph);
         }

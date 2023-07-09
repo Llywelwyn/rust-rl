@@ -55,7 +55,7 @@ const MAX_ITEMS: i32 = 2;
 fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S) {
     ecs.create_entity()
         .with(Position { x, y })
-        .with(Renderable { glyph: glyph, fg: RGB::named(rltk::RED), bg: RGB::named(rltk::BLACK), render_order: 1 })
+        .with(Renderable { glyph: glyph, fg: RGB::named(rltk::GREEN), bg: RGB::named(rltk::BLACK), render_order: 1 })
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Monster {})
         .with(Name { name: name.to_string() })
@@ -163,7 +163,7 @@ fn poison_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Position { x, y })
         .with(Renderable {
             glyph: rltk::to_cp437('i'),
-            fg: RGB::named(rltk::SEAGREEN),
+            fg: RGB::named(rltk::GREEN),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
