@@ -1,7 +1,7 @@
 use super::{
     gamelog::GameLog, CombatStats, Confusion, Consumable, Destructible, InBackpack, InflictsDamage, Map, Name,
     ParticleBuilder, Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToUseItem, AOE,
-    DEFAULT_PARTICLE_LIFETIME,
+    DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -113,7 +113,7 @@ impl<'a> System<'a> for ItemUseSystem {
                                     rltk::RGB::named(rltk::ORANGE),
                                     rltk::RGB::named(rltk::BLACK),
                                     rltk::to_cp437('░'),
-                                    200.0,
+                                    LONG_PARTICLE_LIFETIME,
                                 );
                             }
                         }
@@ -208,7 +208,6 @@ impl<'a> System<'a> for ItemUseSystem {
                 match causes_confusion {
                     None => {}
                     Some(confusion) => {
-                        used_item = false;
                         for mob in targets.iter() {
                             add_confusion.push((*mob, confusion.turns));
                             // Gamelog entry for this is handled turn-by-turn in AI.

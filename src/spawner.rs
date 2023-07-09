@@ -180,6 +180,8 @@ fn poison_potion(ecs: &mut World, x: i32, y: i32) {
         .build();
 }
 
+// Scrolls
+// ~10 range should be considered average here.
 fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
@@ -193,8 +195,8 @@ fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Item {})
         .with(Consumable {})
         .with(Destructible {})
-        .with(Ranged { range: 12 })
-        .with(InflictsDamage { amount: 10 })
+        .with(Ranged { range: 12 }) // Long range - as far as default vision range
+        .with(InflictsDamage { amount: 10 }) // Low~ damage
         .build();
 }
 
@@ -230,7 +232,7 @@ fn confusion_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Item {})
         .with(Consumable {})
         .with(Destructible {})
-        .with(Ranged { range: 6 })
+        .with(Ranged { range: 10 })
         .with(Confusion { turns: 4 })
         .build();
 }

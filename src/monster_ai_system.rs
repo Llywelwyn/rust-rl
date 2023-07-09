@@ -1,4 +1,6 @@
-use super::{gamelog::GameLog, Confusion, Map, Monster, Name, Position, RunState, Viewshed, WantsToMelee};
+use super::{
+    gamelog::GameLog, Confusion, Map, Monster, Name, ParticleBuilder, Position, RunState, Viewshed, WantsToMelee,
+};
 use rltk::Point;
 use specs::prelude::*;
 
@@ -19,6 +21,7 @@ impl<'a> System<'a> for MonsterAI {
         WriteStorage<'a, WantsToMelee>,
         WriteStorage<'a, Confusion>,
         ReadStorage<'a, Name>,
+        WriteExpect<'a, ParticleBuilder>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -35,6 +38,7 @@ impl<'a> System<'a> for MonsterAI {
             mut wants_to_melee,
             mut confused,
             name,
+            mut particle_builder,
         ) = data;
 
         if *runstate != RunState::MonsterTurn {
@@ -48,11 +52,18 @@ impl<'a> System<'a> for MonsterAI {
             let is_confused = confused.get_mut(entity);
             if let Some(i_am_confused) = is_confused {
                 i_am_confused.turns -= 1;
+                let entity_name = name.get(entity).unwrap();
+                let mut fg = rltk::RGB::named(rltk::MAGENTA);
+                let mut glyph = rltk::to_cp437('?');
                 if i_am_confused.turns < 1 {
                     confused.remove(entity);
+                    gamelog.entries.push(format!("{} snaps out of its confusion!", entity_name.name));
+                    fg = rltk::RGB::named(rltk::MEDIUMSLATEBLUE);
+                    glyph = rltk::to_cp437('!');
+                } else {
+                    gamelog.entries.push(format!("{} is confused.", entity_name.name));
                 }
-                let entity_name = name.get(entity).unwrap();
-                gamelog.entries.push(format!("{} is confused!", entity_name.name));
+                particle_builder.request(pos.x, pos.y, fg, rltk::RGB::named(rltk::BLACK), glyph, 200.0);
                 can_act = false;
             }
 

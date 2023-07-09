@@ -26,7 +26,7 @@ use melee_combat_system::MeleeCombatSystem;
 mod inventory_system;
 use inventory_system::*;
 mod particle_system;
-use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME};
+use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
 mod rex_assets;
 
 // Embedded resources for use in wasm build

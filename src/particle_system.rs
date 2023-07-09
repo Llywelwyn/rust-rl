@@ -2,7 +2,11 @@ use super::{ParticleLifetime, Position, Renderable, Rltk};
 use rltk::RGB;
 use specs::prelude::*;
 
+// For things which will happen frequently - i.e. attacking.
 pub const DEFAULT_PARTICLE_LIFETIME: f32 = 150.0;
+// For exceptional things, like large AOEs, to make sure the
+// player can actually see what's being impacted - i.e. fireball.
+pub const LONG_PARTICLE_LIFETIME: f32 = 300.0;
 
 /// Runs each tick, deleting particles who are past their expiry.
 // Should make an addition to this to also spawn delayed particles,
