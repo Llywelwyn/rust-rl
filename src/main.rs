@@ -1,5 +1,6 @@
 use rltk::{GameState, Point, Rltk, RGB};
 use specs::prelude::*;
+use std::ops::Add;
 
 mod components;
 pub use components::*;
@@ -26,6 +27,7 @@ mod inventory_system;
 use inventory_system::*;
 mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME};
+mod rex_assets;
 
 // Embedded resources for use in wasm build
 rltk::embedded_resource!(TERMINAL8X8, "../resources/terminal8x8.jpg");
@@ -40,6 +42,7 @@ pub enum RunState {
     MonsterTurn,
     ShowInventory,
     ShowDropItem,
+    MainMenu { menu_selection: gui::MainMenuSelection },
 }
 
 pub struct State {
@@ -72,36 +75,42 @@ impl State {
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut Rltk) {
-        // Clear screen
-        ctx.cls();
-        particle_system::cull_dead_particles(&mut self.ecs, ctx);
-
-        // Draw map and ui
-        draw_map(&self.ecs, ctx);
-        {
-            let positions = self.ecs.read_storage::<Position>();
-            let renderables = self.ecs.read_storage::<Renderable>();
-            let map = self.ecs.fetch::<Map>();
-
-            let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
-            data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-            for (pos, render) in data.iter() {
-                let idx = map.xy_idx(pos.x, pos.y);
-                let mut bg = render.bg;
-                if map.bloodstains.contains(&idx) {
-                    bg = RGB::from_f32(0.4, 0., 0.);
-                }
-                if map.visible_tiles[idx] {
-                    ctx.set(pos.x, pos.y, render.fg, bg, render.glyph);
-                }
-            }
-            gui::draw_ui(&self.ecs, ctx);
-        }
-
         let mut new_runstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
             new_runstate = *runstate;
+        }
+        // Clear screen
+        ctx.cls();
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
+
+        match new_runstate {
+            RunState::MainMenu { .. } => {}
+            _ => {
+                // Draw map and ui
+                draw_map(&self.ecs, ctx);
+                {
+                    let positions = self.ecs.read_storage::<Position>();
+                    let renderables = self.ecs.read_storage::<Renderable>();
+                    let map = self.ecs.fetch::<Map>();
+
+                    let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
+                    data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
+                    for (pos, render) in data.iter() {
+                        let idx = map.xy_idx(pos.x, pos.y);
+                        let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
+                        let mut bg = render.bg.add(RGB::from_u8(26, 45, 45)).add(offsets);
+                        //bg = bg.add(offsets);
+                        if map.bloodstains.contains(&idx) {
+                            bg = RGB::from_f32(0.4, 0., 0.);
+                        }
+                        if map.visible_tiles[idx] {
+                            ctx.set(pos.x, pos.y, render.fg, bg, render.glyph);
+                        }
+                    }
+                    gui::draw_ui(&self.ecs, ctx);
+                }
+            }
         }
 
         match new_runstate {
@@ -153,6 +162,28 @@ impl GameState for State {
                     }
                 }
             }
+            RunState::MainMenu { .. } => {
+                let result = gui::main_menu(self, ctx);
+                match result {
+                    gui::MainMenuResult::NoSelection { selected } => {
+                        new_runstate = RunState::MainMenu { menu_selection: selected }
+                    }
+                    gui::MainMenuResult::Selected { selected } => {
+                        match selected {
+                            gui::MainMenuSelection::NewGame => new_runstate = RunState::PreRun,
+                            gui::MainMenuSelection::LoadGame => {
+                                new_runstate = RunState::PreRun;
+                                //saveload_system::load_game(&mut self.ecs);
+                                //rew_runstate = RunState::AwaitingInput;
+                                //saveload_system::delete_save();
+                            }
+                            gui::MainMenuSelection::Quit => {
+                                ::std::process::exit(0);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         {
@@ -164,14 +195,22 @@ impl GameState for State {
     }
 }
 
+const DISPLAYWIDTH: i32 = 80;
+const DISPLAYHEIGHT: i32 = 50;
+
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
-    let mut context = RltkBuilder::simple80x50()
-        .with_tile_dimensions(16, 16)
-        //.with_fitscreen(true)
+    let mut context = RltkBuilder::new()
         .with_title("rust-rl")
+        .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
+        .with_tile_dimensions(16, 16)
+        .with_resource_path("resources/")
+        .with_font("terminal8x8.jpg", 8, 8)
+        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
+        .with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
         .build()?;
-    context.with_post_scanlines(true);
+    context.with_post_scanlines(false);
+    //context.screen_burn_color(RGB::named((150, 255, 255)));
     let mut gs = State { ecs: World::new() };
 
     gs.ecs.register::<Position>();
@@ -207,8 +246,9 @@ fn main() -> rltk::BError {
     gs.ecs.insert(Point::new(player_x, player_y));
     gs.ecs.insert(player_entity);
     gs.ecs.insert(gamelog::GameLog { entries: vec!["Here's your welcome message.".to_string()] });
-    gs.ecs.insert(RunState::PreRun);
+    gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(particle_system::ParticleBuilder::new());
+    gs.ecs.insert(rex_assets::RexAssets::new());
 
     rltk::main_loop(context, gs)
 }

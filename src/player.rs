@@ -1,5 +1,5 @@
 use super::{
-    gamelog::GameLog, CombatStats, Item, Map, Player, Position, RunState, State, Viewshed, WantsToMelee,
+    gamelog::GameLog, gui, CombatStats, Item, Map, Player, Position, RunState, State, Viewshed, WantsToMelee,
     WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, Rltk, VirtualKeyCode};
@@ -98,6 +98,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::G => get_item(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::D => return RunState::ShowDropItem,
+            VirtualKeyCode::Escape => return RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame },
             _ => {
                 return RunState::AwaitingInput;
             }
@@ -105,3 +106,48 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     }
     RunState::PlayerTurn
 }
+
+/* Playing around with autoexplore, without having read how to do it.
+pub fn auto_explore(ecs: &mut World) {
+    let player_pos = ecs.fetch::<Point>();
+    let positions = ecs.read_storage::<Position>();
+    let entities = ecs.entities();
+    let map = ecs.fetch::<Map>();
+    let mut viewsheds = ecs.write_storage::<Viewshed>();
+
+    let mut unexplored_tiles: Vec<usize> = vec![];
+    for (idx, _tile) in map.tiles.iter().enumerate() {
+        if !map.revealed_tiles[idx] {
+            unexplored_tiles.push(idx);
+        }
+    }
+    let mut unexplored_tile = (0, 0.0f32);
+
+    let flow_map = DijkstraMap::new_empty(MAPWIDTH, MAPHEIGHT, 200.0);
+
+    DijkstraMap::build(&mut flow_map, &unexplored_tiles, &map);
+    for (i, tile) in map.tiles.iter().enumerate() {
+        if *tile == TileType::Floor {
+            let distance_to_start = flow_map.map[i];
+
+            if distance_to_start > unexplored_tile.1 {
+                unexplored_tile.0 = i;
+                unexplored_tile.1 = distance_to_start;
+            }
+        }
+    }
+
+    let path = rltk::a_star_search(map.xy_idx(player_pos.x, player_pos.y), unexplored_tile.0, &*map);
+    if path.success && path.steps.len() > 1 {
+        let mut idx = map.xy_idx(player_pos.x, player_pos.y);
+        map.blocked[idx] = false;
+        player_pos.x = (path.steps[1] as i32) % map.width;
+        player_pos.y = (path.steps[1] as i32) / map.width;
+        idx = map.xy_idx(player_pos.x, player_pos.y);
+        map.blocked[idx] = true;
+        for (ent, viewshed, pos) in (&entities, &mut viewsheds, &positions).join() {
+            viewshed.dirty = true;
+        }
+    }
+}
+*/

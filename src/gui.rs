@@ -1,4 +1,7 @@
-use super::{gamelog::GameLog, CombatStats, InBackpack, Map, Name, Player, Point, Position, State};
+use super::{
+    gamelog::GameLog, rex_assets::RexAssets, CombatStats, InBackpack, Map, Name, Player, Point, Position, RunState,
+    State,
+};
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 
@@ -200,4 +203,82 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
             }
         },
     }
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum MainMenuSelection {
+    NewGame,
+    LoadGame,
+    Quit,
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum MainMenuResult {
+    NoSelection { selected: MainMenuSelection },
+    Selected { selected: MainMenuSelection },
+}
+
+pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
+    let runstate = gs.ecs.fetch::<RunState>();
+    let assets = gs.ecs.fetch::<RexAssets>();
+
+    ctx.render_xp_sprite(&assets.menu, 0, 0);
+
+    ctx.print_color(38, 21, RGB::named(rltk::GREEN), RGB::from_f32(0.11, 0.11, 0.11), "RUST-RL");
+
+    if let RunState::MainMenu { menu_selection: selection } = *runstate {
+        if selection == MainMenuSelection::NewGame {
+            ctx.print_color(34, 24, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "[");
+            ctx.print_color(36, 24, RGB::named(rltk::GREEN), RGB::from_f32(0.11, 0.11, 0.11), "new game");
+            ctx.print_color(45, 24, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "]");
+        } else {
+            ctx.print_color(36, 24, RGB::named(rltk::WHITE), RGB::from_f32(0.11, 0.11, 0.11), "new game");
+        }
+        if selection == MainMenuSelection::LoadGame {
+            ctx.print_color(38, 26, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "[");
+            ctx.print_color(40, 26, RGB::named(rltk::GREEN), RGB::from_f32(0.11, 0.11, 0.11), "load game");
+            ctx.print_color(50, 26, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "]");
+        } else {
+            ctx.print_color(40, 26, RGB::named(rltk::WHITE), RGB::from_f32(0.11, 0.11, 0.11), "load game");
+        }
+        if selection == MainMenuSelection::Quit {
+            ctx.print_color(34, 28, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "[");
+            ctx.print_color(36, 28, RGB::named(rltk::GREEN), RGB::from_f32(0.11, 0.11, 0.11), "goodbye!");
+            ctx.print_color(45, 28, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "]");
+        } else {
+            ctx.print_color(36, 28, RGB::named(rltk::WHITE), RGB::from_f32(0.11, 0.11, 0.11), "quit");
+        }
+
+        match ctx.key {
+            None => return MainMenuResult::NoSelection { selected: selection },
+            Some(key) => match key {
+                VirtualKeyCode::Escape | VirtualKeyCode::C => {
+                    return MainMenuResult::NoSelection { selected: MainMenuSelection::Quit }
+                }
+                VirtualKeyCode::N => return MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame },
+                VirtualKeyCode::L => return MainMenuResult::NoSelection { selected: MainMenuSelection::LoadGame },
+                VirtualKeyCode::Up => {
+                    let new_selection;
+                    match selection {
+                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::Quit,
+                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
+                        MainMenuSelection::Quit => new_selection = MainMenuSelection::LoadGame,
+                    }
+                    return MainMenuResult::NoSelection { selected: new_selection };
+                }
+                VirtualKeyCode::Down => {
+                    let new_selection;
+                    match selection {
+                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::LoadGame,
+                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::Quit,
+                        MainMenuSelection::Quit => new_selection = MainMenuSelection::NewGame,
+                    }
+                    return MainMenuResult::NoSelection { selected: new_selection };
+                }
+                VirtualKeyCode::Return => return MainMenuResult::Selected { selected: selection },
+                _ => return MainMenuResult::NoSelection { selected: selection },
+            },
+        }
+    }
+    MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame }
 }

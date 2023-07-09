@@ -3,6 +3,7 @@ use rltk::{Algorithm2D, BaseMap, Point, RandomNumberGenerator, Rltk, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use std::collections::HashSet;
+use std::ops::Add;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
@@ -12,6 +13,7 @@ pub enum TileType {
 
 pub const MAPWIDTH: usize = 80;
 pub const MAPHEIGHT: usize = 43;
+const MAX_OFFSET: u8 = 32;
 const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
 #[derive(Default)]
@@ -22,6 +24,9 @@ pub struct Map {
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
     pub visible_tiles: Vec<bool>,
+    pub red_offset: Vec<u8>,
+    pub green_offset: Vec<u8>,
+    pub blue_offset: Vec<u8>,
     pub blocked: Vec<bool>,
     pub tile_content: Vec<Vec<Entity>>,
     pub bloodstains: HashSet<usize>,
@@ -89,6 +94,9 @@ impl Map {
             height: MAPHEIGHT as i32,
             revealed_tiles: vec![false; MAPCOUNT],
             visible_tiles: vec![false; MAPCOUNT],
+            red_offset: vec![0; MAPCOUNT],
+            green_offset: vec![0; MAPCOUNT],
+            blue_offset: vec![0; MAPCOUNT],
             blocked: vec![false; MAPCOUNT],
             tile_content: vec![Vec::new(); MAPCOUNT],
             bloodstains: HashSet::new(),
@@ -99,6 +107,19 @@ impl Map {
         const MAX_SIZE: i32 = 10;
 
         let mut rng = RandomNumberGenerator::new();
+
+        for idx in 0..map.red_offset.len() {
+            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
+            map.red_offset[idx] = roll as u8;
+        }
+        for idx in 0..map.green_offset.len() {
+            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
+            map.green_offset[idx] = roll as u8;
+        }
+        for idx in 0..map.blue_offset.len() {
+            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
+            map.blue_offset[idx] = roll as u8;
+        }
 
         for _i in 0..MAX_ROOMS {
             let w = rng.range(MIN_SIZE, MAX_SIZE);
@@ -198,23 +219,28 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
     let mut y = 0;
     let mut x = 0;
     for (idx, tile) in map.tiles.iter().enumerate() {
+        // Get our colour offsets. Credit to Brogue for the inspiration here.
+        let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
         if map.revealed_tiles[idx] {
+            let mut fg = offsets;
+            // Right now, everything always has the same background. It's a
+            // very dark green, just to distinguish it slightly from the
+            // black that is tiles we've *never* seen.
+            let mut bg = offsets.add(RGB::from_u8(26, 45, 45));
             let glyph;
-            let mut fg;
-            let mut bg = RGB::from_f32(0., 0., 0.);
             match tile {
                 TileType::Floor => {
                     glyph = rltk::to_cp437('.');
-                    fg = RGB::from_f32(0.0, 1.0, 0.5);
+                    fg = fg.add(RGB::from_f32(0.1, 0.8, 0.5));
                 }
                 TileType::Wall => {
                     glyph = wall_glyph(&*map, x, y);
-                    fg = RGB::from_f32(0.0, 1.0, 0.0);
+                    fg = fg.add(RGB::from_f32(0.1, 0.8, 0.1));
                 }
             }
             let mut bloody = false;
             if map.bloodstains.contains(&idx) {
-                bg = RGB::from_f32(0.4, 0., 0.);
+                bg = bg.add(RGB::from_f32(0.4, 0., 0.));
                 bloody = true;
             }
             if !map.visible_tiles[idx] {
@@ -223,7 +249,9 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
                 // since desaturate is an expensive function. If this stops being the case,
                 // will need to switch to using desaturate
                 if bloody {
-                    bg = RGB::from_f32(0.4, 0.4, 0.4)
+                    bg = RGB::from_f32(0.4, 0.4, 0.4);
+                } else {
+                    bg = bg.to_greyscale();
                 }
             }
             ctx.set(x, y, fg, bg, glyph);
