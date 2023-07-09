@@ -42,6 +42,7 @@ pub enum RunState {
     MonsterTurn,
     ShowInventory,
     ShowDropItem,
+    ShowTargeting { range: i32, item: Entity, aoe: i32 },
     MainMenu { menu_selection: gui::MainMenuSelection },
 }
 
@@ -139,11 +140,28 @@ impl GameState for State {
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
                         let item_entity = result.1.unwrap();
-                        let mut intent = self.ecs.write_storage::<WantsToUseItem>();
-                        intent
-                            .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item: item_entity })
-                            .expect("Unable to insert intent.");
-                        new_runstate = RunState::PlayerTurn;
+                        let is_ranged = self.ecs.read_storage::<Ranged>();
+                        let ranged_item = is_ranged.get(item_entity);
+                        if let Some(ranged_item) = ranged_item {
+                            let is_aoe = self.ecs.read_storage::<AOE>();
+                            let aoe_item = is_aoe.get(item_entity);
+                            if let Some(aoe_item) = aoe_item {
+                                new_runstate = RunState::ShowTargeting {
+                                    range: ranged_item.range,
+                                    item: item_entity,
+                                    aoe: aoe_item.radius,
+                                }
+                            } else {
+                                new_runstate =
+                                    RunState::ShowTargeting { range: ranged_item.range, item: item_entity, aoe: 0 }
+                            }
+                        } else {
+                            let mut intent = self.ecs.write_storage::<WantsToUseItem>();
+                            intent
+                                .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item: item_entity, target: None })
+                                .expect("Unable to insert intent.");
+                            new_runstate = RunState::PlayerTurn;
+                        }
                     }
                 }
             }
@@ -158,6 +176,20 @@ impl GameState for State {
                         intent
                             .insert(*self.ecs.fetch::<Entity>(), WantsToDropItem { item: item_entity })
                             .expect("Unable to insert intent");
+                        new_runstate = RunState::PlayerTurn;
+                    }
+                }
+            }
+            RunState::ShowTargeting { range, item, aoe } => {
+                let result = gui::ranged_target(self, ctx, range, aoe);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let mut intent = self.ecs.write_storage::<WantsToUseItem>();
+                        intent
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item, target: result.1 })
+                            .expect("Unable to insert intent.");
                         new_runstate = RunState::PlayerTurn;
                     }
                 }
@@ -225,6 +257,9 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
     gs.ecs.register::<ProvidesHealing>();
+    gs.ecs.register::<InflictsDamage>();
+    gs.ecs.register::<Ranged>();
+    gs.ecs.register::<AOE>();
     gs.ecs.register::<InBackpack>();
     gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<WantsToDropItem>();
@@ -245,7 +280,9 @@ fn main() -> rltk::BError {
     gs.ecs.insert(map);
     gs.ecs.insert(Point::new(player_x, player_y));
     gs.ecs.insert(player_entity);
-    gs.ecs.insert(gamelog::GameLog { entries: vec!["Here's your welcome message.".to_string()] });
+    gs.ecs.insert(gamelog::GameLog {
+        entries: vec!["<pretend i wrote a paragraph explaining why you're here>".to_string()],
+    });
     gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());

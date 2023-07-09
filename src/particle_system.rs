@@ -4,6 +4,11 @@ use specs::prelude::*;
 
 pub const DEFAULT_PARTICLE_LIFETIME: f32 = 150.0;
 
+/// Runs each tick, deleting particles who are past their expiry.
+// Should make an addition to this to also spawn delayed particles,
+// running through a list and removing the frame_time_ms from the
+// delay. When delay is <= 0, make a particle_builder.request for
+// the particle.
 pub fn cull_dead_particles(ecs: &mut World, ctx: &Rltk) {
     let mut dead_particles: Vec<Entity> = Vec::new();
     {
@@ -41,8 +46,27 @@ impl ParticleBuilder {
         ParticleBuilder { requests: Vec::new() }
     }
 
+    /// Makes a single particle request.
     pub fn request(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32) {
         self.requests.push(ParticleRequest { x, y, fg, bg, glyph, lifetime });
+    }
+
+    // Makes a particle request in the shape of an 'x'. Sort of.
+    pub fn request_star(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32) {
+        self.request(x, y, fg, bg, glyph, lifetime * 2.0);
+        self.request(x + 1, y + 1, fg, bg, rltk::to_cp437('/'), lifetime);
+        self.request(x + 1, y - 1, fg, bg, rltk::to_cp437('\\'), lifetime);
+        self.request(x - 1, y + 1, fg, bg, rltk::to_cp437('\\'), lifetime);
+        self.request(x - 1, y - 1, fg, bg, rltk::to_cp437('/'), lifetime);
+    }
+
+    /// Makes a particle request in the shape of a +.
+    pub fn request_plus(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32) {
+        self.request(x, y, fg, bg, glyph, lifetime * 2.0);
+        self.request(x + 1, y, fg, bg, rltk::to_cp437('─'), lifetime);
+        self.request(x - 1, y, fg, bg, rltk::to_cp437('─'), lifetime);
+        self.request(x, y + 1, fg, bg, rltk::to_cp437('│'), lifetime);
+        self.request(x, y - 1, fg, bg, rltk::to_cp437('│'), lifetime);
     }
 }
 

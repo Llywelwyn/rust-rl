@@ -1,6 +1,6 @@
 use super::{
-    BlocksTile, CombatStats, Consumable, Item, Monster, Name, Player, Position, ProvidesHealing, Rect, Renderable,
-    Viewshed, MAPWIDTH,
+    BlocksTile, CombatStats, Consumable, InflictsDamage, Item, Monster, Name, Player, Position, ProvidesHealing,
+    Ranged, Rect, Renderable, Viewshed, AOE, MAPWIDTH,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -45,12 +45,14 @@ pub fn random_item(ecs: &mut World, x: i32, y: i32) {
     match roll {
         1 => health_potion(ecs, x, y),
         2 => poison_potion(ecs, x, y),
+        3 => magic_missile_scroll(ecs, x, y),
+        4 => fireball_scroll(ecs, x, y),
         _ => weak_health_potion(ecs, x, y),
     }
 }
 
 const MAX_MONSTERS: i32 = 4;
-const MAX_ITEMS: i32 = 2;
+const MAX_ITEMS: i32 = 6;
 
 fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S) {
     ecs.create_entity()
@@ -138,7 +140,7 @@ fn health_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Name { name: "potion of health".to_string() })
         .with(Item {})
         .with(Consumable {})
-        .with(ProvidesHealing { heal_amount: 12 })
+        .with(ProvidesHealing { amount: 12 })
         .build();
 }
 
@@ -154,7 +156,7 @@ fn weak_health_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Name { name: "potion of lesser health".to_string() })
         .with(Item {})
         .with(Consumable {})
-        .with(ProvidesHealing { heal_amount: 6 })
+        .with(ProvidesHealing { amount: 6 })
         .build();
 }
 
@@ -170,6 +172,41 @@ fn poison_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Name { name: "potion of ... health?".to_string() })
         .with(Item {})
         .with(Consumable {})
-        .with(ProvidesHealing { heal_amount: -12 })
+        .with(ProvidesHealing { amount: -12 })
+        .build();
+}
+
+fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437(')'),
+            fg: RGB::named(rltk::BLUE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "scroll of magic missile".to_string() })
+        .with(Item {})
+        .with(Consumable {})
+        .with(Ranged { range: 12 })
+        .with(InflictsDamage { amount: 10 })
+        .build();
+}
+
+fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437(')'),
+            fg: RGB::named(rltk::ORANGE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "scroll of fireball".to_string() })
+        .with(Item {})
+        .with(Consumable {})
+        .with(Ranged { range: 10 })
+        .with(InflictsDamage { amount: 20 })
+        .with(AOE { radius: 3 })
         .build();
 }

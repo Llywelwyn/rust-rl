@@ -1,4 +1,4 @@
-use super::{gamelog::GameLog, CombatStats, Entities, Map, Name, Player, Position, SufferDamage};
+use super::{gamelog::GameLog, CombatStats, Entities, Item, Map, Name, Player, Position, SufferDamage};
 use specs::prelude::*;
 
 pub struct DamageSystem {}
@@ -35,6 +35,7 @@ pub fn delete_the_dead(ecs: &mut World) {
         let combat_stats = ecs.read_storage::<CombatStats>();
         let players = ecs.read_storage::<Player>();
         let names = ecs.read_storage::<Name>();
+        let items = ecs.read_storage::<Item>();
         let entities = ecs.entities();
         let mut log = ecs.write_resource::<GameLog>();
         for (entity, stats) in (&entities, &combat_stats).join() {
@@ -44,7 +45,12 @@ pub fn delete_the_dead(ecs: &mut World) {
                     None => {
                         let victim_name = names.get(entity);
                         if let Some(victim_name) = victim_name {
-                            log.entries.push(format!("{} died!", &victim_name.name));
+                            let item = items.get(entity);
+                            if let Some(_item) = item {
+                                log.entries.push(format!("{} was destroyed!", &victim_name.name));
+                            } else {
+                                log.entries.push(format!("{} died!", &victim_name.name));
+                            }
                         }
                         dead.push(entity)
                     }

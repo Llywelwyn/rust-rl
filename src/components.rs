@@ -71,7 +71,22 @@ pub struct Item {}
 
 #[derive(Component, Debug)]
 pub struct ProvidesHealing {
-    pub heal_amount: i32,
+    pub amount: i32,
+}
+
+#[derive(Component, Debug)]
+pub struct InflictsDamage {
+    pub amount: i32,
+}
+
+#[derive(Component, Debug)]
+pub struct Ranged {
+    pub range: i32,
+}
+
+#[derive(Component, Debug)]
+pub struct AOE {
+    pub radius: i32,
 }
 
 #[derive(Component, Debug, Clone)]
@@ -93,6 +108,7 @@ pub struct WantsToDropItem {
 #[derive(Component, Debug)]
 pub struct WantsToUseItem {
     pub item: Entity,
+    pub target: Option<rltk::Point>,
 }
 
 #[derive(Component, Debug)]
