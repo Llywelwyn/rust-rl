@@ -32,6 +32,8 @@ mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
 mod random_table;
 mod rex_assets;
+#[macro_use]
+extern crate lazy_static;
 
 // Embedded resources for use in wasm build
 rltk::embedded_resource!(TERMINAL8X8, "../resources/terminal8x8.jpg");
@@ -375,7 +377,7 @@ fn main() -> rltk::BError {
         .with_resource_path("resources/")
         .with_font("terminal8x8.jpg", 8, 8)
         .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
-        .with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
+        //.with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
         .build()?;
     context.with_post_scanlines(false);
     //context.screen_burn_color(RGB::named((150, 255, 255)));
@@ -432,6 +434,14 @@ fn main() -> rltk::BError {
     gs.ecs.insert(gamelog::GameLog {
         entries: vec!["<pretend i wrote a paragraph explaining why you're here>".to_string()],
     });
+    gamelog::clear_log();
+    gamelog::Logger::new()
+        .append("Welcome!")
+        .colour(rltk::CYAN)
+        .append("(")
+        .append("pretend i wrote a paragraph explaining why you're here")
+        .append(")")
+        .log();
     gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());

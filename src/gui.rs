@@ -1,8 +1,8 @@
 use super::{
-    gamelog::GameLog, rex_assets::RexAssets, CombatStats, InBackpack, Map, Name, Player, Point, Position, RunState,
-    State, Viewshed,
+    gamelog, rex_assets::RexAssets, CombatStats, InBackpack, Map, Name, Player, Point, Position, RunState, State,
+    Viewshed,
 };
-use rltk::{Rltk, VirtualKeyCode, RGB};
+use rltk::{Rltk, TextBlock, VirtualKeyCode, RGB};
 use specs::prelude::*;
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
@@ -18,14 +18,9 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     }
 
     // Render message log
-    let log = ecs.fetch::<GameLog>();
-    let mut y = 44;
-    for s in log.entries.iter().rev() {
-        if y < 49 {
-            ctx.print(2, y, s);
-        }
-        y += 1;
-    }
+    let mut block = TextBlock::new(1, 44, 78, 5);
+    let _ = block.print(&gamelog::log_display());
+    block.render(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console);
 
     // Render depth
     let map = ecs.fetch::<Map>();
