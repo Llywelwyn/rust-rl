@@ -1,4 +1,4 @@
-use rltk::{GameState, Point, Rltk, RGB};
+use rltk::{GameState, Point, RandomNumberGenerator, Rltk, RGB};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 use std::ops::Add;
@@ -125,7 +125,8 @@ impl State {
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             current_depth = worldmap_resource.depth;
-            *worldmap_resource = Map::new_map_rooms_and_corridors(current_depth + 1);
+            let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
+            *worldmap_resource = Map::new_map_rooms_and_corridors(&mut rng, current_depth + 1);
             worldmap = worldmap_resource.clone();
         }
 
@@ -378,6 +379,7 @@ fn main() -> rltk::BError {
         .build()?;
     context.with_post_scanlines(false);
     //context.screen_burn_color(RGB::named((150, 255, 255)));
+
     let mut gs = State { ecs: World::new() };
 
     gs.ecs.register::<Position>();
@@ -409,12 +411,17 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
-    let map = Map::new_map_rooms_and_corridors(1);
+    // Create RNG.
+    let mut rng = rltk::RandomNumberGenerator::new();
+    // Use seed to generate the map.
+    let map = Map::new_map_rooms_and_corridors(&mut rng, 1);
+    // Insert seed into the ECS.
+    gs.ecs.insert(rng);
+
     let (player_x, player_y) = map.rooms[0].centre();
     let player_name = "wanderer".to_string();
     let player_entity = spawner::player(&mut gs.ecs, player_x, player_y, player_name);
 
-    gs.ecs.insert(rltk::RandomNumberGenerator::new());
     for room in map.rooms.iter().skip(1) {
         spawner::spawn_room(&mut gs.ecs, room, 1);
     }

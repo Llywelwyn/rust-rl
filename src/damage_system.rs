@@ -49,7 +49,7 @@ pub fn delete_the_dead(ecs: &mut World) {
                             if let Some(_item) = item {
                                 log.entries.push(format!("{} was destroyed!", &victim_name.name));
                             } else {
-                                log.entries.push(format!("{} died!", &victim_name.name));
+                                log.entries.push(format!("The {} died!", &victim_name.name));
                             }
                         }
                         dead.push(entity)

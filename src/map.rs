@@ -92,7 +92,7 @@ impl Map {
     }
 
     /// Makes a procgen map out of rooms and corridors, and returns the rooms and the map.
-    pub fn new_map_rooms_and_corridors(new_depth: i32) -> Map {
+    pub fn new_map_rooms_and_corridors(rng: &mut RandomNumberGenerator, new_depth: i32) -> Map {
         let mut map = Map {
             tiles: vec![TileType::Wall; MAPCOUNT],
             rooms: Vec::new(),
@@ -112,8 +112,6 @@ impl Map {
         const MAX_ROOMS: i32 = 30;
         const MIN_SIZE: i32 = 6;
         const MAX_SIZE: i32 = 10;
-
-        let mut rng = RandomNumberGenerator::new();
 
         for idx in 0..map.red_offset.len() {
             let roll = rng.roll_dice(1, MAX_OFFSET as i32);
