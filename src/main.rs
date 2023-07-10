@@ -157,8 +157,7 @@ impl State {
         }
 
         // Notify player, restore health up to a point.
-        let mut gamelog = self.ecs.fetch_mut::<gamelog::GameLog>();
-        gamelog.entries.push("You descend the stairwell, and take a moment to recover your strength.".to_string());
+        gamelog::Logger::new().append("You descend the stairwell, and take a moment to gather your strength.").log();
         let mut player_health_store = self.ecs.write_storage::<CombatStats>();
         let player_health = player_health_store.get_mut(*player_entity);
         if let Some(player_health) = player_health {
@@ -431,9 +430,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(map);
     gs.ecs.insert(Point::new(player_x, player_y));
     gs.ecs.insert(player_entity);
-    gs.ecs.insert(gamelog::GameLog {
-        entries: vec!["<pretend i wrote a paragraph explaining why you're here>".to_string()],
-    });
+
     gamelog::clear_log();
     gamelog::Logger::new()
         .append("Welcome!")

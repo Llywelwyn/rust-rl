@@ -1,6 +1,4 @@
-use super::{
-    gamelog::GameLog, Confusion, Map, Monster, Name, ParticleBuilder, Position, RunState, Viewshed, WantsToMelee,
-};
+use super::{gamelog, Confusion, Map, Monster, Name, ParticleBuilder, Position, RunState, Viewshed, WantsToMelee};
 use rltk::Point;
 use specs::prelude::*;
 
@@ -10,7 +8,6 @@ impl<'a> System<'a> for MonsterAI {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         WriteExpect<'a, Map>,
-        WriteExpect<'a, GameLog>,
         ReadExpect<'a, Point>,
         ReadExpect<'a, Entity>,
         ReadExpect<'a, RunState>,
@@ -27,7 +24,6 @@ impl<'a> System<'a> for MonsterAI {
     fn run(&mut self, data: Self::SystemData) {
         let (
             mut map,
-            mut gamelog,
             player_pos,
             player_entity,
             runstate,
@@ -57,11 +53,15 @@ impl<'a> System<'a> for MonsterAI {
                 let mut glyph = rltk::to_cp437('?');
                 if i_am_confused.turns < 1 {
                     confused.remove(entity);
-                    gamelog.entries.push(format!("{} snaps out of its confusion!", entity_name.name));
+                    gamelog::Logger::new()
+                        .npc_name(&entity_name.name)
+                        .colour(rltk::WHITE)
+                        .append("snaps out of it.")
+                        .log();
                     fg = rltk::RGB::named(rltk::MEDIUMSLATEBLUE);
                     glyph = rltk::to_cp437('!');
                 } else {
-                    gamelog.entries.push(format!("{} is confused.", entity_name.name));
+                    gamelog::Logger::new().npc_name(&entity_name.name).colour(rltk::WHITE).append("is confused.").log();
                 }
                 particle_builder.request(pos.x, pos.y, fg, rltk::RGB::named(rltk::BLACK), glyph, 200.0);
                 can_act = false;
