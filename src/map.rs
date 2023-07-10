@@ -10,6 +10,7 @@ use std::ops::{Add, Mul};
 pub enum TileType {
     Wall,
     Floor,
+    DownStair,
 }
 
 pub const MAPWIDTH: usize = 80;
@@ -29,6 +30,7 @@ pub struct Map {
     pub green_offset: Vec<u8>,
     pub blue_offset: Vec<u8>,
     pub blocked: Vec<bool>,
+    pub depth: i32,
     pub bloodstains: HashSet<usize>,
 
     #[serde(skip_serializing)]
@@ -90,7 +92,7 @@ impl Map {
     }
 
     /// Makes a procgen map out of rooms and corridors, and returns the rooms and the map.
-    pub fn new_map_rooms_and_corridors() -> Map {
+    pub fn new_map_rooms_and_corridors(new_depth: i32) -> Map {
         let mut map = Map {
             tiles: vec![TileType::Wall; MAPCOUNT],
             rooms: Vec::new(),
@@ -102,6 +104,7 @@ impl Map {
             green_offset: vec![0; MAPCOUNT],
             blue_offset: vec![0; MAPCOUNT],
             blocked: vec![false; MAPCOUNT],
+            depth: new_depth,
             bloodstains: HashSet::new(),
             tile_content: vec![Vec::new(); MAPCOUNT],
         };
@@ -155,6 +158,10 @@ impl Map {
                 map.rooms.push(new_room);
             }
         }
+
+        let stairs_position = map.rooms[map.rooms.len() - 1].centre();
+        let stairs_idx = map.xy_idx(stairs_position.0, stairs_position.1);
+        map.tiles[stairs_idx] = TileType::DownStair;
 
         map
     }
@@ -240,6 +247,10 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
                 TileType::Wall => {
                     glyph = wall_glyph(&*map, x, y);
                     fg = fg.add(RGB::from_f32(0.6, 0.5, 0.25));
+                }
+                TileType::DownStair => {
+                    glyph = rltk::to_cp437('>');
+                    fg = RGB::from_f32(0., 1., 1.);
                 }
             }
             if map.bloodstains.contains(&idx) {

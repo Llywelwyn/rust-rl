@@ -8,6 +8,7 @@ use specs::saveload::{MarkedBuilder, SimpleMarker};
 
 /// Spawns the player and returns his/her entity object.
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32, player_name: String) -> Entity {
+    // d8 hit die - but always maxxed at level 1, so player doesn't have to roll.
     ecs.create_entity()
         .with(Position { x: player_x, y: player_y })
         .with(Renderable {
@@ -19,7 +20,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32, player_name: String
         .with(Player {})
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: player_name })
-        .with(CombatStats { max_hp: 30, hp: 30, defence: 2, power: 5 })
+        .with(CombatStats { max_hp: 8, hp: 8, defence: 0, power: 4 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
@@ -57,7 +58,9 @@ pub fn random_item(ecs: &mut World, x: i32, y: i32) {
 const MAX_MONSTERS: i32 = 4;
 const MAX_ITEMS: i32 = 3;
 
-fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S) {
+fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S, hit_die: i32) {
+    let rolled_hp = roll_hit_dice(ecs, 1, hit_die);
+
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable { glyph: glyph, fg: RGB::named(rltk::GREEN), bg: RGB::named(rltk::BLACK), render_order: 1 })
@@ -65,21 +68,32 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
         .with(Monster {})
         .with(Name { name: name.to_string() })
         .with(BlocksTile {})
-        .with(CombatStats { max_hp: 16, hp: 16, defence: 1, power: 4 })
+        .with(CombatStats { max_hp: rolled_hp, hp: rolled_hp, defence: 0, power: 2 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
 fn orc(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('o'), "orc");
+    monster(ecs, x, y, rltk::to_cp437('o'), "orc", 8);
 }
 
 fn goblin(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('g'), "goblin");
+    monster(ecs, x, y, rltk::to_cp437('g'), "goblin", 6);
 }
 
 fn goblin_chieftain(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('G'), "goblin chieftain");
+    monster(ecs, x, y, rltk::to_cp437('G'), "goblin chieftain", 8);
+}
+
+pub fn roll_hit_dice(ecs: &mut World, n: i32, d: i32) -> i32 {
+    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+    let mut rolled_hp: i32 = 0;
+
+    for _i in 0..n {
+        rolled_hp += rng.roll_dice(1, d);
+    }
+
+    return rolled_hp;
 }
 
 pub fn spawn_room(ecs: &mut World, room: &Rect) {

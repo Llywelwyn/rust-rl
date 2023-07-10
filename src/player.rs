@@ -1,8 +1,8 @@
 use super::{
-    gamelog::GameLog, CombatStats, Item, Map, Player, Position, RunState, State, Viewshed, WantsToMelee,
-    WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
+    gamelog::GameLog, CombatStats, Item, Map, Monster, Player, Position, RunState, State, TileType, Viewshed,
+    WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
-use rltk::{Point, Rltk, VirtualKeyCode};
+use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
@@ -94,6 +94,18 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Numpad7 | VirtualKeyCode::U => try_move_player(-1, -1, &mut gs.ecs),
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N => try_move_player(1, 1, &mut gs.ecs),
             VirtualKeyCode::Numpad1 | VirtualKeyCode::B => try_move_player(-1, 1, &mut gs.ecs),
+            // Depth
+            VirtualKeyCode::Period => {
+                if ctx.shift {
+                    if !try_next_level(&mut gs.ecs) {
+                        return RunState::AwaitingInput;
+                    }
+                    return RunState::NextLevel; // > to descend
+                } else {
+                    return skip_turn(&mut gs.ecs); // (Wait a turn)
+                }
+            }
+
             // Items
             VirtualKeyCode::G => get_item(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowInventory,
@@ -105,6 +117,58 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
         },
     }
     RunState::PlayerTurn
+}
+
+pub fn try_next_level(ecs: &mut World) -> bool {
+    let player_pos = ecs.fetch::<Point>();
+    let map = ecs.fetch::<Map>();
+    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
+    if map.tiles[player_idx] == TileType::DownStair {
+        return true;
+    } else {
+        let mut gamelog = ecs.fetch_mut::<GameLog>();
+        gamelog.entries.push("You don't see a way down.".to_string());
+        return false;
+    }
+}
+
+fn skip_turn(ecs: &mut World) -> RunState {
+    let player_entity = ecs.fetch::<Entity>();
+    let viewshed_components = ecs.read_storage::<Viewshed>();
+    let monsters = ecs.read_storage::<Monster>();
+    let mut wait_message = "You wait a turn.";
+
+    let worldmap_resource = ecs.fetch::<Map>();
+
+    let mut can_heal = true;
+    let viewshed = viewshed_components.get(*player_entity).unwrap();
+    for tile in viewshed.visible_tiles.iter() {
+        let idx = worldmap_resource.xy_idx(tile.x, tile.y);
+        for entity_id in worldmap_resource.tile_content[idx].iter() {
+            let mob = monsters.get(*entity_id);
+            match mob {
+                None => {}
+                Some(_) => {
+                    can_heal = false;
+                }
+            }
+        }
+    }
+
+    if can_heal {
+        let mut health_components = ecs.write_storage::<CombatStats>();
+        let player_hp = health_components.get_mut(*player_entity).unwrap();
+        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+        let roll = rng.roll_dice(1, 6);
+        if (roll == 6) && player_hp.hp < player_hp.max_hp {
+            player_hp.hp += 1;
+            wait_message = "You wait a turn, and recover a hit point.";
+        }
+    }
+
+    let mut gamelog = ecs.fetch_mut::<GameLog>();
+    gamelog.entries.push(wait_message.to_string());
+    return RunState::PlayerTurn;
 }
 
 /* Playing around with autoexplore, without having read how to do it.
