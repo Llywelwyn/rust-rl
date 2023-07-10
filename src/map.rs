@@ -148,10 +148,10 @@ impl Map {
                     let (prev_x, prev_y) = map.rooms[map.rooms.len() - 1].centre();
                     if rng.range(0, 2) == 1 {
                         map.apply_horizontal_tunnel(prev_x, new_x, prev_y);
-                        map.apply_vertical_tunnel(prev_y, new_y, prev_x);
+                        map.apply_vertical_tunnel(prev_y, new_y, new_x);
                     } else {
                         map.apply_vertical_tunnel(prev_y, new_y, prev_x);
-                        map.apply_horizontal_tunnel(prev_x, new_x, prev_y);
+                        map.apply_horizontal_tunnel(prev_x, new_x, new_y);
                     }
                 }
 

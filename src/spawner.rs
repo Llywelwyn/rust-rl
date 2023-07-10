@@ -137,8 +137,8 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("fireball scroll", 1 + map_depth)
         .add("confusion scroll", 1)
         .add("magic missile scroll", 4)
-        .add("magic map scroll", 400)
-        .add("cursed magic map scroll", 400);
+        .add("magic map scroll", 1)
+        .add("cursed magic map scroll", 1);
 }
 
 fn health_potion(ecs: &mut World, x: i32, y: i32) {
