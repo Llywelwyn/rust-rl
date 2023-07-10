@@ -1,5 +1,5 @@
 use super::{
-    gamelog::GameLog, CombatStats, Item, Map, Monster, Player, Position, RunState, State, TileType, Viewshed,
+    gamelog::GameLog, CombatStats, Item, Map, Monster, Name, Player, Position, RunState, State, TileType, Viewshed,
     WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
@@ -35,6 +35,22 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
         }
 
         if !map.blocked[destination_idx] {
+            // TODO: Refactor
+            let mut tile_content = "You see ".to_string();
+            let names = ecs.read_storage::<Name>();
+            for entity in map.tile_content[destination_idx].iter() {
+                if let Some(name) = names.get(*entity) {
+                    if tile_content != "You see " {
+                        tile_content.push_str(", ");
+                    }
+                    tile_content.push_str(&name.name);
+                }
+            }
+            if tile_content != "You see " {
+                tile_content.push_str(".");
+                let mut gamelog = ecs.write_resource::<GameLog>();
+                gamelog.entries.push(tile_content);
+            }
             pos.x = min((MAPWIDTH as i32) - 1, max(0, pos.x + delta_x));
             pos.y = min((MAPHEIGHT as i32) - 1, max(0, pos.y + delta_y));
             viewshed.dirty = true;

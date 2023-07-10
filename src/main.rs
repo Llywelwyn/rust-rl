@@ -30,6 +30,7 @@ mod inventory_system;
 use inventory_system::*;
 mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
+mod random_table;
 mod rex_assets;
 
 // Embedded resources for use in wasm build
@@ -49,6 +50,7 @@ pub enum RunState {
     MainMenu { menu_selection: gui::MainMenuSelection },
     SaveGame,
     NextLevel,
+    MagicMapReveal { row: i32, cursed: bool },
 }
 
 pub struct State {
@@ -119,16 +121,17 @@ impl State {
 
         // Build new map
         let worldmap;
+        let current_depth;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            let current_depth = worldmap_resource.depth;
+            current_depth = worldmap_resource.depth;
             *worldmap_resource = Map::new_map_rooms_and_corridors(current_depth + 1);
             worldmap = worldmap_resource.clone();
         }
 
         // Spawn things in rooms
         for room in worldmap.rooms.iter().skip(1) {
-            spawner::spawn_room(&mut self.ecs, room);
+            spawner::spawn_room(&mut self.ecs, room, current_depth + 1);
         }
 
         // Place the player and update resources
@@ -213,7 +216,12 @@ impl GameState for State {
             RunState::PlayerTurn => {
                 self.run_systems();
                 self.ecs.maintain();
-                new_runstate = RunState::MonsterTurn;
+                match *self.ecs.fetch::<RunState>() {
+                    RunState::MagicMapReveal { row, cursed } => {
+                        new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
+                    }
+                    _ => new_runstate = RunState::MonsterTurn,
+                }
             }
             RunState::MonsterTurn => {
                 self.run_systems();
@@ -308,6 +316,37 @@ impl GameState for State {
                 self.goto_next_level();
                 new_runstate = RunState::PreRun;
             }
+            RunState::MagicMapReveal { row, cursed } => {
+                let mut map = self.ecs.fetch_mut::<Map>();
+
+                for x in 0..MAPWIDTH {
+                    let top_idx = map.xy_idx(x as i32, row);
+                    let bottom_idx = map.xy_idx(x as i32, (MAPHEIGHT as i32 - 1) - row);
+                    if !cursed {
+                        map.revealed_tiles[top_idx] = true;
+                        map.revealed_tiles[bottom_idx] = true;
+                    } else {
+                        map.revealed_tiles[top_idx] = false;
+                        map.revealed_tiles[bottom_idx] = false;
+                    }
+                }
+
+                // Dirtify viewshed only if cursed, so our currently visible tiles aren't removed too
+                if cursed {
+                    let player_entity = self.ecs.fetch::<Entity>();
+                    let mut viewshed_components = self.ecs.write_storage::<Viewshed>();
+                    let viewshed = viewshed_components.get_mut(*player_entity);
+                    if let Some(viewshed) = viewshed {
+                        viewshed.dirty = true;
+                    }
+                }
+
+                if row as usize == MAPHEIGHT / 2 {
+                    new_runstate = RunState::MonsterTurn;
+                } else {
+                    new_runstate = RunState::MagicMapReveal { row: row + 1, cursed: cursed };
+                }
+            }
         }
 
         {
@@ -349,11 +388,13 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToMelee>();
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
+    gs.ecs.register::<Cursed>();
     gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<InflictsDamage>();
     gs.ecs.register::<Ranged>();
     gs.ecs.register::<AOE>();
     gs.ecs.register::<Confusion>();
+    gs.ecs.register::<MagicMapper>();
     gs.ecs.register::<InBackpack>();
     gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<WantsToDropItem>();
@@ -372,7 +413,7 @@ fn main() -> rltk::BError {
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
     for room in map.rooms.iter().skip(1) {
-        spawner::spawn_room(&mut gs.ecs, room);
+        spawner::spawn_room(&mut gs.ecs, room, 1);
     }
 
     gs.ecs.insert(map);

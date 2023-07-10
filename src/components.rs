@@ -81,6 +81,9 @@ impl SufferDamage {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Item {}
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Cursed {}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct ProvidesHealing {
     pub amount: i32,
@@ -105,6 +108,9 @@ pub struct AOE {
 pub struct Confusion {
     pub turns: i32,
 }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct MagicMapper {}
 
 #[derive(Component, Debug, ConvertSaveload)]
 pub struct InBackpack {

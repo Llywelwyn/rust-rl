@@ -1,7 +1,7 @@
 use super::{
-    gamelog::GameLog, CombatStats, Confusion, Consumable, Destructible, InBackpack, InflictsDamage, Map, Name,
-    ParticleBuilder, Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToUseItem, AOE,
-    DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
+    gamelog::GameLog, CombatStats, Confusion, Consumable, Cursed, Destructible, InBackpack, InflictsDamage,
+    MagicMapper, Map, Name, ParticleBuilder, Position, ProvidesHealing, RunState, SufferDamage, WantsToDropItem,
+    WantsToPickupItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -46,6 +46,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Name>,
         ReadStorage<'a, Consumable>,
         ReadStorage<'a, Destructible>,
+        ReadStorage<'a, Cursed>,
         ReadStorage<'a, ProvidesHealing>,
         WriteStorage<'a, CombatStats>,
         WriteStorage<'a, SufferDamage>,
@@ -54,6 +55,8 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, InflictsDamage>,
         ReadStorage<'a, AOE>,
         WriteStorage<'a, Confusion>,
+        ReadStorage<'a, MagicMapper>,
+        WriteExpect<'a, RunState>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -66,6 +69,7 @@ impl<'a> System<'a> for ItemUseSystem {
             names,
             consumables,
             destructibles,
+            cursed_items,
             provides_healing,
             mut combat_stats,
             mut suffer_damage,
@@ -74,12 +78,16 @@ impl<'a> System<'a> for ItemUseSystem {
             inflicts_damage,
             aoe,
             mut confused,
+            magic_mapper,
+            mut runstate,
         ) = data;
 
         for (entity, wants_to_use) in (&entities, &wants_to_use).join() {
             let mut used_item = true;
             let mut aoe_item = false;
             let item_being_used = names.get(wants_to_use.item).unwrap();
+
+            let is_cursed = cursed_items.get(wants_to_use.item);
 
             // TARGETING
             let mut targets: Vec<Entity> = Vec::new();
@@ -132,7 +140,7 @@ impl<'a> System<'a> for ItemUseSystem {
                     // Ideally, replace it with something that picks the correct verb for
                     // whatever the item is being used, probably tied to a component.
                     // i.e. quaffs, uses, reads
-                    gamelog.entries.push(format!("You use the {}!", item_being_used.name));
+                    gamelog.entries.push(format!("You use the {}.", item_being_used.name));
                 }
                 Some(heal) => {
                     for target in targets.iter() {
@@ -217,6 +225,25 @@ impl<'a> System<'a> for ItemUseSystem {
             }
             for mob in add_confusion.iter() {
                 confused.insert(mob.0, Confusion { turns: mob.1 }).expect("Unable to insert status");
+            }
+
+            // MAGIC MAPPERS
+            let is_mapper = magic_mapper.get(wants_to_use.item);
+            match is_mapper {
+                None => {}
+                Some(_) => {
+                    used_item = true;
+                    match is_cursed {
+                        None => {
+                            gamelog.entries.push("You feel a sense of acuity to your surroundings.".to_string());
+                            *runstate = RunState::MagicMapReveal { row: 0, cursed: false };
+                        }
+                        Some(_) => {
+                            gamelog.entries.push("You forget where you just were!".to_string());
+                            *runstate = RunState::MagicMapReveal { row: 0, cursed: true };
+                        }
+                    }
+                }
             }
 
             // ITEM DELETION AFTER USE
