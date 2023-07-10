@@ -1,4 +1,6 @@
 /target
 .rustfmt.toml
 .vscode/*
+.gifs/*
+.savegames/*
 savegame.json

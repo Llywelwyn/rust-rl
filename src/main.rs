@@ -319,15 +319,19 @@ impl GameState for State {
             RunState::MagicMapReveal { row, cursed } => {
                 let mut map = self.ecs.fetch_mut::<Map>();
 
+                // Could probably toss this into a function somewhere, and/or
+                // have multiple simple animations for it.
                 for x in 0..MAPWIDTH {
-                    let top_idx = map.xy_idx(x as i32, row);
-                    let bottom_idx = map.xy_idx(x as i32, (MAPHEIGHT as i32 - 1) - row);
-                    if !cursed {
-                        map.revealed_tiles[top_idx] = true;
-                        map.revealed_tiles[bottom_idx] = true;
+                    let idx;
+                    if x % 2 == 0 {
+                        idx = map.xy_idx(x as i32, row);
                     } else {
-                        map.revealed_tiles[top_idx] = false;
-                        map.revealed_tiles[bottom_idx] = false;
+                        idx = map.xy_idx(x as i32, (MAPHEIGHT as i32 - 1) - (row));
+                    }
+                    if !cursed {
+                        map.revealed_tiles[idx] = true;
+                    } else {
+                        map.revealed_tiles[idx] = false;
                     }
                 }
 
@@ -341,7 +345,7 @@ impl GameState for State {
                     }
                 }
 
-                if row as usize == MAPHEIGHT / 2 {
+                if row as usize == MAPHEIGHT - 1 {
                     new_runstate = RunState::MonsterTurn;
                 } else {
                     new_runstate = RunState::MagicMapReveal { row: row + 1, cursed: cursed };
@@ -366,7 +370,6 @@ fn main() -> rltk::BError {
     let mut context = RltkBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
-        .with_fullscreen(true)
         .with_tile_dimensions(16, 16)
         .with_resource_path("resources/")
         .with_font("terminal8x8.jpg", 8, 8)
