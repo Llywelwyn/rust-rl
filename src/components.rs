@@ -4,6 +4,7 @@ use specs::error::NoError;
 use specs::prelude::*;
 use specs::saveload::{ConvertSaveload, Marker};
 use specs_derive::*;
+use std::collections::HashMap;
 
 // Serialization helper code. We need to implement ConvertSaveload for each type that contains an
 // Entity.
@@ -12,6 +13,8 @@ pub struct SerializeMe;
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SerializationHelper {
     pub map: super::map::Map,
+    pub log: Vec<Vec<crate::gamelog::LogFragment>>,
+    pub events: HashMap<String, i32>,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]

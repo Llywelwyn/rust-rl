@@ -27,8 +27,15 @@ pub fn save_game(_ecs: &mut World) {}
 pub fn save_game(ecs: &mut World) {
     // Create helper
     let mapcopy = ecs.get_mut::<super::map::Map>().unwrap().clone();
-    let savehelper =
-        ecs.create_entity().with(SerializationHelper { map: mapcopy }).marked::<SimpleMarker<SerializeMe>>().build();
+    let savehelper = ecs
+        .create_entity()
+        .with(SerializationHelper {
+            map: mapcopy,
+            log: crate::gamelog::clone_log(),
+            events: crate::gamelog::clone_events(),
+        })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
 
     // Actually serialize
     {
@@ -156,6 +163,8 @@ pub fn load_game(ecs: &mut World) {
             *worldmap = h.map.clone();
             worldmap.tile_content = vec![Vec::new(); super::map::MAPCOUNT];
             deleteme = Some(e);
+            crate::gamelog::restore_log(&mut h.log.clone());
+            crate::gamelog::load_events(h.events.clone());
         }
         for (e, _p, pos) in (&entities, &player, &position).join() {
             let mut ppos = ecs.write_resource::<rltk::Point>();

@@ -1,6 +1,6 @@
 use super::{
-    gamelog::GameLog, CombatStats, Confusion, Consumable, Cursed, Destructible, InBackpack, InflictsDamage,
-    MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing, RunState, SufferDamage, WantsToDropItem,
+    gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, InBackpack, InflictsDamage, MagicMapper, Map,
+    Name, ParticleBuilder, Point, Position, ProvidesHealing, RunState, SufferDamage, WantsToDropItem,
     WantsToPickupItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
@@ -11,7 +11,6 @@ impl<'a> System<'a> for ItemCollectionSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         ReadExpect<'a, Entity>,
-        WriteExpect<'a, GameLog>,
         WriteStorage<'a, WantsToPickupItem>,
         WriteStorage<'a, Position>,
         ReadStorage<'a, Name>,
@@ -19,14 +18,17 @@ impl<'a> System<'a> for ItemCollectionSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut gamelog, mut wants_pickup, mut positions, names, mut backpack) = data;
+        let (player_entity, mut wants_pickup, mut positions, names, mut backpack) = data;
 
         for pickup in wants_pickup.join() {
             positions.remove(pickup.item);
             backpack.insert(pickup.item, InBackpack { owner: pickup.collected_by }).expect("Unable to pickup item.");
 
             if pickup.collected_by == *player_entity {
-                gamelog.entries.push(format!("You pick up the {}.", names.get(pickup.item).unwrap().name));
+                gamelog::Logger::new()
+                    .append("You pick up the")
+                    .item_name(format!("{}.", &names.get(pickup.item).unwrap().name))
+                    .log();
             }
         }
 
@@ -39,7 +41,6 @@ impl<'a> System<'a> for ItemUseSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         ReadExpect<'a, Entity>,
-        WriteExpect<'a, GameLog>,
         ReadExpect<'a, Map>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
@@ -62,7 +63,6 @@ impl<'a> System<'a> for ItemUseSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (
             player_entity,
-            mut gamelog,
             map,
             entities,
             mut wants_to_use,
@@ -89,7 +89,7 @@ impl<'a> System<'a> for ItemUseSystem {
 
             let is_cursed = cursed_items.get(wants_to_use.item);
 
-            gamelog.entries.push(format!("You use the {}.", item_being_used.name));
+            gamelog::Logger::new().append("You use the").item_name(format!("{}.", &item_being_used.name)).log();
 
             // TARGETING
             let mut targets: Vec<Entity> = Vec::new();
@@ -117,7 +117,12 @@ impl<'a> System<'a> for ItemUseSystem {
                                     if let Some(pos) = pos {
                                         target = Point::new(pos.x, pos.y);
                                     }
-                                    gamelog.entries.push(format!("The {} disobeys!", item_being_used.name));
+                                    gamelog::Logger::new()
+                                        .append("The")
+                                        .item_name(&item_being_used.name)
+                                        .colour(rltk::WHITE)
+                                        .append("disobeys!")
+                                        .log();
                                 }
                             }
                             // AOE
@@ -153,7 +158,13 @@ impl<'a> System<'a> for ItemUseSystem {
                         if let Some(stats) = stats {
                             stats.hp = i32::min(stats.max_hp, stats.hp + heal.amount);
                             if entity == *player_entity {
-                                gamelog.entries.push(format!("Quaffing, you heal {} hp.", heal.amount));
+                                gamelog::Logger::new()
+                                    .append("Quaffing, you heal")
+                                    .colour(rltk::GREEN)
+                                    .append(heal.amount)
+                                    .colour(rltk::WHITE)
+                                    .append("hit points.")
+                                    .log();
                             }
                             let pos = positions.get(entity);
                             if let Some(pos) = pos {
@@ -194,14 +205,25 @@ impl<'a> System<'a> for ItemUseSystem {
                             None => {
                                 SufferDamage::new_damage(&mut suffer_damage, *mob, damage.amount);
                                 if entity == *player_entity {
-                                    gamelog.entries.push(format!(
-                                        "{} takes {} damage from the {}!",
-                                        entity_name.name, damage.amount, item_being_used.name
-                                    ));
+                                    gamelog::Logger::new()
+                                        .append("The")
+                                        .npc_name(&entity_name.name)
+                                        .colour(rltk::WHITE)
+                                        .append("takes")
+                                        .damage(damage.amount)
+                                        .colour(rltk::WHITE)
+                                        .append("damage from the")
+                                        .item_name(format!("{}.", &item_being_used.name))
+                                        .log();
                                 }
                             }
                             Some(_destructible) => {
-                                gamelog.entries.push(format!("{} is destroyed!", entity_name.name));
+                                gamelog::Logger::new()
+                                    .append("The")
+                                    .item_name(&entity_name.name)
+                                    .colour(rltk::WHITE)
+                                    .append("is destroyed!")
+                                    .log();
                                 entities.delete(*mob).expect("Delete failed");
                             }
                         }
@@ -237,11 +259,19 @@ impl<'a> System<'a> for ItemUseSystem {
                     used_item = true;
                     match is_cursed {
                         None => {
-                            gamelog.entries.push("You feel a sense of acuity to your surroundings.".to_string());
+                            gamelog::Logger::new()
+                                .append("You feel")
+                                .colour(rltk::GREEN)
+                                .append("a sense of acuity towards your surroundings.")
+                                .log();
                             *runstate = RunState::MagicMapReveal { row: 0, cursed: false };
                         }
                         Some(_) => {
-                            gamelog.entries.push("You forget where you just were!".to_string());
+                            gamelog::Logger::new()
+                                .append("You")
+                                .colour(rltk::RED)
+                                .append("forget where you last were.")
+                                .log();
                             *runstate = RunState::MagicMapReveal { row: 0, cursed: true };
                         }
                     }
@@ -269,7 +299,6 @@ impl<'a> System<'a> for ItemDropSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         ReadExpect<'a, Entity>,
-        WriteExpect<'a, GameLog>,
         Entities<'a>,
         WriteStorage<'a, WantsToDropItem>,
         ReadStorage<'a, Name>,
@@ -278,7 +307,7 @@ impl<'a> System<'a> for ItemDropSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut gamelog, entities, mut wants_drop, names, mut positions, mut backpack) = data;
+        let (player_entity, entities, mut wants_drop, names, mut positions, mut backpack) = data;
 
         for (entity, to_drop) in (&entities, &wants_drop).join() {
             let mut dropper_pos: Position = Position { x: 0, y: 0 };
@@ -293,7 +322,10 @@ impl<'a> System<'a> for ItemDropSystem {
             backpack.remove(to_drop.item);
 
             if entity == *player_entity {
-                gamelog.entries.push(format!("You drop the {}.", names.get(to_drop.item).unwrap().name));
+                gamelog::Logger::new()
+                    .append("You drop the")
+                    .item_name(format!("{}.", &names.get(to_drop.item).unwrap().name))
+                    .log();
             }
         }
 

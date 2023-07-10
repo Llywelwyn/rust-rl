@@ -1,5 +1,5 @@
 use super::{
-    gamelog::GameLog, CombatStats, Item, Map, Monster, Name, Player, Position, RunState, State, TileType, Viewshed,
+    gamelog, CombatStats, Item, Map, Monster, Name, Player, Position, RunState, State, TileType, Viewshed,
     WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
@@ -48,8 +48,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             }
             if tile_content != "You see " {
                 tile_content.push_str(".");
-                let mut gamelog = ecs.write_resource::<GameLog>();
-                gamelog.entries.push(tile_content);
+                gamelog::Logger::new().append(tile_content).log()
             }
             pos.x = min((MAPWIDTH as i32) - 1, max(0, pos.x + delta_x));
             pos.y = min((MAPHEIGHT as i32) - 1, max(0, pos.y + delta_y));
@@ -67,7 +66,6 @@ fn get_item(ecs: &mut World) {
     let entities = ecs.entities();
     let items = ecs.read_storage::<Item>();
     let positions = ecs.read_storage::<Position>();
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
 
     let mut target_item: Option<Entity> = None;
     for (item_entity, _item, position) in (&entities, &items, &positions).join() {
@@ -77,7 +75,7 @@ fn get_item(ecs: &mut World) {
     }
 
     match target_item {
-        None => gamelog.entries.push("There is nothing to pick up.".to_string()),
+        None => gamelog::Logger::new().append("There is nothing to pick up.").log(),
         Some(item) => {
             let mut pickup = ecs.write_storage::<WantsToPickupItem>();
             pickup
@@ -142,8 +140,7 @@ pub fn try_next_level(ecs: &mut World) -> bool {
     if map.tiles[player_idx] == TileType::DownStair {
         return true;
     } else {
-        let mut gamelog = ecs.fetch_mut::<GameLog>();
-        gamelog.entries.push("You don't see a way down.".to_string());
+        gamelog::Logger::new().append("You don't see a way down.").log();
         return false;
     }
 }
@@ -152,8 +149,6 @@ fn skip_turn(ecs: &mut World) -> RunState {
     let player_entity = ecs.fetch::<Entity>();
     let viewshed_components = ecs.read_storage::<Viewshed>();
     let monsters = ecs.read_storage::<Monster>();
-    let mut wait_message = "You wait a turn.";
-
     let worldmap_resource = ecs.fetch::<Map>();
 
     let mut can_heal = true;
@@ -171,6 +166,7 @@ fn skip_turn(ecs: &mut World) -> RunState {
         }
     }
 
+    let mut did_heal = false;
     if can_heal {
         let mut health_components = ecs.write_storage::<CombatStats>();
         let player_hp = health_components.get_mut(*player_entity).unwrap();
@@ -178,12 +174,15 @@ fn skip_turn(ecs: &mut World) -> RunState {
         let roll = rng.roll_dice(1, 6);
         if (roll == 6) && player_hp.hp < player_hp.max_hp {
             player_hp.hp += 1;
-            wait_message = "You wait a turn, and recover a hit point.";
+            did_heal = true;
         }
     }
 
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
-    gamelog.entries.push(wait_message.to_string());
+    if did_heal {
+        gamelog::Logger::new().append("You wait a turn, and").colour(rltk::GREEN).append("recover a hit point.").log();
+    } else {
+        gamelog::Logger::new().append("You wait a turn.").log();
+    }
     return RunState::PlayerTurn;
 }
 

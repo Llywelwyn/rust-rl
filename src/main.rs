@@ -32,6 +32,8 @@ mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
 mod random_table;
 mod rex_assets;
+#[macro_use]
+extern crate lazy_static;
 
 // Embedded resources for use in wasm build
 rltk::embedded_resource!(TERMINAL8X8, "../resources/terminal8x8.jpg");
@@ -155,8 +157,7 @@ impl State {
         }
 
         // Notify player, restore health up to a point.
-        let mut gamelog = self.ecs.fetch_mut::<gamelog::GameLog>();
-        gamelog.entries.push("You descend the stairwell, and take a moment to recover your strength.".to_string());
+        gamelog::Logger::new().append("You descend the stairwell, and take a moment to gather your strength.").log();
         let mut player_health_store = self.ecs.write_storage::<CombatStats>();
         let player_health = player_health_store.get_mut(*player_entity);
         if let Some(player_health) = player_health {
@@ -213,6 +214,9 @@ impl GameState for State {
             }
             RunState::AwaitingInput => {
                 new_runstate = player_input(self, ctx);
+                if new_runstate != RunState::AwaitingInput {
+                    gamelog::record_event("Turn", 1);
+                }
             }
             RunState::PlayerTurn => {
                 self.run_systems();
@@ -375,7 +379,7 @@ fn main() -> rltk::BError {
         .with_resource_path("resources/")
         .with_font("terminal8x8.jpg", 8, 8)
         .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
-        .with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
+        //.with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
         .build()?;
     context.with_post_scanlines(false);
     //context.screen_burn_color(RGB::named((150, 255, 255)));
@@ -429,9 +433,16 @@ fn main() -> rltk::BError {
     gs.ecs.insert(map);
     gs.ecs.insert(Point::new(player_x, player_y));
     gs.ecs.insert(player_entity);
-    gs.ecs.insert(gamelog::GameLog {
-        entries: vec!["<pretend i wrote a paragraph explaining why you're here>".to_string()],
-    });
+
+    gamelog::clear_log();
+    gamelog::clear_events();
+    gamelog::Logger::new()
+        .append("Welcome!")
+        .colour(rltk::CYAN)
+        .append("(")
+        .append("pretend i wrote a paragraph explaining why you're here")
+        .append(")")
+        .log();
     gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());

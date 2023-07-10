@@ -1,4 +1,4 @@
-use super::{gamelog::GameLog, CombatStats, Name, ParticleBuilder, Position, SufferDamage, WantsToMelee};
+use super::{gamelog, CombatStats, Name, ParticleBuilder, Position, SufferDamage, WantsToMelee};
 use specs::prelude::*;
 
 pub struct MeleeCombatSystem {}
@@ -6,7 +6,6 @@ pub struct MeleeCombatSystem {}
 impl<'a> System<'a> for MeleeCombatSystem {
     type SystemData = (
         Entities<'a>,
-        WriteExpect<'a, GameLog>,
         WriteStorage<'a, WantsToMelee>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, CombatStats>,
@@ -16,16 +15,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (
-            entities,
-            mut log,
-            mut wants_melee,
-            names,
-            combat_stats,
-            mut inflict_damage,
-            mut particle_builder,
-            positions,
-        ) = data;
+        let (entities, mut wants_melee, names, combat_stats, mut inflict_damage, mut particle_builder, positions) =
+            data;
 
         for (_entity, wants_melee, name, stats) in (&entities, &wants_melee, &names, &combat_stats).join() {
             if stats.hp <= 0 {
@@ -51,9 +42,23 @@ impl<'a> System<'a> for MeleeCombatSystem {
             let damage = i32::max(0, stats.power - target_stats.defence);
 
             if damage == 0 {
-                log.entries.push(format!("{} is unable to hurt {}.", &name.name, &target_name.name));
+                gamelog::Logger::new()
+                    .append("The")
+                    .npc_name(&name.name)
+                    .colour(rltk::WHITE)
+                    .append("attempts to strike")
+                    .npc_name(&target_name.name)
+                    .colour(rltk::WHITE)
+                    .append("- but fails.")
+                    .log();
             } else {
-                log.entries.push(format!("{} hits {} for {} damage.", &name.name, &target_name.name, damage));
+                gamelog::Logger::new() // <name> hits the <name>!
+                    .append("The")
+                    .npc_name(&name.name)
+                    .colour(rltk::WHITE)
+                    .append("hits the")
+                    .npc_name(format!("{}.", &target_name.name))
+                    .log();
                 SufferDamage::new_damage(&mut inflict_damage, wants_melee.target, damage);
             }
         }
