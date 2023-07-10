@@ -214,6 +214,9 @@ impl GameState for State {
             }
             RunState::AwaitingInput => {
                 new_runstate = player_input(self, ctx);
+                if new_runstate != RunState::AwaitingInput {
+                    gamelog::record_event("Turn", 1);
+                }
             }
             RunState::PlayerTurn => {
                 self.run_systems();
@@ -432,6 +435,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
 
     gamelog::clear_log();
+    gamelog::clear_events();
     gamelog::Logger::new()
         .append("Welcome!")
         .colour(rltk::CYAN)

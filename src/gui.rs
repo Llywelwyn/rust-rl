@@ -25,7 +25,16 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     // Render depth
     let map = ecs.fetch::<Map>();
     let depth = format!(" D{} ", map.depth);
-    ctx.print_color(74, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
+    ctx.print_color_right(78, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
+
+    // Render turn
+    ctx.print_color_right(
+        78,
+        49,
+        RGB::named(rltk::YELLOW),
+        RGB::named(rltk::BLACK),
+        &format!(" T{} ", crate::gamelog::get_event_count("Turn")),
+    );
 
     // Render mouse cursor
     let mouse_pos = ctx.mouse_pos();

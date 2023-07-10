@@ -32,3 +32,12 @@ pub fn log_display() -> TextBuilder {
 
     return buf;
 }
+
+pub fn clone_log() -> Vec<Vec<crate::gamelog::LogFragment>> {
+    return LOG.lock().unwrap().clone();
+}
+
+pub fn restore_log(log: &mut Vec<Vec<crate::gamelog::LogFragment>>) {
+    LOG.lock().unwrap().clear();
+    LOG.lock().unwrap().append(log);
+}
