@@ -54,7 +54,10 @@ pub fn delete_the_dead(ecs: &mut World) {
                         }
                         dead.push(entity)
                     }
-                    Some(_) => log.entries.push(format!("YOU DIED!")),
+                    Some(_) => {
+                        // This is where the GameOver state will go eventully. But currently
+                        // it's easier to just keep the game going for the sake of testing.
+                    }
                 }
             }
         }
