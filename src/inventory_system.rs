@@ -1,6 +1,6 @@
 use super::{
     gamelog::GameLog, CombatStats, Confusion, Consumable, Cursed, Destructible, InBackpack, InflictsDamage,
-    MagicMapper, Map, Name, ParticleBuilder, Position, ProvidesHealing, RunState, SufferDamage, WantsToDropItem,
+    MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing, RunState, SufferDamage, WantsToDropItem,
     WantsToPickupItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
@@ -89,13 +89,15 @@ impl<'a> System<'a> for ItemUseSystem {
 
             let is_cursed = cursed_items.get(wants_to_use.item);
 
+            gamelog.entries.push(format!("You use the {}.", item_being_used.name));
+
             // TARGETING
             let mut targets: Vec<Entity> = Vec::new();
             match wants_to_use.target {
                 None => {
                     targets.push(*player_entity);
                 }
-                Some(target) => {
+                Some(mut target) => {
                     let area_effect = aoe.get(wants_to_use.item);
                     match area_effect {
                         None => {
@@ -106,6 +108,18 @@ impl<'a> System<'a> for ItemUseSystem {
                             }
                         }
                         Some(area_effect) => {
+                            // If item with a targeted AOE is cursed, get the position
+                            // of the player and set them to be the new target.
+                            match is_cursed {
+                                None => {}
+                                Some(_) => {
+                                    let pos = positions.get(*player_entity);
+                                    if let Some(pos) = pos {
+                                        target = Point::new(pos.x, pos.y);
+                                    }
+                                    gamelog.entries.push(format!("The {} disobeys!", item_being_used.name));
+                                }
+                            }
                             // AOE
                             aoe_item = true;
                             let mut blast_tiles = rltk::field_of_view(target, area_effect.radius, &*map);
@@ -132,26 +146,14 @@ impl<'a> System<'a> for ItemUseSystem {
             // HEALING ITEM
             let item_heals = provides_healing.get(wants_to_use.item);
             match item_heals {
-                None => {
-                    // This is here because the two are mutually exclusive as of now. Later,
-                    // if more items are added (AOE healing scroll?), this'll need to be
-                    // brought out of here.
-                    //
-                    // Ideally, replace it with something that picks the correct verb for
-                    // whatever the item is being used, probably tied to a component.
-                    // i.e. quaffs, uses, reads
-                    gamelog.entries.push(format!("You use the {}.", item_being_used.name));
-                }
+                None => {}
                 Some(heal) => {
                     for target in targets.iter() {
                         let stats = combat_stats.get_mut(*target);
                         if let Some(stats) = stats {
                             stats.hp = i32::min(stats.max_hp, stats.hp + heal.amount);
                             if entity == *player_entity {
-                                gamelog.entries.push(format!(
-                                    "You quaff the {}, and heal {} hp.",
-                                    item_being_used.name, heal.amount
-                                ));
+                                gamelog.entries.push(format!("Quaffing, you heal {} hp.", heal.amount));
                             }
                             let pos = positions.get(entity);
                             if let Some(pos) = pos {

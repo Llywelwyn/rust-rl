@@ -115,6 +115,7 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
             "health potion" => health_potion(ecs, x, y),
             // Scrolls
             "fireball scroll" => fireball_scroll(ecs, x, y),
+            "cursed fireball scroll" => cursed_fireball_scroll(ecs, x, y),
             "confusion scroll" => confusion_scroll(ecs, x, y),
             "magic missile scroll" => magic_missile_scroll(ecs, x, y),
             "magic map scroll" => magic_map_scroll(ecs, x, y),
@@ -135,6 +136,7 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("health potion", 1 + map_depth)
         // Scrolls
         .add("fireball scroll", 1 + map_depth)
+        .add("cursed fireball scroll", 1)
         .add("confusion scroll", 1)
         .add("magic missile scroll", 4)
         .add("magic map scroll", 1)
@@ -229,6 +231,27 @@ fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
         })
         .with(Name { name: "scroll of fireball".to_string() })
         .with(Item {})
+        .with(Consumable {})
+        .with(Destructible {})
+        .with(Ranged { range: 10 })
+        .with(InflictsDamage { amount: 20 })
+        .with(AOE { radius: 3 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn cursed_fireball_scroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437(')'),
+            fg: RGB::named(rltk::ORANGE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "cursed scroll of fireball".to_string() })
+        .with(Item {})
+        .with(Cursed {})
         .with(Consumable {})
         .with(Destructible {})
         .with(Ranged { range: 10 })
