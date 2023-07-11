@@ -50,14 +50,14 @@ pub fn delete_the_dead(ecs: &mut World) {
                                     .append("The")
                                     .npc_name(&victim_name.name)
                                     .colour(rltk::WHITE)
-                                    .append("was destroyed.")
+                                    .append("was destroyed!")
                                     .log();
                             } else {
                                 gamelog::Logger::new()
                                     .append("The")
                                     .npc_name(&victim_name.name)
                                     .colour(rltk::WHITE)
-                                    .append("died.")
+                                    .append("died!")
                                     .log();
                             }
                         }

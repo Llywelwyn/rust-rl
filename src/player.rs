@@ -119,6 +119,9 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                     return skip_turn(&mut gs.ecs); // (Wait a turn)
                 }
             }
+            VirtualKeyCode::NumpadDecimal => {
+                return skip_turn(&mut gs.ecs);
+            }
 
             // Items
             VirtualKeyCode::G => get_item(&mut gs.ecs),

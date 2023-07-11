@@ -93,15 +93,9 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
                     let category = category_table().roll(&mut rng);
                     let spawn_table;
                     match category.as_ref() {
-                        "mob" => {
-                            spawn_table = mob_table(map_depth);
-                        }
-                        "item" => {
-                            spawn_table = item_table(map_depth);
-                        }
-                        _ => {
-                            spawn_table = debug_table();
-                        }
+                        "mob" => spawn_table = mob_table(map_depth),
+                        "item" => spawn_table = item_table(map_depth),
+                        _ => spawn_table = debug_table(),
                     }
                     spawn_points.insert(idx, spawn_table.roll(&mut rng));
                     added = true;
