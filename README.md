@@ -1,5 +1,37 @@
-# using rltk and bracket's roguelike tutorial in rust
-# playable @  [llywelwyn.github.io](https://llywelwyn.github.io/)
-![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/f1bc9e7f-3f6e-42a8-8d2e-e6bd4fb5a007)
+## a roguelike in rust, playable @  [llywelwyn.github.io](https://llywelwyn.github.io/)
+####  using _rltk/bracket-lib_, and _specs_
+![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/2ded4eb7-b758-4022-8fee-fdf12673cf0e)
 
-this year, i'm following along with thebracket's roguelike tutorial in Rust, using rltk/bracket-lib. for most of these 8 weeks i'll probably just be whittling away at the content and trying not to diverge too much, since it's a really lengthy one and finishing it in time might be a task, but the ultimate aim post-sprint is to strip out the data and existing entities and replace them with my own, using the systems and components as a jumping-off point for a rl of my own
+this year for roguelikedev does the complete tutorial, i'm following along with thebracket's [_roguelike tutorial - in rust_](https://bfnightly.bracketproductions.com). for most of the 8 weeks, i'll probably just be working through the content rather than diverging too much into doing my own thing, since it's lengthy and i'd rather finish in time. that said, the ultimate aim here is to strip out the vast majority of the existing entities and replace them with my own, using the systems and components from the tutorial as a jumping-off point for something of my own making.
+
+i'll try to remember to update the web version on my page at the end of every week
+
+- - -
+
+<details>
+<summary>week 1</summary>
+  
+- brogue-like colours
+
+  - i was staring at a horrible-looking game for a while as i tried to figure out how to make it look nice, before deciding to try the brogue method of colour offsets. when a map is generated, it also generates a red, green, and blue offset value for every tile on the map, and applies them during rendering. after making that change i started to miss the previous hue, so i combined the two. as it stands, every tile starts off a subtle green/blue, has rgb offsets applied on top of that, and then has the actual tile colour applied. and it ends up making something like this
+
+- fov
+  - decided to use bracket-lib's symmetric shadowcasting for common viewsheds (i.e. sight)
+  - and implemented elig's [raycasting](https://www.roguebasin.com/index.php/Eligloscode) algorithm for any viewsheds that _dont_ need that level of detail. symmetric is great, but when it comes to viewsheds that often _aren't_ symmetric in the first place, it's not really necessary (i.e. it's not often you've got two people with: the same additional viewshed, both within range, etc.). doing it this way comes with the benefit of being able to easily define what blocks a viewshed, rather than having to make a whole new BaseMap to work through bracket-lib
+
+- telepaths and having brains
+  - telepathy! a personal favourite rl feature, so i thought it'd be a cool test of the raycasting. right now it's simple, since the point was really just making sure the raycasting worked: there's a component for _being a telepath_, and for _having a mind_. if someone has telepathy, they'll see every entity with a mind within a given radius (defined by their telepath component), even through walls
+  
+- atomised spawn tables
+  - i tried figuring out how often things would spawn by just looking at the weighted tables, and i had no idea at a glance, so i replaced it with category tables. right now it's just rolling for an entity or a mob, and then rolling on the right table from there, but at least it means easily being able to see how often something will spawn. on average right now, there's 1 item : 3 mobs
+   
+</details>
+
+- - -
+
+<details>
+  <summary><b>week 2</summary>
+  - title
+
+stuff
+</details>
