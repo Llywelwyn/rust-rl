@@ -1,4 +1,4 @@
-use super::{gamelog, CombatStats, Entities, Item, Map, Name, Player, Position, SufferDamage};
+use super::{gamelog, CombatStats, Entities, Item, Map, Name, Player, Position, RunState, SufferDamage};
 use specs::prelude::*;
 
 pub struct DamageSystem {}
@@ -64,8 +64,8 @@ pub fn delete_the_dead(ecs: &mut World) {
                         dead.push(entity)
                     }
                     Some(_) => {
-                        // This is where the GameOver state will go eventully. But currently
-                        // it's easier to just keep the game going for the sake of testing.
+                        let mut runstate = ecs.write_resource::<RunState>();
+                        *runstate = RunState::GameOver;
                     }
                 }
             }
