@@ -6,6 +6,7 @@ pub struct MeleeCombatSystem {}
 impl<'a> System<'a> for MeleeCombatSystem {
     type SystemData = (
         Entities<'a>,
+        ReadExpect<'a, Entity>,
         WriteStorage<'a, WantsToMelee>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, CombatStats>,
@@ -15,10 +16,18 @@ impl<'a> System<'a> for MeleeCombatSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (entities, mut wants_melee, names, combat_stats, mut inflict_damage, mut particle_builder, positions) =
-            data;
+        let (
+            entities,
+            player_entity,
+            mut wants_melee,
+            names,
+            combat_stats,
+            mut inflict_damage,
+            mut particle_builder,
+            positions,
+        ) = data;
 
-        for (_entity, wants_melee, name, stats) in (&entities, &wants_melee, &names, &combat_stats).join() {
+        for (entity, wants_melee, name, stats) in (&entities, &wants_melee, &names, &combat_stats).join() {
             if stats.hp <= 0 {
                 break;
             }
@@ -42,24 +51,51 @@ impl<'a> System<'a> for MeleeCombatSystem {
             let damage = i32::max(0, stats.power - target_stats.defence);
 
             if damage == 0 {
-                gamelog::Logger::new()
-                    .append("The")
-                    .npc_name(&name.name)
-                    .colour(rltk::WHITE)
-                    .append("attempts to strike")
-                    .npc_name(&target_name.name)
-                    .colour(rltk::WHITE)
-                    .append("- but fails.")
-                    .log();
+                if entity == *player_entity {
+                    gamelog::Logger::new() // You miss.
+                        .append("You miss.")
+                        .log();
+                } else if wants_melee.target == *player_entity {
+                    gamelog::Logger::new() // <name> misses!
+                        .append("The")
+                        .npc_name(&name.name)
+                        .colour(rltk::WHITE)
+                        .append("misses!")
+                        .log();
+                } else {
+                    gamelog::Logger::new() // <name> misses the <target>.
+                        .append("The")
+                        .npc_name(&name.name)
+                        .colour(rltk::WHITE)
+                        .append("misses the")
+                        .npc_name_n(&target_name.name)
+                        .period()
+                        .log();
+                }
             } else {
-                gamelog::Logger::new() // <name> hits the <name>!
-                    .append("The")
-                    .npc_name(&name.name)
-                    .colour(rltk::WHITE)
-                    .append("hits the")
-                    .npc_name_n(format!("{}", &target_name.name))
-                    .period()
-                    .log();
+                if entity == *player_entity {
+                    gamelog::Logger::new() // You hit the <name>.
+                        .append("You hit the")
+                        .npc_name_n(&target_name.name)
+                        .period()
+                        .log();
+                } else if wants_melee.target == *player_entity {
+                    gamelog::Logger::new() // <name> hits you!
+                        .append("The")
+                        .npc_name(&name.name)
+                        .colour(rltk::WHITE)
+                        .append("hits you!")
+                        .log();
+                } else {
+                    gamelog::Logger::new() // <name> misses the <target>.
+                        .append("The")
+                        .npc_name(&name.name)
+                        .colour(rltk::WHITE)
+                        .append("hits the")
+                        .npc_name_n(&target_name.name)
+                        .period()
+                        .log();
+                }
                 SufferDamage::new_damage(&mut inflict_damage, wants_melee.target, damage);
             }
         }
