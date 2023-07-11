@@ -27,7 +27,8 @@ impl<'a> System<'a> for ItemCollectionSystem {
             if pickup.collected_by == *player_entity {
                 gamelog::Logger::new()
                     .append("You pick up the")
-                    .item_name(format!("{}.", &names.get(pickup.item).unwrap().name))
+                    .item_name_n(format!("{}", &names.get(pickup.item).unwrap().name))
+                    .period()
                     .log();
             }
         }
@@ -89,7 +90,11 @@ impl<'a> System<'a> for ItemUseSystem {
 
             let is_cursed = cursed_items.get(wants_to_use.item);
 
-            gamelog::Logger::new().append("You use the").item_name(format!("{}.", &item_being_used.name)).log();
+            gamelog::Logger::new()
+                .append("You use the")
+                .item_name_n(format!("{}", &item_being_used.name))
+                .period()
+                .log();
 
             // TARGETING
             let mut targets: Vec<Entity> = Vec::new();
@@ -213,7 +218,8 @@ impl<'a> System<'a> for ItemUseSystem {
                                         .damage(damage.amount)
                                         .colour(rltk::WHITE)
                                         .append("damage from the")
-                                        .item_name(format!("{}.", &item_being_used.name))
+                                        .item_name_n(format!("{}", &item_being_used.name))
+                                        .period()
                                         .log();
                                 }
                             }
@@ -324,7 +330,8 @@ impl<'a> System<'a> for ItemDropSystem {
             if entity == *player_entity {
                 gamelog::Logger::new()
                     .append("You drop the")
-                    .item_name(format!("{}.", &names.get(to_drop.item).unwrap().name))
+                    .item_name_n(format!("{}", &names.get(to_drop.item).unwrap().name))
+                    .period()
                     .log();
             }
         }

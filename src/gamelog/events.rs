@@ -9,6 +9,7 @@ pub fn clear_events() {
     EVENTS.lock().unwrap().clear();
 }
 
+#[allow(unused_mut)]
 pub fn record_event<T: ToString>(event: T, n: i32) {
     let event_name = event.to_string();
     let mut events_lock = EVENTS.lock();

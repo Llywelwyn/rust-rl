@@ -57,7 +57,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     .npc_name(&name.name)
                     .colour(rltk::WHITE)
                     .append("hits the")
-                    .npc_name(format!("{}.", &target_name.name))
+                    .npc_name_n(format!("{}", &target_name.name))
+                    .period()
                     .log();
                 SufferDamage::new_damage(&mut inflict_damage, wants_melee.target, damage);
             }

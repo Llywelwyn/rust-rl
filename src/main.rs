@@ -368,7 +368,7 @@ impl GameState for State {
 }
 
 const DISPLAYWIDTH: i32 = 80;
-const DISPLAYHEIGHT: i32 = 50;
+const DISPLAYHEIGHT: i32 = 60;
 
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
@@ -436,6 +436,9 @@ fn main() -> rltk::BError {
 
     gamelog::clear_log();
     gamelog::clear_events();
+    for _ in 0..5 {
+        gamelog::Logger::new().log();
+    }
     gamelog::Logger::new()
         .append("Welcome!")
         .colour(rltk::CYAN)

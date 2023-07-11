@@ -2,35 +2,33 @@ use super::{
     gamelog, rex_assets::RexAssets, CombatStats, InBackpack, Map, Name, Player, Point, Position, RunState, State,
     Viewshed,
 };
-use rltk::{Rltk, TextBlock, VirtualKeyCode, RGB};
+use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
-    ctx.draw_box(0, 43, 79, 6, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_hollow_box_double(0, 45, 79, 14, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
 
     // Render stats
     let combat_stats = ecs.read_storage::<CombatStats>();
     let players = ecs.read_storage::<Player>();
     for (_player, stats) in (&players, &combat_stats).join() {
         let health = format!(" HP {}/{} ", stats.hp, stats.max_hp);
-        ctx.print_color_right(36, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
-        ctx.draw_bar_horizontal(38, 43, 34, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
+        ctx.print_color_right(36, 45, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
+        ctx.draw_bar_horizontal(38, 45, 34, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
     }
 
-    // Render message log
-    let mut block = TextBlock::new(1, 44, 78, 5);
-    let _ = block.print(&gamelog::log_display());
-    block.render(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console);
+    // Render the message log at [1, 46], descending, with 6 lines.
+    gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console, Point::new(1, 46), true, 13);
 
     // Render depth
     let map = ecs.fetch::<Map>();
     let depth = format!(" D{} ", map.depth);
-    ctx.print_color_right(78, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
+    ctx.print_color_right(78, 45, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
 
     // Render turn
     ctx.print_color_right(
         78,
-        49,
+        59,
         RGB::named(rltk::YELLOW),
         RGB::named(rltk::BLACK),
         &format!(" T{} ", crate::gamelog::get_event_count("Turn")),

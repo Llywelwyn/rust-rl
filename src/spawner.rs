@@ -133,13 +133,13 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("orc", 4 + map_depth)
         // Potions
         .add("weak health potion", 4)
-        .add("health potion", 1 + map_depth)
+        .add("health potion", 1 + (map_depth / 2))
         // Scrolls
-        .add("fireball scroll", 1 + map_depth)
+        .add("fireball scroll", 1 + (map_depth / 3))
         .add("cursed fireball scroll", 1)
-        .add("confusion scroll", 1)
+        .add("confusion scroll", 2)
         .add("magic missile scroll", 4)
-        .add("magic map scroll", 1)
+        .add("magic map scroll", 2)
         .add("cursed magic map scroll", 1);
 }
 
