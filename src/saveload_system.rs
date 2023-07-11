@@ -58,6 +58,10 @@ pub fn save_game(ecs: &mut World) {
             SufferDamage,
             WantsToMelee,
             Item,
+            Equippable,
+            Equipped,
+            MeleePowerBonus,
+            DefenceBonus,
             Cursed,
             Consumable,
             Destructible,
@@ -71,6 +75,7 @@ pub fn save_game(ecs: &mut World) {
             WantsToPickupItem,
             WantsToUseItem,
             WantsToDropItem,
+            WantsToRemoveItem,
             SerializationHelper
         );
     }
@@ -135,6 +140,10 @@ pub fn load_game(ecs: &mut World) {
             SufferDamage,
             WantsToMelee,
             Item,
+            Equippable,
+            Equipped,
+            MeleePowerBonus,
+            DefenceBonus,
             Cursed,
             Consumable,
             Destructible,
@@ -148,6 +157,7 @@ pub fn load_game(ecs: &mut World) {
             WantsToPickupItem,
             WantsToUseItem,
             WantsToDropItem,
+            WantsToRemoveItem,
             SerializationHelper
         );
     }

@@ -35,20 +35,30 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
         }
 
         if !map.blocked[destination_idx] {
-            // TODO: Refactor
-            let mut tile_content = "You see ".to_string();
             let names = ecs.read_storage::<Name>();
+            // Push every entity name in the pile to a vector of strings
+            let mut item_names: Vec<String> = Vec::new();
+            let mut some = false;
             for entity in map.tile_content[destination_idx].iter() {
                 if let Some(name) = names.get(*entity) {
-                    if tile_content != "You see " {
-                        tile_content.push_str(", ");
-                    }
-                    tile_content.push_str(&name.name);
+                    let item_name = &name.name;
+                    item_names.push(item_name.to_string());
+                    some = true;
                 }
             }
-            if tile_content != "You see " {
-                tile_content.push_str(".");
-                gamelog::Logger::new().append(tile_content).log()
+            // If some names were found, append. Logger = logger is necessary
+            // makes logger called a mutable self. It's not the most efficient
+            // but it happens infrequently enough (once per player turn at most)
+            // that it shouldn't matter.
+            if some {
+                let mut logger = gamelog::Logger::new().append("You see a");
+                for i in 0..item_names.len() {
+                    if i > 0 && i < item_names.len() {
+                        logger = logger.append(", a");
+                    }
+                    logger = logger.item_name_n(&item_names[i]);
+                }
+                logger.period().log();
             }
             pos.x = min((MAPWIDTH as i32) - 1, max(0, pos.x + delta_x));
             pos.y = min((MAPHEIGHT as i32) - 1, max(0, pos.y + delta_y));
@@ -127,6 +137,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::G => get_item(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::D => return RunState::ShowDropItem,
+            VirtualKeyCode::R => return RunState::ShowRemoveItem,
             VirtualKeyCode::Escape => return RunState::SaveGame,
             _ => {
                 return RunState::AwaitingInput;

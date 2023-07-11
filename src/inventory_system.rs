@@ -1,7 +1,8 @@
 use super::{
-    gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, InBackpack, InflictsDamage, MagicMapper, Map,
-    Name, ParticleBuilder, Point, Position, ProvidesHealing, RunState, SufferDamage, WantsToDropItem,
-    WantsToPickupItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
+    gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, Equippable, Equipped, InBackpack,
+    InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing, RunState, SufferDamage,
+    WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME,
+    LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -59,6 +60,9 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, Confusion>,
         ReadStorage<'a, MagicMapper>,
         WriteExpect<'a, RunState>,
+        ReadStorage<'a, Equippable>,
+        WriteStorage<'a, Equipped>,
+        WriteStorage<'a, InBackpack>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -81,6 +85,9 @@ impl<'a> System<'a> for ItemUseSystem {
             mut confused,
             magic_mapper,
             mut runstate,
+            equippable,
+            mut equipped,
+            mut backpack,
         ) = data;
 
         for (entity, wants_to_use) in (&entities, &wants_to_use).join() {
@@ -149,6 +156,48 @@ impl<'a> System<'a> for ItemUseSystem {
                                 );
                             }
                         }
+                    }
+                }
+            }
+
+            // EQUIPMENT
+            let item_equippable = equippable.get(wants_to_use.item);
+            match item_equippable {
+                None => {}
+                Some(can_equip) => {
+                    let target_slot = can_equip.slot;
+                    let target = targets[0];
+
+                    // Room any items target has in item's slot
+                    let mut to_unequip: Vec<Entity> = Vec::new();
+                    for (item_entity, already_equipped, _name) in (&entities, &equipped, &names).join() {
+                        if already_equipped.owner == target && already_equipped.slot == target_slot {
+                            to_unequip.push(item_entity);
+                            if target == *player_entity {
+                                gamelog::Logger::new()
+                                    .append("You unequip the")
+                                    .item_name_n(&item_being_used.name)
+                                    .period()
+                                    .log();
+                            }
+                        }
+                    }
+                    for item in to_unequip.iter() {
+                        equipped.remove(*item);
+                        backpack.insert(*item, InBackpack { owner: target }).expect("Unable to insert backpack");
+                    }
+
+                    // Wield the item
+                    equipped
+                        .insert(wants_to_use.item, Equipped { owner: target, slot: target_slot })
+                        .expect("Unable to insert equipped component");
+                    backpack.remove(wants_to_use.item);
+                    if target == *player_entity {
+                        gamelog::Logger::new()
+                            .append("You equip the")
+                            .item_name_n(&item_being_used.name)
+                            .period()
+                            .log();
                     }
                 }
             }
@@ -337,5 +386,24 @@ impl<'a> System<'a> for ItemDropSystem {
         }
 
         wants_drop.clear();
+    }
+}
+
+pub struct ItemRemoveSystem {}
+
+impl<'a> System<'a> for ItemRemoveSystem {
+    #[allow(clippy::type_complexity)]
+    type SystemData =
+        (Entities<'a>, WriteStorage<'a, WantsToRemoveItem>, WriteStorage<'a, Equipped>, WriteStorage<'a, InBackpack>);
+
+    fn run(&mut self, data: Self::SystemData) {
+        let (entities, mut wants_remove, mut equipped, mut backpack) = data;
+
+        for (entity, to_remove) in (&entities, &wants_remove).join() {
+            equipped.remove(to_remove.item);
+            backpack.insert(to_remove.item, InBackpack { owner: entity }).expect("Unable to insert backpack");
+        }
+
+        wants_remove.clear();
     }
 }

@@ -48,6 +48,7 @@ pub enum RunState {
     MonsterTurn,
     ShowInventory,
     ShowDropItem,
+    ShowRemoveItem,
     ShowTargeting { range: i32, item: Entity, aoe: i32 },
     MainMenu { menu_selection: gui::MainMenuSelection },
     SaveGame,
@@ -71,8 +72,10 @@ impl State {
         inventory_system.run_now(&self.ecs);
         let mut item_use_system = ItemUseSystem {};
         item_use_system.run_now(&self.ecs);
-        let mut drop_system = ItemDropSystem {};
-        drop_system.run_now(&self.ecs);
+        let mut item_drop_system = ItemDropSystem {};
+        item_drop_system.run_now(&self.ecs);
+        let mut item_remove_system = ItemRemoveSystem {};
+        item_remove_system.run_now(&self.ecs);
         let mut melee_system = MeleeCombatSystem {};
         melee_system.run_now(&self.ecs);
         let mut damage_system = DamageSystem {};
@@ -87,6 +90,7 @@ impl State {
         let player = self.ecs.read_storage::<Player>();
         let backpack = self.ecs.read_storage::<InBackpack>();
         let player_entity = self.ecs.fetch::<Entity>();
+        let equipped = self.ecs.read_storage::<Equipped>();
 
         let mut to_delete: Vec<Entity> = Vec::new();
         for entity in entities.join() {
@@ -102,6 +106,12 @@ impl State {
             let bp = backpack.get(entity);
             if let Some(bp) = bp {
                 if bp.owner == *player_entity {
+                    should_delete = false;
+                }
+            }
+            let eq = equipped.get(entity);
+            if let Some(eq) = eq {
+                if eq.owner == *player_entity {
                     should_delete = false;
                 }
             }
@@ -280,6 +290,21 @@ impl GameState for State {
                     }
                 }
             }
+            RunState::ShowRemoveItem => {
+                let result = gui::remove_item_menu(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        let mut intent = self.ecs.write_storage::<WantsToRemoveItem>();
+                        intent
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToRemoveItem { item: item_entity })
+                            .expect("Unable to insert intent");
+                        new_runstate = RunState::PlayerTurn;
+                    }
+                }
+            }
             RunState::ShowTargeting { range, item, aoe } => {
                 let result = gui::ranged_target(self, ctx, range, aoe);
                 match result.0 {
@@ -397,6 +422,10 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToMelee>();
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
+    gs.ecs.register::<Equippable>();
+    gs.ecs.register::<Equipped>();
+    gs.ecs.register::<MeleePowerBonus>();
+    gs.ecs.register::<DefenceBonus>();
     gs.ecs.register::<Cursed>();
     gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<InflictsDamage>();
@@ -407,6 +436,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<InBackpack>();
     gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<WantsToDropItem>();
+    gs.ecs.register::<WantsToRemoveItem>();
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<Consumable>();
     gs.ecs.register::<Destructible>();
