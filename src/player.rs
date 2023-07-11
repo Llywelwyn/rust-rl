@@ -1,5 +1,5 @@
 use super::{
-    gamelog, CombatStats, Item, Map, Monster, Name, Player, Position, RunState, State, TileType, Viewshed,
+    gamelog, CombatStats, Item, Map, Monster, Name, Player, Position, RunState, State, Telepath, TileType, Viewshed,
     WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
@@ -10,6 +10,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
+    let mut telepaths = ecs.write_storage::<Telepath>();
     let combat_stats = ecs.read_storage::<CombatStats>();
     let map = ecs.fetch::<Map>();
 
@@ -62,7 +63,14 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             }
             pos.x = min((MAPWIDTH as i32) - 1, max(0, pos.x + delta_x));
             pos.y = min((MAPHEIGHT as i32) - 1, max(0, pos.y + delta_y));
+
+            // Dirty viewsheds, and check only now if telepath viewshed exists
             viewshed.dirty = true;
+
+            let is_telepath = telepaths.get_mut(entity);
+            if let Some(telepathy) = is_telepath {
+                telepathy.dirty = true;
+            }
             let mut ppos = ecs.write_resource::<Point>();
             ppos.x = pos.x;
             ppos.y = pos.y;

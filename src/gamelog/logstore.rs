@@ -1,4 +1,4 @@
-use super::LogFragment;
+use super::{events, LogFragment, Logger};
 use rltk::prelude::*;
 use std::sync::Mutex;
 
@@ -35,6 +35,21 @@ pub fn print_log(console: &mut Box<dyn Console>, pos: Point, descending: bool, l
         }
         x = pos.x;
     });
+}
+
+pub fn setup_log() {
+    clear_log();
+    events::clear_events();
+    for _ in 0..5 {
+        Logger::new().log();
+    }
+    Logger::new()
+        .append("Welcome!")
+        .colour(rltk::CYAN)
+        .append("(")
+        .append("pretend i wrote a paragraph explaining why you're here")
+        .append(")")
+        .log();
 }
 
 pub fn clone_log() -> Vec<Vec<crate::gamelog::LogFragment>> {

@@ -37,9 +37,19 @@ pub struct Player {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Monster {}
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Mind {}
+
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Viewshed {
     pub visible_tiles: Vec<rltk::Point>,
+    pub range: i32,
+    pub dirty: bool,
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct Telepath {
+    pub telepath_tiles: Vec<rltk::Point>,
     pub range: i32,
     pub dirty: bool,
 }

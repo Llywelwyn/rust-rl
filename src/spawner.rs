@@ -1,7 +1,7 @@
 use super::{
     random_table::RandomTable, BlocksTile, CombatStats, Confusion, Consumable, Cursed, DefenceBonus, Destructible,
-    EquipmentSlot, Equippable, InflictsDamage, Item, MagicMapper, MeleePowerBonus, Monster, Name, Player, Position,
-    ProvidesHealing, Ranged, Rect, Renderable, SerializeMe, Viewshed, AOE, MAPWIDTH,
+    EquipmentSlot, Equippable, InflictsDamage, Item, MagicMapper, MeleePowerBonus, Mind, Monster, Name, Player,
+    Position, ProvidesHealing, Ranged, Rect, Renderable, SerializeMe, Telepath, Viewshed, AOE, MAPWIDTH,
 };
 use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -27,7 +27,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32, player_name: String
         .build()
 }
 
-fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S, hit_die: i32) {
+fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S, hit_die: i32, power: i32) {
     let rolled_hp = roll_hit_dice(ecs, 1, hit_die);
 
     ecs.create_entity()
@@ -35,23 +35,24 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
         .with(Renderable { glyph: glyph, fg: RGB::named(rltk::GREEN), bg: RGB::named(rltk::BLACK), render_order: 1 })
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Monster {})
+        .with(Mind {})
         .with(Name { name: name.to_string() })
         .with(BlocksTile {})
-        .with(CombatStats { max_hp: rolled_hp, hp: rolled_hp, defence: 0, power: 2 })
+        .with(CombatStats { max_hp: rolled_hp, hp: rolled_hp, defence: 0, power: power })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
 fn orc(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('o'), "orc", 8);
+    monster(ecs, x, y, rltk::to_cp437('o'), "orc", 8, 3);
 }
 
 fn goblin(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('g'), "goblin", 6);
+    monster(ecs, x, y, rltk::to_cp437('g'), "goblin", 6, 2);
 }
 
 fn goblin_chieftain(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('G'), "goblin chieftain", 8);
+    monster(ecs, x, y, rltk::to_cp437('G'), "goblin chieftain", 8, 3);
 }
 
 pub fn roll_hit_dice(ecs: &mut World, n: i32, d: i32) -> i32 {

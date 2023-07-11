@@ -220,6 +220,8 @@ impl State {
         if let Some(vs) = vs {
             vs.dirty = true;
         }
+
+        gamelog::setup_log();
     }
 }
 
@@ -242,20 +244,27 @@ impl GameState for State {
                 {
                     let positions = self.ecs.read_storage::<Position>();
                     let renderables = self.ecs.read_storage::<Renderable>();
+                    let minds = self.ecs.read_storage::<Mind>();
                     let map = self.ecs.fetch::<Map>();
+                    let entities = self.ecs.entities();
 
-                    let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
+                    let mut data = (&positions, &renderables, &entities).join().collect::<Vec<_>>();
                     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                    for (pos, render) in data.iter() {
+                    for (pos, render, ent) in data.iter() {
                         let idx = map.xy_idx(pos.x, pos.y);
                         let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
                         let mut bg = render.bg.add(RGB::from_u8(26, 45, 45)).add(offsets);
-                        //bg = bg.add(offsets);
                         if map.bloodstains.contains(&idx) {
                             bg = bg.add(RGB::from_f32(0.6, 0., 0.));
                         }
                         if map.visible_tiles[idx] {
                             ctx.set(pos.x, pos.y, render.fg, bg, render.glyph);
+                        }
+                        if map.telepath_tiles[idx] {
+                            let has_mind = minds.get(*ent);
+                            if let Some(_) = has_mind {
+                                ctx.set(pos.x, pos.y, render.fg, RGB::named(rltk::BLACK), render.glyph);
+                            }
                         }
                     }
                     gui::draw_ui(&self.ecs, ctx);
@@ -450,17 +459,14 @@ impl GameState for State {
 }
 
 const DISPLAYWIDTH: i32 = 80;
-const DISPLAYHEIGHT: i32 = 60;
+const DISPLAYHEIGHT: i32 = 51;
 
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
-    let mut context = RltkBuilder::new()
+    let mut context = RltkBuilder::simple(DISPLAYWIDTH, DISPLAYHEIGHT)
+        .unwrap()
         .with_title("rust-rl")
-        .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
         .with_tile_dimensions(16, 16)
-        .with_resource_path("resources/")
-        .with_font("terminal8x8.jpg", 8, 8)
-        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
         //.with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
         .build()?;
     context.with_post_scanlines(false);
@@ -472,7 +478,9 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
     gs.ecs.register::<Monster>();
+    gs.ecs.register::<Mind>();
     gs.ecs.register::<Viewshed>();
+    gs.ecs.register::<Telepath>();
     gs.ecs.register::<Name>();
     gs.ecs.register::<BlocksTile>();
     gs.ecs.register::<CombatStats>();
@@ -521,18 +529,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(Point::new(player_x, player_y));
     gs.ecs.insert(player_entity);
 
-    gamelog::clear_log();
-    gamelog::clear_events();
-    for _ in 0..5 {
-        gamelog::Logger::new().log();
-    }
-    gamelog::Logger::new()
-        .append("Welcome!")
-        .colour(rltk::CYAN)
-        .append("(")
-        .append("pretend i wrote a paragraph explaining why you're here")
-        .append(")")
-        .log();
+    gamelog::setup_log();
+
     gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());

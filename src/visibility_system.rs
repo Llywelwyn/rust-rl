@@ -1,4 +1,4 @@
-use super::{Map, Player, Position, Viewshed};
+use super::{Map, Player, Position, Telepath, Viewshed};
 use rltk::{FieldOfViewAlg::SymmetricShadowcasting, Point};
 use specs::prelude::*;
 
@@ -9,12 +9,13 @@ impl<'a> System<'a> for VisibilitySystem {
         WriteExpect<'a, Map>,
         Entities<'a>,
         WriteStorage<'a, Viewshed>,
+        WriteStorage<'a, Telepath>,
         WriteStorage<'a, Position>,
         ReadStorage<'a, Player>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut map, entities, mut viewshed, pos, player) = data;
+        let (mut map, entities, mut viewshed, mut telepath, pos, player) = data;
 
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
@@ -40,5 +41,47 @@ impl<'a> System<'a> for VisibilitySystem {
                 }
             }
         }
+
+        for (ent, telepath, pos) in (&entities, &mut telepath, &pos).join() {
+            if telepath.dirty {
+                telepath.dirty = false;
+
+                telepath.telepath_tiles = fast_fov(pos.x, pos.y, telepath.range);
+                telepath.telepath_tiles.retain(|p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height);
+
+                // If this is the player, reveal what they can see
+                let _p: Option<&Player> = player.get(ent);
+                if let Some(_p) = _p {
+                    for t in map.telepath_tiles.iter_mut() {
+                        *t = false;
+                    }
+                    for vis in telepath.telepath_tiles.iter() {
+                        let idx = map.xy_idx(vis.x, vis.y);
+                        map.telepath_tiles[idx] = true;
+                    }
+                }
+            }
+        }
     }
+}
+
+pub fn fast_fov(p_x: i32, p_y: i32, r: i32) -> Vec<Point> {
+    let mut visible_tiles: Vec<Point> = Vec::new();
+
+    let mut i = 0;
+    while i <= 360 {
+        let x: f32 = f32::cos(i as f32 * 0.01745 as f32);
+        let y: f32 = f32::sin(i as f32 * 0.01745 as f32);
+
+        let mut ox: f32 = p_x as f32 + 0.5 as f32;
+        let mut oy: f32 = p_y as f32 + 0.5 as f32;
+        for _i in 0..r {
+            visible_tiles.push(Point::new(ox as i32, oy as i32));
+            ox += x;
+            oy += y;
+        }
+        i += 4;
+    }
+
+    visible_tiles
 }
