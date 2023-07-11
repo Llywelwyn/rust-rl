@@ -3,7 +3,7 @@ use super::{
     Item, MagicMapper, Monster, Name, Player, Position, ProvidesHealing, Ranged, Rect, Renderable, SerializeMe,
     Viewshed, AOE, MAPWIDTH,
 };
-use rltk::{RandomNumberGenerator, RGB};
+use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -70,7 +70,6 @@ const MAX_ENTITIES: i32 = 4;
 
 #[allow(clippy::map_entry)]
 pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
-    let spawn_table = room_table(map_depth);
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
 
     // Scope for borrow checker
@@ -91,6 +90,19 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
                 let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
                 let idx = (y * MAPWIDTH) + x;
                 if !spawn_points.contains_key(&idx) {
+                    let category = category_table().roll(&mut rng);
+                    let spawn_table;
+                    match category.as_ref() {
+                        "mob" => {
+                            spawn_table = mob_table(map_depth);
+                        }
+                        "item" => {
+                            spawn_table = item_table(map_depth);
+                        }
+                        _ => {
+                            spawn_table = debug_table();
+                        }
+                    }
                     spawn_points.insert(idx, spawn_table.roll(&mut rng));
                     added = true;
                 } else {
@@ -120,25 +132,40 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
             "magic missile scroll" => magic_missile_scroll(ecs, x, y),
             "magic map scroll" => magic_map_scroll(ecs, x, y),
             "cursed magic map scroll" => cursed_magic_map_scroll(ecs, x, y),
-            _ => {}
+            _ => console::log("Tried to spawn nothing. Bugfix needed!"),
         }
     }
 }
 
-fn room_table(map_depth: i32) -> RandomTable {
+// 3 mobs : 1 item
+fn category_table() -> RandomTable {
+    return RandomTable::new().add("mob", 3).add("item", 1);
+}
+
+fn debug_table() -> RandomTable {
+    return RandomTable::new().add("debug", 1);
+}
+
+// 6 goblins : 1 goblin chief : 2 orcs
+fn mob_table(map_depth: i32) -> RandomTable {
     return RandomTable::new()
         // Monsters
-        .add("goblin", 15)
-        .add("goblin chieftain", 2 + map_depth)
-        .add("orc", 4 + map_depth)
+        .add("goblin", 6)
+        .add("goblin chieftain", 1)
+        .add("orc", 2 + map_depth);
+}
+
+// 25 potions : 10 scrolls : 2 cursed scrolls
+fn item_table(_map_depth: i32) -> RandomTable {
+    return RandomTable::new()
         // Potions
-        .add("weak health potion", 4)
-        .add("health potion", 1 + (map_depth / 2))
+        .add("weak health potion", 20)
+        .add("health potion", 5)
         // Scrolls
-        .add("fireball scroll", 1 + (map_depth / 3))
+        .add("fireball scroll", 1)
         .add("cursed fireball scroll", 1)
         .add("confusion scroll", 2)
-        .add("magic missile scroll", 4)
+        .add("magic missile scroll", 5)
         .add("magic map scroll", 2)
         .add("cursed magic map scroll", 1);
 }
