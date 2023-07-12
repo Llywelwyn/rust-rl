@@ -283,13 +283,11 @@ impl GameState for State {
             }
             RunState::AwaitingInput => {
                 new_runstate = player_input(self, ctx);
-                if new_runstate != RunState::AwaitingInput {
-                    gamelog::record_event("Turn", 1);
-                }
             }
             RunState::PlayerTurn => {
                 self.run_systems();
                 self.ecs.maintain();
+                gamelog::record_event("Turn", 1);
                 match *self.ecs.fetch::<RunState>() {
                     RunState::MagicMapReveal { row, cursed } => {
                         new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
@@ -508,6 +506,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToRemoveItem>();
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<Consumable>();
+    gs.ecs.register::<Wand>();
     gs.ecs.register::<ProvidesNutrition>();
     gs.ecs.register::<Destructible>();
     gs.ecs.register::<ParticleLifetime>();

@@ -1,8 +1,8 @@
 use super::{
     gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, Equippable, Equipped, HungerClock, HungerState,
     InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing,
-    ProvidesNutrition, RunState, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem,
-    AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
+    ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, Wand, WantsToDropItem, WantsToPickupItem,
+    WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -44,10 +44,12 @@ impl<'a> System<'a> for ItemUseSystem {
     type SystemData = (
         ReadExpect<'a, Entity>,
         ReadExpect<'a, Map>,
+        WriteExpect<'a, RandomNumberGenerator>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
         ReadStorage<'a, Name>,
-        ReadStorage<'a, Consumable>,
+        WriteStorage<'a, Consumable>,
+        WriteStorage<'a, Wand>,
         ReadStorage<'a, Destructible>,
         ReadStorage<'a, Cursed>,
         ReadStorage<'a, ProvidesHealing>,
@@ -71,10 +73,12 @@ impl<'a> System<'a> for ItemUseSystem {
         let (
             player_entity,
             map,
+            mut rng,
             entities,
             mut wants_to_use,
             names,
-            consumables,
+            mut consumables,
+            mut wands,
             destructibles,
             cursed_items,
             provides_healing,
@@ -95,13 +99,29 @@ impl<'a> System<'a> for ItemUseSystem {
         ) = data;
 
         for (entity, wants_to_use) in (&entities, &wants_to_use).join() {
+            let mut verb = "use";
             let mut used_item = true;
             let mut aoe_item = false;
             let item_being_used = names.get(wants_to_use.item).unwrap();
 
             let is_cursed = cursed_items.get(wants_to_use.item);
-
-            let mut verb = "use";
+            let wand = wands.get_mut(wants_to_use.item);
+            if let Some(wand) = wand {
+                // If want has no uses, roll 1d121. On a 121, wrest the wand, then delete it.
+                if wand.uses == 0 {
+                    if rng.roll_dice(1, 121) != 121 {
+                        gamelog::Logger::new().append("The wand does nothing.").log();
+                        break;
+                    }
+                    gamelog::Logger::new()
+                        .colour(rltk::YELLOW)
+                        .append("You wrest one last charge from the worn-out wand.")
+                        .log();
+                    consumables.insert(wants_to_use.item, Consumable {}).expect("Could not insert consumable");
+                }
+                verb = "zap";
+                wand.uses -= 1;
+            }
 
             let is_edible = provides_nutrition.get(wants_to_use.item);
             if let Some(_) = is_edible {

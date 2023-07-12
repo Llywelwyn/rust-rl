@@ -200,6 +200,12 @@ pub struct WantsToUseItem {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Consumable {}
 
+#[derive(Component, Debug, ConvertSaveload)]
+pub struct Wand {
+    pub uses: i32,
+    pub max_uses: i32,
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Destructible {}
 

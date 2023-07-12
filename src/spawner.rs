@@ -2,7 +2,7 @@ use super::{
     random_table::RandomTable, BlocksTile, CombatStats, Confusion, Consumable, Cursed, DefenceBonus, Destructible,
     EquipmentSlot, Equippable, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleePowerBonus, Mind,
     Monster, Name, Player, Position, ProvidesHealing, ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe,
-    Viewshed, AOE, MAPWIDTH,
+    Viewshed, Wand, AOE, MAPWIDTH,
 };
 use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -135,6 +135,9 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
             "magic missile scroll" => magic_missile_scroll(ecs, x, y),
             "magic map scroll" => magic_map_scroll(ecs, x, y),
             "cursed magic map scroll" => cursed_magic_map_scroll(ecs, x, y),
+            // Wands
+            "magic missile wand" => magic_missile_wand(ecs, x, y),
+            "fireball wand" => fireball_wand(ecs, x, y),
             // Food
             "rations" => rations(ecs, x, y),
             _ => console::log("Tried to spawn nothing. Bugfix needed!"),
@@ -164,20 +167,23 @@ fn mob_table(map_depth: i32) -> RandomTable {
 fn item_table(_map_depth: i32) -> RandomTable {
     return RandomTable::new()
         // Equipment
-        .add("dagger", 2)
-        .add("shortsword", 2)
-        .add("buckler", 2)
-        .add("shield", 1)
+        .add("dagger", 4)
+        .add("shortsword", 4)
+        .add("buckler", 4)
+        .add("shield", 2)
         // Potions
-        .add("weak health potion", 7)
-        .add("health potion", 3)
+        .add("weak health potion", 14)
+        .add("health potion", 6)
         // Scrolls
-        .add("fireball scroll", 1)
-        .add("cursed fireball scroll", 1)
-        .add("confusion scroll", 2)
-        .add("magic missile scroll", 5)
-        .add("magic map scroll", 2)
-        .add("cursed magic map scroll", 1);
+        .add("fireball scroll", 2)
+        .add("cursed fireball scroll", 2)
+        .add("confusion scroll", 4)
+        .add("magic missile scroll", 10)
+        .add("magic map scroll", 4)
+        .add("cursed magic map scroll", 2)
+        // Wands
+        .add("magic missile wand", 1)
+        .add("fireball wand", 1);
 }
 
 fn food_table(_map_depth: i32) -> RandomTable {
@@ -442,6 +448,47 @@ fn rations(ecs: &mut World, x: i32, y: i32) {
         .with(Item {})
         .with(ProvidesNutrition {})
         .with(Consumable {})
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+// WANDS
+
+fn fireball_wand(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('/'),
+            fg: RGB::named(rltk::ORANGE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "wand of fireball".to_string() })
+        .with(Item {})
+        .with(Wand { uses: 3, max_uses: 3 })
+        .with(Destructible {})
+        .with(Ranged { range: 10 })
+        .with(InflictsDamage { amount: 20 })
+        .with(AOE { radius: 3 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn magic_missile_wand(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('?'),
+            fg: RGB::named(rltk::BLUE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "wand of magic missile".to_string() })
+        .with(Item {})
+        .with(Wand { uses: 3, max_uses: 3 })
+        .with(Destructible {})
+        .with(Ranged { range: 12 }) // Long range - as far as default vision range
+        .with(InflictsDamage { amount: 10 }) // Low~ damage
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
