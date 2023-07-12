@@ -1,6 +1,6 @@
 use super::{
-    gamelog, rex_assets::RexAssets, CombatStats, Equipped, InBackpack, Map, Name, Player, Point, Position, RunState,
-    State, Viewshed,
+    gamelog, rex_assets::RexAssets, CombatStats, Equipped, HungerClock, HungerState, InBackpack, Map, Name, Player,
+    Point, Position, RunState, State, Viewshed,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -11,10 +11,26 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     // Render stats
     let combat_stats = ecs.read_storage::<CombatStats>();
     let players = ecs.read_storage::<Player>();
-    for (_player, stats) in (&players, &combat_stats).join() {
+    let hunger = ecs.read_storage::<HungerClock>();
+    for (_player, stats, hunger) in (&players, &combat_stats, &hunger).join() {
         let health = format!(" HP {}/{} ", stats.hp, stats.max_hp);
         ctx.print_color_right(36, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
         ctx.draw_bar_horizontal(38, 43, 34, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
+        match hunger.state {
+            HungerState::Satiated => {
+                ctx.print_color_right(72, 42, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Satiated")
+            }
+            HungerState::Normal => {}
+            HungerState::Hungry => {
+                ctx.print_color_right(72, 42, RGB::named(rltk::BROWN1), RGB::named(rltk::BLACK), "Hungry")
+            }
+            HungerState::Weak => {
+                ctx.print_color_right(72, 42, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Weak")
+            }
+            HungerState::Fainting => {
+                ctx.print_color_right(72, 42, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Fainting")
+            }
+        }
     }
 
     // Render the message log at [1, 46], descending, with 6 lines.
@@ -36,7 +52,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
 
     // Render mouse cursor
     let mouse_pos = ctx.mouse_pos();
-    ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::MAGENTA));
+    ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::YELLOW));
 
     draw_tooltips(ecs, ctx);
 }

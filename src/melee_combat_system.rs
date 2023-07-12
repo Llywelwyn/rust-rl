@@ -1,6 +1,6 @@
 use super::{
-    gamelog, CombatStats, DefenceBonus, Equipped, MeleePowerBonus, Name, ParticleBuilder, Position, SufferDamage,
-    WantsToMelee,
+    gamelog, CombatStats, DefenceBonus, Equipped, HungerClock, HungerState, MeleePowerBonus, Name, ParticleBuilder,
+    Position, SufferDamage, WantsToMelee,
 };
 use specs::prelude::*;
 
@@ -19,6 +19,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, Equipped>,
         ReadStorage<'a, DefenceBonus>,
         ReadStorage<'a, MeleePowerBonus>,
+        ReadStorage<'a, HungerClock>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -34,6 +35,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             equipped,
             defence_bonuses,
             melee_power_bonuses,
+            hunger_clock,
         ) = data;
 
         for (entity, wants_melee, name, stats) in (&entities, &wants_melee, &names, &combat_stats).join() {
@@ -57,6 +59,22 @@ impl<'a> System<'a> for MeleeCombatSystem {
             for (_item_entity, defence_bonus, equipped_by) in (&entities, &defence_bonuses, &equipped).join() {
                 if equipped_by.owner == wants_melee.target {
                     defensive_bonus += defence_bonus.amount;
+                }
+            }
+            let hc = hunger_clock.get(entity);
+            if let Some(hc) = hc {
+                match hc.state {
+                    HungerState::Satiated => {
+                        offensive_bonus += 1;
+                    }
+                    HungerState::Weak => {
+                        offensive_bonus -= 1;
+                    }
+                    HungerState::Fainting => {
+                        offensive_bonus -= 1;
+                        defensive_bonus -= 1;
+                    }
+                    _ => {}
                 }
             }
             let damage = i32::max(0, (stats.power + offensive_bonus) - (target_stats.defence + defensive_bonus));

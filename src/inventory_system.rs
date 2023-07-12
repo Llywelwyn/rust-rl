@@ -1,8 +1,8 @@
 use super::{
-    gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, Equippable, Equipped, InBackpack,
-    InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing, RunState, SufferDamage,
-    WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME,
-    LONG_PARTICLE_LIFETIME,
+    gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, Equippable, Equipped, HungerClock, HungerState,
+    InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing,
+    ProvidesNutrition, RunState, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem,
+    AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -51,6 +51,8 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Destructible>,
         ReadStorage<'a, Cursed>,
         ReadStorage<'a, ProvidesHealing>,
+        ReadStorage<'a, ProvidesNutrition>,
+        WriteStorage<'a, HungerClock>,
         WriteStorage<'a, CombatStats>,
         WriteStorage<'a, SufferDamage>,
         WriteExpect<'a, ParticleBuilder>,
@@ -76,6 +78,8 @@ impl<'a> System<'a> for ItemUseSystem {
             destructibles,
             cursed_items,
             provides_healing,
+            provides_nutrition,
+            mut hunger_clock,
             mut combat_stats,
             mut suffer_damage,
             mut particle_builder,
@@ -97,8 +101,19 @@ impl<'a> System<'a> for ItemUseSystem {
 
             let is_cursed = cursed_items.get(wants_to_use.item);
 
+            let mut verb = "use";
+
+            let is_edible = provides_nutrition.get(wants_to_use.item);
+            if let Some(_) = is_edible {
+                verb = "eat";
+            }
+            let item_equippable = equippable.get(wants_to_use.item);
+            if let Some(_) = item_equippable {
+                verb = "equip"
+            }
+
             gamelog::Logger::new()
-                .append("You use the")
+                .append(format!("You {} the", verb))
                 .item_name_n(format!("{}", &item_being_used.name))
                 .period()
                 .log();
@@ -133,8 +148,7 @@ impl<'a> System<'a> for ItemUseSystem {
                                         .append("The")
                                         .item_name(&item_being_used.name)
                                         .colour(rltk::WHITE)
-                                        .append("disobeys!")
-                                        .log();
+                                        .append("disobeys!");
                                 }
                             }
                             // AOE
@@ -160,15 +174,28 @@ impl<'a> System<'a> for ItemUseSystem {
                 }
             }
 
+            // EDIBLE
+            match is_edible {
+                None => {}
+                Some(_) => {
+                    let target = targets[0];
+                    let hc = hunger_clock.get_mut(target);
+                    if let Some(hc) = hc {
+                        hc.state = HungerState::Satiated;
+                        hc.duration = 50;
+                        gamelog::Logger::new().append("You eat the").item_name_n(&item_being_used.name).period().log();
+                    }
+                }
+            }
+
             // EQUIPMENT
-            let item_equippable = equippable.get(wants_to_use.item);
             match item_equippable {
                 None => {}
                 Some(can_equip) => {
                     let target_slot = can_equip.slot;
                     let target = targets[0];
 
-                    // Room any items target has in item's slot
+                    // Remove any items target has in item's slot
                     let mut to_unequip: Vec<Entity> = Vec::new();
                     for (item_entity, already_equipped, _name) in (&entities, &equipped, &names).join() {
                         if already_equipped.owner == target && already_equipped.slot == target_slot {
@@ -177,8 +204,7 @@ impl<'a> System<'a> for ItemUseSystem {
                                 gamelog::Logger::new()
                                     .append("You unequip the")
                                     .item_name_n(&item_being_used.name)
-                                    .period()
-                                    .log();
+                                    .period();
                             }
                         }
                     }
@@ -192,13 +218,6 @@ impl<'a> System<'a> for ItemUseSystem {
                         .insert(wants_to_use.item, Equipped { owner: target, slot: target_slot })
                         .expect("Unable to insert equipped component");
                     backpack.remove(wants_to_use.item);
-                    if target == *player_entity {
-                        gamelog::Logger::new()
-                            .append("You equip the")
-                            .item_name_n(&item_being_used.name)
-                            .period()
-                            .log();
-                    }
                 }
             }
 

@@ -1,7 +1,8 @@
 use super::{
     random_table::RandomTable, BlocksTile, CombatStats, Confusion, Consumable, Cursed, DefenceBonus, Destructible,
-    EquipmentSlot, Equippable, InflictsDamage, Item, MagicMapper, MeleePowerBonus, Mind, Monster, Name, Player,
-    Position, ProvidesHealing, Ranged, Rect, Renderable, SerializeMe, Telepath, Viewshed, AOE, MAPWIDTH,
+    EquipmentSlot, Equippable, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleePowerBonus, Mind,
+    Monster, Name, Player, Position, ProvidesHealing, ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe,
+    Viewshed, AOE, MAPWIDTH,
 };
 use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -23,6 +24,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32, player_name: String
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: player_name })
         .with(CombatStats { max_hp: 8, hp: 8, defence: 0, power: 4 })
+        .with(HungerClock { state: HungerState::Satiated, duration: 50 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
@@ -96,6 +98,7 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
                     match category.as_ref() {
                         "mob" => spawn_table = mob_table(map_depth),
                         "item" => spawn_table = item_table(map_depth),
+                        "food" => spawn_table = food_table(map_depth),
                         _ => spawn_table = debug_table(),
                     }
                     spawn_points.insert(idx, spawn_table.roll(&mut rng));
@@ -132,14 +135,16 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
             "magic missile scroll" => magic_missile_scroll(ecs, x, y),
             "magic map scroll" => magic_map_scroll(ecs, x, y),
             "cursed magic map scroll" => cursed_magic_map_scroll(ecs, x, y),
+            // Food
+            "rations" => rations(ecs, x, y),
             _ => console::log("Tried to spawn nothing. Bugfix needed!"),
         }
     }
 }
 
-// 3 mobs : 1 item
+// 10 mobs : 3 items : 1 food
 fn category_table() -> RandomTable {
-    return RandomTable::new().add("mob", 3).add("item", 1);
+    return RandomTable::new().add("mob", 9).add("item", 3).add("food", 1);
 }
 
 fn debug_table() -> RandomTable {
@@ -156,18 +161,18 @@ fn mob_table(map_depth: i32) -> RandomTable {
 }
 
 // 6 equipment : 10 potions : 10 scrolls : 2 cursed scrolls
-fn item_table(map_depth: i32) -> RandomTable {
+fn item_table(_map_depth: i32) -> RandomTable {
     return RandomTable::new()
         // Equipment
         .add("dagger", 2)
-        .add("shortsword", map_depth - 1)
+        .add("shortsword", 2)
         .add("buckler", 2)
         .add("shield", 1)
         // Potions
         .add("weak health potion", 7)
         .add("health potion", 3)
         // Scrolls
-        .add("fireball scroll", map_depth - 1)
+        .add("fireball scroll", 1)
         .add("cursed fireball scroll", 1)
         .add("confusion scroll", 2)
         .add("magic missile scroll", 5)
@@ -175,12 +180,16 @@ fn item_table(map_depth: i32) -> RandomTable {
         .add("cursed magic map scroll", 1);
 }
 
+fn food_table(_map_depth: i32) -> RandomTable {
+    return RandomTable::new().add("rations", 1);
+}
+
 fn health_potion(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437('I'),
-            fg: RGB::named(rltk::MAGENTA),
+            glyph: rltk::to_cp437('!'),
+            fg: RGB::named(rltk::MAGENTA2),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
@@ -197,7 +206,7 @@ fn weak_health_potion(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437('i'),
+            glyph: rltk::to_cp437('!'),
             fg: RGB::named(rltk::MAGENTA),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -237,7 +246,7 @@ fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('?'),
             fg: RGB::named(rltk::BLUE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -256,7 +265,7 @@ fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('?'),
             fg: RGB::named(rltk::ORANGE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -276,7 +285,7 @@ fn cursed_fireball_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('?'),
             fg: RGB::named(rltk::ORANGE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -297,7 +306,7 @@ fn confusion_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('?'),
             fg: RGB::named(rltk::PURPLE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -316,7 +325,7 @@ fn magic_map_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('?'),
             fg: RGB::named(rltk::ROYALBLUE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -334,7 +343,7 @@ fn cursed_magic_map_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('?'),
             fg: RGB::named(rltk::ROYALBLUE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -354,7 +363,7 @@ fn dagger(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437('/'),
+            glyph: rltk::to_cp437(')'),
             fg: RGB::named(rltk::GREY),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -370,8 +379,8 @@ fn shortsword(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437('/'),
-            fg: RGB::named(rltk::GREY),
+            glyph: rltk::to_cp437(')'),
+            fg: RGB::named(rltk::LIGHTGREY),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
@@ -387,7 +396,7 @@ fn buckler(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437('('),
+            glyph: rltk::to_cp437('['),
             fg: RGB::named(rltk::GREY),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -404,8 +413,8 @@ fn shield(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437('('),
-            fg: RGB::named(rltk::GREY),
+            glyph: rltk::to_cp437('['),
+            fg: RGB::named(rltk::LIGHTGREY),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
@@ -414,6 +423,25 @@ fn shield(ecs: &mut World, x: i32, y: i32) {
         .with(DefenceBonus { amount: 2 })
         .with(MeleePowerBonus { amount: -1 })
         .with(Equippable { slot: EquipmentSlot::Shield })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+// FOOD
+
+fn rations(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('%'),
+            fg: RGB::named(rltk::LIGHT_SALMON),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "rations".to_string() })
+        .with(Item {})
+        .with(ProvidesNutrition {})
+        .with(Consumable {})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

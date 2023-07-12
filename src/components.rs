@@ -62,6 +62,24 @@ pub struct Name {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
 
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+pub enum HungerState {
+    Satiated,
+    Normal,
+    Hungry,
+    Weak,
+    Fainting,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct HungerClock {
+    pub state: HungerState,
+    pub duration: i32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ProvidesNutrition {}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct CombatStats {
     pub max_hp: i32,

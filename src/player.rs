@@ -1,6 +1,6 @@
 use super::{
-    gamelog, CombatStats, Item, Map, Monster, Name, Player, Position, RunState, State, Telepath, TileType, Viewshed,
-    WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
+    gamelog, CombatStats, HungerClock, HungerState, Item, Map, Monster, Name, Player, Position, RunState, State,
+    Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -172,8 +172,12 @@ fn skip_turn(ecs: &mut World) -> RunState {
     let viewshed_components = ecs.read_storage::<Viewshed>();
     let monsters = ecs.read_storage::<Monster>();
     let worldmap_resource = ecs.fetch::<Map>();
+    let hunger_clocks = ecs.read_storage::<HungerClock>();
 
+    // Default to being able to heal by waiting.
     let mut can_heal = true;
+
+    // Check viewshed for monsters nearby. If we can see a monster, we can't heal.
     let viewshed = viewshed_components.get(*player_entity).unwrap();
     for tile in viewshed.visible_tiles.iter() {
         let idx = worldmap_resource.xy_idx(tile.x, tile.y);
@@ -185,6 +189,17 @@ fn skip_turn(ecs: &mut World) -> RunState {
                     can_heal = false;
                 }
             }
+        }
+    }
+
+    // Check player's hunger state - if we're hungry or worse, we can't heal.
+    let player_hunger_clock = hunger_clocks.get(*player_entity);
+    if let Some(clock) = player_hunger_clock {
+        match clock.state {
+            HungerState::Hungry => can_heal = false,
+            HungerState::Weak => can_heal = false,
+            HungerState::Fainting => can_heal = false,
+            _ => {}
         }
     }
 

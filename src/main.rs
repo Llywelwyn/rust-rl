@@ -24,6 +24,7 @@ mod map_indexing_system;
 use map_indexing_system::MapIndexingSystem;
 mod damage_system;
 use damage_system::*;
+mod hunger_system;
 mod melee_combat_system;
 use melee_combat_system::MeleeCombatSystem;
 mod inventory_system;
@@ -81,6 +82,8 @@ impl State {
         melee_system.run_now(&self.ecs);
         let mut damage_system = DamageSystem {};
         damage_system.run_now(&self.ecs);
+        let mut hunger_clock = hunger_system::HungerSystem {};
+        hunger_clock.run_now(&self.ecs);
         let mut particle_system = particle_system::ParticleSpawnSystem {};
         particle_system.run_now(&self.ecs);
         self.ecs.maintain();
@@ -484,6 +487,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Name>();
     gs.ecs.register::<BlocksTile>();
     gs.ecs.register::<CombatStats>();
+    gs.ecs.register::<HungerClock>();
     gs.ecs.register::<WantsToMelee>();
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
@@ -504,6 +508,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToRemoveItem>();
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<Consumable>();
+    gs.ecs.register::<ProvidesNutrition>();
     gs.ecs.register::<Destructible>();
     gs.ecs.register::<ParticleLifetime>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
