@@ -23,9 +23,16 @@ impl<'a> System<'a> for VisibilitySystem {
                 // FIXME: SymmetricShadowcasting seems to be responsible for an infrequent crash --
                 // but it could be unrelated to the FieldOfViewAlg being used. Needs some more testing!
                 // Appeared first after switching, but can't seem to reproduce it.
-                viewshed.visible_tiles =
-                    SymmetricShadowcasting.field_of_view(Point::new(pos.x, pos.y), viewshed.range, &*map);
-                viewshed.visible_tiles.retain(|p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height);
+                let origin = Point::new(pos.x, pos.y);
+                viewshed.visible_tiles = SymmetricShadowcasting.field_of_view(origin, viewshed.range, &*map);
+                viewshed.visible_tiles.retain(|p| {
+                    p.x >= 0
+                        && p.x < map.width
+                        && p.y >= 0
+                        && p.y < map.height
+                        && (map.lit_tiles[map.xy_idx(p.x, p.y)] == true
+                            || rltk::DistanceAlg::Pythagoras.distance2d(Point::new(p.x, p.y), origin) < 1.5)
+                });
 
                 // If this is the player, reveal what they can see
                 let _p: Option<&Player> = player.get(ent);

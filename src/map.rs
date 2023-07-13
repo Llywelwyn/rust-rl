@@ -26,6 +26,7 @@ pub struct Map {
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
     pub visible_tiles: Vec<bool>,
+    pub lit_tiles: Vec<bool>,
     pub telepath_tiles: Vec<bool>,
     pub red_offset: Vec<u8>,
     pub green_offset: Vec<u8>,
@@ -101,6 +102,7 @@ impl Map {
             height: MAPHEIGHT as i32,
             revealed_tiles: vec![false; MAPCOUNT],
             visible_tiles: vec![false; MAPCOUNT],
+            lit_tiles: vec![true; MAPCOUNT], // NYI: Light sources. Once those exist, we can set this to false.
             telepath_tiles: vec![false; MAPCOUNT],
             red_offset: vec![0; MAPCOUNT],
             green_offset: vec![0; MAPCOUNT],
