@@ -10,7 +10,7 @@ use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
 
 /// Spawns the player and returns his/her entity object.
-pub fn player(ecs: &mut World, player_x: i32, player_y: i32, player_name: String) -> Entity {
+pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     // d8 hit die - but always maxxed at level 1, so player doesn't have to roll.
     ecs.create_entity()
         .with(Position { x: player_x, y: player_y })
@@ -22,7 +22,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32, player_name: String
         })
         .with(Player {})
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
-        .with(Name { name: player_name })
+        .with(Name { name: "wanderer".to_string() })
         .with(CombatStats { max_hp: 8, hp: 8, defence: 0, power: 4 })
         .with(HungerClock { state: HungerState::Satiated, duration: 50 })
         .marked::<SimpleMarker<SerializeMe>>()
