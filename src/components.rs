@@ -209,7 +209,19 @@ pub struct Wand {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Destructible {}
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Hidden {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SingleActivation {}
+
 #[derive(Component, Clone, ConvertSaveload)]
 pub struct ParticleLifetime {
     pub lifetime_ms: f32,
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntryTrigger {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntityMoved {}

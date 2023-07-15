@@ -1,4 +1,4 @@
-use super::{Map, Player, Position, Telepath, Viewshed};
+use super::{gamelog, Hidden, Map, Name, Player, Position, Telepath, Viewshed};
 use rltk::{FieldOfViewAlg::SymmetricShadowcasting, Point};
 use specs::prelude::*;
 
@@ -7,15 +7,18 @@ pub struct VisibilitySystem {}
 impl<'a> System<'a> for VisibilitySystem {
     type SystemData = (
         WriteExpect<'a, Map>,
+        WriteExpect<'a, rltk::RandomNumberGenerator>,
         Entities<'a>,
         WriteStorage<'a, Viewshed>,
         WriteStorage<'a, Telepath>,
         WriteStorage<'a, Position>,
         ReadStorage<'a, Player>,
+        WriteStorage<'a, Hidden>,
+        ReadStorage<'a, Name>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut map, entities, mut viewshed, mut telepath, pos, player) = data;
+        let (mut map, mut rng, entities, mut viewshed, mut telepath, pos, player, mut hidden, names) = data;
 
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
@@ -44,6 +47,24 @@ impl<'a> System<'a> for VisibilitySystem {
                         let idx = map.xy_idx(vis.x, vis.y);
                         map.revealed_tiles[idx] = true;
                         map.visible_tiles[idx] = true;
+
+                        // Reveal hidden things
+                        for thing in map.tile_content[idx].iter() {
+                            let is_hidden = hidden.get(*thing);
+                            if let Some(_is_hidden) = is_hidden {
+                                if rng.roll_dice(1, 20) == 1 {
+                                    let name = names.get(*thing);
+                                    if let Some(name) = name {
+                                        gamelog::Logger::new()
+                                            .append("You spot a")
+                                            .item_name_n(&name.name)
+                                            .period()
+                                            .log();
+                                    }
+                                    hidden.remove(*thing);
+                                }
+                            }
+                        }
                     }
                 }
             }

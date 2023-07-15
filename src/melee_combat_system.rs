@@ -127,14 +127,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 }
                 let pos = positions.get(wants_melee.target);
                 if let Some(pos) = pos {
-                    particle_builder.request(
-                        pos.x,
-                        pos.y,
-                        rltk::RGB::named(rltk::ORANGE),
-                        rltk::RGB::named(rltk::BLACK),
-                        rltk::to_cp437('‼'),
-                        150.0,
-                    );
+                    particle_builder.damage_taken(pos.x, pos.y)
                 }
                 SufferDamage::new_damage(&mut inflict_damage, wants_melee.target, damage);
             }

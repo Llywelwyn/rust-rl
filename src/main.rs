@@ -26,6 +26,7 @@ mod damage_system;
 use damage_system::*;
 mod hunger_system;
 mod melee_combat_system;
+mod trigger_system;
 use melee_combat_system::MeleeCombatSystem;
 mod inventory_system;
 use inventory_system::*;
@@ -65,27 +66,31 @@ pub struct State {
 impl State {
     fn run_systems(&mut self) {
         let mut vis = VisibilitySystem {};
-        vis.run_now(&self.ecs);
         let mut mob = MonsterAI {};
-        mob.run_now(&self.ecs);
         let mut mapindex = MapIndexingSystem {};
-        mapindex.run_now(&self.ecs);
-        let mut inventory_system = ItemCollectionSystem {};
-        inventory_system.run_now(&self.ecs);
-        let mut item_use_system = ItemUseSystem {};
-        item_use_system.run_now(&self.ecs);
-        let mut item_drop_system = ItemDropSystem {};
-        item_drop_system.run_now(&self.ecs);
-        let mut item_remove_system = ItemRemoveSystem {};
-        item_remove_system.run_now(&self.ecs);
+        let mut trigger_system = trigger_system::TriggerSystem {};
         let mut melee_system = MeleeCombatSystem {};
-        melee_system.run_now(&self.ecs);
         let mut damage_system = DamageSystem {};
-        damage_system.run_now(&self.ecs);
+        let mut inventory_system = ItemCollectionSystem {};
+        let mut item_use_system = ItemUseSystem {};
+        let mut item_drop_system = ItemDropSystem {};
+        let mut item_remove_system = ItemRemoveSystem {};
         let mut hunger_clock = hunger_system::HungerSystem {};
-        hunger_clock.run_now(&self.ecs);
         let mut particle_system = particle_system::ParticleSpawnSystem {};
+
+        vis.run_now(&self.ecs);
+        mob.run_now(&self.ecs);
+        mapindex.run_now(&self.ecs);
+        trigger_system.run_now(&self.ecs);
+        melee_system.run_now(&self.ecs);
+        damage_system.run_now(&self.ecs);
+        inventory_system.run_now(&self.ecs);
+        item_use_system.run_now(&self.ecs);
+        item_drop_system.run_now(&self.ecs);
+        item_remove_system.run_now(&self.ecs);
+        hunger_clock.run_now(&self.ecs);
         particle_system.run_now(&self.ecs);
+
         self.ecs.maintain();
     }
 
@@ -248,12 +253,13 @@ impl GameState for State {
                     let positions = self.ecs.read_storage::<Position>();
                     let renderables = self.ecs.read_storage::<Renderable>();
                     let minds = self.ecs.read_storage::<Mind>();
+                    let hidden = self.ecs.read_storage::<Hidden>();
                     let map = self.ecs.fetch::<Map>();
                     let entities = self.ecs.entities();
 
-                    let mut data = (&positions, &renderables, &entities).join().collect::<Vec<_>>();
+                    let mut data = (&positions, &renderables, &entities, !&hidden).join().collect::<Vec<_>>();
                     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                    for (pos, render, ent) in data.iter() {
+                    for (pos, render, ent, _hidden) in data.iter() {
                         let idx = map.xy_idx(pos.x, pos.y);
                         let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
                         let mut bg = render.bg.add(RGB::from_u8(26, 45, 45)).add(offsets);
@@ -506,9 +512,13 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToRemoveItem>();
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<Consumable>();
+    gs.ecs.register::<SingleActivation>();
     gs.ecs.register::<Wand>();
     gs.ecs.register::<ProvidesNutrition>();
     gs.ecs.register::<Destructible>();
+    gs.ecs.register::<Hidden>();
+    gs.ecs.register::<EntryTrigger>();
+    gs.ecs.register::<EntityMoved>();
     gs.ecs.register::<ParticleLifetime>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
