@@ -78,21 +78,19 @@ impl State {
         self.mapgen_index = 0;
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
-        // Create new builder
-        let mut builder = map_builders::random_builder(new_depth);
         let player_start;
         // Scope for borrow checker
+        let mut builder = map_builders::random_builder(new_depth);
         {
-            // Fetch RNG from resources
-            let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
             // Build a new map using RNG (to retain seed)
+            let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
             builder.build_map(&mut rng);
             self.mapgen_history = builder.get_snapshot_history();
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             *worldmap_resource = builder.get_map();
             player_start = builder.get_starting_pos();
+            // Spawn entities
         }
-        // Spawn entities
         builder.spawn_entities(&mut self.ecs);
 
         // Place player and update resources
