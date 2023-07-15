@@ -1,4 +1,3 @@
-use super::Rect;
 use rltk::{Algorithm2D, BaseMap, Point, Rltk, RGB};
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
@@ -19,7 +18,6 @@ pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Map {
     pub tiles: Vec<TileType>,
-    pub rooms: Vec<Rect>,
     pub width: i32,
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
@@ -46,7 +44,6 @@ impl Map {
     pub fn new(new_depth: i32) -> Map {
         Map {
             tiles: vec![TileType::Wall; MAPCOUNT],
-            rooms: Vec::new(),
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
             revealed_tiles: vec![false; MAPCOUNT],

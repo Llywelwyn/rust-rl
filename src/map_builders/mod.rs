@@ -6,10 +6,13 @@ use common::*;
 use rltk::RandomNumberGenerator;
 use specs::prelude::*;
 
-trait MapBuilder {
-    fn build(rng: &mut RandomNumberGenerator, new_depth: i32) -> (Map, Position);
+pub trait MapBuilder {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator);
+    fn spawn_entities(&mut self, ecs: &mut World);
+    fn get_map(&mut self) -> Map;
+    fn get_starting_pos(&mut self) -> Position;
 }
 
-pub fn build_random_map(rng: &mut RandomNumberGenerator, new_depth: i32) -> (Map, Position) {
-    SimpleMapBuilder::build(rng, new_depth)
+pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
+    return Box::new(SimpleMapBuilder::new(new_depth));
 }
