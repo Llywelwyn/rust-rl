@@ -1,6 +1,6 @@
 use super::{
-    gamelog, CombatStats, HungerClock, HungerState, Item, Map, Monster, Name, Player, Position, RunState, State,
-    Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
+    gamelog, CombatStats, EntityMoved, Hidden, HungerClock, HungerState, Item, Map, Monster, Name, Player, Position,
+    RunState, State, Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -11,6 +11,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut players = ecs.write_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let mut telepaths = ecs.write_storage::<Telepath>();
+    let mut entity_moved = ecs.write_storage::<EntityMoved>();
     let combat_stats = ecs.read_storage::<CombatStats>();
     let map = ecs.fetch::<Map>();
 
@@ -37,14 +38,18 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
 
         if !map.blocked[destination_idx] {
             let names = ecs.read_storage::<Name>();
+            let hidden = ecs.read_storage::<Hidden>();
             // Push every entity name in the pile to a vector of strings
             let mut item_names: Vec<String> = Vec::new();
             let mut some = false;
             for entity in map.tile_content[destination_idx].iter() {
-                if let Some(name) = names.get(*entity) {
-                    let item_name = &name.name;
-                    item_names.push(item_name.to_string());
-                    some = true;
+                if let Some(_hidden) = hidden.get(*entity) {
+                } else {
+                    if let Some(name) = names.get(*entity) {
+                        let item_name = &name.name;
+                        item_names.push(item_name.to_string());
+                        some = true;
+                    }
                 }
             }
             // If some names were found, append. Logger = logger is necessary
@@ -74,6 +79,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             let mut ppos = ecs.write_resource::<Point>();
             ppos.x = pos.x;
             ppos.y = pos.y;
+            entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
         }
     }
 }

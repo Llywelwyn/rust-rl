@@ -1,4 +1,6 @@
-use super::{gamelog, Confusion, Map, Monster, Name, ParticleBuilder, Position, RunState, Viewshed, WantsToMelee};
+use super::{
+    gamelog, Confusion, EntityMoved, Map, Monster, Name, ParticleBuilder, Position, RunState, Viewshed, WantsToMelee,
+};
 use rltk::Point;
 use specs::prelude::*;
 
@@ -19,6 +21,7 @@ impl<'a> System<'a> for MonsterAI {
         WriteStorage<'a, Confusion>,
         ReadStorage<'a, Name>,
         WriteExpect<'a, ParticleBuilder>,
+        WriteStorage<'a, EntityMoved>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -35,6 +38,7 @@ impl<'a> System<'a> for MonsterAI {
             mut confused,
             name,
             mut particle_builder,
+            mut entity_moved,
         ) = data;
 
         if *runstate != RunState::MonsterTurn {
@@ -88,6 +92,7 @@ impl<'a> System<'a> for MonsterAI {
                         idx = map.xy_idx(pos.x, pos.y);
                         map.blocked[idx] = true;
                         viewshed.dirty = true;
+                        entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
                     }
                 }
             }

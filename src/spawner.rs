@@ -1,8 +1,8 @@
 use super::{
     random_table::RandomTable, BlocksTile, CombatStats, Confusion, Consumable, Cursed, DefenceBonus, Destructible,
-    EquipmentSlot, Equippable, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleePowerBonus, Mind,
-    Monster, Name, Player, Position, ProvidesHealing, ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe,
-    Viewshed, Wand, AOE, MAPWIDTH,
+    EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper,
+    MeleePowerBonus, Mind, Monster, Name, Player, Position, ProvidesHealing, ProvidesNutrition, Ranged, Rect,
+    Renderable, SerializeMe, SingleActivation, Viewshed, Wand, AOE, MAPWIDTH,
 };
 use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -99,6 +99,7 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
                         "mob" => spawn_table = mob_table(map_depth),
                         "item" => spawn_table = item_table(map_depth),
                         "food" => spawn_table = food_table(map_depth),
+                        "trap" => spawn_table = trap_table(map_depth),
                         _ => spawn_table = debug_table(),
                     }
                     spawn_points.insert(idx, spawn_table.roll(&mut rng));
@@ -138,16 +139,20 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
             // Wands
             "magic missile wand" => magic_missile_wand(ecs, x, y),
             "fireball wand" => fireball_wand(ecs, x, y),
+            "confusion wand" => confusion_wand(ecs, x, y),
             // Food
             "rations" => rations(ecs, x, y),
+            // Traps
+            "bear trap" => bear_trap(ecs, x, y),
+            "confusion trap" => confusion_trap(ecs, x, y),
             _ => console::log("Tried to spawn nothing. Bugfix needed!"),
         }
     }
 }
 
-// 10 mobs : 3 items : 1 food
+// 20 mobs : 6 items : 2 food : 1 trap
 fn category_table() -> RandomTable {
-    return RandomTable::new().add("mob", 9).add("item", 3).add("food", 1);
+    return RandomTable::new().add("mob", 20).add("item", 6).add("food", 2).add("trap", 1000);
 }
 
 fn debug_table() -> RandomTable {
@@ -183,11 +188,16 @@ fn item_table(_map_depth: i32) -> RandomTable {
         .add("cursed magic map scroll", 2)
         // Wands
         .add("magic missile wand", 1)
-        .add("fireball wand", 1);
+        .add("fireball wand", 1)
+        .add("confusion wand", 1);
 }
 
 fn food_table(_map_depth: i32) -> RandomTable {
     return RandomTable::new().add("rations", 1);
+}
+
+fn trap_table(_map_depth: i32) -> RandomTable {
+    return RandomTable::new().add("bear trap", 0).add("confusion trap", 1);
 }
 
 fn health_potion(ecs: &mut World, x: i32, y: i32) {
@@ -478,7 +488,7 @@ fn magic_missile_wand(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437('?'),
+            glyph: rltk::to_cp437('/'),
             fg: RGB::named(rltk::BLUE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -489,6 +499,62 @@ fn magic_missile_wand(ecs: &mut World, x: i32, y: i32) {
         .with(Destructible {})
         .with(Ranged { range: 12 }) // Long range - as far as default vision range
         .with(InflictsDamage { amount: 10 }) // Low~ damage
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn confusion_wand(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('/'),
+            fg: RGB::named(rltk::PURPLE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "wand of confusion".to_string() })
+        .with(Item {})
+        .with(Wand { uses: 3, max_uses: 3 })
+        .with(Destructible {})
+        .with(Ranged { range: 10 })
+        .with(Confusion { turns: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+// TRAPS
+fn bear_trap(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('^'),
+            fg: RGB::named(rltk::GREY),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "bear trap".to_string() })
+        .with(Hidden {})
+        .with(EntryTrigger {})
+        .with(SingleActivation {})
+        .with(InflictsDamage { amount: 6 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn confusion_trap(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('^'),
+            fg: RGB::named(rltk::PURPLE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "magic trap".to_string() })
+        .with(Hidden {})
+        .with(EntryTrigger {})
+        .with(SingleActivation {})
+        .with(Confusion { turns: 3 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

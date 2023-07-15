@@ -55,6 +55,10 @@ impl ParticleBuilder {
         self.requests.push(ParticleRequest { x, y, fg, bg, glyph, lifetime });
     }
 
+    pub fn damage_taken(&mut self, x: i32, y: i32) {
+        self.request(x, y, rltk::RGB::named(rltk::ORANGE), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('‼'), 200.0);
+    }
+
     // Makes a particle request in the shape of an 'x'. Sort of.
     pub fn request_star(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32) {
         self.request(x, y, fg, bg, glyph, lifetime * 2.0);
