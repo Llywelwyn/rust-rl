@@ -152,7 +152,7 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
 
 // 20 mobs : 6 items : 2 food : 1 trap
 fn category_table() -> RandomTable {
-    return RandomTable::new().add("mob", 20).add("item", 6).add("food", 2).add("trap", 1000);
+    return RandomTable::new().add("mob", 20).add("item", 6).add("food", 2).add("trap", 1);
 }
 
 fn debug_table() -> RandomTable {
