@@ -122,7 +122,7 @@ fn get_item(ecs: &mut World) -> bool {
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     // Player movement
-    let mut result = false;
+    let result;
     match ctx.key {
         None => return RunState::AwaitingInput,
         Some(key) => match key {
