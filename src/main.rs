@@ -14,6 +14,7 @@ mod rect;
 pub use rect::Rect;
 mod gamelog;
 mod gui;
+pub mod map_builders;
 mod saveload_system;
 mod spawner;
 mod visibility_system;
@@ -141,31 +142,31 @@ impl State {
         }
 
         // Build new map
-        let worldmap;
+        let mut builder;
         let current_depth;
+        let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             current_depth = worldmap_resource.depth;
             let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
-            *worldmap_resource = Map::new_map_rooms_and_corridors(&mut rng, current_depth + 1);
-            worldmap = worldmap_resource.clone();
+            builder = map_builders::random_builder(current_depth + 1);
+            builder.build_map(&mut rng);
+            *worldmap_resource = builder.get_map();
+            player_start = builder.get_starting_pos();
         }
 
         // Spawn things in rooms
-        for room in worldmap.rooms.iter().skip(1) {
-            spawner::spawn_room(&mut self.ecs, room, current_depth + 1);
-        }
+        builder.spawn_entities(&mut self.ecs);
 
         // Place the player and update resources
-        let (player_x, player_y) = worldmap.rooms[0].centre();
         let mut player_position = self.ecs.write_resource::<Point>();
-        *player_position = Point::new(player_x, player_y);
+        *player_position = Point::new(player_start.x, player_start.y);
         let mut position_components = self.ecs.write_storage::<Position>();
         let player_entity = self.ecs.fetch::<Entity>();
         let player_pos_comp = position_components.get_mut(*player_entity);
         if let Some(player_pos_comp) = player_pos_comp {
-            player_pos_comp.x = player_x;
-            player_pos_comp.y = player_y;
+            player_pos_comp.x = player_start.x;
+            player_pos_comp.y = player_start.y;
         }
 
         // Dirtify viewshed
@@ -195,21 +196,22 @@ impl State {
         }
 
         // Build a new map and place the player
-        let worldmap;
+        let mut builder;
+        let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
-            *worldmap_resource = Map::new_map_rooms_and_corridors(&mut rng, 1);
-            worldmap = worldmap_resource.clone();
+            builder = map_builders::random_builder(1);
+            builder.build_map(&mut rng);
+            *worldmap_resource = builder.get_map();
+            player_start = builder.get_starting_pos();
         }
 
         // Spawn bad guys
-        for room in worldmap.rooms.iter().skip(1) {
-            spawner::spawn_room(&mut self.ecs, room, 1);
-        }
+        builder.spawn_entities(&mut self.ecs);
 
         // Place the player and update resources
-        let (player_x, player_y) = worldmap.rooms[0].centre();
+        let (player_x, player_y) = (player_start.x, player_start.y);
         let player_entity = spawner::player(&mut self.ecs, player_x, player_y, "Player".to_string());
         let mut player_position = self.ecs.write_resource::<Point>();
         *player_position = Point::new(player_x, player_y);
@@ -524,23 +526,23 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
-    // Create RNG.
+    // Create seed.
     let mut rng = rltk::RandomNumberGenerator::new();
     // Use seed to generate the map.
-    let map = Map::new_map_rooms_and_corridors(&mut rng, 1);
+    let mut builder = map_builders::random_builder(1);
+    builder.build_map(&mut rng);
+    let player_start = builder.get_starting_pos();
+    let map = builder.get_map();
     // Insert seed into the ECS.
     gs.ecs.insert(rng);
 
-    let (player_x, player_y) = map.rooms[0].centre();
     let player_name = "wanderer".to_string();
-    let player_entity = spawner::player(&mut gs.ecs, player_x, player_y, player_name);
+    let player_entity = spawner::player(&mut gs.ecs, player_start.x, player_start.y, player_name);
 
-    for room in map.rooms.iter().skip(1) {
-        spawner::spawn_room(&mut gs.ecs, room, 1);
-    }
+    builder.spawn_entities(&mut gs.ecs);
 
     gs.ecs.insert(map);
-    gs.ecs.insert(Point::new(player_x, player_y));
+    gs.ecs.insert(Point::new(player_start.x, player_start.y));
     gs.ecs.insert(player_entity);
 
     gamelog::setup_log();
