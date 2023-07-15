@@ -78,12 +78,10 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
     // Scope for borrow checker
     {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        let num_spawns = rng.roll_dice(1, MAX_ENTITIES + 3) + (map_depth - 1) - 3;
-        // With a MAX_ENTITIES of 4, this means each room has between:
-        // d1:  -2 to 4
-        // d2:  -1 to 5
-        // d3:   0 to 6
-        // etc.
+        let num_spawns = rng.roll_dice(1, MAX_ENTITIES + 2) - 2;
+        console::log(format!("room of: {}", num_spawns));
+        // [-1, 0, 1, 2, 3, 4] things in a room
+        // 2/6 chance for nothing, 4/6 for something
 
         for _i in 0..num_spawns {
             let mut added = false;
@@ -104,8 +102,10 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
                     }
                     spawn_points.insert(idx, spawn_table.roll(&mut rng));
                     added = true;
+                    console::log(format!("added spawnpoint"));
                 } else {
                     tries += 1;
+                    console::log(format!("failed {} times", tries));
                 }
             }
         }

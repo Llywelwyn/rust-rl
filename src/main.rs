@@ -43,6 +43,9 @@ rltk::embedded_resource!(TERMINAL8X8, "../resources/terminal8x8.jpg");
 rltk::embedded_resource!(SCANLINESFS, "../resources/scanlines.fs");
 rltk::embedded_resource!(SCANLINESVS, "../resources/scanlines.vs");
 
+//Consts
+pub const SHOW_MAPGEN: bool = true;
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
     AwaitingInput,
@@ -58,22 +61,33 @@ pub enum RunState {
     GameOver,
     NextLevel,
     MagicMapReveal { row: i32, cursed: bool },
+    MapGeneration,
 }
 
 pub struct State {
     pub ecs: World,
+    mapgen_next_state: Option<RunState>,
+    mapgen_history: Vec<Map>,
+    mapgen_index: usize,
+    mapgen_timer: f32,
 }
 
 impl State {
     fn generate_world_map(&mut self, new_depth: i32) {
+        // Visualisation stuff
+        self.mapgen_index = 0;
+        self.mapgen_timer = 0.0;
+        self.mapgen_history.clear();
         // Create new builder
         let mut builder = map_builders::random_builder(new_depth);
         let player_start;
+        // Scope for borrow checker
         {
             // Fetch RNG from resources
             let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
             // Build a new map using RNG (to retain seed)
             builder.build_map(&mut rng);
+            self.mapgen_history = builder.get_snapshot_history();
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             *worldmap_resource = builder.get_map();
             player_start = builder.get_starting_pos();
@@ -236,7 +250,7 @@ impl GameState for State {
             RunState::MainMenu { .. } => {}
             _ => {
                 // Draw map and ui
-                draw_map(&self.ecs, ctx);
+                draw_map(&self.ecs.fetch::<Map>(), ctx);
                 {
                     let positions = self.ecs.read_storage::<Position>();
                     let renderables = self.ecs.read_storage::<Renderable>();
@@ -442,6 +456,23 @@ impl GameState for State {
                     new_runstate = RunState::MagicMapReveal { row: row + 1, cursed: cursed };
                 }
             }
+            RunState::MapGeneration => {
+                if !SHOW_MAPGEN {
+                    new_runstate = self.mapgen_next_state.unwrap();
+                } else {
+                    ctx.cls();
+                    draw_map(&self.mapgen_history[self.mapgen_index], ctx);
+
+                    self.mapgen_timer += ctx.frame_time_ms;
+                    if self.mapgen_timer > 300.0 {
+                        self.mapgen_timer = 0.0;
+                        self.mapgen_index += 1;
+                        if self.mapgen_index >= self.mapgen_history.len() {
+                            new_runstate = self.mapgen_next_state.unwrap();
+                        }
+                    }
+                }
+            }
         }
 
         {
@@ -467,7 +498,13 @@ fn main() -> rltk::BError {
     context.with_post_scanlines(false);
     //context.screen_burn_color(RGB::named((150, 255, 255)));
 
-    let mut gs = State { ecs: World::new() };
+    let mut gs = State {
+        ecs: World::new(),
+        mapgen_next_state: Some(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame }),
+        mapgen_index: 0,
+        mapgen_history: Vec::new(),
+        mapgen_timer: 0.0,
+    };
 
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
@@ -517,7 +554,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(Point::new(0, 0));
     gs.ecs.insert(player_entity);
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
-    gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
+    gs.ecs.insert(RunState::MapGeneration {});
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());
 

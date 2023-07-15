@@ -6,7 +6,7 @@ use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
-pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
+pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
@@ -24,7 +24,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             || pos.y + delta_y < 1
             || pos.y + delta_y > map.height - 1
         {
-            return;
+            return false;
         }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
@@ -32,56 +32,62 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             let target = combat_stats.get(*potential_target);
             if let Some(_target) = target {
                 wants_to_melee.insert(entity, WantsToMelee { target: *potential_target }).expect("Add target failed.");
-                return;
+                return true;
             }
         }
 
-        if !map.blocked[destination_idx] {
-            let names = ecs.read_storage::<Name>();
-            let hidden = ecs.read_storage::<Hidden>();
-            // Push every entity name in the pile to a vector of strings
-            let mut item_names: Vec<String> = Vec::new();
-            let mut some = false;
-            for entity in map.tile_content[destination_idx].iter() {
-                if let Some(_hidden) = hidden.get(*entity) {
-                } else {
-                    if let Some(name) = names.get(*entity) {
-                        let item_name = &name.name;
-                        item_names.push(item_name.to_string());
-                        some = true;
-                    }
-                }
-            }
-            // If some names were found, append. Logger = logger is necessary
-            // makes logger called a mutable self. It's not the most efficient
-            // but it happens infrequently enough (once per player turn at most)
-            // that it shouldn't matter.
-            if some {
-                let mut logger = gamelog::Logger::new().append("You see a");
-                for i in 0..item_names.len() {
-                    if i > 0 && i < item_names.len() {
-                        logger = logger.append(", a");
-                    }
-                    logger = logger.item_name_n(&item_names[i]);
-                }
-                logger.period().log();
-            }
-            pos.x = min((MAPWIDTH as i32) - 1, max(0, pos.x + delta_x));
-            pos.y = min((MAPHEIGHT as i32) - 1, max(0, pos.y + delta_y));
-
-            // Dirty viewsheds, and check only now if telepath viewshed exists
-            viewshed.dirty = true;
-
-            let is_telepath = telepaths.get_mut(entity);
-            if let Some(telepathy) = is_telepath {
-                telepathy.dirty = true;
-            }
-            let mut ppos = ecs.write_resource::<Point>();
-            ppos.x = pos.x;
-            ppos.y = pos.y;
-            entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
+        if map.blocked[destination_idx] {
+            return false;
         }
+
+        let names = ecs.read_storage::<Name>();
+        let hidden = ecs.read_storage::<Hidden>();
+        // Push every entity name in the pile to a vector of strings
+        let mut item_names: Vec<String> = Vec::new();
+        let mut some = false;
+        for entity in map.tile_content[destination_idx].iter() {
+            if let Some(_hidden) = hidden.get(*entity) {
+            } else {
+                if let Some(name) = names.get(*entity) {
+                    let item_name = &name.name;
+                    item_names.push(item_name.to_string());
+                    some = true;
+                }
+            }
+        }
+        // If some names were found, append. Logger = logger is necessary
+        // makes logger called a mutable self. It's not the most efficient
+        // but it happens infrequently enough (once per player turn at most)
+        // that it shouldn't matter.
+        if some {
+            let mut logger = gamelog::Logger::new().append("You see a");
+            for i in 0..item_names.len() {
+                if i > 0 && i < item_names.len() {
+                    logger = logger.append(", a");
+                }
+                logger = logger.item_name_n(&item_names[i]);
+            }
+            logger.period().log();
+        }
+        pos.x = min((MAPWIDTH as i32) - 1, max(0, pos.x + delta_x));
+        pos.y = min((MAPHEIGHT as i32) - 1, max(0, pos.y + delta_y));
+
+        // Dirty viewsheds, and check only now if telepath viewshed exists
+        viewshed.dirty = true;
+
+        let is_telepath = telepaths.get_mut(entity);
+        if let Some(telepathy) = is_telepath {
+            telepathy.dirty = true;
+        }
+        let mut ppos = ecs.write_resource::<Point>();
+        ppos.x = pos.x;
+        ppos.y = pos.y;
+        entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
+
+        return true;
     }
+
+    return false;
 }
 
 fn get_item(ecs: &mut World) {
@@ -111,27 +117,28 @@ fn get_item(ecs: &mut World) {
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     // Player movement
+    let mut result = false;
     match ctx.key {
         None => return RunState::AwaitingInput,
         Some(key) => match key {
             // Cardinals
             VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
-                try_move_player(-1, 0, &mut gs.ecs);
+                result = try_move_player(-1, 0, &mut gs.ecs);
             }
             VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
-                try_move_player(1, 0, &mut gs.ecs);
+                result = try_move_player(1, 0, &mut gs.ecs);
             }
             VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                try_move_player(0, -1, &mut gs.ecs);
+                result = try_move_player(0, -1, &mut gs.ecs);
             }
             VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                try_move_player(0, 1, &mut gs.ecs);
+                result = try_move_player(0, 1, &mut gs.ecs);
             }
             // Diagonals
-            VirtualKeyCode::Numpad9 | VirtualKeyCode::U => try_move_player(1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => try_move_player(-1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad3 | VirtualKeyCode::N => try_move_player(1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad1 | VirtualKeyCode::B => try_move_player(-1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad9 | VirtualKeyCode::U => result = try_move_player(1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => result = try_move_player(-1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad3 | VirtualKeyCode::N => result = try_move_player(1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad1 | VirtualKeyCode::B => result = try_move_player(-1, 1, &mut gs.ecs),
             // Depth
             VirtualKeyCode::Period => {
                 if ctx.shift {
@@ -158,7 +165,11 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             }
         },
     }
-    RunState::PlayerTurn
+    if result {
+        return RunState::PlayerTurn;
+    } else {
+        return RunState::AwaitingInput;
+    }
 }
 
 pub fn try_next_level(ecs: &mut World) -> bool {

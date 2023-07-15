@@ -139,9 +139,7 @@ impl BaseMap for Map {
     }
 }
 
-pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
-    let map = ecs.fetch::<Map>();
-
+pub fn draw_map(map: &Map, ctx: &mut Rltk) {
     let mut y = 0;
     let mut x = 0;
     for (idx, tile) in map.tiles.iter().enumerate() {

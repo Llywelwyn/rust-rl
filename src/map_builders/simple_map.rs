@@ -1,8 +1,8 @@
 use super::{
     apply_horizontal_tunnel, apply_room_to_map, apply_vertical_tunnel, spawner, Map, MapBuilder, Position, Rect,
-    TileType,
+    TileType, SHOW_MAPGEN,
 };
-use rltk::RandomNumberGenerator;
+use rltk::{console, RandomNumberGenerator};
 use specs::prelude::*;
 
 pub struct SimpleMapBuilder {
@@ -10,24 +10,36 @@ pub struct SimpleMapBuilder {
     starting_position: Position,
     depth: i32,
     rooms: Vec<Rect>,
+    history: Vec<Map>,
 }
 
 impl MapBuilder for SimpleMapBuilder {
-    fn get_map(&mut self) -> Map {
-        return self.map.clone();
-    }
-
-    fn get_starting_pos(&mut self) -> Position {
-        return self.starting_position.clone();
-    }
-
     fn build_map(&mut self, rng: &mut RandomNumberGenerator) {
         return self.rooms_and_corridors(rng);
     }
-
     fn spawn_entities(&mut self, ecs: &mut World) {
         for room in self.rooms.iter().skip(1) {
-            return spawner::spawn_room(ecs, room, self.depth);
+            spawner::spawn_room(ecs, room, self.depth);
+        }
+    }
+    //  Getters
+    fn get_map(&mut self) -> Map {
+        return self.map.clone();
+    }
+    fn get_starting_pos(&mut self) -> Position {
+        return self.starting_position.clone();
+    }
+    // Mapgen visualisation stuff
+    fn get_snapshot_history(&self) -> Vec<Map> {
+        return self.history.clone();
+    }
+    fn take_snapshot(&mut self) {
+        if SHOW_MAPGEN {
+            let mut snapshot = self.map.clone();
+            for v in snapshot.revealed_tiles.iter_mut() {
+                *v = true;
+            }
+            self.history.push(snapshot);
         }
     }
 }
@@ -39,6 +51,7 @@ impl SimpleMapBuilder {
             starting_position: Position { x: 0, y: 0 },
             depth: new_depth,
             rooms: Vec::new(),
+            history: Vec::new(),
         }
     }
 
@@ -89,6 +102,8 @@ impl SimpleMapBuilder {
                 }
 
                 self.rooms.push(new_room);
+                console::log("pushed new room");
+                self.take_snapshot();
             }
         }
 
