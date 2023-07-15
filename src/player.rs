@@ -37,6 +37,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
         }
 
         if map.blocked[destination_idx] {
+            gamelog::Logger::new().append("You can't move there.").log();
             return false;
         }
 
@@ -90,7 +91,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     return false;
 }
 
-fn get_item(ecs: &mut World) {
+fn get_item(ecs: &mut World) -> bool {
     let player_pos = ecs.fetch::<Point>();
     let player_entity = ecs.fetch::<Entity>();
     let entities = ecs.entities();
@@ -105,12 +106,16 @@ fn get_item(ecs: &mut World) {
     }
 
     match target_item {
-        None => gamelog::Logger::new().append("There is nothing to pick up.").log(),
+        None => {
+            gamelog::Logger::new().append("There is nothing to pick up.").log();
+            return false;
+        }
         Some(item) => {
             let mut pickup = ecs.write_storage::<WantsToPickupItem>();
             pickup
                 .insert(*player_entity, WantsToPickupItem { collected_by: *player_entity, item })
                 .expect("Unable to insert want to pickup item.");
+            return true;
         }
     }
 }
@@ -147,15 +152,17 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                     }
                     return RunState::NextLevel; // > to descend
                 } else {
-                    return skip_turn(&mut gs.ecs); // (Wait a turn)
+                    result = skip_turn(&mut gs.ecs); // (Wait a turn)
                 }
             }
             VirtualKeyCode::NumpadDecimal => {
-                return skip_turn(&mut gs.ecs);
+                result = skip_turn(&mut gs.ecs);
             }
 
             // Items
-            VirtualKeyCode::G => get_item(&mut gs.ecs),
+            VirtualKeyCode::G => {
+                result = get_item(&mut gs.ecs);
+            }
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::D => return RunState::ShowDropItem,
             VirtualKeyCode::R => return RunState::ShowRemoveItem,
@@ -184,7 +191,7 @@ pub fn try_next_level(ecs: &mut World) -> bool {
     }
 }
 
-fn skip_turn(ecs: &mut World) -> RunState {
+fn skip_turn(ecs: &mut World) -> bool {
     let player_entity = ecs.fetch::<Entity>();
     let viewshed_components = ecs.read_storage::<Viewshed>();
     let monsters = ecs.read_storage::<Monster>();
@@ -237,7 +244,7 @@ fn skip_turn(ecs: &mut World) -> RunState {
     } else {
         gamelog::Logger::new().append("You wait a turn.").log();
     }
-    return RunState::PlayerTurn;
+    return true;
 }
 
 /* Playing around with autoexplore, without having read how to do it.

@@ -1,9 +1,9 @@
 use super::{spawner, Map, Position, Rect, TileType, SHOW_MAPGEN};
-mod simple_map;
-use simple_map::SimpleMapBuilder;
 mod bsp_dungeon;
-use bsp_dungeon::BspDungeonBuilder;
+mod bsp_interior;
+mod cellular_automata;
 mod common;
+mod simple_map;
 use common::*;
 use rltk::RandomNumberGenerator;
 use specs::prelude::*;
@@ -19,9 +19,11 @@ pub trait MapBuilder {
 
 pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     let mut rng = rltk::RandomNumberGenerator::new();
-    let builder = rng.roll_dice(1, 2);
+    let builder = rng.roll_dice(1, 4);
     match builder {
-        1 => Box::new(BspDungeonBuilder::new(new_depth)),
-        _ => Box::new(SimpleMapBuilder::new(new_depth)),
+        1 => Box::new(bsp_dungeon::BspDungeonBuilder::new(new_depth)),
+        2 => Box::new(bsp_interior::BspInteriorBuilder::new(new_depth)),
+        3 => Box::new(cellular_automata::CellularAutomataBuilder::new(new_depth)),
+        _ => Box::new(simple_map::SimpleMapBuilder::new(new_depth)),
     }
 }

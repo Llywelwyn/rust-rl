@@ -59,20 +59,6 @@ impl SimpleMapBuilder {
         const MAX_ROOMS: i32 = 30;
         const MIN_SIZE: i32 = 6;
         const MAX_SIZE: i32 = 10;
-        const MAX_OFFSET: u8 = 32;
-
-        for idx in 0..self.map.red_offset.len() {
-            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
-            self.map.red_offset[idx] = roll as u8;
-        }
-        for idx in 0..self.map.green_offset.len() {
-            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
-            self.map.green_offset[idx] = roll as u8;
-        }
-        for idx in 0..self.map.blue_offset.len() {
-            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
-            self.map.blue_offset[idx] = roll as u8;
-        }
 
         for _i in 0..MAX_ROOMS {
             let w = rng.range(MIN_SIZE, MAX_SIZE);

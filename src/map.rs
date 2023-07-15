@@ -42,7 +42,7 @@ impl Map {
     }
 
     pub fn new(new_depth: i32) -> Map {
-        Map {
+        let mut map = Map {
             tiles: vec![TileType::Wall; MAPCOUNT],
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
@@ -57,7 +57,25 @@ impl Map {
             depth: new_depth,
             bloodstains: HashSet::new(),
             tile_content: vec![Vec::new(); MAPCOUNT],
+        };
+
+        const MAX_OFFSET: u8 = 32;
+        let mut rng = rltk::RandomNumberGenerator::new();
+
+        for idx in 0..map.red_offset.len() {
+            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
+            map.red_offset[idx] = roll as u8;
         }
+        for idx in 0..map.green_offset.len() {
+            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
+            map.green_offset[idx] = roll as u8;
+        }
+        for idx in 0..map.blue_offset.len() {
+            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
+            map.blue_offset[idx] = roll as u8;
+        }
+
+        return map;
     }
 
     /// Takes an index, and calculates if it can be entered.
@@ -142,6 +160,7 @@ impl BaseMap for Map {
 pub fn draw_map(map: &Map, ctx: &mut Rltk) {
     let mut y = 0;
     let mut x = 0;
+
     for (idx, tile) in map.tiles.iter().enumerate() {
         // Get our colour offsets. Credit to Brogue for the inspiration here.
         let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);

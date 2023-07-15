@@ -1,8 +1,8 @@
 use super::{
     random_table::RandomTable, BlocksTile, CombatStats, Confusion, Consumable, Cursed, DefenceBonus, Destructible,
-    EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper,
+    EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, Map,
     MeleePowerBonus, Mind, Monster, Name, Player, Position, ProvidesHealing, ProvidesNutrition, Ranged, Rect,
-    Renderable, SerializeMe, SingleActivation, Viewshed, Wand, AOE, MAPWIDTH,
+    Renderable, SerializeMe, SingleActivation, TileType, Viewshed, Wand, AOE, MAPWIDTH,
 };
 use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -73,80 +73,88 @@ const MAX_ENTITIES: i32 = 4;
 
 #[allow(clippy::map_entry)]
 pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
-    let mut spawn_points: HashMap<usize, String> = HashMap::new();
-
-    // Scope for borrow checker
+    let mut possible_targets: Vec<usize> = Vec::new();
     {
-        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        let num_spawns = rng.roll_dice(1, MAX_ENTITIES + 2) - 2;
-        console::log(format!("room of: {}", num_spawns));
-        // [-1, 0, 1, 2, 3, 4] things in a room
-        // 2/6 chance for nothing, 4/6 for something
-
-        for _i in 0..num_spawns {
-            let mut added = false;
-            let mut tries = 0;
-            while !added && tries < 20 {
-                let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
-                let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
-                let idx = (y * MAPWIDTH) + x;
-                if !spawn_points.contains_key(&idx) {
-                    let category = category_table().roll(&mut rng);
-                    let spawn_table;
-                    match category.as_ref() {
-                        "mob" => spawn_table = mob_table(map_depth),
-                        "item" => spawn_table = item_table(map_depth),
-                        "food" => spawn_table = food_table(map_depth),
-                        "trap" => spawn_table = trap_table(map_depth),
-                        _ => spawn_table = debug_table(),
-                    }
-                    spawn_points.insert(idx, spawn_table.roll(&mut rng));
-                    added = true;
-                    console::log(format!("added spawnpoint"));
-                } else {
-                    tries += 1;
-                    console::log(format!("failed {} times", tries));
+        let map = ecs.fetch::<Map>();
+        for y in room.y1 + 1..room.y2 {
+            for x in room.x1 + 1..room.x2 {
+                let idx = map.xy_idx(x, y);
+                if map.tiles[idx] == TileType::Floor {
+                    possible_targets.push(idx);
                 }
             }
         }
     }
 
-    // Spawn
-    for spawn in spawn_points.iter() {
-        let x = (*spawn.0 % MAPWIDTH) as i32;
-        let y = (*spawn.0 / MAPWIDTH) as i32;
+    spawn_region(ecs, &possible_targets, map_depth);
+}
 
-        match spawn.1.as_ref() {
-            // Monsters
-            "goblin" => goblin(ecs, x, y),
-            "goblin chieftain" => goblin_chieftain(ecs, x, y),
-            "orc" => orc(ecs, x, y),
-            // Equipment
-            "dagger" => dagger(ecs, x, y),
-            "shortsword" => shortsword(ecs, x, y),
-            "buckler" => buckler(ecs, x, y),
-            "shield" => shield(ecs, x, y),
-            // Potions
-            "weak health potion" => weak_health_potion(ecs, x, y),
-            "health potion" => health_potion(ecs, x, y),
-            // Scrolls
-            "fireball scroll" => fireball_scroll(ecs, x, y),
-            "cursed fireball scroll" => cursed_fireball_scroll(ecs, x, y),
-            "confusion scroll" => confusion_scroll(ecs, x, y),
-            "magic missile scroll" => magic_missile_scroll(ecs, x, y),
-            "magic map scroll" => magic_map_scroll(ecs, x, y),
-            "cursed magic map scroll" => cursed_magic_map_scroll(ecs, x, y),
-            // Wands
-            "magic missile wand" => magic_missile_wand(ecs, x, y),
-            "fireball wand" => fireball_wand(ecs, x, y),
-            "confusion wand" => confusion_wand(ecs, x, y),
-            // Food
-            "rations" => rations(ecs, x, y),
-            // Traps
-            "bear trap" => bear_trap(ecs, x, y),
-            "confusion trap" => confusion_trap(ecs, x, y),
-            _ => console::log("Tried to spawn nothing. Bugfix needed!"),
+pub fn spawn_region(ecs: &mut World, area: &[usize], map_depth: i32) {
+    let mut spawn_points: HashMap<usize, String> = HashMap::new();
+    let mut areas: Vec<usize> = Vec::from(area);
+    {
+        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+        let category = category_table().roll(&mut rng);
+        let spawn_table;
+        match category.as_ref() {
+            "mob" => spawn_table = mob_table(map_depth),
+            "item" => spawn_table = item_table(map_depth),
+            "food" => spawn_table = food_table(map_depth),
+            "trap" => spawn_table = trap_table(map_depth),
+            _ => spawn_table = debug_table(),
         }
+        let num_spawns = i32::min(areas.len() as i32, rng.roll_dice(1, MAX_ENTITIES + 2) - 2);
+        if num_spawns <= 0 {
+            return;
+        }
+
+        for _i in 0..num_spawns {
+            let array_idx = if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32) - 1) as usize };
+            let map_idx = areas[array_idx];
+            spawn_points.insert(map_idx, spawn_table.roll(&mut rng));
+            areas.remove(array_idx);
+        }
+    }
+
+    for spawn in spawn_points.iter() {
+        spawn_entity(ecs, &spawn);
+    }
+}
+
+fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
+    let x = (*spawn.0 % MAPWIDTH) as i32;
+    let y = (*spawn.0 / MAPWIDTH) as i32;
+
+    match spawn.1.as_ref() {
+        // Monsters
+        "goblin" => goblin(ecs, x, y),
+        "goblin chieftain" => goblin_chieftain(ecs, x, y),
+        "orc" => orc(ecs, x, y),
+        // Equipment
+        "dagger" => dagger(ecs, x, y),
+        "shortsword" => shortsword(ecs, x, y),
+        "buckler" => buckler(ecs, x, y),
+        "shield" => shield(ecs, x, y),
+        // Potions
+        "weak health potion" => weak_health_potion(ecs, x, y),
+        "health potion" => health_potion(ecs, x, y),
+        // Scrolls
+        "fireball scroll" => fireball_scroll(ecs, x, y),
+        "cursed fireball scroll" => cursed_fireball_scroll(ecs, x, y),
+        "confusion scroll" => confusion_scroll(ecs, x, y),
+        "magic missile scroll" => magic_missile_scroll(ecs, x, y),
+        "magic map scroll" => magic_map_scroll(ecs, x, y),
+        "cursed magic map scroll" => cursed_magic_map_scroll(ecs, x, y),
+        // Wands
+        "magic missile wand" => magic_missile_wand(ecs, x, y),
+        "fireball wand" => fireball_wand(ecs, x, y),
+        "confusion wand" => confusion_wand(ecs, x, y),
+        // Food
+        "rations" => rations(ecs, x, y),
+        // Traps
+        "bear trap" => bear_trap(ecs, x, y),
+        "confusion trap" => confusion_trap(ecs, x, y),
+        _ => console::log("Tried to spawn nothing. Bugfix needed!"),
     }
 }
 
