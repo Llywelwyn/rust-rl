@@ -206,7 +206,7 @@ pub fn draw_map(map: &Map, ctx: &mut Rltk) {
 
 fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
     let idx = map.xy_idx(x, y);
-    map.tiles[idx] == TileType::Wall && map.revealed_tiles[idx]
+    map.tiles[idx] == TileType::Wall //&& map.revealed_tiles[idx]
 }
 
 fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
@@ -214,18 +214,42 @@ fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
         return 35;
     }
     let mut mask: u8 = 0;
+    let diagonals_matter: Vec<u8> = vec![7, 11, 13, 14, 15];
 
     if is_revealed_and_wall(map, x, y - 1) {
+        // N
         mask += 1;
     }
     if is_revealed_and_wall(map, x, y + 1) {
+        // S
         mask += 2;
     }
     if is_revealed_and_wall(map, x - 1, y) {
+        // W
         mask += 4;
     }
     if is_revealed_and_wall(map, x + 1, y) {
+        // E
         mask += 8;
+    }
+
+    if diagonals_matter.contains(&mask) {
+        if is_revealed_and_wall(map, x + 1, y - 1) {
+            // Top right
+            mask += 16;
+        }
+        if is_revealed_and_wall(map, x - 1, y - 1) {
+            // Top left
+            mask += 32;
+        }
+        if is_revealed_and_wall(map, x + 1, y + 1) {
+            // Bottom right
+            mask += 64;
+        }
+        if is_revealed_and_wall(map, x - 1, y + 1) {
+            // Bottom left
+            mask += 128;
+        }
     }
 
     match mask {
@@ -242,9 +266,79 @@ fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
         10 => 201, // Wall to the south and east
         11 => 204, // Wall to the north, south and east
         12 => 205, // Wall to the east and west
-        13 => 202, // Wall to the east, west, and south
-        14 => 203, // Wall to the east, west, and north
+        13 => 202, // Wall to the east, west, and north
+        14 => 203, // Wall to the east, west, and south
         15 => 206, // ╬ Wall on all sides
-        _ => 35,   // We missed one?
+        29 => 202,
+        31 => 206,
+        45 => 202,
+        46 => 203,
+        47 => 206,
+        55 => 185,
+        59 => 204,
+        63 => 203,
+        126 => 203,
+        143 => 206,
+        187 => 204,
+        215 => 185,
+        190 => 203,
+        237 => 202,
+        30 => 203,
+        110 => 203,
+        111 => 206,
+        119 => 185,
+        142 => 203,
+        158 => 203,
+        235 => 204,
+        93 => 202,
+        109 => 202,
+        94 => 203,
+        174 => 203,
+        159 => 206,
+        221 => 202,
+        157 => 202,
+        79 => 206,
+        95 => 185,
+        23 => 185, // NSW and NSE + 1 diagonal
+        39 => 185,
+        71 => 185,
+        103 => 185,
+        135 => 185,
+        151 => 185,
+        199 => 185,
+        78 => 203,
+        27 => 204,
+        43 => 204,
+        75 => 204,
+        107 => 204,
+        139 => 204,
+        155 => 204,
+        173 => 202,
+        141 => 202,
+        205 => 202,
+        175 => 204,
+        203 => 204,
+        61 => 205,  // NEW cases
+        125 => 205, // NEW cases
+        189 => 205, // NEW cases
+        206 => 205,
+        207 => 202,
+        222 => 205,
+        238 => 205,
+        253 => 205,
+        254 => 205,
+        167 => 186, // NSW, NW, SW
+        91 => 186,  // NSE, NE, SE
+        183 => 186, // NSW, NW, SW, NE
+        123 => 186, // NSE, NE, SE, NW
+        231 => 186, // NSW, NW, SW, SE
+        219 => 186, // NSE, NE, SE, SW
+        247 => 186,
+        251 => 186,
+        127 => 187, // Everything except NE
+        191 => 201, // Everything except NW
+        223 => 188, // Everything except SE
+        239 => 200, // Everything except SW
+        _ => 35,    // We missed one?
     }
 }
