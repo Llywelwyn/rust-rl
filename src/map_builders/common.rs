@@ -77,3 +77,71 @@ pub fn generate_voronoi_spawn_regions(map: &Map, rng: &mut rltk::RandomNumberGen
     }
     return noise_areas;
 }
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum Symmetry {
+    None,
+    Horizontal,
+    Vertical,
+    Both,
+}
+
+pub fn paint(map: &mut Map, mode: Symmetry, brush_size: i32, x: i32, y: i32) {
+    match mode {
+        Symmetry::None => apply_paint(map, brush_size, x, y),
+        Symmetry::Horizontal => {
+            let centre_x = map.width / 2;
+            if x == centre_x {
+                apply_paint(map, brush_size, x, y);
+            } else {
+                let dist_x = i32::abs(centre_x - x);
+                apply_paint(map, brush_size, centre_x + dist_x, y);
+                apply_paint(map, brush_size, centre_x - dist_x, y);
+            }
+        }
+        Symmetry::Vertical => {
+            let centre_y = map.height / 2;
+            if y == centre_y {
+                apply_paint(map, brush_size, x, y);
+            } else {
+                let dist_y = i32::abs(centre_y - y);
+                apply_paint(map, brush_size, x, centre_y + dist_y);
+                apply_paint(map, brush_size, x, centre_y - dist_y);
+            }
+        }
+        Symmetry::Both => {
+            let centre_x = map.width / 2;
+            let centre_y = map.height / 2;
+            if x == centre_x && y == centre_y {
+                apply_paint(map, brush_size, x, y);
+            } else {
+                let dist_x = i32::abs(centre_x - x);
+                apply_paint(map, brush_size, centre_x + dist_x, y);
+                apply_paint(map, brush_size, centre_x - dist_x, y);
+                let dist_y = i32::abs(centre_y - y);
+                apply_paint(map, brush_size, x, centre_y + dist_y);
+                apply_paint(map, brush_size, x, centre_y - dist_y);
+            }
+        }
+    }
+}
+
+fn apply_paint(map: &mut Map, brush_size: i32, x: i32, y: i32) {
+    match brush_size {
+        1 => {
+            let digger_idx = map.xy_idx(x, y);
+            map.tiles[digger_idx] = TileType::Floor;
+        }
+        _ => {
+            let half_brush_size = brush_size / 2;
+            for brush_y in y - half_brush_size..y + half_brush_size {
+                for brush_x in x - half_brush_size..x + half_brush_size {
+                    if brush_x > 1 && brush_x < map.width - 1 && brush_y > 1 && brush_y < map.height - 1 {
+                        let idx = map.xy_idx(brush_x, brush_y);
+                        map.tiles[idx] = TileType::Floor;
+                    }
+                }
+            }
+        }
+    }
+}
