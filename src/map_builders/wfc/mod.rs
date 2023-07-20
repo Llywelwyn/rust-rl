@@ -2,8 +2,7 @@ use super::{
     generate_voronoi_spawn_regions, remove_unreachable_areas_returning_most_distant, spawner, Map, MapBuilder,
     Position, TileType, SHOW_MAPGEN,
 };
-mod image_loader;
-use image_loader::load_rex_map;
+
 mod common;
 use common::MapChunk;
 mod constraints;
@@ -13,19 +12,12 @@ use solver::Solver;
 use specs::prelude::*;
 use std::collections::HashMap;
 
-#[derive(PartialEq, Copy, Clone)]
-pub enum WaveFunctionMode {
-    TestMap,
-    Derived,
-}
-
 pub struct WaveFunctionCollapseBuilder {
     map: Map,
     starting_position: Position,
     depth: i32,
     history: Vec<Map>,
     noise_areas: HashMap<i32, Vec<usize>>,
-    mode: WaveFunctionMode,
     derive_from: Option<Box<dyn MapBuilder>>,
 }
 
@@ -61,36 +53,22 @@ impl MapBuilder for WaveFunctionCollapseBuilder {
 }
 
 impl WaveFunctionCollapseBuilder {
-    pub fn new(
-        new_depth: i32,
-        mode: WaveFunctionMode,
-        derive_from: Option<Box<dyn MapBuilder>>,
-    ) -> WaveFunctionCollapseBuilder {
+    pub fn new(new_depth: i32, derive_from: Option<Box<dyn MapBuilder>>) -> WaveFunctionCollapseBuilder {
         WaveFunctionCollapseBuilder {
             map: Map::new(new_depth),
             starting_position: Position { x: 0, y: 0 },
             depth: new_depth,
             history: Vec::new(),
             noise_areas: HashMap::new(),
-            mode,
             derive_from,
         }
     }
-    pub fn test_map(new_depth: i32) -> WaveFunctionCollapseBuilder {
-        WaveFunctionCollapseBuilder::new(new_depth, WaveFunctionMode::TestMap, None)
-    }
+
     pub fn derived_map(new_depth: i32, builder: Box<dyn MapBuilder>) -> WaveFunctionCollapseBuilder {
-        WaveFunctionCollapseBuilder::new(new_depth, WaveFunctionMode::Derived, Some(builder))
+        WaveFunctionCollapseBuilder::new(new_depth, Some(builder))
     }
 
     fn build(&mut self, rng: &mut RandomNumberGenerator) {
-        if self.mode == WaveFunctionMode::TestMap {
-            self.map =
-                load_rex_map(self.depth, &rltk::rex::XpFile::from_resource("../resources/wfc-demo1.xp").unwrap());
-            self.take_snapshot();
-            return;
-        }
-
         const CHUNK_SIZE: i32 = 8;
 
         let prebuilder = &mut self.derive_from.as_mut().unwrap();
@@ -153,6 +131,7 @@ impl WaveFunctionCollapseBuilder {
                 // Next row
                 x = 1;
                 y += chunk_size + 1;
+                self.take_snapshot();
 
                 if y + chunk_size > self.map.height {
                     // Next page
