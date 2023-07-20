@@ -78,6 +78,7 @@ pub fn generate_voronoi_spawn_regions(map: &Map, rng: &mut rltk::RandomNumberGen
     return noise_areas;
 }
 
+#[allow(dead_code)]
 #[derive(PartialEq, Copy, Clone)]
 pub enum Symmetry {
     None,

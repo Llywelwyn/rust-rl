@@ -222,7 +222,6 @@ impl DLABuilder {
                     }
                     paint(&mut self.map, self.symmetry, self.brush_size, prev_x, prev_y);
                 }
-                _ => {}
             }
             self.take_snapshot();
             floor_tile_count = self.map.tiles.iter().filter(|a| **a == TileType::Floor).count();

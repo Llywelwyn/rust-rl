@@ -77,6 +77,7 @@ impl VoronoiBuilder {
             distance_algorithm: DistanceAlgorithm::Manhattan,
         }
     }
+    #[allow(dead_code)]
     pub fn chebyshev(new_depth: i32) -> VoronoiBuilder {
         VoronoiBuilder {
             map: Map::new(new_depth),

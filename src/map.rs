@@ -4,7 +4,7 @@ use specs::prelude::*;
 use std::collections::HashSet;
 use std::ops::{Add, Mul};
 
-#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
     Wall,
     Floor,
