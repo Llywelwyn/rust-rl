@@ -7,6 +7,8 @@ mod dla;
 mod drunkard;
 mod maze;
 mod simple_map;
+mod voronoi;
+mod wfc;
 use common::*;
 use rltk::RandomNumberGenerator;
 use specs::prelude::*;
@@ -22,7 +24,7 @@ pub trait MapBuilder {
 
 pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     /*let mut rng = rltk::RandomNumberGenerator::new();
-    let builder = rng.roll_dice(1, 14);
+    let builder = rng.roll_dice(1, 17);
     match builder {
         1 => Box::new(bsp_dungeon::BspDungeonBuilder::new(new_depth)),
         2 => Box::new(bsp_interior::BspInteriorBuilder::new(new_depth)),
@@ -37,7 +39,10 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
         9 => Box::new(dla::DLABuilder::walk_outwards(new_depth)),
         10 => Box::new(dla::DLABuilder::central_attractor(new_depth)),
         11 => Box::new(dla::DLABuilder::insectoid(new_depth)),
+        12 => Box::new(voronoi::VoronoiBuilder::pythagoras(new_depth)),
+        12 => Box::new(voronoi::VoronoiBuilder::manhattan(new_depth)),
+        12 => Box::new(voronoi::VoronoiBuilder::chebyshev(new_depth)),
         _ => Box::new(simple_map::SimpleMapBuilder::new(new_depth)),
     }*/
-    Box::new(drunkard::DrunkardsWalkBuilder::fearful_symmetry(new_depth))
+    Box::new(wfc::WaveFunctionCollapseBuilder::new(new_depth))
 }

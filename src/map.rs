@@ -206,7 +206,7 @@ pub fn draw_map(map: &Map, ctx: &mut Rltk) {
 
 fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
     let idx = map.xy_idx(x, y);
-    map.tiles[idx] == TileType::Wall //&& map.revealed_tiles[idx]
+    map.tiles[idx] == TileType::Wall && map.revealed_tiles[idx]
 }
 
 fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
@@ -277,8 +277,11 @@ fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
         55 => 185,
         59 => 204,
         63 => 203,
+        87 => 185,
         126 => 203,
         143 => 206,
+        77 => 202,
+        171 => 204,
         187 => 204,
         215 => 185,
         190 => 203,

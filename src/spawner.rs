@@ -69,7 +69,7 @@ pub fn roll_hit_dice(ecs: &mut World, n: i32, d: i32) -> i32 {
 }
 
 // Consts
-const MAX_ENTITIES: i32 = 4;
+const MAX_ENTITIES: i32 = 2;
 
 #[allow(clippy::map_entry)]
 pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
