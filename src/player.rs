@@ -193,7 +193,7 @@ pub fn try_next_level(ecs: &mut World) -> bool {
 
 fn skip_turn(ecs: &mut World) -> bool {
     let player_entity = ecs.fetch::<Entity>();
-    let viewshed_components = ecs.read_storage::<Viewshed>();
+    let mut viewsheds = ecs.write_storage::<Viewshed>();
     let monsters = ecs.read_storage::<Monster>();
     let worldmap_resource = ecs.fetch::<Map>();
     let hunger_clocks = ecs.read_storage::<HungerClock>();
@@ -202,7 +202,7 @@ fn skip_turn(ecs: &mut World) -> bool {
     let mut can_heal = true;
 
     // Check viewshed for monsters nearby. If we can see a monster, we can't heal.
-    let viewshed = viewshed_components.get(*player_entity).unwrap();
+    let viewshed = viewsheds.get_mut(*player_entity).unwrap();
     for tile in viewshed.visible_tiles.iter() {
         let idx = worldmap_resource.xy_idx(tile.x, tile.y);
         for entity_id in worldmap_resource.tile_content[idx].iter() {
@@ -215,6 +215,8 @@ fn skip_turn(ecs: &mut World) -> bool {
             }
         }
     }
+    // Dirty viewshed (so we search for hidden tiles whenever we wait)
+    viewshed.dirty = true;
 
     // Check player's hunger state - if we're hungry or worse, we can't heal.
     let player_hunger_clock = hunger_clocks.get(*player_entity);
@@ -244,6 +246,7 @@ fn skip_turn(ecs: &mut World) -> bool {
     } else {
         gamelog::Logger::new().append("You wait a turn.").log();
     }
+
     return true;
 }
 

@@ -20,7 +20,7 @@ pub struct PrefabBuilder {
     depth: i32,
     history: Vec<Map>,
     mode: PrefabMode,
-    spawns: Vec<(usize, String)>,
+    spawn_list: Vec<(usize, String)>,
     previous_builder: Option<Box<dyn MapBuilder>>,
 }
 
@@ -28,17 +28,15 @@ impl MapBuilder for PrefabBuilder {
     fn build_map(&mut self, rng: &mut RandomNumberGenerator) {
         return self.build(rng);
     }
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for entity in self.spawns.iter() {
-            spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
-        }
-    }
     //  Getters
     fn get_map(&mut self) -> Map {
         return self.map.clone();
     }
     fn get_starting_pos(&mut self) -> Position {
         return self.starting_position.clone();
+    }
+    fn get_spawn_list(&self) -> &Vec<(usize, String)> {
+        return &self.spawn_list;
     }
     // Mapgen visualisation stuff
     fn get_snapshot_history(&self) -> Vec<Map> {
@@ -64,7 +62,7 @@ impl PrefabBuilder {
             depth: new_depth,
             history: Vec::new(),
             mode: PrefabMode::Sectional { section: prefab_sections::UNDERGROUND_FORT },
-            spawns: Vec::new(),
+            spawn_list: Vec::new(),
             previous_builder,
         }
     }
@@ -98,15 +96,7 @@ impl PrefabBuilder {
     }
 
     pub fn apply_sectional(&mut self, section: &prefab_sections::PrefabSection, rng: &mut RandomNumberGenerator) {
-        // Build the map
-        let prev_builder = self.previous_builder.as_mut().unwrap();
-        prev_builder.build_map(rng);
-        self.starting_position = prev_builder.get_starting_pos();
-        self.map = prev_builder.get_map().clone();
-        self.take_snapshot();
-
         use prefab_sections::*;
-
         let string_vec = PrefabBuilder::read_ascii_to_vec(section.template);
 
         // Place the new section
@@ -123,7 +113,26 @@ impl PrefabBuilder {
             VerticalPlacement::Center => chunk_y = (self.map.height / 2) - (section.height as i32 / 2),
             VerticalPlacement::Bottom => chunk_y = (self.map.height - 1) - section.height as i32,
         }
-        println!("{},{}", chunk_x, chunk_y);
+
+        // Build the map
+        let prev_builder = self.previous_builder.as_mut().unwrap();
+        prev_builder.build_map(rng);
+        self.starting_position = prev_builder.get_starting_pos();
+        self.map = prev_builder.get_map().clone();
+        // Iterate previous spawn list, culling entities within new section
+        for entity in prev_builder.get_spawn_list().iter() {
+            let idx = entity.0;
+            let x = idx as i32 % self.map.width;
+            let y = idx as i32 / self.map.width;
+            if x < chunk_x
+                || x > (chunk_x + section.width as i32)
+                || y < chunk_y
+                || y > (chunk_y + section.height as i32)
+            {
+                self.spawn_list.push((idx, entity.1.to_string()));
+            }
+        }
+        self.take_snapshot();
 
         let mut i = 0;
         for ty in 0..section.height {
@@ -151,23 +160,23 @@ impl PrefabBuilder {
             }
             'g' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "goblin".to_string()));
+                self.spawn_list.push((idx, "goblin".to_string()));
             }
             'o' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "orc".to_string()));
+                self.spawn_list.push((idx, "orc".to_string()));
             }
             '^' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "bear trap".to_string()));
+                self.spawn_list.push((idx, "bear trap".to_string()));
             }
             '%' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "rations".to_string()));
+                self.spawn_list.push((idx, "rations".to_string()));
             }
             '!' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "health potion".to_string()));
+                self.spawn_list.push((idx, "health potion".to_string()));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph loading map: {}", (ch as u8) as char));
