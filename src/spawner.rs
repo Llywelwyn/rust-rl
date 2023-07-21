@@ -71,11 +71,17 @@ pub fn roll_hit_dice(ecs: &mut World, n: i32, d: i32) -> i32 {
 // Consts
 const MAX_ENTITIES: i32 = 2;
 
-#[allow(clippy::map_entry)]
-pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
+/// Fills a room with stuff!
+pub fn spawn_room(
+    map: &Map,
+    rng: &mut RandomNumberGenerator,
+    room: &Rect,
+    map_depth: i32,
+    spawn_list: &mut Vec<(usize, String)>,
+) {
     let mut possible_targets: Vec<usize> = Vec::new();
     {
-        let map = ecs.fetch::<Map>();
+        // Borrow scope - to keep access to the map separated
         for y in room.y1 + 1..room.y2 {
             for x in room.x1 + 1..room.x2 {
                 let idx = map.xy_idx(x, y);
@@ -86,38 +92,42 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
         }
     }
 
-    spawn_region(ecs, &possible_targets, map_depth);
+    spawn_region(map, rng, &possible_targets, map_depth, spawn_list);
 }
 
-pub fn spawn_region(ecs: &mut World, area: &[usize], map_depth: i32) {
+pub fn spawn_region(
+    map: &Map,
+    rng: &mut RandomNumberGenerator,
+    area: &[usize],
+    map_depth: i32,
+    spawn_list: &mut Vec<(usize, String)>,
+) {
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
-    {
-        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        let category = category_table().roll(&mut rng);
-        let spawn_table;
-        match category.as_ref() {
-            "mob" => spawn_table = mob_table(map_depth),
-            "item" => spawn_table = item_table(map_depth),
-            "food" => spawn_table = food_table(map_depth),
-            "trap" => spawn_table = trap_table(map_depth),
-            _ => spawn_table = debug_table(),
-        }
-        let num_spawns = i32::min(areas.len() as i32, rng.roll_dice(1, MAX_ENTITIES + 2) - 2);
-        if num_spawns <= 0 {
-            return;
-        }
+    let category = category_table().roll(rng);
+    let spawn_table;
+    match category.as_ref() {
+        "mob" => spawn_table = mob_table(map_depth),
+        "item" => spawn_table = item_table(map_depth),
+        "food" => spawn_table = food_table(map_depth),
+        "trap" => spawn_table = trap_table(map_depth),
+        _ => spawn_table = debug_table(),
+    }
 
-        for _i in 0..num_spawns {
-            let array_idx = if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32) - 1) as usize };
-            let map_idx = areas[array_idx];
-            spawn_points.insert(map_idx, spawn_table.roll(&mut rng));
-            areas.remove(array_idx);
-        }
+    let num_spawns = i32::min(areas.len() as i32, rng.roll_dice(1, MAX_ENTITIES + 2) - 2);
+    if num_spawns <= 0 {
+        return;
+    }
+
+    for _i in 0..num_spawns {
+        let array_idx = if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32) - 1) as usize };
+        let map_idx = areas[array_idx];
+        spawn_points.insert(map_idx, spawn_table.roll(rng));
+        areas.remove(array_idx);
     }
 
     for spawn in spawn_points.iter() {
-        spawn_entity(ecs, &spawn);
+        spawn_list.push((*spawn.0, spawn.1.to_string()));
     }
 }
 
@@ -154,7 +164,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         // Traps
         "bear trap" => bear_trap(ecs, x, y),
         "confusion trap" => confusion_trap(ecs, x, y),
-        _ => console::log("Tried to spawn nothing. Bugfix needed!"),
+        _ => console::log(format!("Tried to spawn nothing ({}). Bugfix needed!", spawn.1)),
     }
 }
 

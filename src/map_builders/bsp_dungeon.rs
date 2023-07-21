@@ -9,16 +9,12 @@ pub struct BspDungeonBuilder {
     rooms: Vec<Rect>,
     history: Vec<Map>,
     rects: Vec<Rect>,
+    spawn_list: Vec<(usize, String)>,
 }
 
 impl MapBuilder for BspDungeonBuilder {
     fn build_map(&mut self, rng: &mut RandomNumberGenerator) {
         return self.build(rng);
-    }
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for room in self.rooms.iter().skip(1) {
-            spawner::spawn_room(ecs, room, self.depth);
-        }
     }
     //  Getters
     fn get_map(&mut self) -> Map {
@@ -26,6 +22,9 @@ impl MapBuilder for BspDungeonBuilder {
     }
     fn get_starting_pos(&mut self) -> Position {
         return self.starting_position.clone();
+    }
+    fn get_spawn_list(&self) -> &Vec<(usize, String)> {
+        return &self.spawn_list;
     }
     // Mapgen visualisation stuff
     fn get_snapshot_history(&self) -> Vec<Map> {
@@ -51,6 +50,7 @@ impl BspDungeonBuilder {
             rooms: Vec::new(),
             history: Vec::new(),
             rects: Vec::new(),
+            spawn_list: Vec::new(),
         }
     }
 
@@ -97,6 +97,11 @@ impl BspDungeonBuilder {
         let stairs = self.rooms[self.rooms.len() - 1].centre();
         let stairs_idx = self.map.xy_idx(stairs.0, stairs.1);
         self.map.tiles[stairs_idx] = TileType::DownStair;
+
+        // Spawn entities
+        for room in self.rooms.iter().skip(1) {
+            spawner::spawn_room(&self.map, rng, room, self.depth, &mut self.spawn_list);
+        }
     }
 
     fn add_subrects(&mut self, rect: Rect) {

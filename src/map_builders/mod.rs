@@ -16,6 +16,7 @@ mod simple_map;
 mod voronoi;
 use voronoi::VoronoiBuilder;
 mod prefab_builder;
+use prefab_builder::PrefabBuilder;
 mod wfc;
 use common::*;
 use rltk::RandomNumberGenerator;
@@ -24,9 +25,14 @@ use wfc::WaveFunctionCollapseBuilder;
 
 pub trait MapBuilder {
     fn build_map(&mut self, rng: &mut RandomNumberGenerator);
-    fn spawn_entities(&mut self, ecs: &mut World);
+    fn spawn_entities(&mut self, ecs: &mut World) {
+        for entity in self.get_spawn_list().iter() {
+            spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
+        }
+    }
     fn get_map(&mut self) -> Map;
     fn get_starting_pos(&mut self) -> Position;
+    fn get_spawn_list(&self) -> &Vec<(usize, String)>;
     fn get_snapshot_history(&self) -> Vec<Map>;
     fn take_snapshot(&mut self);
 }
@@ -60,6 +66,14 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     }
 
     result*/
-    Box::new(prefab_builder::PrefabBuilder::new(new_depth))
-    
+    Box::new(
+        PrefabBuilder::new(
+            new_depth,
+            Some(
+                Box::new(
+                    CellularAutomataBuilder::new(new_depth)
+                )
+            )
+        )
+    )
 }

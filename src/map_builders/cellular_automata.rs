@@ -14,16 +14,12 @@ pub struct CellularAutomataBuilder {
     depth: i32,
     history: Vec<Map>,
     noise_areas: HashMap<i32, Vec<usize>>,
+    spawn_list: Vec<(usize, String)>,
 }
 
 impl MapBuilder for CellularAutomataBuilder {
     fn build_map(&mut self, rng: &mut RandomNumberGenerator) {
         return self.build(rng);
-    }
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for area in self.noise_areas.iter() {
-            spawner::spawn_region(ecs, area.1, self.depth);
-        }
     }
     //  Getters
     fn get_map(&mut self) -> Map {
@@ -31,6 +27,9 @@ impl MapBuilder for CellularAutomataBuilder {
     }
     fn get_starting_pos(&mut self) -> Position {
         return self.starting_position.clone();
+    }
+    fn get_spawn_list(&self) -> &Vec<(usize, String)> {
+        return &self.spawn_list;
     }
     // Mapgen visualisation stuff
     fn get_snapshot_history(&self) -> Vec<Map> {
@@ -55,6 +54,7 @@ impl CellularAutomataBuilder {
             depth: new_depth,
             history: Vec::new(),
             noise_areas: HashMap::new(),
+            spawn_list: Vec::new(),
         }
     }
 
@@ -135,5 +135,10 @@ impl CellularAutomataBuilder {
 
         // Noise map for spawning entities
         self.noise_areas = generate_voronoi_spawn_regions(&self.map, rng);
+
+        // Spawn the entities
+        for area in self.noise_areas.iter() {
+            spawner::spawn_region(&self.map, rng, area.1, self.depth, &mut self.spawn_list);
+        }
     }
 }
