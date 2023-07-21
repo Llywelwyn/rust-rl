@@ -1,0 +1,180 @@
+{
+    "items": [
+        {
+            "name": "potion of health",
+            "renderable": {
+                "glyph": "!",
+                "fg": "#FF00FF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": { "provides_healing": "8" }
+            }
+        },
+        {
+            "name": "potion of greater health",
+            "renderable": {
+                "glyph": "!",
+                "fg": "#FF00FF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": { "provides_healing": "16" }
+            }
+        },
+        {
+            "name": "potion of superior health",
+            "renderable": {
+                "glyph": "!",
+                "fg": "#FF00FF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": { "provides_healing": "32" }
+            }
+        },
+        {
+            "name": "scroll of magic missile",
+            "renderable": {
+                "glyph": "?",
+                "fg": "#00FFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "ranged": "12",
+                    "damage": "10"
+                }
+            }
+        },
+        {
+            "name": "scroll of fireball",
+            "renderable": {
+                "glyph": "?",
+                "fg": "#FFA500",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "ranged": "10",
+                    "damage": "20",
+                    "aoe": "3"
+                }
+            }
+        },
+        {
+            "name": "scroll of confusion",
+            "renderable": {
+                "glyph": "?",
+                "fg": "#A020F0",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "ranged": "10",
+                    "confusion": "4"
+                }
+            }
+        },
+        {
+            "name": "scroll of magic mapping",
+            "renderable": {
+                "glyph": "?",
+                "fg": "#4169E1",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "magic_mapping": ""
+                }
+            }
+        },
+        {
+            "name": "rations",
+            "renderable": {
+                "glyph": "%",
+                "fg": "#FFA07A",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "food": ""
+                }
+            }
+        },
+        {
+            "name": "dagger",
+            "renderable": {
+                "glyph": ")",
+                "fg": "#BEBEBE",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "power_bonus": 1
+            }
+        },
+        {
+            "name": "shortsword",
+            "renderable": {
+                "glyph": ")",
+                "fg": "#D3D3D3",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "power_bonus": 2
+            }
+        },
+        {
+            "name": "buckler",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#BEBEBE",
+                "bg": "#000000",
+                "order": 2
+            },
+            "shield": {
+                "defence_bonus": 1
+            }
+        },
+        {
+            "name": "medium shield",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#BEBEBE",
+                "bg": "#000000",
+                "order": 2
+            },
+            "shield": {
+                "power_bonus": -1,
+                "defence_bonus": 1
+            }
+        },
+        {
+            "name": "large shield",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#F5F5F5",
+                "bg": "#000000",
+                "order": 2
+            },
+            "shield": {
+                "power_bonus": -2,
+                "defence_bonus": 3
+            }
+        }
+    ],
+    "mobs": [],
+    "props": []
+}
