@@ -1,6 +1,5 @@
 use super::{spawner, Map, MapBuilder, Position, Rect, TileType, SHOW_MAPGEN};
 use rltk::RandomNumberGenerator;
-use specs::prelude::*;
 
 pub struct BspInteriorBuilder {
     map: Map,
@@ -42,6 +41,7 @@ impl MapBuilder for BspInteriorBuilder {
 }
 
 impl BspInteriorBuilder {
+    #[allow(dead_code)]
     pub fn new(new_depth: i32) -> BspInteriorBuilder {
         BspInteriorBuilder {
             map: Map::new(new_depth),

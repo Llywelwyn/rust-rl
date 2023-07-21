@@ -2,8 +2,7 @@ use super::{
     apply_horizontal_tunnel, apply_room_to_map, apply_vertical_tunnel, spawner, Map, MapBuilder, Position, Rect,
     TileType, SHOW_MAPGEN,
 };
-use rltk::{console, RandomNumberGenerator};
-use specs::prelude::*;
+use rltk::RandomNumberGenerator;
 
 pub struct SimpleMapBuilder {
     map: Map,
@@ -44,6 +43,7 @@ impl MapBuilder for SimpleMapBuilder {
 }
 
 impl SimpleMapBuilder {
+    #[allow(dead_code)]
     pub fn new(new_depth: i32) -> SimpleMapBuilder {
         SimpleMapBuilder {
             map: Map::new(new_depth),
@@ -88,7 +88,6 @@ impl SimpleMapBuilder {
                 }
 
                 self.rooms.push(new_room);
-                console::log("pushed new room");
                 self.take_snapshot();
             }
         }

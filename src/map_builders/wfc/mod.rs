@@ -9,7 +9,6 @@ mod constraints;
 mod solver;
 use rltk::RandomNumberGenerator;
 use solver::Solver;
-use specs::prelude::*;
 use std::collections::HashMap;
 
 pub struct WaveFunctionCollapseBuilder {
@@ -51,6 +50,7 @@ impl MapBuilder for WaveFunctionCollapseBuilder {
     }
 }
 
+#[allow(dead_code)]
 impl WaveFunctionCollapseBuilder {
     pub fn new(new_depth: i32, derive_from: Option<Box<dyn MapBuilder>>) -> WaveFunctionCollapseBuilder {
         WaveFunctionCollapseBuilder {
@@ -74,6 +74,7 @@ impl WaveFunctionCollapseBuilder {
         let prebuilder = &mut self.derive_from.as_mut().unwrap();
         prebuilder.build_map(rng);
         self.map = prebuilder.get_map();
+        self.history = prebuilder.get_snapshot_history();
         for t in self.map.tiles.iter_mut() {
             if *t == TileType::DownStair {
                 *t = TileType::Floor;

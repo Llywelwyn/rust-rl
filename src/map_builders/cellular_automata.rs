@@ -3,7 +3,6 @@ use super::{
     Position, TileType, SHOW_MAPGEN,
 };
 use rltk::RandomNumberGenerator;
-use specs::prelude::*;
 use std::collections::HashMap;
 
 const PASSES: i32 = 15;

@@ -3,7 +3,6 @@ use super::{
     Position, Symmetry, TileType, SHOW_MAPGEN,
 };
 use rltk::RandomNumberGenerator;
-use specs::prelude::*;
 use std::collections::HashMap;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -59,6 +58,7 @@ impl MapBuilder for DrunkardsWalkBuilder {
     }
 }
 
+#[allow(dead_code)]
 impl DrunkardsWalkBuilder {
     pub fn open_area(new_depth: i32) -> DrunkardsWalkBuilder {
         DrunkardsWalkBuilder {

@@ -3,9 +3,9 @@ use super::{
     Map, MapBuilder, Position, TileType, SHOW_MAPGEN,
 };
 use rltk::RandomNumberGenerator;
-use specs::prelude::*;
 use std::collections::HashMap;
 
+#[allow(dead_code)]
 #[derive(PartialEq, Copy, Clone)]
 pub enum DLAAlgorithm {
     WalkInwards,
@@ -55,6 +55,7 @@ impl MapBuilder for DLABuilder {
     }
 }
 
+#[allow(dead_code)]
 impl DLABuilder {
     pub fn walk_inwards(new_depth: i32) -> DLABuilder {
         DLABuilder {

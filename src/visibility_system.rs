@@ -52,7 +52,7 @@ impl<'a> System<'a> for VisibilitySystem {
                         for thing in map.tile_content[idx].iter() {
                             let is_hidden = hidden.get(*thing);
                             if let Some(_is_hidden) = is_hidden {
-                                if rng.roll_dice(1, 20) == 1 {
+                                if rng.roll_dice(1, 12) == 1 {
                                     let name = names.get(*thing);
                                     if let Some(name) = name {
                                         gamelog::Logger::new()

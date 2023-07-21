@@ -5,8 +5,10 @@ pub struct PrefabLevel {
     pub height: usize,
 }
 
+#[allow(dead_code)]
 pub const WFC_POPULATED: PrefabLevel = PrefabLevel { template: LEVEL_MAP, width: 80, height: 43 };
 
+#[allow(dead_code)]
 const LEVEL_MAP: &str = "
 ################################################################################
 #          ########################################################    #########

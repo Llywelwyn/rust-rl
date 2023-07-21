@@ -3,9 +3,9 @@ use super::{
     Position, TileType, SHOW_MAPGEN,
 };
 use rltk::RandomNumberGenerator;
-use specs::prelude::*;
 use std::collections::HashMap;
 
+#[allow(dead_code)]
 #[derive(PartialEq, Copy, Clone)]
 pub enum DistanceAlgorithm {
     Pythagoras,
@@ -53,6 +53,7 @@ impl MapBuilder for VoronoiBuilder {
     }
 }
 
+#[allow(dead_code)]
 impl VoronoiBuilder {
     pub fn pythagoras(new_depth: i32) -> VoronoiBuilder {
         VoronoiBuilder {
