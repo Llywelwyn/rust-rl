@@ -188,6 +188,31 @@ impl PrefabBuilder {
                 (rng.roll_dice(1, possible_vaults.len() as i32) - 1) as usize
             };
             let vault = possible_vaults[vault_idx];
+            // Decide if we want to flip the vault
+            let mut flip_x: bool = false;
+            let mut flip_y: bool = false;
+            match vault.can_flip {
+                // Equal chance at every orientation
+                Flipping::None => {}
+                Flipping::Horizontal => {
+                    flip_x = rng.roll_dice(1, 2) == 1;
+                }
+                Flipping::Vertical => {
+                    flip_y = rng.roll_dice(1, 2) == 1;
+                }
+                Flipping::Both => {
+                    let roll = rng.roll_dice(1, 4);
+                    match roll {
+                        1 => {}
+                        2 => flip_x = true,
+                        3 => flip_y = true,
+                        _ => {
+                            flip_x = true;
+                            flip_y = true;
+                        }
+                    }
+                }
+            }
 
             // Make a list of all places the vault can fit
             let mut vault_positions: Vec<Position> = Vec::new();
@@ -248,7 +273,16 @@ impl PrefabBuilder {
                 let mut i = 0;
                 for tile_y in 0..vault.height {
                     for tile_x in 0..vault.width {
-                        let idx = self.map.xy_idx(tile_x as i32 + chunk_x, tile_y as i32 + chunk_y);
+                        let mut x_: i32 = tile_x as i32;
+                        let mut y_: i32 = tile_y as i32;
+                        // Handle flipping
+                        if flip_x {
+                            x_ = vault.height as i32 - 1 - x_;
+                        }
+                        if flip_y {
+                            y_ = vault.width as i32 - 1 - y_;
+                        }
+                        self.map.xy_idx(x_ + chunk_x, y_ as i32 + chunk_y);
                         self.char_to_map(string_vec[i], idx);
                         used_tiles.insert(idx);
                         i += 1;
@@ -348,6 +382,9 @@ impl PrefabBuilder {
                 for x in 0..layer.width {
                     let cell = layer.get(x, y).unwrap();
                     if x < self.map.width as usize && y < self.map.height as usize {
+                        // Saving these for later, for flipping the pref horizontally/vertically/both.
+                        // let flipped_x = (self.map.width - 1) - x as i32;
+                        // let flipped_y = (self.map.height - 1) - y as i32;
                         let idx = self.map.xy_idx(x as i32, y as i32);
                         // We're doing some nasty casting to make it easier to type things like '#' in the match
                         self.char_to_map(cell.ch as u8 as char, idx);
