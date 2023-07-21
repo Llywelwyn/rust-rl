@@ -1,8 +1,9 @@
 use super::{
-    random_table::RandomTable, BlocksTile, CombatStats, Confusion, Consumable, Cursed, DefenceBonus, Destructible,
-    EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, Map,
-    MeleePowerBonus, Mind, Monster, Name, Player, Position, ProvidesHealing, ProvidesNutrition, Ranged, Rect,
-    Renderable, SerializeMe, SingleActivation, TileType, Viewshed, Wand, AOE, MAPWIDTH,
+    random_table::RandomTable, Attribute, Attributes, BlocksTile, CombatStats, Confusion, Consumable, Cursed,
+    DefenceBonus, Destructible, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState,
+    InflictsDamage, Item, MagicMapper, Map, MeleePowerBonus, Mind, Monster, Name, Player, Position, ProvidesHealing,
+    ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe, SingleActivation, TileType, Viewshed, Wand, AOE,
+    MAPWIDTH,
 };
 use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -25,6 +26,14 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Name { name: "wanderer".to_string() })
         .with(CombatStats { max_hp: 8, hp: 8, defence: 0, power: 4 })
         .with(HungerClock { state: HungerState::Satiated, duration: 50 })
+        .with(Attributes {
+            strength: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            dexterity: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            constitution: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            intelligence: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            wisdom: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            charisma: Attribute { base: 10, modifiers: 0, bonus: 0 },
+        })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }

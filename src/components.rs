@@ -88,6 +88,23 @@ pub struct CombatStats {
     pub power: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Attribute {
+    pub base: i32,
+    pub modifiers: i32,
+    pub bonus: i32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Attributes {
+    pub strength: Attribute,
+    pub dexterity: Attribute,
+    pub constitution: Attribute,
+    pub intelligence: Attribute,
+    pub wisdom: Attribute,
+    pub charisma: Attribute,
+}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToMelee {
     pub target: Entity,
