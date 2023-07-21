@@ -78,19 +78,19 @@ impl State {
         self.mapgen_index = 0;
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
+        let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
+        let mut builder = map_builders::random_builder(new_depth, &mut rng);
+        builder.build_map(&mut rng);
+        std::mem::drop(rng);
+        self.mapgen_history = builder.build_data.history.clone();
         let player_start;
-        // Scope for borrow checker
-        let mut builder = map_builders::random_builder(new_depth);
         {
-            // Build a new map using RNG (to retain seed)
-            let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
-            builder.build_map(&mut rng);
-            self.mapgen_history = builder.get_snapshot_history();
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            *worldmap_resource = builder.get_map();
-            player_start = builder.get_starting_pos();
-            // Spawn entities
+            *worldmap_resource = builder.build_data.map.clone();
+            // Unwrap so we get a CTD if there's no starting pos.
+            player_start = builder.build_data.starting_position.as_mut().unwrap().clone();
         }
+        // Spawn entities
         builder.spawn_entities(&mut self.ecs);
 
         // Place player and update resources
