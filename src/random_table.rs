@@ -37,6 +37,18 @@ impl RandomTable {
         return self;
     }
 
+    /// Adds two RandomTables together
+    pub fn add_table(mut self, table: RandomTable) -> RandomTable {
+        // For every entry in the table being added, push to self.
+        for entry in table.entries {
+            self.entries.push(entry);
+        }
+        // Add the total weight of the added table to self.
+        self.total_weight += table.total_weight;
+        // Return
+        return self;
+    }
+
     /// Rolls on an existing RandomTable
     pub fn roll(&self, rng: &mut RandomNumberGenerator) -> String {
         // If the table has no weight, return nothing.

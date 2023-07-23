@@ -1,4 +1,7 @@
-use super::{BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, TileType};
+use super::{
+    spawner::equipment_table, spawner::food_table, spawner::potion_table, spawner::scroll_table, spawner::wand_table,
+    BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, TileType,
+};
 use rltk::RandomNumberGenerator;
 pub mod prefab_levels;
 pub mod prefab_sections;
@@ -60,15 +63,15 @@ impl PrefabBuilder {
 
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         match self.mode {
-            PrefabMode::RexLevel { template } => self.load_rex_map(&template, build_data),
-            PrefabMode::Constant { level } => self.load_ascii_map(&level, build_data),
+            PrefabMode::RexLevel { template } => self.load_rex_map(&template, rng, build_data),
+            PrefabMode::Constant { level } => self.load_ascii_map(&level, rng, build_data),
             PrefabMode::Sectional { section } => self.apply_sectional(&section, rng, build_data),
             PrefabMode::RoomVaults => self.apply_room_vaults(rng, build_data),
         }
         build_data.take_snapshot();
     }
 
-    fn char_to_map(&mut self, ch: char, idx: usize, build_data: &mut BuilderMap) {
+    fn char_to_map(&mut self, ch: char, idx: usize, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         match ch {
             ' ' => build_data.map.tiles[idx] = TileType::Floor,
             '#' => build_data.map.tiles[idx] = TileType::Wall,
@@ -98,20 +101,20 @@ impl PrefabBuilder {
             }
             '%' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "rations".to_string()));
+                build_data.spawn_list.push((idx, food_table(build_data.map.depth).roll(rng)));
             }
             '!' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "health potion".to_string()));
+                build_data.spawn_list.push((idx, potion_table(build_data.map.depth).roll(rng)));
             }
             '/' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "magic missile wand".to_string()));
+                build_data.spawn_list.push((idx, wand_table(build_data.map.depth).roll(rng)));
                 // Placeholder for wand spawn
             }
             '?' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "fireball scroll".to_string()));
+                build_data.spawn_list.push((idx, scroll_table(build_data.map.depth).roll(rng)));
                 // Placeholder for scroll spawn
             }
             _ => {
@@ -121,7 +124,7 @@ impl PrefabBuilder {
     }
 
     #[allow(dead_code)]
-    fn load_rex_map(&mut self, path: &str, build_data: &mut BuilderMap) {
+    fn load_rex_map(&mut self, path: &str, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         let xp_file = rltk::rex::XpFile::from_resource(path).unwrap();
 
         for layer in &xp_file.layers {
@@ -131,7 +134,7 @@ impl PrefabBuilder {
                     if x < build_data.map.width as usize && y < build_data.map.height as usize {
                         let idx = build_data.map.xy_idx(x as i32, y as i32);
                         // We're doing some nasty casting to make it easier to type things like '#' in the match
-                        self.char_to_map(cell.ch as u8 as char, idx, build_data);
+                        self.char_to_map(cell.ch as u8 as char, idx, rng, build_data);
                     }
                 }
             }
@@ -149,7 +152,12 @@ impl PrefabBuilder {
     }
 
     #[allow(dead_code)]
-    fn load_ascii_map(&mut self, level: &prefab_levels::PrefabLevel, build_data: &mut BuilderMap) {
+    fn load_ascii_map(
+        &mut self,
+        level: &prefab_levels::PrefabLevel,
+        rng: &mut RandomNumberGenerator,
+        build_data: &mut BuilderMap,
+    ) {
         let string_vec = PrefabBuilder::read_ascii_to_vec(level.template);
 
         let mut i = 0;
@@ -158,7 +166,7 @@ impl PrefabBuilder {
                 if tx < build_data.map.width as usize && ty < build_data.map.height as usize {
                     let idx = build_data.map.xy_idx(tx as i32, ty as i32);
                     if i < string_vec.len() {
-                        self.char_to_map(string_vec[i], idx, build_data);
+                        self.char_to_map(string_vec[i], idx, rng, build_data);
                     }
                 }
                 i += 1;
@@ -228,7 +236,7 @@ impl PrefabBuilder {
                 {
                     let idx = build_data.map.xy_idx(tx as i32 + chunk_x, ty as i32 + chunk_y);
                     if i < string_vec.len() {
-                        self.char_to_map(string_vec[i], idx, build_data);
+                        self.char_to_map(string_vec[i], idx, rng, build_data);
                     }
                 }
                 i += 1;
@@ -385,7 +393,7 @@ impl PrefabBuilder {
                         }
                         let idx = build_data.map.xy_idx(x_ + chunk_x, y_ + chunk_y);
                         if i < string_vec.len() {
-                            self.char_to_map(string_vec[i], idx, build_data);
+                            self.char_to_map(string_vec[i], idx, rng, build_data);
                         }
                         used_tiles.insert(idx);
                         i += 1;

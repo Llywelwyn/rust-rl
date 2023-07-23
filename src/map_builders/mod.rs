@@ -304,6 +304,7 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
     builder.start_with(BspInteriorBuilder::new());
     builder.with(DoorPlacement::new());
     builder.with(RoomBasedSpawner::new());
+    builder.with(PrefabBuilder::vaults());
     builder.with(RoomBasedStairs::new());
     builder.with(RoomBasedStartingPosition::new());
     builder

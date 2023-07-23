@@ -199,35 +199,46 @@ fn mob_table(map_depth: i32) -> RandomTable {
 }
 
 // 6 equipment : 10 potions : 10 scrolls : 2 cursed scrolls
-fn item_table(_map_depth: i32) -> RandomTable {
+fn item_table(map_depth: i32) -> RandomTable {
     return RandomTable::new()
         // Equipment
-        .add("dagger", 4)
-        .add("shortsword", 4)
-        .add("buckler", 4)
-        .add("shield", 2)
+        .add_table(equipment_table(map_depth))
         // Potions
-        .add("weak health potion", 14)
-        .add("health potion", 6)
+        .add_table(potion_table(map_depth))
         // Scrolls
+        .add_table(scroll_table(map_depth))
+        // Wands
+        .add_table(wand_table(map_depth));
+}
+
+pub fn equipment_table(_map_depth: i32) -> RandomTable {
+    return RandomTable::new().add("dagger", 4).add("shortsword", 2).add("buckler", 4).add("shield", 2);
+}
+
+pub fn potion_table(_map_depth: i32) -> RandomTable {
+    return RandomTable::new().add("weak health potion", 14).add("health potion", 6);
+}
+
+pub fn scroll_table(_map_depth: i32) -> RandomTable {
+    return RandomTable::new()
         .add("fireball scroll", 2)
         .add("cursed fireball scroll", 2)
         .add("confusion scroll", 4)
         .add("magic missile scroll", 10)
         .add("magic map scroll", 4)
-        .add("cursed magic map scroll", 2)
-        // Wands
-        .add("magic missile wand", 1)
-        .add("fireball wand", 1)
-        .add("confusion wand", 1);
+        .add("cursed magic map scroll", 2);
 }
 
-fn food_table(_map_depth: i32) -> RandomTable {
+pub fn wand_table(_map_depth: i32) -> RandomTable {
+    return RandomTable::new().add("magic missile wand", 1).add("fireball wand", 1).add("confusion wand", 1);
+}
+
+pub fn food_table(_map_depth: i32) -> RandomTable {
     return RandomTable::new().add("rations", 1).add("apple", 1);
 }
 
-fn trap_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new().add("bear trap", 0).add("confusion trap", 1);
+pub fn trap_table(_map_depth: i32) -> RandomTable {
+    return RandomTable::new().add("bear trap", 2).add("confusion trap", 1);
 }
 
 fn door(ecs: &mut World, x: i32, y: i32) {
