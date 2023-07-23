@@ -165,13 +165,13 @@ pub const HOUSE_NOTRAP_7X7: PrefabVault = PrefabVault {
     can_flip: Flipping::Both,
 };
 const HOUSE_NOTRAP_7X7_V: &str = "
-#   # 
+##   ##
 #   g #
   # #  
    ?   
   # #  
 # g   #
- #   # 
+##   ##
 ";
 
 pub const HOUSE_TRAP_7X7: PrefabVault = PrefabVault {
@@ -183,13 +183,13 @@ pub const HOUSE_TRAP_7X7: PrefabVault = PrefabVault {
     can_flip: Flipping::Both,
 };
 const HOUSE_TRAP_7X7_V: &str = "
-#   # 
+##   ##
 #     #
   #^#  
   ^? g 
  g#^#  
 #     #
- #   # 
+##   ##
 ";
 
 pub const ORC_HOUSE_8X8: PrefabVault = PrefabVault {
@@ -202,11 +202,10 @@ pub const ORC_HOUSE_8X8: PrefabVault = PrefabVault {
 };
 const ORC_HOUSE_8X8_V: &str = "
         
-###### 
-#o g # 
-#   %# 
-# %o # 
-#   ?# 
-##+### 
-       
-";
+ ###### 
+ #o g # 
+ #   %# 
+ # %o # 
+ #   ?# 
+ ##+### 
+        ";

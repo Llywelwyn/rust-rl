@@ -161,6 +161,8 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
 
     if rng.roll_dice(1, 3) == 1 {
         builder.with(WaveFunctionCollapseBuilder::new());
+        builder.with(CullUnreachable::new());
+        builder.with(VoronoiSpawning::new());
     }
 
     if rng.roll_dice(1, 20) == 1 {
