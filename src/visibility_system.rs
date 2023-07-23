@@ -1,4 +1,4 @@
-use super::{gamelog, Hidden, Map, Name, Player, Position, Telepath, Viewshed};
+use super::{gamelog, BlocksVisibility, Hidden, Map, Name, Player, Position, Telepath, Viewshed};
 use rltk::{FieldOfViewAlg::SymmetricShadowcasting, Point};
 use specs::prelude::*;
 
@@ -15,10 +15,18 @@ impl<'a> System<'a> for VisibilitySystem {
         ReadStorage<'a, Player>,
         WriteStorage<'a, Hidden>,
         ReadStorage<'a, Name>,
+        ReadStorage<'a, BlocksVisibility>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut map, mut rng, entities, mut viewshed, mut telepath, pos, player, mut hidden, names) = data;
+        let (mut map, mut rng, entities, mut viewshed, mut telepath, pos, player, mut hidden, names, blocks_visibility) =
+            data;
+
+        map.view_blocked.clear();
+        for (block_pos, _block) in (&pos, &blocks_visibility).join() {
+            let idx = map.xy_idx(block_pos.x, block_pos.y);
+            map.view_blocked.insert(idx);
+        }
 
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {

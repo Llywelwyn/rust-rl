@@ -1,6 +1,7 @@
 use super::{
-    gamelog, CombatStats, EntityMoved, Hidden, HungerClock, HungerState, Item, Map, Monster, Name, Player, Position,
-    RunState, State, Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
+    gamelog, BlocksTile, BlocksVisibility, CombatStats, Door, EntityMoved, Hidden, HungerClock, HungerState, Item, Map,
+    Monster, Name, Player, Position, Renderable, RunState, State, Telepath, TileType, Viewshed, WantsToMelee,
+    WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -17,6 +18,11 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
 
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
+    let mut doors = ecs.write_storage::<Door>();
+    let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
+    let mut blocks_movement = ecs.write_storage::<BlocksTile>();
+    let mut renderables = ecs.write_storage::<Renderable>();
+    let names = ecs.read_storage::<Name>();
 
     for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
         if pos.x + delta_x < 1
@@ -34,14 +40,27 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
                 wants_to_melee.insert(entity, WantsToMelee { target: *potential_target }).expect("Add target failed.");
                 return true;
             }
+            let door = doors.get_mut(*potential_target);
+            if let Some(door) = door {
+                if door.open == false {
+                    door.open = true;
+                    blocks_visibility.remove(*potential_target);
+                    blocks_movement.remove(*potential_target);
+                    let render_data = renderables.get_mut(*potential_target).unwrap();
+                    if let Some(name) = names.get(entity) {
+                        gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
+                    }
+                    render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
+                    viewshed.dirty = true;
+                    return true;
+                }
+            }
         }
 
         if map.blocked[destination_idx] {
             gamelog::Logger::new().append("You can't move there.").log();
             return false;
         }
-
-        let names = ecs.read_storage::<Name>();
         let hidden = ecs.read_storage::<Hidden>();
         // Push every entity name in the pile to a vector of strings
         let mut item_names: Vec<String> = Vec::new();

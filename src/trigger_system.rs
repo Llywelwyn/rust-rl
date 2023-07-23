@@ -53,6 +53,7 @@ impl<'a> System<'a> for TriggerSystem {
                             let name = names.get(*entity_id);
                             hidden.remove(*entity_id);
                             if let Some(name) = name {
+                                particle_builder.trap_triggered(pos.x, pos.y);
                                 gamelog::Logger::new().item_name(&name.name).append("triggers!").log();
                             }
 

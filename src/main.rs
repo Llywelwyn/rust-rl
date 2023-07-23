@@ -132,7 +132,6 @@ impl State {
         let mut particle_system = particle_system::ParticleSpawnSystem {};
 
         vis.run_now(&self.ecs);
-        hunger_clock.run_now(&self.ecs);
         mob.run_now(&self.ecs);
         mapindex.run_now(&self.ecs);
         trigger_system.run_now(&self.ecs);
@@ -142,6 +141,7 @@ impl State {
         item_remove_system.run_now(&self.ecs);
         melee_system.run_now(&self.ecs);
         damage_system.run_now(&self.ecs);
+        hunger_clock.run_now(&self.ecs);
         particle_system.run_now(&self.ecs);
 
         self.ecs.maintain();
@@ -515,6 +515,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Telepath>();
     gs.ecs.register::<Name>();
     gs.ecs.register::<BlocksTile>();
+    gs.ecs.register::<BlocksVisibility>();
+    gs.ecs.register::<Door>();
     gs.ecs.register::<CombatStats>();
     gs.ecs.register::<Attributes>();
     gs.ecs.register::<HungerClock>();

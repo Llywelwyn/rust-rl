@@ -1,9 +1,9 @@
 use super::{
-    random_table::RandomTable, Attribute, Attributes, BlocksTile, CombatStats, Confusion, Consumable, Cursed,
-    DefenceBonus, Destructible, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState,
-    InflictsDamage, Item, MagicMapper, Map, MeleePowerBonus, Mind, Monster, Name, Player, Position, ProvidesHealing,
-    ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe, SingleActivation, TileType, Viewshed, Wand, AOE,
-    MAPWIDTH,
+    random_table::RandomTable, Attribute, Attributes, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable,
+    Cursed, DefenceBonus, Destructible, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock,
+    HungerState, InflictsDamage, Item, MagicMapper, Map, MeleePowerBonus, Mind, Monster, Name, Player, Position,
+    ProvidesHealing, ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe, SingleActivation, TileType, Viewshed,
+    Wand, AOE, MAPWIDTH,
 };
 use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -113,15 +113,6 @@ pub fn spawn_region(
 ) {
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
-    let category = category_table().roll(rng);
-    let spawn_table;
-    match category.as_ref() {
-        "mob" => spawn_table = mob_table(map_depth),
-        "item" => spawn_table = item_table(map_depth),
-        "food" => spawn_table = food_table(map_depth),
-        "trap" => spawn_table = trap_table(map_depth),
-        _ => spawn_table = debug_table(),
-    }
 
     let num_spawns = i32::min(areas.len() as i32, rng.roll_dice(1, MAX_ENTITIES + 2) - 2);
     if num_spawns <= 0 {
@@ -129,6 +120,15 @@ pub fn spawn_region(
     }
 
     for _i in 0..num_spawns {
+        let category = category_table().roll(rng);
+        let spawn_table;
+        match category.as_ref() {
+            "mob" => spawn_table = mob_table(map_depth),
+            "item" => spawn_table = item_table(map_depth),
+            "food" => spawn_table = food_table(map_depth),
+            "trap" => spawn_table = trap_table(map_depth),
+            _ => spawn_table = debug_table(),
+        }
         let array_idx = if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32) - 1) as usize };
         let map_idx = areas[array_idx];
         spawn_points.insert(map_idx, spawn_table.roll(rng));
@@ -174,6 +174,8 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         // Traps
         "bear trap" => bear_trap(ecs, x, y),
         "confusion trap" => confusion_trap(ecs, x, y),
+        // Other
+        "door" => door(ecs, x, y),
         _ => console::log(format!("Tried to spawn nothing ({}). Bugfix needed!", spawn.1)),
     }
 }
@@ -226,6 +228,23 @@ fn food_table(_map_depth: i32) -> RandomTable {
 
 fn trap_table(_map_depth: i32) -> RandomTable {
     return RandomTable::new().add("bear trap", 0).add("confusion trap", 1);
+}
+
+fn door(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('+'),
+            fg: RGB::named(rltk::LIGHTYELLOW),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "door".to_string(), plural: "doors".to_string() })
+        .with(BlocksTile {})
+        .with(BlocksVisibility {})
+        .with(Door { open: false })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
 }
 
 fn health_potion(ecs: &mut World, x: i32, y: i32) {
