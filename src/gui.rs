@@ -145,37 +145,49 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     // FIXME: This is unwieldy. Having a separate data structure for (items, id) and (items, count) is not good.
     // But it works, and this might get cut anyway as I get further along in the design, so leaving as is atm.
     let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
-    let mut player_inventory: BTreeMap<String, i32> = BTreeMap::new();
+    let mut player_inventory: BTreeMap<(String, String), i32> = BTreeMap::new();
     for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity) {
-        player_inventory.entry(name.name.to_string()).and_modify(|count| *count += 1).or_insert(1);
+        player_inventory
+            .entry((name.name.to_string(), name.plural.to_string()))
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
         inventory_ids.entry(name.name.to_string()).or_insert(entity);
     }
 
     let count = player_inventory.len();
     let mut y = (25 - (count / 2)) as i32;
-    ctx.draw_box(15, y - 2, 37, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_box(15, y - 2, 45, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
     ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Inventory");
     ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "ESC to cancel");
 
     let mut j = 0;
     for (name, item_count) in &player_inventory {
+        // Print the character required to access this item. i.e. (a)
         ctx.set(17, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437('('));
         ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
         ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
-        let mut x = 21;
 
-        let vowels = ['a', 'e', 'i', 'o', 'u'];
+        let mut x = 21;
         if item_count > &1 {
+            // If more than one, print the number and pluralise
+            // i.e. (a) 3 daggers
             ctx.print(x, y, item_count);
             x += 2;
-        } else if vowels.iter().any(|&v| name.starts_with(v)) {
-            ctx.print(x, y, "an");
-            x += 3;
+            ctx.print(x, y, name.1.to_string());
         } else {
-            ctx.print(x, y, "a");
-            x += 2;
+            if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| name.0.starts_with(v)) {
+                // If one and starts with a vowel, print 'an'
+                // i.e. (a) an apple
+                ctx.print(x, y, "an");
+                x += 3;
+            } else {
+                // If one and not a vowel, print 'a'
+                // i.e. (a) a dagger
+                ctx.print(x, y, "a");
+                x += 2;
+            }
+            ctx.print(x, y, name.0.to_string());
         }
-        ctx.print(x, y, name.to_string());
         y += 1;
         j += 1;
     }
@@ -202,37 +214,49 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     let entities = gs.ecs.entities();
 
     let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
-    let mut player_inventory: BTreeMap<String, i32> = BTreeMap::new();
+    let mut player_inventory: BTreeMap<(String, String), i32> = BTreeMap::new();
     for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity) {
-        player_inventory.entry(name.name.to_string()).and_modify(|count| *count += 1).or_insert(1);
+        player_inventory
+            .entry((name.name.to_string(), name.plural.to_string()))
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
         inventory_ids.entry(name.name.to_string()).or_insert(entity);
     }
 
     let count = player_inventory.len();
     let mut y = (25 - (count / 2)) as i32;
-    ctx.draw_box(15, y - 2, 37, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_box(15, y - 2, 45, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
     ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Drop what?");
     ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "ESC to cancel");
 
     let mut j = 0;
     for (name, item_count) in &player_inventory {
+        // Print the character required to access this item. i.e. (a)
         ctx.set(17, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437('('));
         ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
         ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
-        let mut x = 21;
 
-        let vowels = ['a', 'e', 'i', 'o', 'u'];
+        let mut x = 21;
         if item_count > &1 {
+            // If more than one, print the number and pluralise
+            // i.e. (a) 3 daggers
             ctx.print(x, y, item_count);
             x += 2;
-        } else if vowels.iter().any(|&v| name.starts_with(v)) {
-            ctx.print(x, y, "an");
-            x += 3;
+            ctx.print(x, y, name.1.to_string());
         } else {
-            ctx.print(x, y, "a");
-            x += 2;
+            if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| name.0.starts_with(v)) {
+                // If one and starts with a vowel, print 'an'
+                // i.e. (a) an apple
+                ctx.print(x, y, "an");
+                x += 3;
+            } else {
+                // If one and not a vowel, print 'a'
+                // i.e. (a) a dagger
+                ctx.print(x, y, "a");
+                x += 2;
+            }
+            ctx.print(x, y, name.0.to_string());
         }
-        ctx.print(x, y, name.to_string());
         y += 1;
         j += 1;
     }

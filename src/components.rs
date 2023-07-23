@@ -57,6 +57,7 @@ pub struct Telepath {
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct Name {
     pub name: String,
+    pub plural: String,
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

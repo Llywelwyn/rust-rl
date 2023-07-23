@@ -23,7 +23,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         })
         .with(Player {})
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
-        .with(Name { name: "wanderer".to_string() })
+        .with(Name { name: "wanderer".to_string(), plural: "wanderers".to_string() })
         .with(CombatStats { max_hp: 8, hp: 8, defence: 0, power: 4 })
         .with(HungerClock { state: HungerState::Satiated, duration: 50 })
         .with(Attributes {
@@ -47,7 +47,7 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Monster {})
         .with(Mind {})
-        .with(Name { name: name.to_string() })
+        .with(Name { name: name.to_string(), plural: format!("{}s", name.to_string()) })
         .with(BlocksTile {})
         .with(CombatStats { max_hp: rolled_hp, hp: rolled_hp, defence: 0, power: power })
         .marked::<SimpleMarker<SerializeMe>>()
@@ -236,7 +236,7 @@ fn health_potion(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "potion of health".to_string() })
+        .with(Name { name: "potion of health".to_string(), plural: "potions of health".to_string() })
         .with(Item {})
         .with(Consumable {})
         .with(Destructible {})
@@ -254,7 +254,7 @@ fn weak_health_potion(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "potion of lesser health".to_string() })
+        .with(Name { name: "potion of lesser health".to_string(), plural: "potions of lesser health".to_string() })
         .with(Item {})
         .with(Consumable {})
         .with(Destructible {})
@@ -294,7 +294,7 @@ fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "scroll of magic missile".to_string() })
+        .with(Name { name: "scroll of magic missile".to_string(), plural: "scrolls of magic missile".to_string() })
         .with(Item {})
         .with(Consumable {})
         .with(Destructible {})
@@ -313,7 +313,7 @@ fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "scroll of fireball".to_string() })
+        .with(Name { name: "scroll of fireball".to_string(), plural: "scrolls of fireball".to_string() })
         .with(Item {})
         .with(Consumable {})
         .with(Destructible {})
@@ -333,7 +333,7 @@ fn cursed_fireball_scroll(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "cursed scroll of fireball".to_string() })
+        .with(Name { name: "cursed scroll of fireball".to_string(), plural: "cursed scrolls of fireball".to_string() })
         .with(Item {})
         .with(Cursed {})
         .with(Consumable {})
@@ -354,7 +354,7 @@ fn confusion_scroll(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "scroll of confusion".to_string() })
+        .with(Name { name: "scroll of confusion".to_string(), plural: "scrolls of confusion".to_string() })
         .with(Item {})
         .with(Consumable {})
         .with(Destructible {})
@@ -373,7 +373,7 @@ fn magic_map_scroll(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "scroll of magic mapping".to_string() })
+        .with(Name { name: "scroll of magic mapping".to_string(), plural: "scrolls of magic mapping".to_string() })
         .with(Item {})
         .with(MagicMapper {})
         .with(Consumable {})
@@ -391,7 +391,10 @@ fn cursed_magic_map_scroll(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "cursed scroll of magic mapping".to_string() })
+        .with(Name {
+            name: "cursed scroll of magic mapping".to_string(),
+            plural: "cursed scrolls of magic mapping".to_string(),
+        })
         .with(Item {})
         .with(Cursed {})
         .with(MagicMapper {})
@@ -411,7 +414,7 @@ fn dagger(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "dagger".to_string() })
+        .with(Name { name: "dagger".to_string(), plural: "daggers".to_string() })
         .with(Item {})
         .with(Equippable { slot: EquipmentSlot::Melee })
         .with(MeleePowerBonus { amount: 1 })
@@ -427,7 +430,7 @@ fn shortsword(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "shortsword".to_string() })
+        .with(Name { name: "shortsword".to_string(), plural: "shortswords".to_string() })
         .with(Item {})
         .with(Equippable { slot: EquipmentSlot::Melee })
         .with(MeleePowerBonus { amount: 2 })
@@ -444,7 +447,7 @@ fn buckler(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "buckler".to_string() })
+        .with(Name { name: "buckler".to_string(), plural: "bucklers".to_string() })
         .with(Item {})
         .with(DefenceBonus { amount: 1 })
         .with(Equippable { slot: EquipmentSlot::Shield })
@@ -461,7 +464,7 @@ fn shield(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "shield".to_string() })
+        .with(Name { name: "shield".to_string(), plural: "shields".to_string() })
         .with(Item {})
         .with(DefenceBonus { amount: 2 })
         .with(MeleePowerBonus { amount: -1 })
@@ -481,7 +484,7 @@ fn rations(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "rations".to_string() })
+        .with(Name { name: "rations".to_string(), plural: "rations".to_string() })
         .with(Item {})
         .with(ProvidesNutrition {})
         .with(Consumable {})
@@ -500,7 +503,7 @@ fn fireball_wand(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "wand of fireball".to_string() })
+        .with(Name { name: "wand of fireball".to_string(), plural: "wands of fireball".to_string() })
         .with(Item {})
         .with(Wand { uses: 3, max_uses: 3 })
         .with(Destructible {})
@@ -520,7 +523,7 @@ fn magic_missile_wand(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "wand of magic missile".to_string() })
+        .with(Name { name: "wand of magic missile".to_string(), plural: "wands of magic missile".to_string() })
         .with(Item {})
         .with(Wand { uses: 3, max_uses: 3 })
         .with(Destructible {})
@@ -539,7 +542,7 @@ fn confusion_wand(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "wand of confusion".to_string() })
+        .with(Name { name: "wand of confusion".to_string(), plural: "wands of confusion".to_string() })
         .with(Item {})
         .with(Wand { uses: 3, max_uses: 3 })
         .with(Destructible {})
@@ -559,7 +562,7 @@ fn bear_trap(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "bear trap".to_string() })
+        .with(Name { name: "bear trap".to_string(), plural: "bear traps".to_string() })
         .with(Hidden {})
         .with(EntryTrigger {})
         .with(SingleActivation {})
@@ -577,7 +580,7 @@ fn confusion_trap(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
-        .with(Name { name: "magic trap".to_string() })
+        .with(Name { name: "magic trap".to_string(), plural: "magic traps".to_string() })
         .with(Hidden {})
         .with(EntryTrigger {})
         .with(SingleActivation {})
