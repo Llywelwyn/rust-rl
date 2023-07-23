@@ -78,7 +78,7 @@ pub fn roll_hit_dice(ecs: &mut World, n: i32, d: i32) -> i32 {
 }
 
 // Consts
-const MAX_ENTITIES: i32 = 2;
+const MAX_ENTITIES: i32 = 4;
 
 /// Fills a room with stuff!
 pub fn spawn_room(

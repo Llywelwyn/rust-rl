@@ -203,7 +203,6 @@ impl<'a> System<'a> for ItemUseSystem {
                     if let Some(hc) = hc {
                         hc.state = HungerState::Satiated;
                         hc.duration = 50;
-                        gamelog::Logger::new().append("You eat the").item_name_n(&item_being_used.name).period().log();
                     }
                 }
             }

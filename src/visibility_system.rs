@@ -23,9 +23,6 @@ impl<'a> System<'a> for VisibilitySystem {
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
                 viewshed.dirty = false;
-                // FIXME: SymmetricShadowcasting seems to be responsible for an infrequent crash --
-                // but it could be unrelated to the FieldOfViewAlg being used. Needs some more testing!
-                // Appeared first after switching, but can't seem to reproduce it.
                 let origin = Point::new(pos.x, pos.y);
                 viewshed.visible_tiles = SymmetricShadowcasting.field_of_view(origin, viewshed.range, &*map);
                 viewshed.visible_tiles.retain(|p| {
