@@ -1,7 +1,7 @@
 use rltk::{GameState, Point, RandomNumberGenerator, Rltk, RGB};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
-use std::ops::Add;
+use std::ops::{Add, Mul};
 extern crate serde;
 
 mod components;
@@ -254,6 +254,7 @@ impl GameState for State {
                     let renderables = self.ecs.read_storage::<Renderable>();
                     let minds = self.ecs.read_storage::<Mind>();
                     let hidden = self.ecs.read_storage::<Hidden>();
+                    let doors = self.ecs.write_storage::<Door>();
                     let map = self.ecs.fetch::<Map>();
                     let entities = self.ecs.entities();
 
@@ -262,17 +263,32 @@ impl GameState for State {
                     for (pos, render, ent, _hidden) in data.iter() {
                         let idx = map.xy_idx(pos.x, pos.y);
                         let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
+                        let mut fg = render.fg;
                         let mut bg = render.bg.add(RGB::from_u8(26, 45, 45)).add(offsets);
+                        // Get bloodstain colours
                         if map.bloodstains.contains(&idx) {
                             bg = bg.add(RGB::from_f32(0.6, 0., 0.));
                         }
+                        // Draw entities on visible tiles
                         if map.visible_tiles[idx] {
-                            ctx.set(pos.x, pos.y, render.fg, bg, render.glyph);
+                            ctx.set(pos.x, pos.y, fg, bg, render.glyph);
                         }
+                        // Draw entities with minds within telepath range
                         if map.telepath_tiles[idx] {
                             let has_mind = minds.get(*ent);
                             if let Some(_) = has_mind {
                                 ctx.set(pos.x, pos.y, render.fg, RGB::named(rltk::BLACK), render.glyph);
+                            }
+                        }
+                        // Draw all doors
+                        let is_door = doors.get(*ent);
+                        if let Some(_) = is_door {
+                            if map.revealed_tiles[idx] {
+                                if !map.visible_tiles[idx] {
+                                    fg = fg.mul(0.6);
+                                    bg = bg.mul(0.6);
+                                }
+                                ctx.set(pos.x, pos.y, fg, bg, render.glyph);
                             }
                         }
                     }

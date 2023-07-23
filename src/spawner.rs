@@ -235,7 +235,7 @@ fn door(ecs: &mut World, x: i32, y: i32) {
         .with(Position { x, y })
         .with(Renderable {
             glyph: rltk::to_cp437('+'),
-            fg: RGB::named(rltk::LIGHTYELLOW),
+            fg: RGB::from_f32(0., 1., 1.), // Same colour as stairs, should probably define this somewhere.
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
         })
