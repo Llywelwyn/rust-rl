@@ -7,6 +7,65 @@ use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
+pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
+    let mut positions = ecs.write_storage::<Position>();
+    let mut players = ecs.write_storage::<Player>();
+    let mut viewsheds = ecs.write_storage::<Viewshed>();
+    let map = ecs.fetch::<Map>();
+
+    let entities = ecs.entities();
+    let mut doors = ecs.write_storage::<Door>();
+    let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
+    let mut blocks_movement = ecs.write_storage::<BlocksTile>();
+    let mut renderables = ecs.write_storage::<Renderable>();
+    let names = ecs.read_storage::<Name>();
+
+    for (_entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
+        let delta_x = i;
+        let delta_y = j;
+
+        if !(pos.x + delta_x < 1
+            || pos.x + delta_x > map.width - 1
+            || pos.y + delta_y < 1
+            || pos.y + delta_y > map.height - 1)
+        {
+            let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
+
+            for potential_target in map.tile_content[destination_idx].iter() {
+                let door = doors.get_mut(*potential_target);
+                if let Some(door) = door {
+                    if door.open == true {
+                        if map.tile_content[destination_idx].len() > 1 {
+                            if let Some(name) = names.get(*potential_target) {
+                                gamelog::Logger::new().append("The").item_name(&name.name).append("is blocked.").log();
+                            }
+                        } else {
+                            door.open = false;
+                            blocks_visibility
+                                .insert(*potential_target, BlocksVisibility {})
+                                .expect("Unable to insert BlocksVisibility.");
+                            blocks_movement
+                                .insert(*potential_target, BlocksTile {})
+                                .expect("Unable to insert BlocksTile.");
+                            let render_data = renderables.get_mut(*potential_target).unwrap();
+                            if let Some(name) = names.get(*potential_target) {
+                                gamelog::Logger::new().append("You close the").item_name_n(&name.name).period().log();
+                            }
+                            render_data.glyph = rltk::to_cp437('+'); // Nethack open door, maybe just use '/' instead.
+                            viewshed.dirty = true;
+                            return RunState::PlayerTurn;
+                        }
+                    } else {
+                        gamelog::Logger::new().append("It's already closed.");
+                    }
+                }
+            }
+        }
+    }
+    gamelog::Logger::new().append("You see no door there.");
+    return RunState::AwaitingInput;
+}
+
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
@@ -47,7 +106,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
                     blocks_visibility.remove(*potential_target);
                     blocks_movement.remove(*potential_target);
                     let render_data = renderables.get_mut(*potential_target).unwrap();
-                    if let Some(name) = names.get(entity) {
+                    if let Some(name) = names.get(*potential_target) {
                         gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
                     }
                     render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
@@ -179,6 +238,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             }
 
             // Items
+            VirtualKeyCode::C => return RunState::ActionWithDirection { function: try_door },
             VirtualKeyCode::G => {
                 result = get_item(&mut gs.ecs);
             }

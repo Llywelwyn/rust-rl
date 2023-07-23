@@ -56,6 +56,7 @@ pub enum RunState {
     ShowDropItem,
     ShowRemoveItem,
     ShowTargeting { range: i32, item: Entity, aoe: i32 },
+    ActionWithDirection { function: fn(i: i32, j: i32, ecs: &mut World) -> RunState },
     MainMenu { menu_selection: gui::MainMenuSelection },
     SaveGame,
     GameOver,
@@ -397,6 +398,9 @@ impl GameState for State {
                         new_runstate = RunState::PlayerTurn;
                     }
                 }
+            }
+            RunState::ActionWithDirection { function } => {
+                new_runstate = gui::get_input_direction(&mut self.ecs, ctx, try_door);
             }
             RunState::MainMenu { .. } => {
                 let result = gui::main_menu(self, ctx);
