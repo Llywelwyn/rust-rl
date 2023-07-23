@@ -170,6 +170,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         "confusion wand" => confusion_wand(ecs, x, y),
         // Food
         "rations" => rations(ecs, x, y),
+        "apple" => apple(ecs, x, y),
         // Traps
         "bear trap" => bear_trap(ecs, x, y),
         "confusion trap" => confusion_trap(ecs, x, y),
@@ -220,7 +221,7 @@ fn item_table(_map_depth: i32) -> RandomTable {
 }
 
 fn food_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new().add("rations", 1);
+    return RandomTable::new().add("rations", 1).add("apple", 1);
 }
 
 fn trap_table(_map_depth: i32) -> RandomTable {
@@ -485,6 +486,23 @@ fn rations(ecs: &mut World, x: i32, y: i32) {
             render_order: 2,
         })
         .with(Name { name: "rations".to_string(), plural: "rations".to_string() })
+        .with(Item {})
+        .with(ProvidesNutrition {})
+        .with(Consumable {})
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn apple(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('%'),
+            fg: RGB::named(rltk::GREEN),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "apple".to_string(), plural: "apples".to_string() })
         .with(Item {})
         .with(ProvidesNutrition {})
         .with(Consumable {})

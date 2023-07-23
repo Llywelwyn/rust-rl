@@ -46,6 +46,8 @@ mod rooms_corridors_bsp;
 use rooms_corridors_bsp::BspCorridors;
 mod room_sorter;
 use room_sorter::{RoomSort, RoomSorter};
+mod room_draw;
+use room_draw::RoomDrawer;
 
 // Shared data to be passed around build chain
 pub struct BuilderMap {
@@ -172,6 +174,14 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
             _ => builder.with(RoomSorter::new(RoomSort::CENTRAL)),
         }
 
+        builder.with(RoomDrawer::new());
+
+        let corridor_roll = rng.roll_dice(1, 2);
+        match corridor_roll {
+            1 => builder.with(DoglegCorridors::new()),
+            _ => builder.with(BspCorridors::new()),
+        }
+
         let corridor_roll = rng.roll_dice(1, 2);
         match corridor_roll {
             1 => builder.with(DoglegCorridors::new()),
@@ -252,11 +262,9 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
         _ => random_shape_builder(rng, &mut builder),
     }
 
-    /* WFC needs some fixes.
-    if rng.roll_dice(1, 3) == 1 {
-        builder.with(WaveFunctionCollapseBuilder::new());
-    }
-    */
+    /*if rng.roll_dice(1, 3)==1 {
+        builder.with(WaveformCollapseBuilder::new());
+    }*/
 
     if rng.roll_dice(1, 20) == 1 {
         builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
