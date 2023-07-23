@@ -33,8 +33,13 @@ i'll try to remember to update the web version on my page at the end of every we
 - - -
 
 <details>
-  <summary><b>week 2</summary>
-  - title
+  <summary>week 2</summary>
+  
+- most of section 3 - generating maps
+  - this week was mostly just working away at the mapgen stuff. getting all the algorithms in, chaining builders, being able to do prefabs. whenever i got bored i just opened rexpaint and toyed around with making simple vaults.
+  
+- 8-bit walls
+  - i wasn't happy with how the walls looked, so i made the masks 8-bit instead of just 4-, which means being able to be a lot more specific with which glyphs are used. mainly it means no more grids of ╬. this comes with a side-effect of magic mapping looking a lot better.
 
-stuff
+    ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/6568d203-e0b0-4c68-ad81-fe2d5c2f0ac3)
 </details>
