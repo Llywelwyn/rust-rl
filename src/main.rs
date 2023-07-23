@@ -411,13 +411,16 @@ impl GameState for State {
                     gui::GameOverResult::NoSelection => {}
                     gui::GameOverResult::QuitToMenu => {
                         self.game_over_cleanup();
-                        new_runstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
+                        new_runstate = RunState::MapGeneration;
+                        self.mapgen_next_state =
+                            Some(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
                     }
                 }
             }
             RunState::NextLevel => {
                 self.goto_next_level();
-                new_runstate = RunState::PreRun;
+                self.mapgen_next_state = Some(RunState::PreRun);
+                new_runstate = RunState::MapGeneration;
             }
             RunState::MagicMapReveal { row, cursed } => {
                 let mut map = self.ecs.fetch_mut::<Map>();
