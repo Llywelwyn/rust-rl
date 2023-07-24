@@ -20,6 +20,9 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut renderables = ecs.write_storage::<Renderable>();
     let names = ecs.read_storage::<Name>();
 
+    let mut result = RunState::AwaitingInput;
+    let mut door_pos: Option<Point> = None;
+
     for (_entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
         let delta_x = i;
         let delta_y = j;
@@ -55,8 +58,8 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                                 gamelog::Logger::new().append("You close the").item_name_n(&name.name).period().log();
                             }
                             render_data.glyph = rltk::to_cp437('+'); // Nethack open door, maybe just use '/' instead.
-                            viewshed.dirty = true;
-                            return RunState::PlayerTurn;
+                            door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
+                            result = RunState::PlayerTurn;
                         }
                     } else {
                         gamelog::Logger::new().append("It's already closed.").log();
@@ -65,7 +68,18 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
             }
         }
     }
-    return RunState::AwaitingInput;
+
+    // If a door was interacted with, update every viewshed that could
+    // see that door.
+    for viewshed in (&mut viewsheds).join() {
+        if let Some(door_pos) = door_pos {
+            if viewshed.visible_tiles.contains(&door_pos) {
+                viewshed.dirty = true;
+            }
+        }
+    }
+
+    return result;
 }
 
 pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
@@ -80,6 +94,9 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
     let mut renderables = ecs.write_storage::<Renderable>();
     let names = ecs.read_storage::<Name>();
+
+    let mut result = RunState::AwaitingInput;
+    let mut door_pos: Option<Point> = None;
 
     for (_entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
         let delta_x = i;
@@ -107,8 +124,8 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                             gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
                         }
                         render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
-                        viewshed.dirty = true;
-                        return RunState::PlayerTurn;
+                        door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
+                        result = RunState::PlayerTurn;
                     } else {
                         gamelog::Logger::new().append("It's already open.").log();
                     }
@@ -116,11 +133,23 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
             }
         }
     }
-    return RunState::AwaitingInput;
+
+    // If a door was interacted with, update every viewshed that could
+    // see that door.
+    for viewshed in (&mut viewsheds).join() {
+        if let Some(door_pos) = door_pos {
+            if viewshed.visible_tiles.contains(&door_pos) {
+                viewshed.dirty = true;
+            }
+        }
+    }
+
+    return result;
 }
 
 pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut something_was_destroyed: Option<Entity> = None;
+    let mut destroyed_pos: Option<Point> = None;
     {
         let mut positions = ecs.write_storage::<Position>();
         let mut players = ecs.write_storage::<Player>();
@@ -175,7 +204,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         .append(", it crashes open!")
                                         .log();
                                     something_was_destroyed = Some(*potential_target);
-                                    viewshed.dirty = true;
+                                    destroyed_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                                     gamelog::record_event("broken_doors", 1);
                                     break;
                                 // 66% chance of just kicking it.
@@ -205,13 +234,18 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                 }
             }
         }
-    }
-    match something_was_destroyed {
-        Some(object) => {
-            ecs.delete_entity(object).expect("Unable to delete.");
+        if let Some(destroyed_pos) = destroyed_pos {
+            for viewshed in (&mut viewsheds).join() {
+                if viewshed.visible_tiles.contains(&destroyed_pos) {
+                    viewshed.dirty = true;
+                }
+            }
         }
-        _ => {}
-    };
+    }
+    if let Some(destroyed_thing) = something_was_destroyed {
+        ecs.delete_entity(destroyed_thing).expect("Unable to delete.");
+    }
+
     gamelog::record_event("kick_count", 1);
     return RunState::PlayerTurn;
 }
