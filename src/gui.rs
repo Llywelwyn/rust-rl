@@ -48,7 +48,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         50,
         RGB::named(rltk::YELLOW),
         RGB::named(rltk::BLACK),
-        &format!(" T{} ", crate::gamelog::get_event_count("Turn")),
+        &format!(" T{} ", crate::gamelog::get_event_count("turns")),
     );
 
     // Render mouse cursor
@@ -519,20 +519,69 @@ pub enum YesNoResult {
 }
 
 pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
-    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Your journey has ended!");
-    ctx.print_color_centered(
-        17,
-        RGB::named(rltk::WHITE),
+    let mut x = 3;
+    let mut y = 3;
+    let width = 45;
+    let height = 20;
+    ctx.draw_box(x, y, width, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.print_color(x + 3, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "You died!");
+    ctx.print_color(x + 3, y + height, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "ESC to close");
+    x += 2;
+    y += 2;
+    ctx.print_color(
+        x,
+        y,
+        RGB::named(rltk::GREEN),
         RGB::named(rltk::BLACK),
-        format!("You died after {} turns.", crate::gamelog::get_event_count("Turn")),
+        format!("You survived for {} turns.", crate::gamelog::get_event_count("turns")),
     );
-
-    ctx.print_color_centered(
-        19,
-        RGB::named(rltk::MAGENTA),
-        RGB::named(rltk::BLACK),
-        "Press Escape to return to the menu.",
-    );
+    y += 2;
+    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), format!("And in the process, you"));
+    y += 1;
+    if crate::gamelog::get_event_count("descended") > 0 {
+        ctx.print_color(
+            x + 1,
+            y,
+            RGB::named(rltk::WHITE),
+            RGB::named(rltk::BLACK),
+            format!("- descended {} floor(s)", crate::gamelog::get_event_count("descended")),
+        );
+        y += 1;
+    }
+    if crate::gamelog::get_event_count("kick_count") > 0 {
+        ctx.print_color(
+            x + 1,
+            y,
+            RGB::named(rltk::WHITE),
+            RGB::named(rltk::BLACK),
+            format!(
+                "- kicked {} time(s), breaking {} object(s)",
+                crate::gamelog::get_event_count("kick_count"),
+                crate::gamelog::get_event_count("broken_doors")
+            ),
+        );
+        y += 1;
+    }
+    if crate::gamelog::get_event_count("death_count") > 0 {
+        ctx.print_color(
+            x + 1,
+            y,
+            RGB::named(rltk::WHITE),
+            RGB::named(rltk::BLACK),
+            format!("- slew {} other creature(s)", crate::gamelog::get_event_count("death_count")),
+        );
+        y += 1;
+    }
+    if crate::gamelog::get_event_count("looked_for_help") > 0 {
+        ctx.print_color(
+            x + 1,
+            y,
+            RGB::named(rltk::WHITE),
+            RGB::named(rltk::BLACK),
+            format!("- forgot the controls {} time(s)", crate::gamelog::get_event_count("looked_for_help")),
+        );
+        y += 1;
+    }
 
     match ctx.key {
         None => YesNoResult::NoSelection,

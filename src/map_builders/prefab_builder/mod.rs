@@ -386,10 +386,18 @@ impl PrefabBuilder {
                         let mut y_: i32 = tile_y as i32;
                         // Handle flipping
                         if flip_x {
-                            x_ = vault.height as i32 - 1 - x_;
+                            x_ = vault.width as i32 - 1 - x_;
                         }
                         if flip_y {
-                            y_ = vault.width as i32 - 1 - y_;
+                            y_ = vault.height as i32 - 1 - y_;
+                        }
+                        if x_ < 0 || y_ < 0 {
+                            // If either of these go below 0, we run the risk of CTD, so just panic.
+                            // Something went wrong with flipping/rotating/defining a vault.
+                            panic!(
+                                "X or Y went below 0 when trying to place a vault! DEBUGINFO == [H: {}, W: {}; FLIPPED X: {}, FLIPPED Y: {}; X_: {}, Y_: {}]",
+                                vault.width, vault.height, flip_x, flip_y, x_, y_
+                            );
                         }
                         let idx = build_data.map.xy_idx(x_ + chunk_x, y_ + chunk_y);
                         if i < string_vec.len() {

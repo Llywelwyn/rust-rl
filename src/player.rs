@@ -176,6 +176,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         .log();
                                     something_was_destroyed = Some(*potential_target);
                                     viewshed.dirty = true;
+                                    gamelog::record_event("broken_doors", 1);
                                     break;
                                 // 66% chance of just kicking it.
                                 } else {
@@ -211,6 +212,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         }
         _ => {}
     };
+    gamelog::record_event("kick_count", 1);
     return RunState::PlayerTurn;
 }
 

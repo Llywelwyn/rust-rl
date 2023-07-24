@@ -134,8 +134,8 @@ impl State {
         let mut particle_system = particle_system::ParticleSpawnSystem {};
 
         vis.run_now(&self.ecs);
-        mapindex.run_now(&self.ecs);
         mob.run_now(&self.ecs);
+        mapindex.run_now(&self.ecs);
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
         item_use_system.run_now(&self.ecs);
@@ -201,6 +201,7 @@ impl State {
             let worldmap_resource = self.ecs.fetch::<Map>();
             current_depth = worldmap_resource.depth;
         }
+        gamelog::record_event("descended", 1);
         self.generate_world_map(current_depth + 1);
 
         // Notify player, restore health up to a point.
@@ -311,7 +312,7 @@ impl GameState for State {
             RunState::PlayerTurn => {
                 self.run_systems();
                 self.ecs.maintain();
-                gamelog::record_event("Turn", 1);
+                gamelog::record_event("turns", 1);
                 match *self.ecs.fetch::<RunState>() {
                     RunState::MagicMapReveal { row, cursed } => {
                         new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
@@ -448,6 +449,7 @@ impl GameState for State {
                 match result {
                     gui::YesNoResult::NoSelection => {}
                     gui::YesNoResult::Yes => {
+                        gamelog::record_event("looked_for_help", 1);
                         new_runstate = RunState::AwaitingInput;
                     }
                 }

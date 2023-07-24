@@ -73,6 +73,7 @@ pub fn delete_the_dead(ecs: &mut World) {
     }
 
     for victim in dead {
+        gamelog::record_event("death_count", 1);
         ecs.delete_entity(victim).expect("Unable to delete.");
     }
 }
