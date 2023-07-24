@@ -273,14 +273,7 @@ impl<'a> System<'a> for ItemUseSystem {
                             }
                             let pos = positions.get(entity);
                             if let Some(pos) = pos {
-                                particle_builder.request(
-                                    pos.x,
-                                    pos.y,
-                                    rltk::RGB::named(rltk::GREEN),
-                                    rltk::RGB::named(rltk::BLACK),
-                                    rltk::to_cp437('♥'),
-                                    DEFAULT_PARTICLE_LIFETIME,
-                                );
+                                particle_builder.heal(pos.x, pos.y);
                             }
                         }
                     }

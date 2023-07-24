@@ -2,8 +2,9 @@ use super::{ParticleLifetime, Position, Renderable, Rltk};
 use rltk::RGB;
 use specs::prelude::*;
 
+pub const SHORT_PARTICLE_LIFETIME: f32 = 100.0;
 // For things which will happen frequently - i.e. attacking.
-pub const DEFAULT_PARTICLE_LIFETIME: f32 = 150.0;
+pub const DEFAULT_PARTICLE_LIFETIME: f32 = 200.0;
 // For exceptional things, like large AOEs, to make sure the
 // player can actually see what's being impacted - i.e. fireball.
 pub const LONG_PARTICLE_LIFETIME: f32 = 300.0;
@@ -56,11 +57,47 @@ impl ParticleBuilder {
     }
 
     pub fn damage_taken(&mut self, x: i32, y: i32) {
-        self.request(x, y, rltk::RGB::named(rltk::ORANGE), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('‼'), 200.0);
+        self.request(
+            x,
+            y,
+            rltk::RGB::named(rltk::ORANGE),
+            rltk::RGB::named(rltk::BLACK),
+            rltk::to_cp437('‼'),
+            DEFAULT_PARTICLE_LIFETIME,
+        );
     }
 
     pub fn trap_triggered(&mut self, x: i32, y: i32) {
-        self.request(x, y, rltk::RGB::named(rltk::RED), rltk::RGB::named(rltk::RED), rltk::to_cp437('‼'), 200.0);
+        self.request(
+            x,
+            y,
+            rltk::RGB::named(rltk::RED),
+            rltk::RGB::named(rltk::RED),
+            rltk::to_cp437('‼'),
+            DEFAULT_PARTICLE_LIFETIME,
+        );
+    }
+
+    pub fn heal(&mut self, x: i32, y: i32) {
+        self.request(
+            x,
+            y,
+            rltk::RGB::named(rltk::GREEN),
+            rltk::RGB::named(rltk::BLACK),
+            rltk::to_cp437('♥'),
+            DEFAULT_PARTICLE_LIFETIME,
+        );
+    }
+
+    pub fn kick(&mut self, x: i32, y: i32) {
+        self.request(
+            x,
+            y,
+            rltk::RGB::named(rltk::CHOCOLATE),
+            rltk::RGB::named(rltk::BLACK),
+            rltk::to_cp437('‼'),
+            SHORT_PARTICLE_LIFETIME,
+        );
     }
 
     // Makes a particle request in the shape of an 'x'. Sort of.

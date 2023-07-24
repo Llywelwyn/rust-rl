@@ -7,7 +7,7 @@ use specs::prelude::*;
 use std::collections::BTreeMap;
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
-    ctx.draw_hollow_box_double(0, 43, 79, 7, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_box_double(0, 43, 79, 7, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
 
     // Render stats
     let combat_stats = ecs.read_storage::<CombatStats>();

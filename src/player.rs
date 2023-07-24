@@ -1,7 +1,7 @@
 use super::{
     gamelog, BlocksTile, BlocksVisibility, CombatStats, Door, EntityMoved, Hidden, HungerClock, HungerState, Item, Map,
-    Monster, Name, Player, Position, Renderable, RunState, State, SufferDamage, Telepath, TileType, Viewshed,
-    WantsToMelee, WantsToPickupItem,
+    Monster, Name, ParticleBuilder, Player, Position, Renderable, RunState, State, SufferDamage, Telepath, TileType,
+    Viewshed, WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -208,6 +208,8 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                         if let Some(door) = door {
                             // If the door is closed,
                             if door.open == false {
+                                let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
+                                particle_builder.kick(pos.x + delta_x, pos.y + delta_y);
                                 // 33% chance of breaking it down.
                                 if rng.roll_dice(1, 3) == 1 {
                                     gamelog::Logger::new()
@@ -240,6 +242,8 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                     }
                     if let Some(_) = last_non_door_target {
                         gamelog::Logger::new().append("You kick the").item_name_n(target_name).period().log();
+                        let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
+                        particle_builder.kick(pos.x + delta_x, pos.y + delta_y);
                         // Do something here if it's anything other than a door.
                         break;
                     }
