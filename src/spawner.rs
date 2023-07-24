@@ -228,7 +228,7 @@ pub fn scroll_table(_map_depth: i32) -> RandomTable {
         .add("fireball scroll", 2)
         .add("cursed fireball scroll", 2)
         .add("confusion scroll", 4)
-        .add("magic missile scroll", 10)
+        .add("magic missile scroll", 6)
         .add("magic map scroll", 4)
         .add("cursed magic map scroll", 2);
 }

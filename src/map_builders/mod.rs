@@ -56,6 +56,8 @@ mod rooms_corridors_spawner;
 use rooms_corridors_spawner::CorridorSpawner;
 mod door_placement;
 use door_placement::DoorPlacement;
+mod fill_edges;
+use fill_edges::FillEdges;
 
 // Shared data to be passed around build chain
 pub struct BuilderMap {
@@ -283,8 +285,12 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, wid
         _ => random_shape_builder(rng, &mut builder),
     }
 
-    /*if rng.roll_dice(1, 3)==1 {
-        builder.with(WaveformCollapseBuilder::new());
+    /*
+    WFC needs polishing up before it makes good maps. Right now it leaves too much unusable area,
+    by making disconnected sections and having no methods to connect them.
+
+    if rng.roll_dice(1, 1) == 1 {
+        builder.with(WaveFunctionCollapseBuilder::new());
 
         // Now set the start to a random starting area
         let (start_x, start_y) = random_start_position(rng);
@@ -293,7 +299,8 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, wid
         // Setup an exit and spawn mobs
         builder.with(VoronoiSpawning::new());
         builder.with(DistantExit::new());
-    }*/
+    }
+    */
 
     if rng.roll_dice(1, 20) == 1 {
         builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
@@ -301,6 +308,9 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, wid
 
     builder.with(DoorPlacement::new());
     builder.with(PrefabBuilder::vaults());
+    // Regardless of anything else, fill the edges back in with walls. We can't walk
+    // there anyway, and we don't want an open line of sight into the unmapped void.
+    builder.with(FillEdges::wall());
 
     builder
 }

@@ -43,13 +43,7 @@ pub fn setup_log() {
     for _ in 0..5 {
         Logger::new().log();
     }
-    Logger::new()
-        .append("Welcome!")
-        .colour(rltk::CYAN)
-        .append("(")
-        .append("pretend i wrote a paragraph explaining why you're here")
-        .append(")")
-        .log();
+    Logger::new().append("Welcome!").colour(rltk::CYAN).append("Press [?] at any time to view controls").period().log();
 }
 
 pub fn clone_log() -> Vec<Vec<crate::gamelog::LogFragment>> {
