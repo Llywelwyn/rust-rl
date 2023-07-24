@@ -176,7 +176,10 @@ pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut y: i32, ctx
             x += 2;
             ctx.print(x, y, name.1.to_string());
         } else {
-            if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| name.0.starts_with(v)) {
+            if name.0.ends_with("s") {
+                ctx.print(x, y, "some");
+                x += 5;
+            } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| name.0.starts_with(v)) {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
                 ctx.print(x, y, "an");

@@ -134,8 +134,8 @@ impl State {
         let mut particle_system = particle_system::ParticleSpawnSystem {};
 
         vis.run_now(&self.ecs);
-        mob.run_now(&self.ecs);
         mapindex.run_now(&self.ecs);
+        mob.run_now(&self.ecs);
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
         item_use_system.run_now(&self.ecs);

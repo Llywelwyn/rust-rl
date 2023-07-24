@@ -31,6 +31,9 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
         {
             let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
+            if map.tile_content[destination_idx].len() == 0 {
+                gamelog::Logger::new().append("You see no door there.").log();
+            }
             for potential_target in map.tile_content[destination_idx].iter() {
                 let door = doors.get_mut(*potential_target);
                 if let Some(door) = door {
@@ -62,7 +65,6 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
             }
         }
     }
-    gamelog::Logger::new().append("You see no door there.").log();
     return RunState::AwaitingInput;
 }
 
@@ -90,6 +92,9 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
         {
             let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
+            if map.tile_content[destination_idx].len() == 0 {
+                gamelog::Logger::new().append("You see no door there.").log();
+            }
             for potential_target in map.tile_content[destination_idx].iter() {
                 let door = doors.get_mut(*potential_target);
                 if let Some(door) = door {
@@ -111,7 +116,6 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
             }
         }
     }
-    gamelog::Logger::new().append("You see no door there.").log();
     return RunState::AwaitingInput;
 }
 
