@@ -1,6 +1,6 @@
 use super::{
-    gamelog, player::try_door, rex_assets::RexAssets, CombatStats, Equipped, Hidden, HungerClock, HungerState,
-    InBackpack, Map, Name, Player, Point, Position, RunState, State, Viewshed,
+    gamelog, rex_assets::RexAssets, CombatStats, Equipped, Hidden, HungerClock, HungerState, InBackpack, Map, Name,
+    Player, Point, Position, RunState, State, Viewshed,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -191,6 +191,53 @@ pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut y: i32, ctx
         }
         y += 1;
         j += 1;
+    }
+}
+
+pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
+    let mut x = 3;
+    let mut y = 3;
+    let height = 22;
+    let width = 25;
+    ctx.draw_box(x, y, width, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.print_color(x + 3, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), " Controls ");
+    ctx.print_color(x + 3, y + height, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), " ESC/? to close ");
+    x += 2;
+    y += 2;
+    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "MOVE COMMANDS");
+    y += 2;
+    ctx.print(x, y, "y k u   7 8 9   > down");
+    ctx.print(x, y + 1, " \\|/     \\|/");
+    ctx.print(x, y + 2, "h-.-l   4-.-6   < up");
+    ctx.print(x, y + 3, " /|\\     /|\\");
+    ctx.print(x, y + 4, "b j n   1 2 3   . wait");
+    y += 7;
+    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "OBJECT INTERACTION");
+    y += 2;
+    ctx.print(x, y, "g get    d drop");
+    y += 1;
+    ctx.print(x, y, "i use    r unequip");
+    y += 1;
+    ctx.print(x, y, "o open   c close");
+    y += 1;
+    ctx.print(x, y, "f force");
+    y += 2;
+    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "MOUSE CONTROL");
+    y += 2;
+    ctx.print(x, y, "hover for tooltips");
+
+    match ctx.key {
+        None => YesNoResult::NoSelection,
+        Some(key) => match key {
+            VirtualKeyCode::Escape => YesNoResult::Yes,
+            VirtualKeyCode::Slash => {
+                if ctx.shift {
+                    return YesNoResult::Yes;
+                }
+                return YesNoResult::NoSelection;
+            }
+            _ => YesNoResult::NoSelection,
+        },
     }
 }
 
@@ -463,12 +510,12 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
 }
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum GameOverResult {
+pub enum YesNoResult {
     NoSelection,
-    QuitToMenu,
+    Yes,
 }
 
-pub fn game_over(ctx: &mut Rltk) -> GameOverResult {
+pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
     ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Your journey has ended!");
     ctx.print_color_centered(
         17,
@@ -485,10 +532,10 @@ pub fn game_over(ctx: &mut Rltk) -> GameOverResult {
     );
 
     match ctx.key {
-        None => GameOverResult::NoSelection,
+        None => YesNoResult::NoSelection,
         Some(key) => match key {
-            VirtualKeyCode::Escape => GameOverResult::QuitToMenu,
-            _ => GameOverResult::NoSelection,
+            VirtualKeyCode::Escape => YesNoResult::Yes,
+            _ => YesNoResult::NoSelection,
         },
     }
 }

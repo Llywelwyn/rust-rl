@@ -44,7 +44,7 @@ rltk::embedded_resource!(SCANLINESFS, "../resources/scanlines.fs");
 rltk::embedded_resource!(SCANLINESVS, "../resources/scanlines.vs");
 
 //Consts
-pub const SHOW_MAPGEN: bool = true;
+pub const SHOW_MAPGEN: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -61,6 +61,7 @@ pub enum RunState {
     SaveGame,
     GameOver,
     NextLevel,
+    HelpScreen,
     MagicMapReveal { row: i32, cursed: bool },
     MapGeneration,
 }
@@ -400,7 +401,7 @@ impl GameState for State {
                 }
             }
             RunState::ActionWithDirection { function } => {
-                new_runstate = gui::get_input_direction(&mut self.ecs, ctx, try_door);
+                new_runstate = gui::get_input_direction(&mut self.ecs, ctx, function);
             }
             RunState::MainMenu { .. } => {
                 let result = gui::main_menu(self, ctx);
@@ -428,8 +429,8 @@ impl GameState for State {
             RunState::GameOver => {
                 let result = gui::game_over(ctx);
                 match result {
-                    gui::GameOverResult::NoSelection => {}
-                    gui::GameOverResult::QuitToMenu => {
+                    gui::YesNoResult::NoSelection => {}
+                    gui::YesNoResult::Yes => {
                         self.game_over_cleanup();
                         new_runstate = RunState::MapGeneration;
                         self.mapgen_next_state =
@@ -441,6 +442,15 @@ impl GameState for State {
                 self.goto_next_level();
                 self.mapgen_next_state = Some(RunState::PreRun);
                 new_runstate = RunState::MapGeneration;
+            }
+            RunState::HelpScreen => {
+                let result = gui::show_help(ctx);
+                match result {
+                    gui::YesNoResult::NoSelection => {}
+                    gui::YesNoResult::Yes => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                }
             }
             RunState::MagicMapReveal { row, cursed } => {
                 let mut map = self.ecs.fetch_mut::<Map>();
@@ -481,15 +491,17 @@ impl GameState for State {
                 if !SHOW_MAPGEN {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
-                ctx.cls();
-                draw_map(&self.mapgen_history[self.mapgen_index], ctx);
+                if self.mapgen_history.len() != 0 {
+                    ctx.cls();
+                    draw_map(&self.mapgen_history[self.mapgen_index], ctx);
 
-                self.mapgen_timer += ctx.frame_time_ms;
-                if self.mapgen_timer > 300.0 {
-                    self.mapgen_timer = 0.0;
-                    self.mapgen_index += 1;
-                    if self.mapgen_index >= self.mapgen_history.len() {
-                        new_runstate = self.mapgen_next_state.unwrap();
+                    self.mapgen_timer += ctx.frame_time_ms;
+                    if self.mapgen_timer > 300.0 {
+                        self.mapgen_timer = 0.0;
+                        self.mapgen_index += 1;
+                        if self.mapgen_index >= self.mapgen_history.len() {
+                            new_runstate = self.mapgen_next_state.unwrap();
+                        }
                     }
                 }
             }

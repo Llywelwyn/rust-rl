@@ -1,7 +1,7 @@
 use super::{
     gamelog, BlocksTile, BlocksVisibility, CombatStats, Door, EntityMoved, Hidden, HungerClock, HungerState, Item, Map,
-    Monster, Name, Player, Position, Renderable, RunState, State, Telepath, TileType, Viewshed, WantsToMelee,
-    WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
+    Monster, Name, Player, Position, Renderable, RunState, State, SufferDamage, Telepath, TileType, Viewshed,
+    WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -56,14 +56,158 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             return RunState::PlayerTurn;
                         }
                     } else {
-                        gamelog::Logger::new().append("It's already closed.");
+                        gamelog::Logger::new().append("It's already closed.").log();
                     }
                 }
             }
         }
     }
-    gamelog::Logger::new().append("You see no door there.");
+    gamelog::Logger::new().append("You see no door there.").log();
     return RunState::AwaitingInput;
+}
+
+pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
+    let mut positions = ecs.write_storage::<Position>();
+    let mut players = ecs.write_storage::<Player>();
+    let mut viewsheds = ecs.write_storage::<Viewshed>();
+    let map = ecs.fetch::<Map>();
+
+    let entities = ecs.entities();
+    let mut doors = ecs.write_storage::<Door>();
+    let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
+    let mut blocks_movement = ecs.write_storage::<BlocksTile>();
+    let mut renderables = ecs.write_storage::<Renderable>();
+    let names = ecs.read_storage::<Name>();
+
+    for (_entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
+        let delta_x = i;
+        let delta_y = j;
+
+        if !(pos.x + delta_x < 1
+            || pos.x + delta_x > map.width - 1
+            || pos.y + delta_y < 1
+            || pos.y + delta_y > map.height - 1)
+        {
+            let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
+
+            for potential_target in map.tile_content[destination_idx].iter() {
+                let door = doors.get_mut(*potential_target);
+                if let Some(door) = door {
+                    if door.open == false {
+                        door.open = true;
+                        blocks_visibility.remove(*potential_target);
+                        blocks_movement.remove(*potential_target);
+                        let render_data = renderables.get_mut(*potential_target).unwrap();
+                        if let Some(name) = names.get(*potential_target) {
+                            gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
+                        }
+                        render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
+                        viewshed.dirty = true;
+                        return RunState::PlayerTurn;
+                    } else {
+                        gamelog::Logger::new().append("It's already open.").log();
+                    }
+                }
+            }
+        }
+    }
+    gamelog::Logger::new().append("You see no door there.").log();
+    return RunState::AwaitingInput;
+}
+
+pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
+    let mut something_was_destroyed: Option<Entity> = None;
+    {
+        let mut positions = ecs.write_storage::<Position>();
+        let mut players = ecs.write_storage::<Player>();
+        let mut viewsheds = ecs.write_storage::<Viewshed>();
+        let map = ecs.fetch::<Map>();
+
+        let entities = ecs.entities();
+        let mut doors = ecs.write_storage::<Door>();
+        let names = ecs.read_storage::<Name>();
+        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+
+        for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
+            let delta_x = i;
+            let delta_y = j;
+
+            if !(pos.x + delta_x < 1
+                || pos.x + delta_x > map.width - 1
+                || pos.y + delta_y < 1
+                || pos.y + delta_y > map.height - 1)
+            {
+                let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
+
+                if map.tile_content[destination_idx].len() == 0 {
+                    if rng.roll_dice(1, 20) == 20 {
+                        let mut suffer_damage = ecs.write_storage::<SufferDamage>();
+                        SufferDamage::new_damage(&mut suffer_damage, entity, 1);
+                        gamelog::Logger::new().append("Ouch! You kick the open air, and pull something.").log();
+                        break;
+                    } else {
+                        // If there's nothing at all, just kick the air and waste a turn.
+                        gamelog::Logger::new().append("You kick the open air.").log();
+                        break;
+                    }
+                } else {
+                    let mut last_non_door_target: Option<Entity> = None;
+                    let mut target_name = "thing";
+                    for potential_target in map.tile_content[destination_idx].iter() {
+                        if let Some(name) = names.get(*potential_target) {
+                            target_name = &name.name;
+                        }
+
+                        // If it's a door,
+                        let door = doors.get_mut(*potential_target);
+                        if let Some(door) = door {
+                            // If the door is closed,
+                            if door.open == false {
+                                // 33% chance of breaking it down.
+                                if rng.roll_dice(1, 3) == 1 {
+                                    gamelog::Logger::new()
+                                        .append("As you kick the")
+                                        .item_name_n(target_name)
+                                        .append(", it crashes open!")
+                                        .log();
+                                    something_was_destroyed = Some(*potential_target);
+                                    viewshed.dirty = true;
+                                    break;
+                                // 66% chance of just kicking it.
+                                } else {
+                                    gamelog::Logger::new()
+                                        .append("You kick the")
+                                        .item_name_n(target_name)
+                                        .period()
+                                        .log();
+                                    break;
+                                }
+                            // If the door is open and there's nothing else on the tile,
+                            } else if map.tile_content[destination_idx].len() == 1 {
+                                // Just kick the air.
+                                gamelog::Logger::new().append("You kick the open air.").log();
+                                break;
+                            }
+                        } else {
+                            last_non_door_target = Some(*potential_target);
+                        }
+                    }
+                    if let Some(_) = last_non_door_target {
+                        gamelog::Logger::new().append("You kick the").item_name_n(target_name).period().log();
+                        // Do something here if it's anything other than a door.
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    match something_was_destroyed {
+        Some(object) => {
+            ecs.delete_entity(object).expect("Unable to delete.");
+        }
+        _ => {}
+    };
+    return RunState::PlayerTurn;
 }
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
@@ -78,9 +222,6 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
     let mut doors = ecs.write_storage::<Door>();
-    let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
-    let mut blocks_movement = ecs.write_storage::<BlocksTile>();
-    let mut renderables = ecs.write_storage::<Renderable>();
     let names = ecs.read_storage::<Name>();
 
     for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
@@ -102,16 +243,10 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
             let door = doors.get_mut(*potential_target);
             if let Some(door) = door {
                 if door.open == false {
-                    door.open = true;
-                    blocks_visibility.remove(*potential_target);
-                    blocks_movement.remove(*potential_target);
-                    let render_data = renderables.get_mut(*potential_target).unwrap();
                     if let Some(name) = names.get(*potential_target) {
-                        gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
+                        gamelog::Logger::new().append("The").item_name(&name.name).append("is in your way.").log();
                     }
-                    render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
-                    viewshed.dirty = true;
-                    return true;
+                    return false;
                 }
             }
         }
@@ -200,7 +335,7 @@ fn get_item(ecs: &mut World) -> bool {
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     // Player movement
-    let result;
+    let mut result = false;
     match ctx.key {
         None => return RunState::AwaitingInput,
         Some(key) => match key {
@@ -233,12 +368,19 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                     result = skip_turn(&mut gs.ecs); // (Wait a turn)
                 }
             }
+            VirtualKeyCode::Slash => {
+                if ctx.shift {
+                    return RunState::HelpScreen;
+                }
+            }
             VirtualKeyCode::NumpadDecimal => {
                 result = skip_turn(&mut gs.ecs);
             }
 
             // Items
             VirtualKeyCode::C => return RunState::ActionWithDirection { function: try_door },
+            VirtualKeyCode::O => return RunState::ActionWithDirection { function: open },
+            VirtualKeyCode::F => return RunState::ActionWithDirection { function: kick },
             VirtualKeyCode::G => {
                 result = get_item(&mut gs.ecs);
             }
