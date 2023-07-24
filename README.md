@@ -14,20 +14,21 @@ i'll try to remember to update the web version on my page at the end of every we
 <summary>week 1</summary>
   
 - brogue-like colours
+  - i was staring at a horrible-looking game for a while as i tried to figure out how to make it look nice, before deciding to try the brogue method of colour offsets. when a map is generated, it also generates a red, green, and blue offset value for every tile on the map, and applies them during rendering. after making that change i started to miss the previous hue, so i combined the two. as it stands, every tile starts off a subtle green/blue, has rgb offsets applied on top of that, and then has the actual tile colour applied. and it ends up making something like this
 
--   i was staring at a horrible-looking game for a while as i tried to figure out how to make it look nice, before deciding to try the brogue method of colour offsets. when a map is generated, it also generates a red, green, and blue offset value for every tile on the map, and applies them during rendering. after making that change i started to miss the previous hue, so i combined the two. as it stands, every tile starts off a subtle green/blue, has rgb offsets applied on top of that, and then has the actual tile colour applied. and it ends up making something like this
     ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/2ded4eb7-b758-4022-8fee-fdf12673cf0e)
 
--   fov
+- fov
+  - decided to use bracket-lib's symmetric shadowcasting for common viewsheds (i.e. sight)
+  - and implemented elig's [raycasting](https://www.roguebasin.com/index.php/Eligloscode) algorithm for any viewsheds that _dont_ need that level of detail. symmetric is great, but when it comes to viewsheds that often _aren't_ symmetric in the first place, it's not really necessary (i.e. it's not often you've got two people with: the same additional viewshed, both within range, etc.). doing it this way comes with the benefit of being able to easily define what blocks a viewshed, rather than having to make a whole new BaseMap to work through bracket-lib
 
-    -   decided to use bracket-lib's symmetric shadowcasting for common viewsheds (i.e. sight)
-    -   and implemented elig's [raycasting](https://www.roguebasin.com/index.php/Eligloscode) algorithm for any viewsheds that _dont_ need that level of detail. symmetric is great, but when it comes to viewsheds that often _aren't_ symmetric in the first place, it's not really necessary (i.e. it's not often you've got two people with: the same additional viewshed, both within range, etc.). doing it this way comes with the benefit of being able to easily define what blocks a viewshed, rather than having to make a whole new BaseMap to work through bracket-lib
+- telepaths and having brains
+  - telepathy! a personal favourite rl feature, so i thought it'd be a cool test of the raycasting. right now it's simple, since the point was really just making sure the raycasting worked: there's a component for _being a telepath_, and for _having a mind_. if someone has telepathy, they'll see every entity with a mind within a given radius (defined by their telepath component), even through walls.
 
--   telepaths and having brains
-    -   telepathy! a personal favourite rl feature, so i thought it'd be a cool test of the raycasting. right now it's simple, since the point was really just making sure the raycasting worked: there's a component for _being a telepath_, and for _having a mind_. if someone has telepathy, they'll see every entity with a mind within a given radius (defined by their telepath component), even through walls.
-        ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/d55d5df4-267c-4dd5-b166-8417f58365af)
--   atomised spawn tables
-    -   i tried figuring out how often things would spawn by just looking at the weighted tables, and i had no idea at a glance, so i replaced it with category tables. right now it's just rolling for an entity or a mob, and then rolling on the right table from there, but at least it means easily being able to see how often something will spawn. on average right now, there's 1 item : 3 mobs
+    ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/d55d5df4-267c-4dd5-b166-8417f58365af)
+    
+- atomised spawn tables
+  - i tried figuring out how often things would spawn by just looking at the weighted tables, and i had no idea at a glance, so i replaced it with category tables. right now it's just rolling for an entity or a mob, and then rolling on the right table from there, but at least it means easily being able to see how often something will spawn. on average right now, there's 1 item : 3 mobs
 
 </details>
 
@@ -50,10 +51,18 @@ i'll try to remember to update the web version on my page at the end of every we
 
 <details>
   <summary>week 3</summary>
-  
-- stacking items
-  - finally, identical items in the inventory stack. i waited with this until figuring out a way that would work with extra parameters in the future like BUC. current solution is using a BTreeMap with a tuple containing the parameters that need to be the same (right now just the name) as the key, and the number of those items in the inventory as the value.
 
-    ![inventory screenshot](image.png)
+- randomised vault loot
+  - atomised weighted spawn tables into a bunch of sub-categories, like wands, equipment, potions, etc., and then tossed them all together to re-make the "all items" table again. now there's options for rolling just out of subsets of items - useful for adding a specific spawn to a vault, or ensuring there's always an amount of food on a given level, etc. can also use this in the future for categorising groups of mobs, to only spawn x mobtype on a given map too.
+
+- actions with directions
+  - made a new runstate that prompts the player to pick a direction, and takes a function as an argument. after the player picks a direction, it calls the function with that direction as the args. right now it's being used for closing doors, but now it'll be super easy to make anything else that needs the same parameters, like throwing items or kicking open chests. it's not the most elegant solution, but it works for now
+
+- ui stuff
+  - there's a help screen now with controls, accessed with [?], and a death screen that actually logs some stuff
+    [ images ]
+  - finally, identical items in the inventory stack. i waited with this until figuring out a way that would work with extra parameters in the future like BUC. current solution is using a BTreeMap with a tuple containing the parameters that need to be the same (right now just the name) as the key, and the number of those items in the inventory as the value.
+  - wand uses are tracked now with a number of asterisks next to their name -- i'll change this once i add in identification
+    [ images]
 
 </details>
