@@ -56,13 +56,18 @@ i'll try to remember to update the web version on my page at the end of every we
   - atomised weighted spawn tables into a bunch of sub-categories, like wands, equipment, potions, etc., and then tossed them all together to re-make the "all items" table again. now there's options for rolling just out of subsets of items - useful for adding a specific spawn to a vault, or ensuring there's always an amount of food on a given level, etc. can also use this in the future for categorising groups of mobs, to only spawn x mobtype on a given map too.
 
 - actions with directions
-  - made a new runstate that prompts the player to pick a direction, and takes a function as an argument. after the player picks a direction, it calls the function with that direction as the args. right now it's being used for closing doors, but now it'll be super easy to make anything else that needs the same parameters, like throwing items or kicking open chests. it's not the most elegant solution, but it works for now
+  - made a new runstate that prompts the player to pick a direction, and takes a function as an argument. after the player picks a direction, it calls the function with that direction as the args. right now it's being used for door stuff, but now it'll be super easy to make anything else that needs the same parameters
+  ![week 3 - kicking doors](https://github.com/Llywelwyn/rust-rl/assets/82828093/561135cc-87ae-4e19-b065-486c3736542d)
+
 
 - ui stuff
   - there's a help screen now with controls, accessed with [?], and a death screen that actually logs some stuff
-    [ images ]
+    ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/cedd471d-8f5c-4a94-9ea1-6999fc56372d)
   - finally, identical items in the inventory stack. i waited with this until figuring out a way that would work with extra parameters in the future like BUC. current solution is using a BTreeMap with a tuple containing the parameters that need to be the same (right now just the name) as the key, and the number of those items in the inventory as the value.
   - wand uses are tracked now with a number of asterisks next to their name -- i'll change this once i add in identification
-    [ images]
+    ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/98d15bee-e825-47ea-9ef8-04d8312f00af)
+
+
+
 
 </details>
