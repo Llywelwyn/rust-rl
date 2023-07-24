@@ -1,6 +1,6 @@
 use super::{
     random_table::RandomTable, Attribute, Attributes, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable,
-    Cursed, DefenceBonus, Destructible, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock,
+    Cursed, DefenceBonus, Destructible, Digger, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock,
     HungerState, InflictsDamage, Item, MagicMapper, Map, MeleePowerBonus, Mind, Monster, Name, Player, Position,
     ProvidesHealing, ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe, SingleActivation, TileType, Viewshed,
     Wand, AOE, MAPWIDTH,
@@ -168,6 +168,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         "magic missile wand" => magic_missile_wand(ecs, x, y),
         "fireball wand" => fireball_wand(ecs, x, y),
         "confusion wand" => confusion_wand(ecs, x, y),
+        "digging wand" => digging_wand(ecs, x, y),
         // Food
         "rations" => rations(ecs, x, y),
         "apple" => apple(ecs, x, y),
@@ -180,7 +181,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
     }
 }
 
-// 20 mobs : 6 items : 2 food : 1 trap
+// 12 mobs : 6 items : 2 food : 1 trap
 fn category_table() -> RandomTable {
     return RandomTable::new().add("mob", 12).add("item", 6).add("food", 2).add("trap", 1);
 }
@@ -230,7 +231,11 @@ pub fn scroll_table(_map_depth: i32) -> RandomTable {
 }
 
 pub fn wand_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new().add("magic missile wand", 1).add("fireball wand", 1).add("confusion wand", 1);
+    return RandomTable::new()
+        .add("magic missile wand", 1)
+        .add("fireball wand", 1)
+        .add("confusion wand", 1)
+        .add("digging wand", 1);
 }
 
 pub fn food_table(_map_depth: i32) -> RandomTable {
@@ -596,6 +601,25 @@ fn confusion_wand(ecs: &mut World, x: i32, y: i32) {
         .with(Destructible {})
         .with(Ranged { range: 10 })
         .with(Confusion { turns: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn digging_wand(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('/'),
+            fg: RGB::named(rltk::PURPLE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "wand of digging".to_string(), plural: "wands of digging".to_string() })
+        .with(Item {})
+        .with(Wand { uses: 3, max_uses: 3 })
+        .with(Destructible {})
+        .with(Ranged { range: 10 })
+        .with(Digger {})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

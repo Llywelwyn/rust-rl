@@ -4,6 +4,7 @@ use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 use std::ops::{Add, Mul};
 extern crate serde;
 
+pub mod camera;
 mod components;
 pub use components::*;
 mod map;
@@ -251,52 +252,8 @@ impl GameState for State {
             RunState::MainMenu { .. } => {}
             _ => {
                 // Draw map and ui
-                draw_map(&self.ecs.fetch::<Map>(), ctx);
-                {
-                    let positions = self.ecs.read_storage::<Position>();
-                    let renderables = self.ecs.read_storage::<Renderable>();
-                    let minds = self.ecs.read_storage::<Mind>();
-                    let hidden = self.ecs.read_storage::<Hidden>();
-                    let doors = self.ecs.write_storage::<Door>();
-                    let map = self.ecs.fetch::<Map>();
-                    let entities = self.ecs.entities();
-
-                    let mut data = (&positions, &renderables, &entities, !&hidden).join().collect::<Vec<_>>();
-                    data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                    for (pos, render, ent, _hidden) in data.iter() {
-                        let idx = map.xy_idx(pos.x, pos.y);
-                        let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
-                        let mut fg = render.fg;
-                        let mut bg = render.bg.add(RGB::from_u8(26, 45, 45)).add(offsets);
-                        // Get bloodstain colours
-                        if map.bloodstains.contains(&idx) {
-                            bg = bg.add(RGB::from_f32(0.6, 0., 0.));
-                        }
-                        // Draw entities on visible tiles
-                        if map.visible_tiles[idx] {
-                            ctx.set(pos.x, pos.y, fg, bg, render.glyph);
-                        }
-                        // Draw entities with minds within telepath range
-                        if map.telepath_tiles[idx] {
-                            let has_mind = minds.get(*ent);
-                            if let Some(_) = has_mind {
-                                ctx.set(pos.x, pos.y, render.fg, RGB::named(rltk::BLACK), render.glyph);
-                            }
-                        }
-                        // Draw all doors
-                        let is_door = doors.get(*ent);
-                        if let Some(_) = is_door {
-                            if map.revealed_tiles[idx] {
-                                if !map.visible_tiles[idx] {
-                                    fg = fg.mul(0.6);
-                                    bg = bg.mul(0.6);
-                                }
-                                ctx.set(pos.x, pos.y, fg, bg, render.glyph);
-                            }
-                        }
-                    }
-                    gui::draw_ui(&self.ecs, ctx);
-                }
+                camera::render_camera(&self.ecs, ctx);
+                gui::draw_ui(&self.ecs, ctx);
             }
         }
 
@@ -566,6 +523,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<InflictsDamage>();
     gs.ecs.register::<Ranged>();
     gs.ecs.register::<AOE>();
+    gs.ecs.register::<Digger>();
     gs.ecs.register::<Confusion>();
     gs.ecs.register::<MagicMapper>();
     gs.ecs.register::<InBackpack>();

@@ -11,8 +11,11 @@ pub enum TileType {
     DownStair,
 }
 
-pub const MAPWIDTH: usize = 80;
-pub const MAPHEIGHT: usize = 43;
+// FIXME: If the map size gets too small, entities stop being rendered starting from the right.
+// i.e. on a map size of 40*40, only entities to the left of the player are rendered.
+//      on a map size of 42*42, the player can see entities up to 2 tiles to their right.
+pub const MAPWIDTH: usize = 64;
+pub const MAPHEIGHT: usize = 64;
 pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
 #[derive(Default, Serialize, Deserialize, Clone)]

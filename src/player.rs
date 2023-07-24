@@ -19,6 +19,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
     let mut renderables = ecs.write_storage::<Renderable>();
     let names = ecs.read_storage::<Name>();
+    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
 
     let mut result = RunState::AwaitingInput;
     let mut door_pos: Option<Point> = None;
@@ -45,6 +46,10 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             if let Some(name) = names.get(*potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("is blocked.").log();
                             }
+                        } else if rng.roll_dice(1, 6) == 1 {
+                            if let Some(name) = names.get(*potential_target) {
+                                gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
+                            }
                         } else {
                             door.open = false;
                             blocks_visibility
@@ -59,8 +64,8 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             }
                             render_data.glyph = rltk::to_cp437('+'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
-                            result = RunState::PlayerTurn;
                         }
+                        result = RunState::PlayerTurn;
                     } else {
                         gamelog::Logger::new().append("It's already closed.").log();
                     }
@@ -94,6 +99,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
     let mut renderables = ecs.write_storage::<Renderable>();
     let names = ecs.read_storage::<Name>();
+    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
 
     let mut result = RunState::AwaitingInput;
     let mut door_pos: Option<Point> = None;
@@ -116,15 +122,21 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                 let door = doors.get_mut(*potential_target);
                 if let Some(door) = door {
                     if door.open == false {
-                        door.open = true;
-                        blocks_visibility.remove(*potential_target);
-                        blocks_movement.remove(*potential_target);
-                        let render_data = renderables.get_mut(*potential_target).unwrap();
-                        if let Some(name) = names.get(*potential_target) {
-                            gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
+                        if rng.roll_dice(1, 6) == 1 {
+                            if let Some(name) = names.get(*potential_target) {
+                                gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
+                            }
+                        } else {
+                            door.open = true;
+                            blocks_visibility.remove(*potential_target);
+                            blocks_movement.remove(*potential_target);
+                            let render_data = renderables.get_mut(*potential_target).unwrap();
+                            if let Some(name) = names.get(*potential_target) {
+                                gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
+                            }
+                            render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
+                            door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
-                        render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
-                        door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         result = RunState::PlayerTurn;
                     } else {
                         gamelog::Logger::new().append("It's already open.").log();

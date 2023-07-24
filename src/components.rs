@@ -236,6 +236,9 @@ pub struct Wand {
 pub struct Destructible {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Digger {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Hidden {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
