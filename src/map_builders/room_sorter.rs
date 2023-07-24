@@ -1,6 +1,7 @@
 use super::{BuilderMap, MetaMapBuilder, Rect};
 use rltk::RandomNumberGenerator;
 
+#[allow(dead_code)]
 pub enum RoomSort {
     LEFTMOST,
     RIGHTMOST,

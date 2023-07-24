@@ -1,7 +1,7 @@
 use super::{
     gamelog, BlocksTile, BlocksVisibility, CombatStats, Door, EntityMoved, Hidden, HungerClock, HungerState, Item, Map,
     Monster, Name, Player, Position, Renderable, RunState, State, SufferDamage, Telepath, TileType, Viewshed,
-    WantsToMelee, WantsToPickupItem, MAPHEIGHT, MAPWIDTH,
+    WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -24,7 +24,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
     let mut door_pos: Option<Point> = None;
 
-    for (_entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
+    for (_entity, _player, pos) in (&entities, &mut players, &mut positions).join() {
         let delta_x = i;
         let delta_y = j;
 
@@ -104,7 +104,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
     let mut door_pos: Option<Point> = None;
 
-    for (_entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
+    for (_entity, _player, pos) in (&entities, &mut players, &mut positions).join() {
         let delta_x = i;
         let delta_y = j;
 
@@ -173,7 +173,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         let names = ecs.read_storage::<Name>();
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
 
-        for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
+        for (entity, _player, pos) in (&entities, &mut players, &mut positions).join() {
             let delta_x = i;
             let delta_y = j;
 
@@ -335,8 +335,8 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
             }
             logger.period().log();
         }
-        pos.x = min((MAPWIDTH as i32) - 1, max(0, pos.x + delta_x));
-        pos.y = min((MAPHEIGHT as i32) - 1, max(0, pos.y + delta_y));
+        pos.x = min(map.width - 1, max(0, pos.x + delta_x));
+        pos.y = min(map.height - 1, max(0, pos.y + delta_y));
 
         // Dirty viewsheds, and check only now if telepath viewshed exists
         viewshed.dirty = true;

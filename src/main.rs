@@ -1,7 +1,6 @@
-use rltk::{GameState, Point, RandomNumberGenerator, Rltk, RGB};
+use rltk::{GameState, Point, RandomNumberGenerator, Rltk};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
-use std::ops::{Add, Mul};
 extern crate serde;
 
 pub mod camera;
@@ -82,7 +81,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
-        let mut builder = map_builders::random_builder(new_depth, &mut rng);
+        let mut builder = map_builders::random_builder(new_depth, &mut rng, 64, 64);
         builder.build_map(&mut rng);
         std::mem::drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -416,12 +415,12 @@ impl GameState for State {
 
                 // Could probably toss this into a function somewhere, and/or
                 // have multiple simple animations for it.
-                for x in 0..MAPWIDTH {
+                for x in 0..map.width {
                     let idx;
                     if x % 2 == 0 {
                         idx = map.xy_idx(x as i32, row);
                     } else {
-                        idx = map.xy_idx(x as i32, (MAPHEIGHT as i32 - 1) - (row));
+                        idx = map.xy_idx(x as i32, (map.height as i32 - 1) - (row));
                     }
                     if !cursed {
                         map.revealed_tiles[idx] = true;
@@ -440,7 +439,7 @@ impl GameState for State {
                     }
                 }
 
-                if row as usize == MAPHEIGHT - 1 {
+                if row as usize == map.height as usize - 1 {
                     new_runstate = RunState::MonsterTurn;
                 } else {
                     new_runstate = RunState::MagicMapReveal { row: row + 1, cursed: cursed };
@@ -452,7 +451,7 @@ impl GameState for State {
                 }
                 if self.mapgen_history.len() != 0 {
                     ctx.cls();
-                    draw_map(&self.mapgen_history[self.mapgen_index], ctx);
+                    camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
 
                     self.mapgen_timer += ctx.frame_time_ms;
                     if self.mapgen_timer > 300.0 {
@@ -545,7 +544,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
-    gs.ecs.insert(Map::new(1));
+    gs.ecs.insert(Map::new(1, 64, 64));
     gs.ecs.insert(Point::new(0, 0));
     gs.ecs.insert(player_entity);
     gs.ecs.insert(rltk::RandomNumberGenerator::new());

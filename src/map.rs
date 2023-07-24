@@ -1,8 +1,7 @@
-use rltk::{Algorithm2D, BaseMap, Point, Rltk, RGB};
+use rltk::{Algorithm2D, BaseMap, Point};
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use std::collections::HashSet;
-use std::ops::{Add, Mul};
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
@@ -14,9 +13,6 @@ pub enum TileType {
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.
 //      on a map size of 42*42, the player can see entities up to 2 tiles to their right.
-pub const MAPWIDTH: usize = 64;
-pub const MAPHEIGHT: usize = 64;
-pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Map {
@@ -46,23 +42,24 @@ impl Map {
         (y as usize) * (self.width as usize) + (x as usize)
     }
 
-    pub fn new(new_depth: i32) -> Map {
+    pub fn new(new_depth: i32, width: i32, height: i32) -> Map {
+        let map_tile_count = (width * height) as usize;
         let mut map = Map {
-            tiles: vec![TileType::Wall; MAPCOUNT],
-            width: MAPWIDTH as i32,
-            height: MAPHEIGHT as i32,
-            revealed_tiles: vec![false; MAPCOUNT],
-            visible_tiles: vec![false; MAPCOUNT],
-            lit_tiles: vec![true; MAPCOUNT], // NYI: Light sources. Once those exist, we can set this to false.
-            telepath_tiles: vec![false; MAPCOUNT],
-            red_offset: vec![0; MAPCOUNT],
-            green_offset: vec![0; MAPCOUNT],
-            blue_offset: vec![0; MAPCOUNT],
-            blocked: vec![false; MAPCOUNT],
+            tiles: vec![TileType::Wall; map_tile_count],
+            width: width,
+            height: height,
+            revealed_tiles: vec![false; map_tile_count],
+            visible_tiles: vec![false; map_tile_count],
+            lit_tiles: vec![true; map_tile_count], // NYI: Light sources. Once those exist, we can set this to false.
+            telepath_tiles: vec![false; map_tile_count],
+            red_offset: vec![0; map_tile_count],
+            green_offset: vec![0; map_tile_count],
+            blue_offset: vec![0; map_tile_count],
+            blocked: vec![false; map_tile_count],
             depth: new_depth,
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
-            tile_content: vec![Vec::new(); MAPCOUNT],
+            tile_content: vec![Vec::new(); map_tile_count],
         };
 
         const MAX_OFFSET: u8 = 32;
@@ -161,194 +158,5 @@ impl BaseMap for Map {
         }
 
         exits
-    }
-}
-
-pub fn draw_map(map: &Map, ctx: &mut Rltk) {
-    let mut y = 0;
-    let mut x = 0;
-
-    for (idx, tile) in map.tiles.iter().enumerate() {
-        // Get our colour offsets. Credit to Brogue for the inspiration here.
-        let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
-        if map.revealed_tiles[idx] {
-            let mut fg = offsets.mul(2.0);
-            // Right now, everything always has the same background. It's a
-            // very dark green, just to distinguish it slightly from the
-            // black that is tiles we've *never* seen.
-            let mut bg = offsets.add(RGB::from_u8(26, 45, 45));
-            let glyph;
-            match tile {
-                TileType::Floor => {
-                    glyph = rltk::to_cp437('.');
-                    fg = fg.add(RGB::from_f32(0.1, 0.8, 0.5));
-                }
-                TileType::Wall => {
-                    glyph = wall_glyph(&*map, x, y);
-                    fg = fg.add(RGB::from_f32(0.6, 0.5, 0.25));
-                }
-                TileType::DownStair => {
-                    glyph = rltk::to_cp437('>');
-                    fg = RGB::from_f32(0., 1., 1.);
-                }
-            }
-            if map.bloodstains.contains(&idx) {
-                bg = bg.add(RGB::from_f32(0.6, 0., 0.));
-            }
-            if !map.visible_tiles[idx] {
-                fg = fg.mul(0.6);
-                bg = bg.mul(0.6);
-            }
-            ctx.set(x, y, fg, bg, glyph);
-        }
-
-        // Move the coordinates
-        x += 1;
-        if x > (MAPWIDTH as i32) - 1 {
-            x = 0;
-            y += 1;
-        }
-    }
-}
-
-fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
-    let idx = map.xy_idx(x, y);
-    map.tiles[idx] == TileType::Wall && map.revealed_tiles[idx]
-}
-
-fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
-    if x < 1 || x > map.width - 2 || y < 1 || y > map.height - 2 as i32 {
-        return 35;
-    }
-    let mut mask: u8 = 0;
-    let diagonals_matter: Vec<u8> = vec![7, 11, 13, 14, 15];
-
-    if is_revealed_and_wall(map, x, y - 1) {
-        // N
-        mask += 1;
-    }
-    if is_revealed_and_wall(map, x, y + 1) {
-        // S
-        mask += 2;
-    }
-    if is_revealed_and_wall(map, x - 1, y) {
-        // W
-        mask += 4;
-    }
-    if is_revealed_and_wall(map, x + 1, y) {
-        // E
-        mask += 8;
-    }
-
-    if diagonals_matter.contains(&mask) {
-        if is_revealed_and_wall(map, x + 1, y - 1) {
-            // Top right
-            mask += 16;
-        }
-        if is_revealed_and_wall(map, x - 1, y - 1) {
-            // Top left
-            mask += 32;
-        }
-        if is_revealed_and_wall(map, x + 1, y + 1) {
-            // Bottom right
-            mask += 64;
-        }
-        if is_revealed_and_wall(map, x - 1, y + 1) {
-            // Bottom left
-            mask += 128;
-        }
-    }
-
-    match mask {
-        0 => 254,  // ■ (254) square pillar; but maybe ○ (9) looks better
-        1 => 186,  // Wall only to the north
-        2 => 186,  // Wall only to the south
-        3 => 186,  // Wall to the north and south
-        4 => 205,  // Wall only to the west
-        5 => 188,  // Wall to the north and west
-        6 => 187,  // Wall to the south and west
-        7 => 185,  // Wall to the north, south and west
-        8 => 205,  // Wall only to the east
-        9 => 200,  // Wall to the north and east
-        10 => 201, // Wall to the south and east
-        11 => 204, // Wall to the north, south and east
-        12 => 205, // Wall to the east and west
-        13 => 202, // Wall to the east, west, and north
-        14 => 203, // Wall to the east, west, and south
-        15 => 206, // ╬ Wall on all sides
-        29 => 202,
-        31 => 206,
-        45 => 202,
-        46 => 203,
-        47 => 206,
-        55 => 185,
-        59 => 204,
-        63 => 203,
-        87 => 185,
-        126 => 203,
-        143 => 206,
-        77 => 202,
-        171 => 204,
-        187 => 204,
-        215 => 185,
-        190 => 203,
-        237 => 202,
-        30 => 203,
-        110 => 203,
-        111 => 206,
-        119 => 185,
-        142 => 203,
-        158 => 203,
-        235 => 204,
-        93 => 202,
-        109 => 202,
-        94 => 203,
-        174 => 203,
-        159 => 206,
-        221 => 202,
-        157 => 202,
-        79 => 206,
-        95 => 185,
-        23 => 185, // NSW and NSE + 1 diagonal
-        39 => 185,
-        71 => 185,
-        103 => 185,
-        135 => 185,
-        151 => 185,
-        199 => 185,
-        78 => 203,
-        27 => 204,
-        43 => 204,
-        75 => 204,
-        107 => 204,
-        139 => 204,
-        155 => 204,
-        173 => 202,
-        141 => 202,
-        205 => 202,
-        175 => 204,
-        203 => 204,
-        61 => 205,  // NEW cases
-        125 => 205, // NEW cases
-        189 => 205, // NEW cases
-        206 => 205,
-        207 => 202,
-        222 => 205,
-        238 => 205,
-        253 => 205,
-        254 => 205,
-        167 => 186, // NSW, NW, SW
-        91 => 186,  // NSE, NE, SE
-        183 => 186, // NSW, NW, SW, NE
-        123 => 186, // NSE, NE, SE, NW
-        231 => 186, // NSW, NW, SW, SE
-        219 => 186, // NSE, NE, SE, SW
-        247 => 186,
-        251 => 186,
-        127 => 187, // Everything except NE
-        191 => 201, // Everything except NW
-        223 => 188, // Everything except SE
-        239 => 200, // Everything except SW
-        _ => 35,    // We missed one?
     }
 }

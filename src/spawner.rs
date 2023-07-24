@@ -3,7 +3,7 @@ use super::{
     Cursed, DefenceBonus, Destructible, Digger, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock,
     HungerState, InflictsDamage, Item, MagicMapper, Map, MeleePowerBonus, Mind, Monster, Name, Player, Position,
     ProvidesHealing, ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe, SingleActivation, TileType, Viewshed,
-    Wand, AOE, MAPWIDTH,
+    Wand, AOE,
 };
 use rltk::{console, RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -141,8 +141,11 @@ pub fn spawn_region(
 }
 
 pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
-    let x = (*spawn.0 % MAPWIDTH) as i32;
-    let y = (*spawn.0 / MAPWIDTH) as i32;
+    let map = ecs.fetch::<Map>();
+    let width = map.width as usize;
+    std::mem::drop(map);
+    let x = (*spawn.0 % width) as i32;
+    let y = (*spawn.0 / width) as i32;
 
     match spawn.1.as_ref() {
         // Monsters

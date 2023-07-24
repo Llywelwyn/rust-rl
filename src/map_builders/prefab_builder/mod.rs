@@ -117,6 +117,11 @@ impl PrefabBuilder {
                 build_data.spawn_list.push((idx, scroll_table(build_data.map.depth).roll(rng)));
                 // Placeholder for scroll spawn
             }
+            ')' => {
+                build_data.map.tiles[idx] = TileType::Floor;
+                build_data.spawn_list.push((idx, equipment_table(build_data.map.depth).roll(rng)));
+                // Placeholder for scroll spawn
+            }
             _ => {
                 rltk::console::log(format!("Unknown glyph '{}' when loading prefab", (ch as u8) as char));
             }

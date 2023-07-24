@@ -603,7 +603,6 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
             RGB::named(rltk::BLACK),
             format!("- forgot the controls {} time(s)", crate::gamelog::get_event_count("looked_for_help")),
         );
-        y += 1;
     }
 
     match ctx.key {
