@@ -57,6 +57,7 @@ pub fn save_game(ecs: &mut World) {
             Cursed,
             DefenceBonus,
             Destructible,
+            Digger,
             Door,
             EntityMoved,
             EntryTrigger,
@@ -152,6 +153,7 @@ pub fn load_game(ecs: &mut World) {
             Cursed,
             DefenceBonus,
             Destructible,
+            Digger,
             Door,
             EntityMoved,
             EntryTrigger,
@@ -197,7 +199,7 @@ pub fn load_game(ecs: &mut World) {
         for (e, h) in (&entities, &helper).join() {
             let mut worldmap = ecs.write_resource::<super::map::Map>();
             *worldmap = h.map.clone();
-            worldmap.tile_content = vec![Vec::new(); super::map::MAPCOUNT];
+            worldmap.tile_content = vec![Vec::new(); (worldmap.width * worldmap.height) as usize];
             deleteme = Some(e);
             crate::gamelog::restore_log(&mut h.log.clone());
             crate::gamelog::load_events(h.events.clone());

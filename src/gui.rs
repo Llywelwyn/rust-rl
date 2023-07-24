@@ -1,6 +1,6 @@
 use super::{
-    gamelog, rex_assets::RexAssets, CombatStats, Equipped, Hidden, HungerClock, HungerState, InBackpack, Map, Name,
-    Player, Point, Position, RunState, State, Viewshed,
+    camera, gamelog, rex_assets::RexAssets, CombatStats, Equipped, Hidden, HungerClock, HungerState, InBackpack, Map,
+    Name, Player, Point, Position, RunState, State, Viewshed,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -83,19 +83,31 @@ pub fn get_input_direction(
 }
 
 fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
+    let (min_x, _max_x, min_y, _max_y) = camera::get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
     let hidden = ecs.read_storage::<Hidden>();
 
     let mouse_pos = ctx.mouse_pos();
-    if mouse_pos.0 >= map.width || mouse_pos.1 >= map.height {
+    let mut mouse_pos_adjusted = mouse_pos;
+    mouse_pos_adjusted.0 += min_x;
+    mouse_pos_adjusted.1 += min_y;
+    if mouse_pos_adjusted.0 >= map.width
+        || mouse_pos_adjusted.1 >= map.height
+        || mouse_pos_adjusted.1 < 0 // Might need to be 1, and -1 from map height/width.
+        || mouse_pos_adjusted.0 < 0
+    {
+        return;
+    }
+    if !(map.visible_tiles[map.xy_idx(mouse_pos_adjusted.0, mouse_pos_adjusted.1)]
+        || map.telepath_tiles[map.xy_idx(mouse_pos_adjusted.0, mouse_pos_adjusted.1)])
+    {
         return;
     }
     let mut tooltip: Vec<String> = Vec::new();
     for (name, position, _hidden) in (&names, &positions, !&hidden).join() {
-        let idx = map.xy_idx(position.x, position.y);
-        if position.x == mouse_pos.0 && position.y == mouse_pos.1 && map.visible_tiles[idx] {
+        if position.x == mouse_pos_adjusted.0 && position.y == mouse_pos_adjusted.1 {
             tooltip.push(name.name.to_string());
         }
     }
@@ -367,11 +379,12 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
 }
 
 pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (ItemMenuResult, Option<Point>) {
+    let (min_x, max_x, min_y, max_y) = camera::get_screen_bounds(&gs.ecs, ctx);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
 
-    ctx.print_color(5, 0, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "select target");
+    ctx.print_color(1, 1, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Targeting which tile? [mouse input]");
 
     // Highlight available cells
     let mut available_cells = Vec::new();
@@ -381,8 +394,12 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
         for idx in visible.visible_tiles.iter() {
             let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
             if distance <= range as f32 {
-                ctx.set_bg(idx.x, idx.y, RGB::named(rltk::BLUE));
-                available_cells.push(idx);
+                let screen_x = idx.x - min_x;
+                let screen_y = idx.y - min_y;
+                if screen_x > 0 && screen_x < (max_x - min_x) && screen_y > 0 && screen_y < (max_y - min_y) {
+                    ctx.set_bg(screen_x, screen_y, RGB::named(rltk::BLUE));
+                    available_cells.push(idx);
+                }
             }
         }
     } else {
@@ -391,24 +408,30 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
 
     // Draw mouse cursor
     let mouse_pos = ctx.mouse_pos();
+    let mut mouse_pos_adjusted = mouse_pos;
+    mouse_pos_adjusted.0 += min_x;
+    mouse_pos_adjusted.1 += min_y;
     let map = gs.ecs.fetch::<Map>();
     let mut valid_target = false;
     for idx in available_cells.iter() {
-        if idx.x == mouse_pos.0 && idx.y == mouse_pos.1 {
+        if idx.x == mouse_pos_adjusted.0 && idx.y == mouse_pos_adjusted.1 {
             valid_target = true;
         }
     }
     if valid_target {
         if aoe > 0 {
-            let mut blast_tiles = rltk::field_of_view(Point::new(mouse_pos.0, mouse_pos.1), aoe, &*map);
+            // We adjust for camera position when getting FOV, but then we need to adjust back
+            // when iterating through the tiles themselves, by taking away min_x/min_y.
+            let mut blast_tiles =
+                rltk::field_of_view(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1), aoe, &*map);
             blast_tiles.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
             for tile in blast_tiles.iter() {
-                ctx.set_bg(tile.x, tile.y, RGB::named(rltk::DARKCYAN));
+                ctx.set_bg(tile.x - min_x, tile.y - min_y, RGB::named(rltk::DARKCYAN));
             }
         }
         ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::CYAN));
         if ctx.left_click {
-            return (ItemMenuResult::Selected, Some(Point::new(mouse_pos.0, mouse_pos.1)));
+            return (ItemMenuResult::Selected, Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)));
         }
     } else {
         ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::RED));
@@ -580,7 +603,6 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
             RGB::named(rltk::BLACK),
             format!("- forgot the controls {} time(s)", crate::gamelog::get_event_count("looked_for_help")),
         );
-        y += 1;
     }
 
     match ctx.key {

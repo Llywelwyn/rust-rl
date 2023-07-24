@@ -1,8 +1,8 @@
 use super::{
-    gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, Equippable, Equipped, HungerClock, HungerState,
-    InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing,
-    ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, Wand, WantsToDropItem, WantsToPickupItem,
-    WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
+    gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, Digger, Equippable, Equipped, HungerClock,
+    HungerState, InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing,
+    ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed, Wand, WantsToDropItem,
+    WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -38,16 +38,21 @@ impl<'a> System<'a> for ItemCollectionSystem {
     }
 }
 
+// Grouping together components because of type complexity issues - SystemData was too large.
+// This is a temporary solution that'll be fixed once inventory use is refactored into separate
+// systems.
+type EquipComponents<'a> = (ReadStorage<'a, Equippable>, WriteStorage<'a, Equipped>);
+
 pub struct ItemUseSystem {}
 impl<'a> System<'a> for ItemUseSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         ReadExpect<'a, Entity>,
-        ReadExpect<'a, Map>,
+        WriteExpect<'a, Map>,
         WriteExpect<'a, RandomNumberGenerator>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
-        ReadStorage<'a, Name>,
+        WriteStorage<'a, Name>,
         WriteStorage<'a, Consumable>,
         WriteStorage<'a, Wand>,
         ReadStorage<'a, Destructible>,
@@ -61,22 +66,23 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Position>,
         ReadStorage<'a, InflictsDamage>,
         ReadStorage<'a, AOE>,
+        ReadStorage<'a, Digger>,
         WriteStorage<'a, Confusion>,
         ReadStorage<'a, MagicMapper>,
         WriteExpect<'a, RunState>,
-        ReadStorage<'a, Equippable>,
-        WriteStorage<'a, Equipped>,
+        EquipComponents<'a>,
         WriteStorage<'a, InBackpack>,
+        WriteStorage<'a, Viewshed>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (
             player_entity,
-            map,
+            mut map,
             mut rng,
             entities,
             mut wants_to_use,
-            names,
+            mut names,
             mut consumables,
             mut wands,
             destructibles,
@@ -90,23 +96,24 @@ impl<'a> System<'a> for ItemUseSystem {
             positions,
             inflicts_damage,
             aoe,
+            digger,
             mut confused,
             magic_mapper,
             mut runstate,
-            equippable,
-            mut equipped,
+            (equippable, mut equipped),
             mut backpack,
+            mut viewsheds,
         ) = data;
 
         for (entity, wants_to_use) in (&entities, &wants_to_use).join() {
             let mut verb = "use";
             let mut used_item = true;
             let mut aoe_item = false;
-            let item_being_used = names.get(wants_to_use.item).unwrap();
 
             let is_cursed = cursed_items.get(wants_to_use.item);
             let wand = wands.get_mut(wants_to_use.item);
             if let Some(wand) = wand {
+                let name = names.get_mut(wants_to_use.item).unwrap();
                 // If want has no uses, roll 1d121. On a 121, wrest the wand, then delete it.
                 if wand.uses == 0 {
                     if rng.roll_dice(1, 121) != 121 {
@@ -120,8 +127,13 @@ impl<'a> System<'a> for ItemUseSystem {
                     consumables.insert(wants_to_use.item, Consumable {}).expect("Could not insert consumable");
                 }
                 verb = "zap";
+                // TODO: Change this to track uses better, after adding in identification.
+                name.name.push_str("*");
+                name.plural.push_str("*");
                 wand.uses -= 1;
             }
+
+            let item_being_used = names.get(wants_to_use.item).unwrap();
 
             let is_edible = provides_nutrition.get(wants_to_use.item);
             if let Some(_) = is_edible {
@@ -140,9 +152,14 @@ impl<'a> System<'a> for ItemUseSystem {
 
             // TARGETING
             let mut targets: Vec<Entity> = Vec::new();
+            let mut target_idxs: Vec<usize> = Vec::new();
             match wants_to_use.target {
                 None => {
                     targets.push(*player_entity);
+                    let pos = positions.get(*player_entity);
+                    if let Some(pos) = pos {
+                        target_idxs.push(map.xy_idx(pos.x, pos.y));
+                    }
                 }
                 Some(mut target) => {
                     let area_effect = aoe.get(wants_to_use.item);
@@ -150,6 +167,7 @@ impl<'a> System<'a> for ItemUseSystem {
                         None => {
                             // Single target in a tile
                             let idx = map.xy_idx(target.x, target.y);
+                            target_idxs.push(idx);
                             for mob in map.tile_content[idx].iter() {
                                 targets.push(*mob);
                             }
@@ -177,6 +195,7 @@ impl<'a> System<'a> for ItemUseSystem {
                             blast_tiles.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
                             for tile_idx in blast_tiles.iter() {
                                 let idx = map.xy_idx(tile_idx.x, tile_idx.y);
+                                target_idxs.push(idx);
                                 for mob in map.tile_content[idx].iter() {
                                     targets.push(*mob);
                                 }
@@ -250,13 +269,7 @@ impl<'a> System<'a> for ItemUseSystem {
                         if let Some(stats) = stats {
                             stats.hp = i32::min(stats.max_hp, stats.hp + heal.amount);
                             if entity == *player_entity {
-                                gamelog::Logger::new()
-                                    .append("Quaffing, you heal")
-                                    .colour(rltk::GREEN)
-                                    .append(heal.amount)
-                                    .colour(rltk::WHITE)
-                                    .append("hit points.")
-                                    .log();
+                                gamelog::Logger::new().append("Quaffing, you recover some vigour.").log();
                             }
                             let pos = positions.get(entity);
                             if let Some(pos) = pos {
@@ -366,6 +379,27 @@ impl<'a> System<'a> for ItemUseSystem {
                                 .append("forget where you last were.")
                                 .log();
                             *runstate = RunState::MagicMapReveal { row: 0, cursed: true };
+                        }
+                    }
+                }
+            }
+
+            let is_digger = digger.get(wants_to_use.item);
+            match is_digger {
+                None => {}
+                Some(_) => {
+                    used_item = true;
+                    for idx in target_idxs {
+                        if map.tiles[idx] == TileType::Wall {
+                            map.tiles[idx] = TileType::Floor;
+                        }
+                        for viewshed in (&mut viewsheds).join() {
+                            if viewshed
+                                .visible_tiles
+                                .contains(&Point::new(idx % map.width as usize, idx / map.width as usize))
+                            {
+                                viewshed.dirty = true;
+                            }
                         }
                     }
                 }
