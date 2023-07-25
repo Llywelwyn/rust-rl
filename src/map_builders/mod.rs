@@ -302,11 +302,11 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, wid
     }
     */
 
+    builder.with(DoorPlacement::new());
+
     if rng.roll_dice(1, 20) == 1 {
         builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
     }
-
-    builder.with(DoorPlacement::new());
     builder.with(PrefabBuilder::vaults());
     // Regardless of anything else, fill the edges back in with walls. We can't walk
     // there anyway, and we don't want an open line of sight into the unmapped void.

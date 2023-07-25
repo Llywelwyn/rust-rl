@@ -21,7 +21,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Player {})
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: "wanderer".to_string(), plural: "wanderers".to_string() })
-        .with(CombatStats { max_hp: 8, hp: 8, defence: 0, power: 4 })
+        .with(CombatStats { max_hp: 12, hp: 12, defence: 0, power: 4 })
         .with(HungerClock { state: HungerState::Satiated, duration: 50 })
         .with(Attributes {
             strength: Attribute { base: 10, modifiers: 0, bonus: 0 },
@@ -82,7 +82,16 @@ pub fn spawn_region(
         let spawn_table;
         match category.as_ref() {
             "mob" => spawn_table = mob_table(map_depth),
-            "item" => spawn_table = item_table(map_depth),
+            "item" => {
+                let item_category = item_category_table().roll(rng);
+                match item_category.as_ref() {
+                    "equipment" => spawn_table = equipment_table(map_depth),
+                    "potion" => spawn_table = potion_table(map_depth),
+                    "scroll" => spawn_table = scroll_table(map_depth),
+                    "wand" => spawn_table = wand_table(map_depth),
+                    _ => spawn_table = debug_table(),
+                }
+            }
             "food" => spawn_table = food_table(map_depth),
             "trap" => spawn_table = trap_table(map_depth),
             _ => spawn_table = debug_table(),
@@ -125,21 +134,13 @@ fn category_table() -> RandomTable {
     return RandomTable::new().add("mob", 12).add("item", 6).add("food", 2).add("trap", 1);
 }
 
-fn debug_table() -> RandomTable {
-    return RandomTable::new().add("debug", 1);
+// 3 scrolls : 3 potions : 1 equipment : 1 wand?
+fn item_category_table() -> RandomTable {
+    return RandomTable::new().add("equipment", 1).add("potion", 3).add("scroll", 3).add("wand", 1);
 }
 
-// 6 equipment : 10 potions : 10 scrolls : 2 cursed scrolls
-fn item_table(map_depth: i32) -> RandomTable {
-    return RandomTable::new()
-        // Equipment
-        .add_table(equipment_table(map_depth))
-        // Potions
-        .add_table(potion_table(map_depth))
-        // Scrolls
-        .add_table(scroll_table(map_depth))
-        // Wands
-        .add_table(wand_table(map_depth));
+fn debug_table() -> RandomTable {
+    return RandomTable::new().add("debug", 1);
 }
 
 pub fn equipment_table(map_depth: i32) -> RandomTable {

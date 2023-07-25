@@ -30,7 +30,7 @@ impl DoorPlacement {
             // There are no corridors - scan for possible places
             let tiles = build_data.map.tiles.clone();
             for (i, tile) in tiles.iter().enumerate() {
-                if *tile == TileType::Floor && self.door_possible(build_data, i) && rng.roll_dice(1, 3) == 1 {
+                if *tile == TileType::Floor && self.door_possible(build_data, i) && rng.roll_dice(1, 6) == 1 {
                     build_data.spawn_list.push((i, "door".to_string()));
                 }
             }

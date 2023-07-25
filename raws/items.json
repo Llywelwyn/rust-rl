@@ -50,7 +50,7 @@
     },
     {
         "id": "scroll_magicmap_cursed",
-        "name": { "name": "scroll of magic mapping", "plural": "scrolls of magic mapping" },
+        "name": { "name": "cursed scroll of magic mapping", "plural": "cursed scrolls of magic mapping" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
         "effects": { "magicmapper": "" }
@@ -70,6 +70,13 @@
         "effects": { "melee_power_bonus": "2" }
     },
     {
+        "id": "equip_longsword",
+        "name": { "name": "longsword", "plural": "longswords" },
+        "renderable": { "glyph": ")", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },
+        "flags": ["EQUIP_MELEE"],
+        "effects": { "melee_power_bonus": "3" }
+    },
+    {
         "id": "equip_smallshield",
         "name": { "name": "buckler", "plural": "bucklers" },
         "renderable": { "glyph": "[", "fg": "#808080", "bg": "#000000", "order": 2 },
@@ -78,10 +85,17 @@
     },
     {
         "id": "equip_mediumshield",
-        "name": { "name": "medium shield", "plural": "medium shield" },
+        "name": { "name": "medium shield", "plural": "medium shields" },
         "renderable": { "glyph": "[", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "flags": ["EQUIP_SHIELD"],
         "effects": { "defence_bonus": "2", "melee_power_bonus": "-1" }
+    },
+    {
+        "id": "equip_largeshield",
+        "name": { "name": "large shield", "plural": "large shields" },
+        "renderable": { "glyph": "[", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },
+        "flags": ["EQUIP_SHIELD"],
+        "effects": { "defence_bonus": "4", "melee_power_bonus": "-2" }
     },
     {
         "id": "wand_magicmissile",
@@ -120,7 +134,7 @@
     {
         "id": "food_apple",
         "name": { "name": "apple", "plural": "apples" },
-        "renderable": { "glyph": "%", "fg": "#008000", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "%", "fg": "#00FF00", "bg": "#000000", "order": 2 },
         "flags": ["FOOD", "CONSUMABLE"]
     }
 ]

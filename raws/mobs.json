@@ -1,13 +1,5 @@
 [
     {
-        "id": "orc",
-        "name": "orc",
-        "renderable": { "glyph": "o", "fg": "#00FF00", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 3 },
-        "vision_range": 12
-    },
-    {
         "id": "goblin",
         "name": "goblin",
         "renderable": { "glyph": "g", "fg": "#00FF00", "bg": "#000000", "order": 1 },
@@ -16,11 +8,43 @@
         "vision_range": 12
     },
     {
+        "id": "kobold",
+        "name": "kobold",
+        "renderable": { "glyph": "k", "fg": "#FF7F50", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
+        "vision_range": 8
+    },
+    {
         "id": "goblin_chieftain",
         "name": "goblin chieftain",
         "renderable": { "glyph": "G", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 2 },
+        "vision_range": 12
+    },
+    {
+        "id": "orc",
+        "name": "orc",
+        "renderable": { "glyph": "o", "fg": "#00FF00", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 3 },
         "vision_range": 12
+    },
+    {
+        "id": "orc_large",
+        "name": "large orc",
+        "renderable": { "glyph": "o", "fg": "#008000", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 12, "hp": 12, "defence": 1, "power": 3 },
+        "vision_range": 12
+    },
+    {
+        "id": "ogre",
+        "name": "ogre",
+        "renderable": { "glyph": "O", "fg": "#00FF00", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 12, "hp": 12, "defence": 3, "power": 3 },
+        "vision_range": 8
     }
 ]

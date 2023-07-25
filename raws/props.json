@@ -13,6 +13,13 @@
         "effects": { "damage": "6" }
     },
     {
+        "id": "trap_stonefall",
+        "name": "stonefall trap",
+        "renderable": { "glyph": "^", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
+        "effects": { "damage": "12" }
+    },
+    {
         "id": "trap_confusion",
         "name": "magic trap",
         "renderable": { "glyph": "^", "fg": "#800080", "bg": "#000000", "order": 2 },
