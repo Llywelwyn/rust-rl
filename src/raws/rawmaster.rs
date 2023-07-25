@@ -2,7 +2,7 @@ use super::Raws;
 use crate::components::*;
 use crate::random_table::RandomTable;
 use specs::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },
@@ -29,18 +29,40 @@ impl RawMaster {
 
     pub fn load(&mut self, raws: Raws) {
         self.raws = raws;
-        self.item_index = HashMap::new();
+        let mut used_names: HashSet<String> = HashSet::new();
         for (i, item) in self.raws.items.iter().enumerate() {
+            if used_names.contains(&item.id) {
+                rltk::console::log(format!("DEBUGINFO: Duplicate Item ID found in raws [{}]", item.id));
+            }
             self.item_index.insert(item.id.clone(), i);
+            used_names.insert(item.id.clone());
         }
         for (i, mob) in self.raws.mobs.iter().enumerate() {
+            if used_names.contains(&mob.id) {
+                rltk::console::log(format!("DEBUGINFO: Duplicate Mob ID found in raws [{}]", mob.id));
+            }
             self.mob_index.insert(mob.id.clone(), i);
+            used_names.insert(mob.id.clone());
         }
         for (i, prop) in self.raws.props.iter().enumerate() {
+            if used_names.contains(&prop.id) {
+                rltk::console::log(format!("DEBUGINFO: Duplicate Prop ID found in raws [{}]", prop.id));
+            }
             self.prop_index.insert(prop.id.clone(), i);
+            used_names.insert(prop.id.clone());
         }
         for (i, table) in self.raws.spawn_tables.iter().enumerate() {
+            if used_names.contains(&table.id) {
+                rltk::console::log(format!("DEBUGINFO: Duplicate SpawnTable ID found in raws [{}]", table.id));
+            }
             self.table_index.insert(table.id.clone(), i);
+            used_names.insert(table.id.clone());
+
+            for entry in table.table.iter() {
+                if !used_names.contains(&entry.id) {
+                    rltk::console::log(format!("DEBUGINFO: SpawnTables references unspecified entity [{}]", entry.id));
+                }
+            }
         }
     }
 }
