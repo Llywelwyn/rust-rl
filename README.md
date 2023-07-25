@@ -52,8 +52,10 @@ i'll try to remember to update the web version on my page at the end of every we
 <details>
   <summary>week 3</summary>
 
-- randomised vault loot
-  - atomised weighted spawn tables into a bunch of sub-categories, like wands, equipment, potions, etc., and then tossed them all together to re-make the "all items" table again. now there's options for rolling just out of subsets of items - useful for adding a specific spawn to a vault, or ensuring there's always an amount of food on a given level, etc. can also use this in the future for categorising groups of mobs, to only spawn x mobtype on a given map too.
+- (better) vault loot
+  - moved over to using raws and atomised spawn tables into a bunch of sub-categories in the process, like wands, equipment, potions, etc. now there's options for rolling just out of subsets of items - useful for adding a specific spawn to a vault, or ensuring there's always an amount of food on a given level, etc. can also use this in the future for categorising groups of mobs, to only spawn x mobtype on a given map too.
+  ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/32b73494-2d70-424f-a551-fe911c66ef9b)
+
 
 - actions with directions
   - made a new runstate that prompts the player to pick a direction, and takes a function as an argument. after the player picks a direction, it calls the function with that direction as the args. right now it's being used for door stuff, but now it'll be super easy to make anything else that needs the same parameters
