@@ -35,7 +35,7 @@ mod voronoi_spawning;
 use common::*;
 use specs::prelude::*;
 use voronoi_spawning::VoronoiSpawning;
-use wfc::WaveFunctionCollapseBuilder;
+//use wfc::WaveFunctionCollapseBuilder;
 mod room_exploder;
 use room_exploder::RoomExploder;
 mod room_corner_rounding;

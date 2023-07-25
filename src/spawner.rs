@@ -1,11 +1,8 @@
 use super::{
-    random_table::RandomTable, Attribute, Attributes, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable,
-    Cursed, DefenceBonus, Destructible, Digger, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock,
-    HungerState, InflictsDamage, Item, MagicMapper, Map, MeleePowerBonus, Mind, Monster, Name, Player, Position,
-    ProvidesHealing, ProvidesNutrition, Ranged, Rect, Renderable, SerializeMe, SingleActivation, TileType, Viewshed,
-    Wand, AOE,
+    random_table::RandomTable, raws, Attribute, Attributes, CombatStats, HungerClock, HungerState, Map, Name, Player,
+    Position, Rect, Renderable, SerializeMe, TileType, Viewshed,
 };
-use rltk::{console, RandomNumberGenerator, RGB};
+use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -36,45 +33,6 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
-}
-
-fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S, hit_die: i32, power: i32) {
-    let rolled_hp = roll_hit_dice(ecs, 1, hit_die);
-
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable { glyph: glyph, fg: RGB::named(rltk::GREEN), bg: RGB::named(rltk::BLACK), render_order: 1 })
-        .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
-        .with(Monster {})
-        .with(Mind {})
-        .with(Name { name: name.to_string(), plural: format!("{}s", name.to_string()) })
-        .with(BlocksTile {})
-        .with(CombatStats { max_hp: rolled_hp, hp: rolled_hp, defence: 0, power: power })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn orc(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('o'), "orc", 8, 3);
-}
-
-fn goblin(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('g'), "goblin", 6, 2);
-}
-
-fn goblin_chieftain(ecs: &mut World, x: i32, y: i32) {
-    monster(ecs, x, y, rltk::to_cp437('G'), "goblin chieftain", 8, 3);
-}
-
-pub fn roll_hit_dice(ecs: &mut World, n: i32, d: i32) -> i32 {
-    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-    let mut rolled_hp: i32 = 0;
-
-    for _i in 0..n {
-        rolled_hp += rng.roll_dice(1, d);
-    }
-
-    return rolled_hp;
 }
 
 // Consts
@@ -140,48 +98,26 @@ pub fn spawn_region(
     }
 }
 
+/// Spawns a named entity (name in tuple.1) at the location in (tuple.0)
 pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
     let map = ecs.fetch::<Map>();
     let width = map.width as usize;
-    std::mem::drop(map);
     let x = (*spawn.0 % width) as i32;
     let y = (*spawn.0 / width) as i32;
+    std::mem::drop(map);
 
-    match spawn.1.as_ref() {
-        // Monsters
-        "goblin" => goblin(ecs, x, y),
-        "goblin chieftain" => goblin_chieftain(ecs, x, y),
-        "orc" => orc(ecs, x, y),
-        // Equipment
-        "dagger" => dagger(ecs, x, y),
-        "shortsword" => shortsword(ecs, x, y),
-        "buckler" => buckler(ecs, x, y),
-        "shield" => shield(ecs, x, y),
-        // Potions
-        "weak health potion" => weak_health_potion(ecs, x, y),
-        "health potion" => health_potion(ecs, x, y),
-        // Scrolls
-        "fireball scroll" => fireball_scroll(ecs, x, y),
-        "cursed fireball scroll" => cursed_fireball_scroll(ecs, x, y),
-        "confusion scroll" => confusion_scroll(ecs, x, y),
-        "magic missile scroll" => magic_missile_scroll(ecs, x, y),
-        "magic map scroll" => magic_map_scroll(ecs, x, y),
-        "cursed magic map scroll" => cursed_magic_map_scroll(ecs, x, y),
-        // Wands
-        "magic missile wand" => magic_missile_wand(ecs, x, y),
-        "fireball wand" => fireball_wand(ecs, x, y),
-        "confusion wand" => confusion_wand(ecs, x, y),
-        "digging wand" => digging_wand(ecs, x, y),
-        // Food
-        "rations" => rations(ecs, x, y),
-        "apple" => apple(ecs, x, y),
-        // Traps
-        "bear trap" => bear_trap(ecs, x, y),
-        "confusion trap" => confusion_trap(ecs, x, y),
-        // Other
-        "door" => door(ecs, x, y),
-        _ => console::log(format!("Tried to spawn nothing ({}). Bugfix needed!", spawn.1)),
+    let spawn_result = raws::spawn_named_entity(
+        &raws::RAWS.lock().unwrap(),
+        ecs.create_entity(),
+        &spawn.1,
+        raws::SpawnType::AtPosition { x, y },
+        &mut rltk::RandomNumberGenerator::new(),
+    );
+    if spawn_result.is_some() {
+        return;
     }
+
+    rltk::console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
 }
 
 // 12 mobs : 6 items : 2 food : 1 trap
@@ -191,15 +127,6 @@ fn category_table() -> RandomTable {
 
 fn debug_table() -> RandomTable {
     return RandomTable::new().add("debug", 1);
-}
-
-// 6 goblins : 1 goblin chief : 2 orcs
-fn mob_table(map_depth: i32) -> RandomTable {
-    return RandomTable::new()
-        // Monsters
-        .add("goblin", 6)
-        .add("goblin chieftain", 1)
-        .add("orc", 2 + map_depth);
 }
 
 // 6 equipment : 10 potions : 10 scrolls : 2 cursed scrolls
@@ -215,451 +142,30 @@ fn item_table(map_depth: i32) -> RandomTable {
         .add_table(wand_table(map_depth));
 }
 
-pub fn equipment_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new().add("dagger", 4).add("shortsword", 2).add("buckler", 4).add("shield", 2);
+pub fn equipment_table(map_depth: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "equipment", map_depth)
 }
 
-pub fn potion_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new().add("weak health potion", 14).add("health potion", 6);
+pub fn potion_table(map_depth: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "potions", map_depth)
 }
 
-pub fn scroll_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new()
-        .add("fireball scroll", 2)
-        .add("cursed fireball scroll", 2)
-        .add("confusion scroll", 4)
-        .add("magic missile scroll", 6)
-        .add("magic map scroll", 4)
-        .add("cursed magic map scroll", 2);
+pub fn scroll_table(map_depth: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "scrolls", map_depth)
 }
 
-pub fn wand_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new()
-        .add("magic missile wand", 1)
-        .add("fireball wand", 1)
-        .add("confusion wand", 1)
-        .add("digging wand", 1);
+pub fn wand_table(map_depth: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "wands", map_depth)
 }
 
-pub fn food_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new().add("rations", 1).add("apple", 1);
+pub fn food_table(map_depth: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "food", map_depth)
 }
 
-pub fn trap_table(_map_depth: i32) -> RandomTable {
-    return RandomTable::new().add("bear trap", 2).add("confusion trap", 1);
+pub fn mob_table(map_depth: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "mobs", map_depth)
 }
 
-fn door(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('+'),
-            fg: RGB::from_f32(0., 1., 1.), // Same colour as stairs, should probably define this somewhere.
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "door".to_string(), plural: "doors".to_string() })
-        .with(BlocksTile {})
-        .with(BlocksVisibility {})
-        .with(Door { open: false })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn health_potion(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('!'),
-            fg: RGB::named(rltk::MAGENTA2),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "potion of health".to_string(), plural: "potions of health".to_string() })
-        .with(Item {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .with(ProvidesHealing { amount: 12 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn weak_health_potion(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('!'),
-            fg: RGB::named(rltk::MAGENTA),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "potion of lesser health".to_string(), plural: "potions of lesser health".to_string() })
-        .with(Item {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .with(ProvidesHealing { amount: 6 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-/*
-fn poison_potion(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('i'),
-            fg: RGB::named(rltk::GREEN),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "potion of ... health?".to_string() })
-        .with(Item {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .with(ProvidesHealing { amount: -12 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-*/
-
-// Scrolls
-// ~10 range should be considered average here.
-fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('?'),
-            fg: RGB::named(rltk::BLUE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "scroll of magic missile".to_string(), plural: "scrolls of magic missile".to_string() })
-        .with(Item {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .with(Ranged { range: 12 }) // Long range - as far as default vision range
-        .with(InflictsDamage { amount: 10 }) // Low~ damage
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('?'),
-            fg: RGB::named(rltk::ORANGE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "scroll of fireball".to_string(), plural: "scrolls of fireball".to_string() })
-        .with(Item {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .with(Ranged { range: 10 })
-        .with(InflictsDamage { amount: 20 })
-        .with(AOE { radius: 3 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn cursed_fireball_scroll(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('?'),
-            fg: RGB::named(rltk::ORANGE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "cursed scroll of fireball".to_string(), plural: "cursed scrolls of fireball".to_string() })
-        .with(Item {})
-        .with(Cursed {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .with(Ranged { range: 10 })
-        .with(InflictsDamage { amount: 20 })
-        .with(AOE { radius: 3 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn confusion_scroll(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('?'),
-            fg: RGB::named(rltk::PURPLE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "scroll of confusion".to_string(), plural: "scrolls of confusion".to_string() })
-        .with(Item {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .with(Ranged { range: 10 })
-        .with(Confusion { turns: 4 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn magic_map_scroll(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('?'),
-            fg: RGB::named(rltk::ROYALBLUE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "scroll of magic mapping".to_string(), plural: "scrolls of magic mapping".to_string() })
-        .with(Item {})
-        .with(MagicMapper {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn cursed_magic_map_scroll(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('?'),
-            fg: RGB::named(rltk::ROYALBLUE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name {
-            name: "cursed scroll of magic mapping".to_string(),
-            plural: "cursed scrolls of magic mapping".to_string(),
-        })
-        .with(Item {})
-        .with(Cursed {})
-        .with(MagicMapper {})
-        .with(Consumable {})
-        .with(Destructible {})
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-// EQUIPMENT
-fn dagger(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437(')'),
-            fg: RGB::named(rltk::GREY),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "dagger".to_string(), plural: "daggers".to_string() })
-        .with(Item {})
-        .with(Equippable { slot: EquipmentSlot::Melee })
-        .with(MeleePowerBonus { amount: 1 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-fn shortsword(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437(')'),
-            fg: RGB::named(rltk::LIGHTGREY),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "shortsword".to_string(), plural: "shortswords".to_string() })
-        .with(Item {})
-        .with(Equippable { slot: EquipmentSlot::Melee })
-        .with(MeleePowerBonus { amount: 2 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn buckler(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('['),
-            fg: RGB::named(rltk::GREY),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "buckler".to_string(), plural: "bucklers".to_string() })
-        .with(Item {})
-        .with(DefenceBonus { amount: 1 })
-        .with(Equippable { slot: EquipmentSlot::Shield })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn shield(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('['),
-            fg: RGB::named(rltk::LIGHTGREY),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "shield".to_string(), plural: "shields".to_string() })
-        .with(Item {})
-        .with(DefenceBonus { amount: 2 })
-        .with(MeleePowerBonus { amount: -1 })
-        .with(Equippable { slot: EquipmentSlot::Shield })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-// FOOD
-
-fn rations(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('%'),
-            fg: RGB::named(rltk::LIGHT_SALMON),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "rations".to_string(), plural: "rations".to_string() })
-        .with(Item {})
-        .with(ProvidesNutrition {})
-        .with(Consumable {})
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn apple(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('%'),
-            fg: RGB::named(rltk::GREEN),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "apple".to_string(), plural: "apples".to_string() })
-        .with(Item {})
-        .with(ProvidesNutrition {})
-        .with(Consumable {})
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-// WANDS
-
-fn fireball_wand(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('/'),
-            fg: RGB::named(rltk::ORANGE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "wand of fireball".to_string(), plural: "wands of fireball".to_string() })
-        .with(Item {})
-        .with(Wand { uses: 3, max_uses: 3 })
-        .with(Destructible {})
-        .with(Ranged { range: 10 })
-        .with(InflictsDamage { amount: 20 })
-        .with(AOE { radius: 3 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn magic_missile_wand(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('/'),
-            fg: RGB::named(rltk::BLUE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "wand of magic missile".to_string(), plural: "wands of magic missile".to_string() })
-        .with(Item {})
-        .with(Wand { uses: 3, max_uses: 3 })
-        .with(Destructible {})
-        .with(Ranged { range: 12 }) // Long range - as far as default vision range
-        .with(InflictsDamage { amount: 10 }) // Low~ damage
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn confusion_wand(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('/'),
-            fg: RGB::named(rltk::PURPLE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "wand of confusion".to_string(), plural: "wands of confusion".to_string() })
-        .with(Item {})
-        .with(Wand { uses: 3, max_uses: 3 })
-        .with(Destructible {})
-        .with(Ranged { range: 10 })
-        .with(Confusion { turns: 4 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn digging_wand(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('/'),
-            fg: RGB::named(rltk::PURPLE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "wand of digging".to_string(), plural: "wands of digging".to_string() })
-        .with(Item {})
-        .with(Wand { uses: 3, max_uses: 3 })
-        .with(Destructible {})
-        .with(Ranged { range: 10 })
-        .with(Digger {})
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-// TRAPS
-fn bear_trap(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('^'),
-            fg: RGB::named(rltk::GREY),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "bear trap".to_string(), plural: "bear traps".to_string() })
-        .with(Hidden {})
-        .with(EntryTrigger {})
-        .with(SingleActivation {})
-        .with(InflictsDamage { amount: 6 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn confusion_trap(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: rltk::to_cp437('^'),
-            fg: RGB::named(rltk::PURPLE),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name { name: "magic trap".to_string(), plural: "magic traps".to_string() })
-        .with(Hidden {})
-        .with(EntryTrigger {})
-        .with(SingleActivation {})
-        .with(Confusion { turns: 3 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
+pub fn trap_table(map_depth: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "traps", map_depth)
 }

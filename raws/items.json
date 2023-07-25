@@ -1,0 +1,126 @@
+[
+    {
+        "id": "potion_health",
+        "name": { "name": "potion of health", "plural": "potions of health" },
+        "renderable": { "glyph": "!", "fg": "#FF00FF", "bg": "#000000", "order": 2 },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "provides_healing": "12" }
+    },
+    {
+        "id": "potion_health_weak",
+        "name": { "name": "potion of lesser health", "plural": "potions of lesser health" },
+        "renderable": { "glyph": "!", "fg": "#FF00FF", "bg": "#000000", "order": 2 },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "provides_healing": "6" }
+    },
+    {
+        "id": "scroll_magicmissile",
+        "name": { "name": "scroll of magic missile", "plural": "scrolls of magic missile" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "ranged": "12", "damage": "10" }
+    },
+    {
+        "id": "scroll_fireball",
+        "name": { "name": "scroll of fireball", "plural": "scrolls of fireball" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
+    },
+    {
+        "id": "scroll_fireball_cursed",
+        "name": { "name": "cursed scroll of fireball", "plural": "cursed scrolls of fireball" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
+        "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
+    },
+    {
+        "id": "scroll_confusion",
+        "name": { "name": "scroll of confusion", "plural": "scrolls of confusion" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "ranged": "10", "confusion": "4" }
+    },
+    {
+        "id": "scroll_magicmap",
+        "name": { "name": "scroll of magic mapping", "plural": "scrolls of magic mapping" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "magicmapper": "" }
+    },
+    {
+        "id": "scroll_magicmap_cursed",
+        "name": { "name": "scroll of magic mapping", "plural": "scrolls of magic mapping" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
+        "effects": { "magicmapper": "" }
+    },
+    {
+        "id": "equip_dagger",
+        "name": { "name": "dagger", "plural": "daggers" },
+        "renderable": { "glyph": ")", "fg": "#808080", "bg": "#000000", "order": 2 },
+        "flags": ["EQUIP_MELEE"],
+        "effects": { "melee_power_bonus": "1" }
+    },
+    {
+        "id": "equip_shortsword",
+        "name": { "name": "shortsword", "plural": "shortswords" },
+        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "flags": ["EQUIP_MELEE"],
+        "effects": { "melee_power_bonus": "2" }
+    },
+    {
+        "id": "equip_smallshield",
+        "name": { "name": "buckler", "plural": "bucklers" },
+        "renderable": { "glyph": "[", "fg": "#808080", "bg": "#000000", "order": 2 },
+        "flags": ["EQUIP_SHIELD"],
+        "effects": { "defence_bonus": "1" }
+    },
+    {
+        "id": "equip_mediumshield",
+        "name": { "name": "medium shield", "plural": "medium shield" },
+        "renderable": { "glyph": "[", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "flags": ["EQUIP_SHIELD"],
+        "effects": { "defence_bonus": "2", "melee_power_bonus": "-1" }
+    },
+    {
+        "id": "wand_magicmissile",
+        "name": { "name": "wand of magic missile", "plural": "wands of magic missile" },
+        "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["WAND"],
+        "effects": { "ranged": "12", "damage": "10" }
+    },
+    {
+        "id": "wand_fireball",
+        "name": { "name": "wand of fireball", "plural": "wands of fireball" },
+        "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["WAND"],
+        "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
+    },
+    {
+        "id": "wand_confusion",
+        "name": { "name": "wand of confusion", "plural": "wands of confusion" },
+        "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["WAND"],
+        "effects": { "ranged": "10", "confusion": "4" }
+    },
+    {
+        "id": "wand_digging",
+        "name": { "name": "wand of digging", "plural": "wands of digging" },
+        "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "flags": ["WAND"],
+        "effects": { "ranged": "10", "digger": "" }
+    },
+    {
+        "id": "food_rations",
+        "name": { "name": "rations", "plural": "rations" },
+        "renderable": { "glyph": "%", "fg": "#FFA07A", "bg": "#000000", "order": 2 },
+        "flags": ["FOOD", "CONSUMABLE"]
+    },
+    {
+        "id": "food_apple",
+        "name": { "name": "apple", "plural": "apples" },
+        "renderable": { "glyph": "%", "fg": "#008000", "bg": "#000000", "order": 2 },
+        "flags": ["FOOD", "CONSUMABLE"]
+    }
+]

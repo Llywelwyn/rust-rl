@@ -1,7 +1,4 @@
-use super::{
-    spawner::equipment_table, spawner::food_table, spawner::potion_table, spawner::scroll_table, spawner::wand_table,
-    BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, TileType,
-};
+use super::{spawner, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, TileType};
 use rltk::RandomNumberGenerator;
 pub mod prefab_levels;
 pub mod prefab_sections;
@@ -93,7 +90,7 @@ impl PrefabBuilder {
             }
             'G' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "goblin chieftain".to_string()));
+                build_data.spawn_list.push((idx, "goblin_chieftain".to_string()));
             }
             'o' => {
                 build_data.map.tiles[idx] = TileType::Floor;
@@ -101,30 +98,27 @@ impl PrefabBuilder {
             }
             '^' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "bear trap".to_string()));
+                build_data.spawn_list.push((idx, "trap_bear".to_string()));
             }
             '%' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, food_table(build_data.map.depth).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::food_table(build_data.map.depth).roll(rng)));
             }
             '!' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, potion_table(build_data.map.depth).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::potion_table(build_data.map.depth).roll(rng)));
             }
             '/' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, wand_table(build_data.map.depth).roll(rng)));
-                // Placeholder for wand spawn
+                build_data.spawn_list.push((idx, spawner::wand_table(build_data.map.depth).roll(rng)));
             }
             '?' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, scroll_table(build_data.map.depth).roll(rng)));
-                // Placeholder for scroll spawn
+                build_data.spawn_list.push((idx, spawner::scroll_table(build_data.map.depth).roll(rng)));
             }
             ')' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, equipment_table(build_data.map.depth).roll(rng)));
-                // Placeholder for scroll spawn
+                build_data.spawn_list.push((idx, spawner::equipment_table(build_data.map.depth).roll(rng)));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph '{}' when loading prefab", (ch as u8) as char));

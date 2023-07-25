@@ -5,6 +5,7 @@ extern crate serde;
 
 pub mod camera;
 mod components;
+pub mod raws;
 pub use components::*;
 mod map;
 pub use map::*;
@@ -542,6 +543,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+
+    raws::load_raws();
 
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(Map::new(1, 64, 64));
