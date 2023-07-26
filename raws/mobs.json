@@ -1,5 +1,29 @@
 [
     {
+        "id": "dog_little",
+        "name": "little dog",
+        "renderable": { "glyph": "d", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
+        "vision_range": 12
+    },
+    {
+        "id": "dog",
+        "name": "dog",
+        "renderable": { "glyph": "d", "fg": "#EEEEEE", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 2 },
+        "vision_range": 12
+    },
+    {
+        "id": "dog_large",
+        "name": "large dog",
+        "renderable": { "glyph": "d", "fg": "#DDDDDD", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 12, "hp": 12, "defence": 0, "power": 3 },
+        "vision_range": 12
+    },
+    {
         "id": "goblin",
         "name": "goblin",
         "renderable": { "glyph": "g", "fg": "#00FF00", "bg": "#000000", "order": 1 },
@@ -10,10 +34,34 @@
     {
         "id": "kobold",
         "name": "kobold",
-        "renderable": { "glyph": "k", "fg": "#FF7F50", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "k", "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
-        "vision_range": 8
+        "vision_range": 7
+    },
+    {
+        "id": "jackal",
+        "name": "jackal",
+        "renderable": { "glyph": "d", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
+        "vision_range": 12
+    },
+    {
+        "id": "fox",
+        "name": "fox",
+        "renderable": { "glyph": "d", "fg": "#FF0000", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 4, "hp": 4, "defence": 0, "power": 1 },
+        "vision_range": 12
+    },
+    {
+        "id": "coyote",
+        "name": "coyote",
+        "renderable": { "glyph": "d", "fg": "#6E3215", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 2 },
+        "vision_range": 12
     },
     {
         "id": "goblin_chieftain",
@@ -44,7 +92,7 @@
         "name": "ogre",
         "renderable": { "glyph": "O", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 12, "hp": 12, "defence": 3, "power": 3 },
+        "stats": { "max_hp": 24, "hp": 24, "defence": 3, "power": 3 },
         "vision_range": 8
     }
 ]

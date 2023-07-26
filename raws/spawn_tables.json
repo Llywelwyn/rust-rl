@@ -4,10 +4,10 @@
         "table": [
             { "id": "equip_dagger", "weight": 4, "min": 0, "max": 100 },
             { "id": "equip_shortsword", "weight": 2, "min": 0, "max": 100 },
-            { "id": "equip_longsword", "weight": 1, "min": 2, "max": 100 },
+            { "id": "equip_longsword", "weight": 1, "min": 3, "max": 100 },
             { "id": "equip_smallshield", "weight": 4, "min": 0, "max": 100 },
             { "id": "equip_mediumshield", "weight": 2, "min": 0, "max": 100 },
-            { "id": "equip_largeshield", "weight": 1, "min": 2, "max": 100 }
+            { "id": "equip_largeshield", "weight": 1, "min": 3, "max": 100 }
         ]
     },
     {
@@ -20,8 +20,8 @@
     {
         "id": "scrolls",
         "table": [
-            { "id": "scroll_fireball", "weight": 2, "min": 2, "max": 100 },
-            { "id": "scroll_fireball_cursed", "weight": 2, "min": 2, "max": 100 },
+            { "id": "scroll_fireball", "weight": 2, "min": 3, "max": 100 },
+            { "id": "scroll_fireball_cursed", "weight": 2, "min": 3, "max": 100 },
             { "id": "scroll_confusion", "weight": 2, "min": 0, "max": 100 },
             { "id": "scroll_magicmap_cursed", "weight": 2, "min": 0, "max": 100 },
             { "id": "scroll_magicmap", "weight": 2, "min": 0, "max": 100 }
@@ -31,7 +31,7 @@
         "id": "wands",
         "table": [
             { "id": "wand_magicmissile", "weight": 1, "min": 0, "max": 100 },
-            { "id": "wand_fireball", "weight": 1, "min": 2, "max": 100 },
+            { "id": "wand_fireball", "weight": 1, "min": 3, "max": 100 },
             { "id": "wand_confusion", "weight": 1, "min": 0, "max": 100 },
             { "id": "wand_digging", "weight": 1, "min": 0, "max": 100 }
         ]
@@ -46,12 +46,18 @@
     {
         "id": "mobs",
         "table": [
-            { "id": "goblin", "weight": 10, "min": 0, "max": 100 },
-            { "id": "kobold", "weight": 10, "min": 0, "max": 3 },
-            { "id": "orc", "weight": 4, "min": 1, "max": 100 },
-            { "id": "orc_large", "weight": 1, "min": 3, "max": 100 },
-            { "id": "goblin_chieftain", "weight": 1, "min": 3, "max": 100 },
-            { "id": "ogre", "weight": 1, "min": 4, "max": 100 }
+            { "id": "dog_little", "weight": 5, "min": 0, "max": 100 },
+            { "id": "dog", "weight": 5, "min": 2, "max": 100 },
+            { "id": "dog_large", "weight": 5, "min": 3, "max": 100 },
+            { "id": "goblin", "weight": 50, "min": 0, "max": 100 },
+            { "id": "kobold", "weight": 100, "min": 0, "max": 3 },
+            { "id": "jackal", "weight": 100, "min": 0, "max": 100 },
+            { "id": "fox", "weight": 6, "min": 0, "max": 100 },
+            { "id": "coyote", "weight": 6, "min": 0, "max": 100 },
+            { "id": "orc", "weight": 30, "min": 3, "max": 100 },
+            { "id": "orc_large", "weight": 10, "min": 3, "max": 100 },
+            { "id": "goblin_chieftain", "weight": 5, "min": 3, "max": 100 },
+            { "id": "ogre", "weight": 2, "min": 4, "max": 100 }
         ]
     },
     {
