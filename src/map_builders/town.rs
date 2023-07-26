@@ -1,7 +1,7 @@
 use super::{BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType};
 use std::collections::HashSet;
 
-pub fn town_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+pub fn town_builder(new_depth: i32, _rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
     let mut chain = BuilderChain::new(new_depth, width, height);
     chain.start_with(TownBuilder::new());
 
@@ -143,8 +143,10 @@ impl TownBuilder {
             }
             build_data.take_snapshot();
 
+            pier_idxs.push(build_data.map.xy_idx(largest_water_width + sand_width, y));
             pier_idxs.push(build_data.map.xy_idx(largest_water_width + sand_width, y + 1));
             pier_idxs.push(build_data.map.xy_idx(largest_water_width + sand_width, y + 2));
+            pier_idxs.push(build_data.map.xy_idx(largest_water_width + sand_width, y + 3));
         }
 
         return pier_idxs;
@@ -176,7 +178,12 @@ impl TownBuilder {
 
                 for x in OFFSET_FROM_LEFT + 1..build_data.width - BORDER {
                     let gravel_idx = build_data.map.xy_idx(x, y);
-                    build_data.map.tiles[gravel_idx] = TileType::Sand;
+                    let roll = rng.roll_dice(1, 6);
+                    match roll {
+                        1 => build_data.map.tiles[gravel_idx] = TileType::Foliage,
+                        2 => build_data.map.tiles[gravel_idx] = TileType::HeavyFoliage,
+                        _ => {}
+                    }
                     if y > BORDER + 1
                         && y < build_data.height - BORDER - 1
                         && x > OFFSET_FROM_LEFT + 2
@@ -333,7 +340,7 @@ impl TownBuilder {
             for r in roads.iter() {
                 nearest_tiletype.push((
                     *r,
-                    rltk::DistanceAlg::PythagorasSquared.distance2d(
+                    rltk::DistanceAlg::Manhattan.distance2d(
                         tile_pt,
                         rltk::Point::new(*r as i32 % build_data.map.width, *r as i32 / build_data.map.width),
                     ),

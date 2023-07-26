@@ -4,6 +4,7 @@ use specs::prelude::*;
 use std::collections::HashSet;
 mod tiletype;
 pub use tiletype::{tile_cost, tile_opaque, tile_walkable, TileType};
+pub mod themes;
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.

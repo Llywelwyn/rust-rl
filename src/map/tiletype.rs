@@ -13,6 +13,8 @@ pub enum TileType {
     Gravel,
     Road,
     Grass,
+    Foliage,
+    HeavyFoliage,
     Sand,
     ShallowWater,
     Bridge,
@@ -27,6 +29,8 @@ pub fn tile_walkable(tt: TileType) -> bool {
         | TileType::Gravel
         | TileType::Road
         | TileType::Grass
+        | TileType::Foliage
+        | TileType::HeavyFoliage
         | TileType::Sand
         | TileType::ShallowWater
         | TileType::Bridge
