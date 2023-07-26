@@ -66,10 +66,10 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
             let entity_offset_y = pos.y - min_y;
             if entity_offset_x > 0 && entity_offset_x < map_width && entity_offset_y > 0 && entity_offset_y < map_height
             {
-                let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
+                let offsets = map.colour_offset[idx];
                 let mut draw = false;
                 let mut fg = render.fg;
-                let mut bg = render.bg.add(RGB::from_u8(26, 45, 45)).add(offsets);
+                let mut bg = offset(render.bg, offsets);
                 // Get bloodstain colours
                 if map.bloodstains.contains(&idx) {
                     bg = bg.add(RGB::from_f32(0.6, 0., 0.));
@@ -104,34 +104,96 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
     }
 }
 
+fn offset(rgb: rltk::RGB, offsets: (f32, f32, f32)) -> RGB {
+    let r = rgb.r * offsets.0;
+    let g = rgb.g * offsets.1;
+    let b = rgb.b * offsets.2;
+
+    return rltk::RGB::from_f32(r, g, b);
+}
+
 fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
-    let offsets = RGB::from_u8(map.red_offset[idx], map.green_offset[idx], map.blue_offset[idx]);
-    let glyph;
-    let mut fg = offsets.mul(2.0);
-    let mut bg = offsets.add(RGB::from_u8(26, 45, 45));
+    let offsets = map.colour_offset[idx];
+    let glyph: rltk::FontCharType;
+    let mut fg: RGB = RGB::new();
+    let mut bg: RGB;
+
+    let default_bg: RGB = RGB::from_u8(26, 45, 45);
 
     match map.tiles[idx] {
         TileType::Floor => {
             glyph = rltk::to_cp437('.');
-            fg = fg.add(RGB::from_f32(0.1, 0.8, 0.5));
+            fg = RGB::from_f32(0.1, 0.8, 0.5);
+            bg = default_bg;
+        }
+        TileType::WoodFloor => {
+            glyph = rltk::to_cp437('.');
+            bg = RGB::from_u8(47, 36, 28);
+        }
+        TileType::Fence => {
+            glyph = rltk::to_cp437('=');
+            fg = RGB::from_u8(66, 32, 6);
+            bg = RGB::from_u8(44, 34, 26);
         }
         TileType::Wall => {
             let x = idx as i32 % map.width;
             let y = idx as i32 / map.width;
             glyph = wall_glyph(&*map, x, y);
-            fg = fg.add(RGB::from_f32(0.6, 0.5, 0.25));
+            fg = RGB::from_f32(0.6, 0.5, 0.25);
+            bg = default_bg;
         }
         TileType::DownStair => {
             glyph = rltk::to_cp437('>');
             fg = RGB::from_f32(0., 1., 1.);
+            bg = default_bg;
+        }
+        TileType::Bridge => {
+            glyph = rltk::to_cp437('.');
+            fg = default_bg;
+            bg = default_bg;
+        }
+        TileType::Gravel => {
+            glyph = rltk::to_cp437(';');
+            bg = RGB::from_u8(26, 26, 36);
+        }
+        TileType::Road => {
+            glyph = rltk::to_cp437('~');
+            //fg = RGB::from_u8(112, 105, 94);
+            bg = default_bg;
+        }
+        TileType::Grass => {
+            glyph = rltk::to_cp437('"');
+            bg = RGB::from_u8(26, 45, 26);
+        }
+        TileType::Sand => {
+            glyph = rltk::to_cp437('.');
+            bg = RGB::from_u8(54, 54, 28);
+        }
+        TileType::ShallowWater => {
+            glyph = rltk::to_cp437('~');
+            bg = RGB::from_u8(34, 42, 62);
+        }
+        TileType::DeepWater => {
+            glyph = rltk::to_cp437('~');
+            bg = RGB::from_u8(24, 30, 42);
         }
     }
     if map.bloodstains.contains(&idx) {
         bg = bg.add(RGB::from_f32(0.6, 0., 0.));
     }
+
+    // If the foreground hasn't been changed, just add
+    // the bg to it. Otherwise, leave it as is.
+    if fg == RGB::new() {
+        fg = fg.add(bg).add(map.additional_fg_offset);
+    }
+
+    fg = offset(fg, offsets);
+    bg = offset(bg, offsets);
+
     if !map.visible_tiles[idx] {
-        fg = fg.mul(0.6);
-        bg = bg.mul(0.6);
+        fg = fg.mul(0.75);
+        bg = bg.mul(0.75);
     }
 
     return (glyph, fg, bg);
@@ -291,14 +353,14 @@ pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
     let min_y = player_pos.y - center_y;
     let max_y = min_y + y_chars as i32;
 
-    let map_width = map.width - 1;
-    let map_height = map.height - 1;
+    let map_width = map.width;
+    let map_height = map.height;
 
     let mut y = 0;
     for ty in min_y..max_y {
         let mut x = 0;
         for tx in min_x..max_x {
-            if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
+            if tx >= 0 && tx < map_width && ty >= 0 && ty < map_height {
                 let idx = map.xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
                     let (glyph, fg, bg) = get_tile_glyph(idx, &*map);

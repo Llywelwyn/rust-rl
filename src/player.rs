@@ -28,9 +28,9 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
         let delta_x = i;
         let delta_y = j;
 
-        if !(pos.x + delta_x < 1
+        if !(pos.x + delta_x < 0
             || pos.x + delta_x > map.width - 1
-            || pos.y + delta_y < 1
+            || pos.y + delta_y < 0
             || pos.y + delta_y > map.height - 1)
         {
             let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
@@ -108,9 +108,9 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
         let delta_x = i;
         let delta_y = j;
 
-        if !(pos.x + delta_x < 1
+        if !(pos.x + delta_x < 0
             || pos.x + delta_x > map.width - 1
-            || pos.y + delta_y < 1
+            || pos.y + delta_y < 0
             || pos.y + delta_y > map.height - 1)
         {
             let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
@@ -177,9 +177,9 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
             let delta_x = i;
             let delta_y = j;
 
-            if !(pos.x + delta_x < 1
+            if !(pos.x + delta_x < 0
                 || pos.x + delta_x > map.width - 1
-                || pos.y + delta_y < 1
+                || pos.y + delta_y < 0
                 || pos.y + delta_y > map.height - 1)
             {
                 let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
@@ -281,9 +281,9 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let names = ecs.read_storage::<Name>();
 
     for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
-        if pos.x + delta_x < 1
+        if pos.x + delta_x < 0
             || pos.x + delta_x > map.width - 1
-            || pos.y + delta_y < 1
+            || pos.y + delta_y < 0
             || pos.y + delta_y > map.height - 1
         {
             return false;

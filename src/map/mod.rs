@@ -2,13 +2,8 @@ use rltk::{Algorithm2D, BaseMap, Point};
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use std::collections::HashSet;
-
-#[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
-pub enum TileType {
-    Wall,
-    Floor,
-    DownStair,
-}
+mod tiletype;
+pub use tiletype::{tile_cost, tile_opaque, tile_walkable, TileType};
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.
@@ -24,9 +19,8 @@ pub struct Map {
     pub lit_tiles: Vec<bool>,
     pub telepath_tiles: Vec<bool>,
     // Combine these offsets into one Vec<(u8, u8, u8)>
-    pub red_offset: Vec<u8>,
-    pub green_offset: Vec<u8>,
-    pub blue_offset: Vec<u8>,
+    pub colour_offset: Vec<(f32, f32, f32)>,
+    pub additional_fg_offset: rltk::RGB,
     pub blocked: Vec<bool>,
     pub depth: i32,
     pub bloodstains: HashSet<usize>,
@@ -52,9 +46,8 @@ impl Map {
             visible_tiles: vec![false; map_tile_count],
             lit_tiles: vec![true; map_tile_count], // NYI: Light sources. Once those exist, we can set this to false.
             telepath_tiles: vec![false; map_tile_count],
-            red_offset: vec![0; map_tile_count],
-            green_offset: vec![0; map_tile_count],
-            blue_offset: vec![0; map_tile_count],
+            colour_offset: vec![(1.0, 1.0, 1.0); map_tile_count],
+            additional_fg_offset: rltk::RGB::from_u8(HALF_OFFSET, HALF_OFFSET, HALF_OFFSET),
             blocked: vec![false; map_tile_count],
             depth: new_depth,
             bloodstains: HashSet::new(),
@@ -62,20 +55,16 @@ impl Map {
             tile_content: vec![Vec::new(); map_tile_count],
         };
 
-        const MAX_OFFSET: u8 = 32;
+        const HALF_OFFSET: u8 = 5;
+        const OFFSET_PERCENT: i32 = 10;
+        const TWICE_OFFSET: i32 = OFFSET_PERCENT * 2;
         let mut rng = rltk::RandomNumberGenerator::new();
 
-        for idx in 0..map.red_offset.len() {
-            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
-            map.red_offset[idx] = roll as u8;
-        }
-        for idx in 0..map.green_offset.len() {
-            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
-            map.green_offset[idx] = roll as u8;
-        }
-        for idx in 0..map.blue_offset.len() {
-            let roll = rng.roll_dice(1, MAX_OFFSET as i32);
-            map.blue_offset[idx] = roll as u8;
+        for idx in 0..map.colour_offset.len() {
+            let red_roll: f32 = (rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32 / 100f32 + 1.0;
+            let green_roll: f32 = (rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32 / 100f32 + 1.0;
+            let blue_roll: f32 = (rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32 / 100f32 + 1.0;
+            map.colour_offset[idx] = (red_roll, green_roll, blue_roll);
         }
 
         return map;
@@ -92,7 +81,7 @@ impl Map {
 
     pub fn populate_blocked(&mut self) {
         for (i, tile) in self.tiles.iter_mut().enumerate() {
-            self.blocked[i] = *tile == TileType::Wall;
+            self.blocked[i] = !tile_walkable(*tile);
         }
     }
 
@@ -112,7 +101,11 @@ impl Algorithm2D for Map {
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
         let idx_u = idx as usize;
-        return self.tiles[idx_u] == TileType::Wall || self.view_blocked.contains(&idx_u);
+        if idx_u > 0 && idx_u < self.tiles.len() {
+            return tile_opaque(self.tiles[idx_u]) || self.view_blocked.contains(&idx_u);
+        } else {
+            return true;
+        }
     }
 
     fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
@@ -128,33 +121,34 @@ impl BaseMap for Map {
         let x = (idx as i32) % self.width;
         let y = (idx as i32) / self.width;
         let w = self.width as usize;
+        let tt = self.tiles[idx as usize];
 
         // Cardinal directions
         if self.is_exit_valid(x - 1, y) {
-            exits.push((idx - 1, 1.0));
+            exits.push((idx - 1, tile_cost(tt)));
         }
         if self.is_exit_valid(x + 1, y) {
-            exits.push((idx + 1, 1.0));
+            exits.push((idx + 1, tile_cost(tt)));
         }
         if self.is_exit_valid(x, y - 1) {
-            exits.push((idx - w, 1.0));
+            exits.push((idx - w, tile_cost(tt)));
         }
         if self.is_exit_valid(x, y + 1) {
-            exits.push((idx + w, 1.0));
+            exits.push((idx + w, tile_cost(tt)));
         }
 
         // Diagonals
         if self.is_exit_valid(x - 1, y - 1) {
-            exits.push((idx - w - 1, 1.45));
+            exits.push((idx - w - 1, tile_cost(tt) * 1.45));
         }
         if self.is_exit_valid(x + 1, y - 1) {
-            exits.push((idx - w + 1, 1.45));
+            exits.push((idx - w + 1, tile_cost(tt) * 1.45));
         }
         if self.is_exit_valid(x - 1, y + 1) {
-            exits.push((idx + w - 1, 1.45));
+            exits.push((idx + w - 1, tile_cost(tt) * 1.45));
         }
         if self.is_exit_valid(x + 1, y + 1) {
-            exits.push((idx + w + 1, 1.45));
+            exits.push((idx + w + 1, tile_cost(tt) * 1.45));
         }
 
         exits

@@ -20,7 +20,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         })
         .with(Player {})
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
-        .with(Name { name: "wanderer".to_string(), plural: "wanderers".to_string() })
+        .with(Name { name: "you".to_string(), plural: "you".to_string() })
         .with(CombatStats { max_hp: 12, hp: 12, defence: 0, power: 4 })
         .with(HungerClock { state: HungerState::Satiated, duration: 50 })
         .with(Attributes {
@@ -36,7 +36,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
 }
 
 // Consts
-const MAX_ENTITIES: i32 = 4;
+const MAX_ENTITIES: i32 = 3;
 
 /// Fills a room with stuff!
 pub fn spawn_room(

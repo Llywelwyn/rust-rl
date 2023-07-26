@@ -45,7 +45,7 @@ rltk::embedded_resource!(SCANLINESFS, "../resources/scanlines.fs");
 rltk::embedded_resource!(SCANLINESVS, "../resources/scanlines.vs");
 
 //Consts
-pub const SHOW_MAPGEN: bool = false;
+pub const SHOW_MAPGEN: bool = true;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -82,7 +82,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
-        let mut builder = map_builders::random_builder(new_depth, &mut rng, 64, 64);
+        let mut builder = map_builders::level_builder(new_depth, &mut rng, 80, 50);
         builder.build_map(&mut rng);
         std::mem::drop(rng);
         self.mapgen_history = builder.build_data.history.clone();

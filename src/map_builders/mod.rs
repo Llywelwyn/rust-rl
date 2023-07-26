@@ -58,6 +58,8 @@ mod door_placement;
 use door_placement::DoorPlacement;
 mod fill_edges;
 use fill_edges::FillEdges;
+mod town;
+use town::town_builder;
 
 // Shared data to be passed around build chain
 pub struct BuilderMap {
@@ -313,4 +315,12 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, wid
     builder.with(FillEdges::wall());
 
     builder
+}
+
+pub fn level_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+    rltk::console::log(format!("DEBUGINFO: Depth: {}", new_depth));
+    match new_depth {
+        1 => town_builder(new_depth, rng, width, height),
+        _ => random_builder(new_depth, rng, width, height),
+    }
 }
