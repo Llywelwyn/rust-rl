@@ -149,7 +149,11 @@ pub fn spawn_named_mob(
         let mut eb = new_entity;
         eb = spawn_position(pos, eb);
         eb = eb.with(Name { name: mob_template.name.clone(), plural: mob_template.name.clone() });
-        eb = eb.with(Monster {});
+        match mob_template.ai.as_ref() {
+            "bystander" => eb = eb.with(Bystander {}),
+            "melee" => eb = eb.with(Monster {}),
+            _ => {}
+        }
         let rolled_hp = roll_hit_dice(rng, 1, mob_template.stats.max_hp);
         eb = eb.with(CombatStats {
             max_hp: rolled_hp,
@@ -170,6 +174,10 @@ pub fn spawn_named_mob(
                     _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
                 }
             }
+        }
+
+        if let Some(quips) = &mob_template.quips {
+            eb = eb.with(Quips { available: quips.clone() });
         }
 
         return Some(eb.build());
@@ -207,6 +215,7 @@ pub fn spawn_named_prop(raws: &RawMaster, new_entity: EntityBuilder, key: &str, 
                     "ENTRY_TRIGGER" => eb = eb.with(EntryTrigger {}),
                     "SINGLE_ACTIVATION" => eb = eb.with(SingleActivation {}),
                     "DOOR" => eb = eb.with(Door { open: false }),
+                    "PROP" => eb = eb.with(Prop {}),
                     _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
                 }
             }

@@ -19,6 +19,16 @@ impl InitialMapBuilder for TownBuilder {
     }
 }
 
+enum BuildingTag {
+    Tavern,
+    Temple,
+    PlayerHouse,
+    NPCHouse,
+    Mine,
+    Abandoned,
+    Unassigned,
+}
+
 impl TownBuilder {
     pub fn new() -> Box<TownBuilder> {
         return Box::new(TownBuilder {});
@@ -30,6 +40,7 @@ impl TownBuilder {
             *t = true;
         }
 
+        // Build map
         self.grass_layer(build_data);
         let piers = self.water_and_piers(rng, build_data);
         let (mut available_building_tiles, wall_gap_y) = self.town_walls(rng, build_data);
@@ -38,23 +49,198 @@ impl TownBuilder {
         self.path_from_tiles_to_nearest_tiletype(build_data, &doors, TileType::Road, TileType::Road, true);
         self.path_from_tiles_to_nearest_tiletype(build_data, &piers, TileType::Road, TileType::Road, false);
 
-        build_data.take_snapshot();
+        // Spawn entities
+        let building_size = self.sort_buildings(&buildings);
+        self.building_factory(rng, build_data, &buildings, &building_size);
+        self.spawn_dockers(build_data, rng);
+        self.spawn_townsfolk(build_data, rng, &mut available_building_tiles);
 
-        // Sort buildings by size
-        let mut building_size: Vec<(usize, i32)> = Vec::new();
+        build_data.take_snapshot();
+    }
+
+    fn sort_buildings(&mut self, buildings: &[(i32, i32, i32, i32)]) -> Vec<(usize, i32, BuildingTag)> {
+        // Sort buildings by size, defaulting them to Unassigned buildings
+        let mut building_size: Vec<(usize, i32, BuildingTag)> = Vec::new();
         for (i, building) in buildings.iter().enumerate() {
-            building_size.push((i, building.2 * building.3));
+            building_size.push((i, building.2 * building.3, BuildingTag::Unassigned));
         }
         building_size.sort_by(|a, b| b.1.cmp(&a.1));
 
-        // Largest building as start position
-        let tavern = &buildings[building_size[0].0];
-        build_data.starting_position = Some(Position { x: tavern.0 + (tavern.2 / 2), y: tavern.1 + (tavern.3 / 2) });
+        // Set individual buildings to their correct tags
+        building_size[0].2 = BuildingTag::Tavern;
+        building_size[1].2 = BuildingTag::Temple;
+        building_size[2].2 = BuildingTag::Mine;
+        building_size[3].2 = BuildingTag::PlayerHouse;
+        for b in building_size.iter_mut().skip(3) {
+            b.2 = BuildingTag::NPCHouse
+        }
+        let last_idx = building_size.len() - 1;
+        building_size[last_idx].2 = BuildingTag::Abandoned;
 
-        // Smallest building as mine entrance
-        let mine = &buildings[building_size[building_size.len() - 1].0];
-        let exit_idx = build_data.map.xy_idx(mine.0 + (mine.2 / 2), mine.1 + (mine.3 / 2));
+        return building_size;
+    }
+
+    fn building_factory(
+        &mut self,
+        rng: &mut rltk::RandomNumberGenerator,
+        build_data: &mut BuilderMap,
+        buildings: &[(i32, i32, i32, i32)],
+        building_index: &[(usize, i32, BuildingTag)],
+    ) {
+        for (i, building) in buildings.iter().enumerate() {
+            let build_tag = &building_index[i].2;
+            match build_tag {
+                BuildingTag::Tavern => self.build_tavern(&building, build_data, rng),
+                BuildingTag::Temple => self.build_temple(&building, build_data, rng),
+                BuildingTag::Mine => self.build_mine(&building, build_data, rng),
+                BuildingTag::PlayerHouse => self.build_playerhouse(&building, build_data, rng),
+                BuildingTag::NPCHouse => self.build_npchouse(&building, build_data, rng),
+                BuildingTag::Abandoned => self.build_abandoned(&building, build_data, rng),
+                _ => {}
+            }
+        }
+    }
+
+    fn spawn_dockers(&mut self, build_data: &mut BuilderMap, rng: &mut rltk::RandomNumberGenerator) {
+        for (idx, tt) in build_data.map.tiles.iter().enumerate() {
+            if *tt == TileType::Bridge && rng.roll_dice(1, 20) == 1 {
+                let roll = rng.roll_dice(1, 2);
+                match roll {
+                    1 => build_data.spawn_list.push((idx, "npc_fisher".to_string())),
+                    _ => build_data.spawn_list.push((idx, "npc_dockworker".to_string())),
+                }
+            }
+        }
+    }
+
+    fn spawn_townsfolk(
+        &mut self,
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+        available_building_tiles: &mut HashSet<usize>,
+    ) {
+        for idx in available_building_tiles.iter() {
+            if rng.roll_dice(1, 40) == 1 {
+                let roll = rng.roll_dice(1, 3);
+                match roll {
+                    1 => build_data.spawn_list.push((*idx, "npc_fisher".to_string())),
+                    2 => build_data.spawn_list.push((*idx, "npc_dockworker".to_string())),
+                    3 => build_data.spawn_list.push((*idx, "npc_townsperson".to_string())),
+                    _ => build_data.spawn_list.push((*idx, "npc_drunk".to_string())),
+                }
+            }
+        }
+    }
+
+    fn random_building_spawn(
+        &mut self,
+        building: &(i32, i32, i32, i32),
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+        to_place: &mut Vec<&str>,
+        avoid_tile: usize,
+    ) {
+        for y in building.1..building.1 + building.3 {
+            for x in building.0..building.0 + building.2 {
+                let idx = build_data.map.xy_idx(x, y);
+                if build_data.map.tiles[idx] == TileType::WoodFloor
+                    && idx != avoid_tile
+                    && rng.roll_dice(1, 3) == 1
+                    && !to_place.is_empty()
+                {
+                    let entity_tag = to_place[0];
+                    to_place.remove(0);
+                    build_data.spawn_list.push((idx, entity_tag.to_string()));
+                }
+            }
+        }
+    }
+
+    fn build_tavern(
+        &mut self,
+        building: &(i32, i32, i32, i32),
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+    ) {
+        // Place player
+        build_data.starting_position =
+            Some(Position { x: building.0 + (building.2 / 2), y: building.1 + (building.3 / 2) });
+        let player_idx = build_data.map.xy_idx(building.0 + (building.2 / 2), building.1 + (building.3 / 2));
+
+        // Place other items
+        let mut to_place: Vec<&str> = vec![
+            "npc_barkeep",
+            "npc_townsperson",
+            "npc_townsperson",
+            "npc_drunk",
+            "npc_drunk",
+            "npc_guard",
+            "prop_keg",
+            "prop_table",
+            "prop_chair",
+            "prop_chair",
+        ];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, player_idx);
+    }
+
+    fn build_temple(
+        &mut self,
+        building: &(i32, i32, i32, i32),
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+    ) {
+        let mut to_place: Vec<&str> =
+            vec!["npc_priest", "prop_chair", "prop_chair", "prop_table", "prop_candle", "prop_candle"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, 0)
+    }
+
+    fn build_mine(
+        &mut self,
+        building: &(i32, i32, i32, i32),
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+    ) {
+        // Place exit
+        let exit_idx = build_data.map.xy_idx(building.0 + (building.2 / 2), building.1 + (building.3 / 2));
         build_data.map.tiles[exit_idx] = TileType::DownStair;
+        let mut to_place: Vec<&str> = vec!["npc_miner", "npc_miner", "npc_guard"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, exit_idx)
+    }
+
+    fn build_playerhouse(
+        &mut self,
+        building: &(i32, i32, i32, i32),
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+    ) {
+        let mut to_place: Vec<&str> = vec!["prop_bed", "prop_table"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
+    }
+
+    fn build_npchouse(
+        &mut self,
+        building: &(i32, i32, i32, i32),
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+    ) {
+        let mut to_place: Vec<&str> = vec!["prop_bed", "prop_table"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
+    }
+
+    fn build_abandoned(
+        &mut self,
+        building: &(i32, i32, i32, i32),
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+    ) {
+        for y in building.1..building.1 + building.3 {
+            for x in building.0..building.0 + building.2 {
+                let idx = build_data.map.xy_idx(x, y);
+                if build_data.map.tiles[idx] == TileType::WoodFloor && idx != 0 && rng.roll_dice(1, 3) == 1 {
+                    build_data.spawn_list.push((idx, "rat".to_string()));
+                }
+            }
+        }
     }
 
     fn grass_layer(&mut self, build_data: &mut BuilderMap) {
@@ -69,7 +255,7 @@ impl TownBuilder {
         let mut n = (rng.roll_dice(1, 65535) as f32) / 65535f32;
         let mut water_width: Vec<i32> = Vec::new();
         let variance = 5;
-        let minimum_width = variance + 10;
+        let minimum_width = variance + 5;
         let shallow_width = 6;
         let sand_width = shallow_width + 4;
 
@@ -123,9 +309,9 @@ impl TownBuilder {
                 let idx = build_data.map.xy_idx(x, y);
                 build_data.map.tiles[idx] = TileType::Fence;
                 let idx = build_data.map.xy_idx(x, y + 1);
-                build_data.map.tiles[idx] = TileType::WoodFloor;
+                build_data.map.tiles[idx] = TileType::Bridge;
                 let idx = build_data.map.xy_idx(x, y + 2);
-                build_data.map.tiles[idx] = TileType::WoodFloor;
+                build_data.map.tiles[idx] = TileType::Bridge;
                 let idx = build_data.map.xy_idx(x, y + 3);
                 build_data.map.tiles[idx] = TileType::Fence;
             }
@@ -154,7 +340,7 @@ impl TownBuilder {
         let mut available_building_tiles: HashSet<usize> = HashSet::new();
 
         const BORDER: i32 = 4;
-        const OFFSET_FROM_LEFT: i32 = 30 + BORDER;
+        const OFFSET_FROM_LEFT: i32 = 25 + BORDER;
         const PATH_OFFSET_FROM_CENTRE: i32 = 4;
         const HALF_PATH_THICKNESS: i32 = 3;
 
@@ -216,8 +402,8 @@ impl TownBuilder {
 
         const BORDER: i32 = 2;
         const REQUIRED_BUILDINGS: i32 = 8;
-        const OFFSET_FROM_LEFT: i32 = 30;
-        const MIN_BUILDING_SIZE: i32 = 4;
+        const OFFSET_FROM_LEFT: i32 = 25;
+        const MIN_BUILDING_SIZE: i32 = 6;
         const MAX_BUILDING_SIZE: i32 = 10;
 
         while n_buildings < REQUIRED_BUILDINGS {

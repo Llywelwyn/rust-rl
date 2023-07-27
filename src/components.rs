@@ -35,7 +35,18 @@ pub struct Renderable {
 pub struct Player {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Prop {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Monster {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Bystander {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Quips {
+    pub available: Vec<String>,
+}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Mind {}

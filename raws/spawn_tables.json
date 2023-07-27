@@ -46,11 +46,13 @@
     {
         "id": "mobs",
         "table": [
+            { "id": "rat",                  "weight": 1,    "difficulty": 1},
             { "id": "goblin",               "weight": 3,    "difficulty": 1},
             { "id": "kobold",               "weight": 1,    "difficulty": 1},
             { "id": "fox",                  "weight": 1,    "difficulty": 1},
             { "id": "jackal",               "weight": 4,    "difficulty": 1},
 
+            { "id": "rat_giant",            "weight": 2,    "difficulty": 2},
             { "id": "coyote",               "weight": 4,    "difficulty": 2},
 
             { "id": "dog_little",           "weight": 1,    "difficulty": 3},

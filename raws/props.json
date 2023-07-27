@@ -3,7 +3,37 @@
         "id": "door",
         "name": "door",
         "renderable": { "glyph": "+", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
-        "flags": ["BLOCKS_TILE", "BLOCKS_VISIBILITY", "DOOR"]
+        "flags": ["BLOCKS_TILE", "BLOCKS_VISIBILITY", "DOOR", "PROP"]
+    },
+    {
+        "id": "prop_keg",
+        "name": "keg",
+        "renderable": { "glyph": "φ", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "flags": ["PROP"]
+    },
+    {
+        "id": "prop_table",
+        "name": "table",
+        "renderable": { "glyph": "-", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "flags": ["PROP"]
+    },
+    {
+        "id": "prop_bed",
+        "name": "bed",
+        "renderable": { "glyph": "=", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "flags": ["PROP"]
+    },
+    {
+        "id": "prop_chair",
+        "name": "chair",
+        "renderable": { "glyph": "└", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "flags": ["PROP"]
+    },
+    {
+        "id": "prop_candle",
+        "name": "candle",
+        "renderable": { "glyph": "Ä", "fg": "#FFA500", "bg": "#000000", "order": 2 },
+        "flags": ["PROP"]
     },
     {
         "id": "trap_bear",

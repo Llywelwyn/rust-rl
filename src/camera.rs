@@ -1,6 +1,7 @@
-use super::{Door, Hidden, Map, Mind, Position, Renderable};
+use super::{Hidden, Map, Mind, Position, Prop, Renderable};
 use rltk::{Point, Rltk, RGB};
 use specs::prelude::*;
+use std::ops::Mul;
 
 const SHOW_BOUNDARIES: bool = false;
 
@@ -53,7 +54,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
         let renderables = ecs.read_storage::<Renderable>();
         let minds = ecs.read_storage::<Mind>();
         let hidden = ecs.read_storage::<Hidden>();
-        let doors = ecs.write_storage::<Door>();
+        let props = ecs.write_storage::<Prop>();
         let map = ecs.fetch::<Map>();
         let entities = ecs.entities();
 
@@ -66,11 +67,13 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
             if entity_offset_x > 0 && entity_offset_x < map_width && entity_offset_y > 0 && entity_offset_y < map_height
             {
                 let mut draw = false;
-                let fg = render.fg;
+                let mut fg = render.fg;
                 let (_glyph, _fg, bg) = crate::map::themes::get_tile_glyph(idx, &*map);
                 // Draw entities on visible tiles
                 if map.visible_tiles[idx] {
                     draw = true;
+                } else {
+                    fg = fg.mul(0.75);
                 }
                 // Draw entities with minds within telepath range
                 if map.telepath_tiles[idx] {
@@ -79,9 +82,9 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                         draw = true;
                     }
                 }
-                // Draw all doors
-                let is_door = doors.get(*ent);
-                if let Some(_) = is_door {
+                // Draw all props
+                let is_prop = props.get(*ent);
+                if let Some(_) = is_prop {
                     if map.revealed_tiles[idx] {
                         draw = true;
                     }

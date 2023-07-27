@@ -1,7 +1,7 @@
 use super::{
-    gamelog, BlocksTile, BlocksVisibility, CombatStats, Door, EntityMoved, Hidden, HungerClock, HungerState, Item, Map,
-    Monster, Name, ParticleBuilder, Player, Position, Renderable, RunState, State, SufferDamage, Telepath, TileType,
-    Viewshed, WantsToMelee, WantsToPickupItem,
+    gamelog, BlocksTile, BlocksVisibility, Bystander, CombatStats, Door, EntityMoved, Hidden, HungerClock, HungerState,
+    Item, Map, Monster, Name, ParticleBuilder, Player, Position, Renderable, RunState, State, SufferDamage, Telepath,
+    TileType, Viewshed, WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -272,6 +272,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let mut telepaths = ecs.write_storage::<Telepath>();
     let mut entity_moved = ecs.write_storage::<EntityMoved>();
+    let friendlies = ecs.read_storage::<Bystander>();
     let combat_stats = ecs.read_storage::<CombatStats>();
     let map = ecs.fetch::<Map>();
 
@@ -279,6 +280,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
     let mut doors = ecs.write_storage::<Door>();
     let names = ecs.read_storage::<Name>();
+    let mut swap_entities: Vec<(Entity, i32, i32)> = Vec::new();
 
     for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
         if pos.x + delta_x < 0
@@ -291,10 +293,24 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
         for potential_target in map.tile_content[destination_idx].iter() {
-            let target = combat_stats.get(*potential_target);
-            if let Some(_target) = target {
-                wants_to_melee.insert(entity, WantsToMelee { target: *potential_target }).expect("Add target failed.");
-                return true;
+            let friendly = friendlies.get(*potential_target);
+            if friendly.is_some() {
+                swap_entities.push((*potential_target, pos.x, pos.y));
+                pos.x = min(map.width - 1, max(0, pos.x + delta_x));
+                pos.y = min(map.height - 1, max(0, pos.y + delta_y));
+                entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
+                viewshed.dirty = true;
+                let mut ppos = ecs.write_resource::<Point>();
+                ppos.x = pos.x;
+                ppos.y = pos.y;
+            } else {
+                let target = combat_stats.get(*potential_target);
+                if let Some(_target) = target {
+                    wants_to_melee
+                        .insert(entity, WantsToMelee { target: *potential_target })
+                        .expect("Add target failed.");
+                    return true;
+                }
             }
             let door = doors.get_mut(*potential_target);
             if let Some(door) = door {
@@ -307,6 +323,20 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
             }
         }
 
+        if swap_entities.len() > 0 {
+            for m in swap_entities.iter() {
+                let their_pos = positions.get_mut(m.0);
+                if let Some(name) = names.get(m.0) {
+                    gamelog::Logger::new().append("You swap places with the").npc_name_n(&name.name).period().log();
+                }
+                if let Some(their_pos) = their_pos {
+                    their_pos.x = m.1;
+                    their_pos.y = m.2;
+                }
+            }
+
+            return true;
+        }
         if map.blocked[destination_idx] {
             gamelog::Logger::new().append("You can't move there.").log();
             return false;

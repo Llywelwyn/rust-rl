@@ -22,6 +22,7 @@ mod visibility_system;
 use visibility_system::VisibilitySystem;
 mod monster_ai_system;
 use monster_ai_system::MonsterAI;
+pub mod bystander_ai_system;
 mod map_indexing_system;
 use map_indexing_system::MapIndexingSystem;
 mod damage_system;
@@ -123,6 +124,7 @@ impl State {
     fn run_systems(&mut self) {
         let mut vis = VisibilitySystem {};
         let mut mob = MonsterAI {};
+        let mut bystanders = bystander_ai_system::BystanderAI {};
         let mut mapindex = MapIndexingSystem {};
         let mut trigger_system = trigger_system::TriggerSystem {};
         let mut melee_system = MeleeCombatSystem {};
@@ -136,6 +138,7 @@ impl State {
 
         vis.run_now(&self.ecs);
         mob.run_now(&self.ecs);
+        bystanders.run_now(&self.ecs);
         mapindex.run_now(&self.ecs);
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
@@ -499,8 +502,11 @@ fn main() -> rltk::BError {
 
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
+    gs.ecs.register::<Prop>();
     gs.ecs.register::<Player>();
     gs.ecs.register::<Monster>();
+    gs.ecs.register::<Bystander>();
+    gs.ecs.register::<Quips>();
     gs.ecs.register::<Mind>();
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<Telepath>();

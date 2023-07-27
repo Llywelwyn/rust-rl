@@ -1,11 +1,107 @@
 [
     {
+        "id": "npc_barkeep",
+        "name": "barkeep",
+        "renderable": { "glyph": "@", "fg": "#EE82EE", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 1 },
+        "vision_range": 4,
+        "ai": "bystander"
+    },
+    {
+        "id": "npc_townsperson",
+        "name": "townsperson",
+        "renderable": { "glyph": "@", "fg": "#9fa86c", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "vision_range": 4,
+        "ai": "bystander",
+        "quips": [ "I don't get paid nearly enough to"]
+    },
+    {
+        "id": "npc_drunk",
+        "name": "drunk",
+        "renderable": { "glyph": "@", "fg": "#a0a83c", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "vision_range": 4,
+        "ai": "bystander",
+        "quips": [ "Hic!", "H-Hic'."]
+    },
+    {
+        "id": "npc_fisher",
+        "name": "fisher",
+        "renderable": { "glyph": "@", "fg": "#3ca3a8", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "vision_range": 4,
+        "ai": "bystander",
+        "quips": [ "Placeholder."]
+    },
+    {
+        "id": "npc_dockworker",
+        "name": "dock worker",
+        "renderable": { "glyph": "@", "fg": "#68d8de", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 1 },
+        "vision_range": 4,
+        "ai": "bystander",
+        "quips": [ "Placeholder."]
+    },
+    {
+        "id": "npc_priest",
+        "name": "priest",
+        "renderable": { "glyph": "@", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "vision_range": 4,
+        "ai": "bystander"
+    },
+    {
+        "id": "npc_miner",
+        "name": "miner",
+        "renderable": { "glyph": "@", "fg": "#946123", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "vision_range": 4,
+        "ai": "bystander"
+    },
+    {
+        "id": "npc_guard",
+        "name": "smalltown guard",
+        "renderable": { "glyph": "@", "fg": "#034efc", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 12, "hp": 12, "defence": 3, "power": 3 },
+        "vision_range": 4,
+        "ai": "bystander",
+        "quips": ["I don't get paid nearly enough to go down the mine."]
+    },
+    {
         "id": "dog_little",
         "name": "little dog",
         "renderable": { "glyph": "d", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
+    },
+    {
+        "id": "rat",
+        "name": "rat",
+        "renderable": { "glyph": "r", "fg": "#aa6000", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 4, "hp": 4, "defence": 0, "power": 1 },
+        "vision_range": 8,
+        "ai": "melee"
+    },
+    {
+        "id": "rat_giant",
+        "name": "giant rat",
+        "renderable": { "glyph": "r", "fg": "#bb8000", "bg": "#000000", "order": 1 },
+        "flags": ["BLOCKS_TILE"],
+        "stats": { "max_hp": 4, "hp": 4, "defence": 0, "power": 1 },
+        "vision_range": 8,
+        "ai": "melee"
     },
     {
         "id": "dog",
@@ -13,7 +109,8 @@
         "renderable": { "glyph": "d", "fg": "#EEEEEE", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 2 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "dog_large",
@@ -21,7 +118,8 @@
         "renderable": { "glyph": "d", "fg": "#DDDDDD", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 12, "hp": 12, "defence": 0, "power": 3 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "goblin",
@@ -29,7 +127,8 @@
         "renderable": { "glyph": "g", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 2 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "kobold",
@@ -37,7 +136,8 @@
         "renderable": { "glyph": "k", "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
-        "vision_range": 7
+        "vision_range": 7,
+        "ai": "melee"
     },
     {
         "id": "jackal",
@@ -45,7 +145,8 @@
         "renderable": { "glyph": "d", "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "fox",
@@ -53,7 +154,8 @@
         "renderable": { "glyph": "d", "fg": "#FF0000", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 4, "hp": 4, "defence": 0, "power": 1 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "coyote",
@@ -61,7 +163,8 @@
         "renderable": { "glyph": "d", "fg": "#6E3215", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 2 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "goblin_chieftain",
@@ -69,7 +172,8 @@
         "renderable": { "glyph": "G", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 2 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "orc",
@@ -77,7 +181,8 @@
         "renderable": { "glyph": "o", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 3 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "orc_large",
@@ -85,7 +190,8 @@
         "renderable": { "glyph": "o", "fg": "#008000", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 12, "hp": 12, "defence": 1, "power": 3 },
-        "vision_range": 12
+        "vision_range": 12,
+        "ai": "melee"
     },
     {
         "id": "ogre",
@@ -93,6 +199,7 @@
         "renderable": { "glyph": "O", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 24, "hp": 24, "defence": 3, "power": 3 },
-        "vision_range": 8
+        "vision_range": 8,
+        "ai": "melee"
     }
 ]

@@ -9,6 +9,8 @@ pub struct Mob {
     pub flags: Option<Vec<String>>,
     pub stats: MobStats,
     pub vision_range: i32,
+    pub ai: String,
+    pub quips: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Debug)]

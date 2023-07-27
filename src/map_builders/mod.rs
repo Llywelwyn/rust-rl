@@ -328,6 +328,7 @@ pub fn random_builder(
 }
 
 pub fn level_builder(new_id: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+    // TODO: With difficulty and ID/depth decoupled, this can be used for branches later.
     let difficulty = new_id;
     match new_id {
         1 => town_builder(new_id, rng, width, height),

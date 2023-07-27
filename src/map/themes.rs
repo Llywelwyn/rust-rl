@@ -47,8 +47,7 @@ pub fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
         }
         TileType::Bridge => {
             glyph = rltk::to_cp437('.');
-            fg = default_bg;
-            bg = default_bg;
+            bg = RGB::from_u8(59, 49, 43);
         }
         TileType::Gravel => {
             glyph = rltk::to_cp437(';');
