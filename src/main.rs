@@ -76,13 +76,13 @@ pub struct State {
 }
 
 impl State {
-    fn generate_world_map(&mut self, new_depth: i32) {
+    fn generate_world_map(&mut self, new_id: i32) {
         // Visualisation stuff
         self.mapgen_index = 0;
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
-        let mut builder = map_builders::level_builder(new_depth, &mut rng, 80, 50);
+        let mut builder = map_builders::level_builder(new_id, &mut rng, 80, 50);
         builder.build_map(&mut rng);
         std::mem::drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -197,13 +197,13 @@ impl State {
         }
 
         // Build new map + place player
-        let current_depth;
+        let current_id;
         {
             let worldmap_resource = self.ecs.fetch::<Map>();
-            current_depth = worldmap_resource.depth;
+            current_id = worldmap_resource.id;
         }
         gamelog::record_event("descended", 1);
-        self.generate_world_map(current_depth + 1);
+        self.generate_world_map(current_id + 1);
 
         // Notify player, restore health up to a point.
         let player_entity = self.ecs.fetch::<Entity>();
@@ -547,7 +547,7 @@ fn main() -> rltk::BError {
     raws::load_raws();
 
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
-    gs.ecs.insert(Map::new(1, 64, 64));
+    gs.ecs.insert(Map::new(1, 64, 64, 0));
     gs.ecs.insert(Point::new(0, 0));
     gs.ecs.insert(player_entity);
     gs.ecs.insert(rltk::RandomNumberGenerator::new());

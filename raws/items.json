@@ -28,7 +28,7 @@
         "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
     },
     {
-        "id": "scroll_fireball_cursed",
+        "id": "scroll_fireball_c",
         "name": { "name": "cursed scroll of fireball", "plural": "cursed scrolls of fireball" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
@@ -49,7 +49,7 @@
         "effects": { "magicmapper": "" }
     },
     {
-        "id": "scroll_magicmap_cursed",
+        "id": "scroll_magicmap_c",
         "name": { "name": "cursed scroll of magic mapping", "plural": "cursed scrolls of magic mapping" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],

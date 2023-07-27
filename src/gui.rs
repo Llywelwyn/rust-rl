@@ -37,10 +37,10 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     // Render the message log at [1, 46], descending, with 6 lines.
     gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console, Point::new(1, 44), true, 6);
 
-    // Render depth
+    // Render id
     let map = ecs.fetch::<Map>();
-    let depth = format!(" D{} ", map.depth);
-    ctx.print_color_right(78, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
+    let id = format!(" D{} ", map.id);
+    ctx.print_color_right(78, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &id);
 
     // Render turn
     ctx.print_color_right(

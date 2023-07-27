@@ -10,6 +10,5 @@ pub struct SpawnTable {
 pub struct SpawnTableEntry {
     pub id: String,
     pub weight: i32,
-    pub min: i32,
-    pub max: i32,
+    pub difficulty: i32,
 }

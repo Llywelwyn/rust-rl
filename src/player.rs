@@ -413,7 +413,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => result = try_move_player(-1, -1, &mut gs.ecs),
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N => result = try_move_player(1, 1, &mut gs.ecs),
             VirtualKeyCode::Numpad1 | VirtualKeyCode::B => result = try_move_player(-1, 1, &mut gs.ecs),
-            // Depth
+            // id
             VirtualKeyCode::Period => {
                 if ctx.shift {
                     if !try_next_level(&mut gs.ecs) {

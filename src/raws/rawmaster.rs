@@ -249,14 +249,20 @@ fn get_renderable_component(renderable: &super::item_structs::Renderable) -> cra
     }
 }
 
-pub fn table_by_name(raws: &RawMaster, key: &str, depth: i32) -> RandomTable {
+pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTable {
     if raws.table_index.contains_key(key) {
         let spawn_table = &raws.raws.spawn_tables[raws.table_index[key]];
 
         use super::SpawnTableEntry;
 
-        let available_options: Vec<&SpawnTableEntry> =
-            spawn_table.table.iter().filter(|a| depth >= a.min && depth <= a.max).collect();
+        let upper_bound = difficulty;
+        let lower_bound = 1;
+
+        let available_options: Vec<&SpawnTableEntry> = spawn_table
+            .table
+            .iter()
+            .filter(|entry| entry.difficulty >= lower_bound && entry.difficulty <= upper_bound)
+            .collect();
 
         let mut rt = RandomTable::new();
         for e in available_options.iter() {
