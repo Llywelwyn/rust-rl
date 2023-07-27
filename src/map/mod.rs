@@ -23,7 +23,8 @@ pub struct Map {
     pub colour_offset: Vec<(f32, f32, f32)>,
     pub additional_fg_offset: rltk::RGB,
     pub blocked: Vec<bool>,
-    pub depth: i32,
+    pub id: i32,
+    pub difficulty: i32,
     pub bloodstains: HashSet<usize>,
     pub view_blocked: HashSet<usize>,
 
@@ -37,7 +38,7 @@ impl Map {
         (y as usize) * (self.width as usize) + (x as usize)
     }
 
-    pub fn new(new_depth: i32, width: i32, height: i32) -> Map {
+    pub fn new(new_id: i32, width: i32, height: i32, difficulty: i32) -> Map {
         let map_tile_count = (width * height) as usize;
         let mut map = Map {
             tiles: vec![TileType::Wall; map_tile_count],
@@ -50,7 +51,8 @@ impl Map {
             colour_offset: vec![(1.0, 1.0, 1.0); map_tile_count],
             additional_fg_offset: rltk::RGB::from_u8(HALF_OFFSET, HALF_OFFSET, HALF_OFFSET),
             blocked: vec![false; map_tile_count],
-            depth: new_depth,
+            id: new_id,
+            difficulty: difficulty,
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
             tile_content: vec![Vec::new(); map_tile_count],

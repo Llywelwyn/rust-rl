@@ -102,23 +102,23 @@ impl PrefabBuilder {
             }
             '%' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::food_table(build_data.map.depth).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::food_table(build_data.map.difficulty).roll(rng)));
             }
             '!' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::potion_table(build_data.map.depth).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::potion_table(build_data.map.difficulty).roll(rng)));
             }
             '/' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::wand_table(build_data.map.depth).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::wand_table(build_data.map.difficulty).roll(rng)));
             }
             '?' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::scroll_table(build_data.map.depth).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::scroll_table(build_data.map.difficulty).roll(rng)));
             }
             ')' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::equipment_table(build_data.map.depth).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::equipment_table(build_data.map.difficulty).roll(rng)));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph '{}' when loading prefab", (ch as u8) as char));
@@ -255,7 +255,7 @@ impl PrefabBuilder {
         self.apply_previous_iteration(|_x, _y| true, rng, build_data);
 
         // Do we want a vault at all?
-        let vault_roll = rng.roll_dice(1, 6) + build_data.map.depth;
+        let vault_roll = rng.roll_dice(1, 6) + build_data.map.difficulty;
         if vault_roll < 4 {
             return;
         }
@@ -276,10 +276,10 @@ impl PrefabBuilder {
             ORC_HOUSE_8X8,
         ];
 
-        // Filter the vault list down to ones that are applicable to the current depth
+        // Filter the vault list down to ones that are applicable to the current id
         let mut possible_vaults: Vec<&PrefabVault> = master_vault_list
             .iter()
-            .filter(|v| build_data.map.depth >= v.first_depth && build_data.map.depth <= v.last_depth)
+            .filter(|v| build_data.map.id >= v.first_id && build_data.map.id <= v.last_id)
             .collect();
 
         if possible_vaults.is_empty() {

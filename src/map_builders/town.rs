@@ -1,8 +1,10 @@
 use super::{BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType};
 use std::collections::HashSet;
 
-pub fn town_builder(new_depth: i32, _rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
-    let mut chain = BuilderChain::new(new_depth, width, height);
+pub fn town_builder(new_id: i32, _rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+    let difficulty = 0;
+    rltk::console::log(format!("DEBUGINFO: Building town (ID:{}, DIFF:{})", new_id, difficulty));
+    let mut chain = BuilderChain::new(new_id, width, height, difficulty);
     chain.start_with(TownBuilder::new());
 
     return chain;
@@ -13,7 +15,7 @@ pub struct TownBuilder {}
 impl InitialMapBuilder for TownBuilder {
     #[allow(dead_code)]
     fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
-        self.build_rooms(rng, build_data);
+        self.build_map(rng, build_data);
     }
 }
 
@@ -22,26 +24,19 @@ impl TownBuilder {
         return Box::new(TownBuilder {});
     }
 
-    pub fn build_rooms(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    pub fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
         // Make visible for snapshot
         for t in build_data.map.visible_tiles.iter_mut() {
             *t = true;
         }
 
         self.grass_layer(build_data);
-        rltk::console::log("Placed grass.");
         let piers = self.water_and_piers(rng, build_data);
-        rltk::console::log("Placed water and piers.");
         let (mut available_building_tiles, wall_gap_y) = self.town_walls(rng, build_data);
-        rltk::console::log("Placed walls.");
         let mut buildings = self.buildings(rng, build_data, &mut available_building_tiles);
-        rltk::console::log("Placed buildings.");
         let doors = self.add_doors(rng, build_data, &mut buildings, wall_gap_y);
-        rltk::console::log("Placed doors.");
         self.path_from_tiles_to_nearest_tiletype(build_data, &doors, TileType::Road, TileType::Road, true);
-        rltk::console::log("Placed path from doors to road.");
         self.path_from_tiles_to_nearest_tiletype(build_data, &piers, TileType::Road, TileType::Road, false);
-        rltk::console::log("Placed path from piers to road.");
 
         build_data.take_snapshot();
 
@@ -107,7 +102,6 @@ impl TownBuilder {
             loop {
                 y = rng.roll_dice(1, build_data.height - 3) - 1;
                 if !(placed_piers.contains(&y) || placed_piers.contains(&(y + pier_width))) {
-                    rltk::console::log(format!("Placing pier at y {}-{}", y, y + 3));
                     break;
                 }
             }
@@ -166,7 +160,6 @@ impl TownBuilder {
 
         let wall_gap_y =
             (build_data.height / 2) + rng.roll_dice(1, PATH_OFFSET_FROM_CENTRE * 2) - 1 - PATH_OFFSET_FROM_CENTRE;
-        rltk::console::log(format!("Placing road centred at y {}", wall_gap_y));
 
         for y in BORDER..build_data.height - BORDER {
             if !(y > wall_gap_y - HALF_PATH_THICKNESS && y < wall_gap_y + HALF_PATH_THICKNESS) {
@@ -193,7 +186,7 @@ impl TownBuilder {
                     }
                 }
             } else {
-                for x in OFFSET_FROM_LEFT - 1..build_data.width {
+                for x in OFFSET_FROM_LEFT - 3..build_data.width {
                     let road_idx = build_data.map.xy_idx(x, y);
                     build_data.map.tiles[road_idx] = TileType::Road;
                 }
@@ -260,7 +253,6 @@ impl TownBuilder {
                     }
                 }
                 build_data.take_snapshot();
-                rltk::console::log(format!("Placed building {}", n_buildings));
             }
         }
 

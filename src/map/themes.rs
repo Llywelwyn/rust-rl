@@ -55,7 +55,7 @@ pub fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
             bg = RGB::from_u8(39, 39, 54);
         }
         TileType::Road => {
-            glyph = rltk::to_cp437('~');
+            glyph = rltk::to_cp437('.');
             //fg = RGB::from_u8(112, 105, 94);
             bg = RGB::from_u8(29, 45, 46);
         }

@@ -92,13 +92,13 @@ pub struct BuilderChain {
 }
 
 impl BuilderChain {
-    pub fn new(new_depth: i32, width: i32, height: i32) -> BuilderChain {
+    pub fn new(new_id: i32, width: i32, height: i32, difficulty: i32) -> BuilderChain {
         BuilderChain {
             starter: None,
             builders: Vec::new(),
             build_data: BuilderMap {
                 spawn_list: Vec::new(),
-                map: Map::new(new_depth, width, height),
+                map: Map::new(new_id, width, height, difficulty),
                 starting_position: None,
                 rooms: None,
                 corridors: None,
@@ -136,9 +136,12 @@ impl BuilderChain {
     }
 
     pub fn spawn_entities(&mut self, ecs: &mut World) {
+        let mut spawned_entities = Vec::new();
         for entity in self.build_data.spawn_list.iter() {
+            spawned_entities.push(&entity.1);
             spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
         }
+        rltk::console::log(format!("DEBUGINFO: SPAWNED ENTITIES = {:?}", spawned_entities));
     }
 }
 
@@ -279,8 +282,15 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
     builder.with(DistantExit::new());
 }
 
-pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
-    let mut builder = BuilderChain::new(new_depth, width, height);
+pub fn random_builder(
+    new_id: i32,
+    rng: &mut rltk::RandomNumberGenerator,
+    width: i32,
+    height: i32,
+    difficulty: i32,
+) -> BuilderChain {
+    rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
+    let mut builder = BuilderChain::new(new_id, width, height, difficulty);
     let type_roll = rng.roll_dice(1, 2);
     match type_roll {
         1 => random_room_builder(rng, &mut builder),
@@ -317,10 +327,10 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, wid
     builder
 }
 
-pub fn level_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
-    rltk::console::log(format!("DEBUGINFO: Depth: {}", new_depth));
-    match new_depth {
-        1 => town_builder(new_depth, rng, width, height),
-        _ => random_builder(new_depth, rng, width, height),
+pub fn level_builder(new_id: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+    let difficulty = new_id;
+    match new_id {
+        1 => town_builder(new_id, rng, width, height),
+        _ => random_builder(new_id, rng, width, height, difficulty),
     }
 }

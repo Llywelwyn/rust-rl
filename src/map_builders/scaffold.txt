@@ -9,7 +9,7 @@ use std::collections::HashMap;
 pub struct MazeBuilder {
     map: Map,
     starting_position: Position,
-    depth: i32,
+    id: i32,
     history: Vec<Map>,
     noise_areas: HashMap<i32, Vec<usize>>,
 }
@@ -20,7 +20,7 @@ impl MapBuilder for MazeBuilder {
     }
     fn spawn_entities(&mut self, ecs: &mut World) {
         for area in self.noise_areas.iter() {
-            spawner::spawn_region(ecs, area.1, self.depth);
+            spawner::spawn_region(ecs, area.1, self.id);
         }
     }
     //  Getters
@@ -46,11 +46,11 @@ impl MapBuilder for MazeBuilder {
 }
 
 impl MazeBuilder {
-    pub fn new(new_depth: i32) -> MazeBuilder {
+    pub fn new(new_id: i32) -> MazeBuilder {
         MazeBuilder {
-            map: Map::new(new_depth),
+            map: Map::new(new_id),
             starting_position: Position { x: 0, y: 0 },
-            depth: new_depth,
+            id: new_id,
             history: Vec::new(),
             noise_areas: HashMap::new(),
         }

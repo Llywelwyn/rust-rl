@@ -18,8 +18,7 @@ impl CorridorSpawner {
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         if let Some(corridors) = &build_data.corridors {
             for corridor in corridors.iter() {
-                let depth = build_data.map.depth;
-                spawner::spawn_region(&build_data.map, rng, &corridor, depth, &mut build_data.spawn_list);
+                spawner::spawn_region(&build_data.map, rng, &corridor, &mut build_data.spawn_list);
             }
         } else {
             panic!("CorridorSpawner only works after corridors have been created");

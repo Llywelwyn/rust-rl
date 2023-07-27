@@ -1,4 +1,4 @@
-use super::{BuilderMap, MetaMapBuilder, Position, TileType};
+use super::{BuilderMap, MetaMapBuilder, Position};
 use rltk::RandomNumberGenerator;
 
 #[allow(dead_code)]

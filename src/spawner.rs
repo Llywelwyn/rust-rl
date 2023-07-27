@@ -39,13 +39,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
 const MAX_ENTITIES: i32 = 3;
 
 /// Fills a room with stuff!
-pub fn spawn_room(
-    map: &Map,
-    rng: &mut RandomNumberGenerator,
-    room: &Rect,
-    map_depth: i32,
-    spawn_list: &mut Vec<(usize, String)>,
-) {
+pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, spawn_list: &mut Vec<(usize, String)>) {
     let mut possible_targets: Vec<usize> = Vec::new();
     {
         // Borrow scope - to keep access to the map separated
@@ -59,18 +53,13 @@ pub fn spawn_room(
         }
     }
 
-    spawn_region(map, rng, &possible_targets, map_depth, spawn_list);
+    spawn_region(map, rng, &possible_targets, spawn_list);
 }
 
-pub fn spawn_region(
-    _map: &Map,
-    rng: &mut RandomNumberGenerator,
-    area: &[usize],
-    map_depth: i32,
-    spawn_list: &mut Vec<(usize, String)>,
-) {
+pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], spawn_list: &mut Vec<(usize, String)>) {
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
+    let difficulty = map.difficulty;
 
     let num_spawns = i32::min(areas.len() as i32, rng.roll_dice(1, MAX_ENTITIES + 2) - 2);
     if num_spawns <= 0 {
@@ -81,19 +70,19 @@ pub fn spawn_region(
         let category = category_table().roll(rng);
         let spawn_table;
         match category.as_ref() {
-            "mob" => spawn_table = mob_table(map_depth),
+            "mob" => spawn_table = mob_table(difficulty),
             "item" => {
                 let item_category = item_category_table().roll(rng);
                 match item_category.as_ref() {
-                    "equipment" => spawn_table = equipment_table(map_depth),
-                    "potion" => spawn_table = potion_table(map_depth),
-                    "scroll" => spawn_table = scroll_table(map_depth),
-                    "wand" => spawn_table = wand_table(map_depth),
+                    "equipment" => spawn_table = equipment_table(difficulty),
+                    "potion" => spawn_table = potion_table(difficulty),
+                    "scroll" => spawn_table = scroll_table(difficulty),
+                    "wand" => spawn_table = wand_table(difficulty),
                     _ => spawn_table = debug_table(),
                 }
             }
-            "food" => spawn_table = food_table(map_depth),
-            "trap" => spawn_table = trap_table(map_depth),
+            "food" => spawn_table = food_table(difficulty),
+            "trap" => spawn_table = trap_table(difficulty),
             _ => spawn_table = debug_table(),
         }
         let array_idx = if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32) - 1) as usize };
@@ -143,30 +132,30 @@ fn debug_table() -> RandomTable {
     return RandomTable::new().add("debug", 1);
 }
 
-pub fn equipment_table(map_depth: i32) -> RandomTable {
-    raws::table_by_name(&raws::RAWS.lock().unwrap(), "equipment", map_depth)
+pub fn equipment_table(difficulty: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "equipment", difficulty)
 }
 
-pub fn potion_table(map_depth: i32) -> RandomTable {
-    raws::table_by_name(&raws::RAWS.lock().unwrap(), "potions", map_depth)
+pub fn potion_table(difficulty: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "potions", difficulty)
 }
 
-pub fn scroll_table(map_depth: i32) -> RandomTable {
-    raws::table_by_name(&raws::RAWS.lock().unwrap(), "scrolls", map_depth)
+pub fn scroll_table(difficulty: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "scrolls", difficulty)
 }
 
-pub fn wand_table(map_depth: i32) -> RandomTable {
-    raws::table_by_name(&raws::RAWS.lock().unwrap(), "wands", map_depth)
+pub fn wand_table(difficulty: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "wands", difficulty)
 }
 
-pub fn food_table(map_depth: i32) -> RandomTable {
-    raws::table_by_name(&raws::RAWS.lock().unwrap(), "food", map_depth)
+pub fn food_table(difficulty: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "food", difficulty)
 }
 
-pub fn mob_table(map_depth: i32) -> RandomTable {
-    raws::table_by_name(&raws::RAWS.lock().unwrap(), "mobs", map_depth)
+pub fn mob_table(difficulty: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "mobs", difficulty)
 }
 
-pub fn trap_table(map_depth: i32) -> RandomTable {
-    raws::table_by_name(&raws::RAWS.lock().unwrap(), "traps", map_depth)
+pub fn trap_table(difficulty: i32) -> RandomTable {
+    raws::table_by_name(&raws::RAWS.lock().unwrap(), "traps", difficulty)
 }

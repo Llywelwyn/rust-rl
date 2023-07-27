@@ -2,70 +2,74 @@
     {
         "id": "equipment",
         "table": [
-            { "id": "equip_dagger", "weight": 4, "min": 0, "max": 100 },
-            { "id": "equip_shortsword", "weight": 2, "min": 0, "max": 100 },
-            { "id": "equip_longsword", "weight": 1, "min": 3, "max": 100 },
-            { "id": "equip_smallshield", "weight": 4, "min": 0, "max": 100 },
-            { "id": "equip_mediumshield", "weight": 2, "min": 0, "max": 100 },
-            { "id": "equip_largeshield", "weight": 1, "min": 3, "max": 100 }
+            { "id": "equip_dagger",        "weight": 4,     "difficulty": 1},
+            { "id": "equip_shortsword",    "weight": 2,     "difficulty": 1},
+            { "id": "equip_smallshield",   "weight": 4,     "difficulty": 1},
+            { "id": "equip_mediumshield",  "weight": 2,     "difficulty": 1},
+            { "id": "equip_longsword",     "weight": 1,     "difficulty": 3},
+            { "id": "equip_largeshield",   "weight": 1,     "difficulty": 3}
         ]
     },
     {
         "id": "potions",
         "table": [
-            { "id": "potion_health_weak", "weight": 6, "min": 0, "max": 100 },
-            { "id": "potion_health", "weight": 3, "min": 0, "max": 100 }
+            { "id": "potion_health_weak",   "weight": 6,    "difficulty": 1},
+            { "id": "potion_health",        "weight": 3,    "difficulty": 1}
         ]
     },
     {
         "id": "scrolls",
         "table": [
-            { "id": "scroll_fireball", "weight": 2, "min": 3, "max": 100 },
-            { "id": "scroll_fireball_cursed", "weight": 2, "min": 3, "max": 100 },
-            { "id": "scroll_confusion", "weight": 2, "min": 0, "max": 100 },
-            { "id": "scroll_magicmap_cursed", "weight": 2, "min": 0, "max": 100 },
-            { "id": "scroll_magicmap", "weight": 2, "min": 0, "max": 100 }
+            { "id": "scroll_confusion",     "weight": 2,    "difficulty": 1},
+            { "id": "scroll_magicmap_c",    "weight": 2,    "difficulty": 1},
+            { "id": "scroll_magicmap",      "weight": 2,    "difficulty": 1},
+            { "id": "scroll_fireball",      "weight": 2,    "difficulty": 2},
+            { "id": "scroll_fireball_c",    "weight": 2,    "difficulty": 2}
         ]
     },
     {
         "id": "wands",
         "table": [
-            { "id": "wand_magicmissile", "weight": 1, "min": 0, "max": 100 },
-            { "id": "wand_fireball", "weight": 1, "min": 3, "max": 100 },
-            { "id": "wand_confusion", "weight": 1, "min": 0, "max": 100 },
-            { "id": "wand_digging", "weight": 1, "min": 0, "max": 100 }
+            { "id": "wand_magicmissile",    "weight": 1,    "difficulty": 1},
+            { "id": "wand_confusion",       "weight": 1,    "difficulty": 1},
+            { "id": "wand_digging",         "weight": 1,    "difficulty": 1},
+            { "id": "wand_fireball",        "weight": 1,    "difficulty": 2}
         ]
     },
     {
         "id": "food",
         "table": [
-            { "id": "food_rations", "weight": 1, "min": 0, "max": 100 },
-            { "id": "food_apple", "weight": 1, "min": 0, "max": 100 }
+            { "id": "food_rations",         "weight": 1,    "difficulty": 1},
+            { "id": "food_apple",           "weight": 1,    "difficulty": 1}
         ]
     },
     {
         "id": "mobs",
         "table": [
-            { "id": "dog_little", "weight": 5, "min": 0, "max": 100 },
-            { "id": "dog", "weight": 5, "min": 2, "max": 100 },
-            { "id": "dog_large", "weight": 5, "min": 3, "max": 100 },
-            { "id": "goblin", "weight": 50, "min": 0, "max": 100 },
-            { "id": "kobold", "weight": 100, "min": 0, "max": 3 },
-            { "id": "jackal", "weight": 100, "min": 0, "max": 100 },
-            { "id": "fox", "weight": 6, "min": 0, "max": 100 },
-            { "id": "coyote", "weight": 6, "min": 0, "max": 100 },
-            { "id": "orc", "weight": 30, "min": 3, "max": 100 },
-            { "id": "orc_large", "weight": 10, "min": 3, "max": 100 },
-            { "id": "goblin_chieftain", "weight": 5, "min": 3, "max": 100 },
-            { "id": "ogre", "weight": 2, "min": 4, "max": 100 }
+            { "id": "goblin",               "weight": 3,    "difficulty": 1},
+            { "id": "kobold",               "weight": 1,    "difficulty": 1},
+            { "id": "fox",                  "weight": 1,    "difficulty": 1},
+            { "id": "jackal",               "weight": 4,    "difficulty": 1},
+
+            { "id": "coyote",               "weight": 4,    "difficulty": 2},
+
+            { "id": "dog_little",           "weight": 1,    "difficulty": 3},
+            { "id": "orc",                  "weight": 2,    "difficulty": 3},
+            { "id": "orc_large",            "weight": 1,    "difficulty": 3},
+            { "id": "goblin_chieftain",     "weight": 1,    "difficulty": 3},
+
+            { "id": "dog",                  "weight": 1,    "difficulty": 4},
+            { "id": "ogre",                 "weight": 1,    "difficulty": 4},
+
+            { "id": "dog_large",            "weight": 1,    "difficulty": 5}
         ]
     },
     {
         "id": "traps",
         "table": [
-            { "id": "trap_bear", "weight": 2, "min": 0, "max": 100 },
-            { "id": "trap_confusion", "weight": 1, "min": 0, "max": 100 },
-            { "id": "trap_stonefall", "weight": 1, "min": 3, "max": 100 }
+            { "id": "trap_bear",            "weight": 2,    "difficulty": 1},
+            { "id": "trap_confusion",       "weight": 1,    "difficulty": 1},
+            { "id": "trap_stonefall",       "weight": 1,    "difficulty": 3}
         ]
     }
 ]
