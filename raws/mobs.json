@@ -66,7 +66,8 @@
         "quips": ["You wont catch me down the mine.", "I'm not paid enough for that."],
         "attacks": [
             { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
-        ]
+        ],
+        "equipped": ["equip_shortsword", "equip_body_leather"]
     },
     {
         "id": "dog_little",

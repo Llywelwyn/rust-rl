@@ -2,12 +2,27 @@
     {
         "id": "equipment",
         "table": [
-            { "id": "equip_dagger",        "weight": 4,     "difficulty": 1},
-            { "id": "equip_shortsword",    "weight": 2,     "difficulty": 1},
-            { "id": "equip_smallshield",   "weight": 4,     "difficulty": 1},
-            { "id": "equip_mediumshield",  "weight": 2,     "difficulty": 1},
-            { "id": "equip_longsword",     "weight": 1,     "difficulty": 3},
-            { "id": "equip_largeshield",   "weight": 1,     "difficulty": 3}
+            { "id": "equip_dagger",             "weight": 3,     "difficulty": 1},
+            { "id": "equip_shortsword",         "weight": 3,     "difficulty": 1},
+            { "id": "equip_smallshield",        "weight": 3,     "difficulty": 1},
+            { "id": "equip_mediumshield",       "weight": 2,     "difficulty": 1},
+            { "id": "equip_body_weakleather",   "weight": 4,     "difficulty": 1},
+            { "id": "equip_head_leather",       "weight": 4,     "difficulty": 1},
+            { "id": "equip_feet_leather",       "weight": 4,     "difficulty": 1},
+            { "id": "equip_body_leather",       "weight": 4,     "difficulty": 1},
+            { "id": "equip_neck_protection",    "weight": 1,     "difficulty": 1},
+            { "id": "equip_back_protection",    "weight": 1,     "difficulty": 1},
+            { "id": "equip_body_studdedleather","weight": 3,     "difficulty": 2},
+            { "id": "equip_head_o",             "weight": 4,     "difficulty": 2},
+            { "id": "equip_longsword",          "weight": 2,     "difficulty": 3},
+            { "id": "equip_head_elvish",        "weight": 3,     "difficulty": 3},
+            { "id": "equip_feet_elvish",        "weight": 3,     "difficulty": 3},
+            { "id": "equip_body_ringmail_o",    "weight": 4,     "difficulty": 3},
+            { "id": "equip_feet_o",             "weight": 4,     "difficulty": 3},
+            { "id": "equip_body_ringmail",      "weight": 2,     "difficulty": 3},
+            { "id": "equip_largeshield",        "weight": 2,     "difficulty": 3},
+            { "id": "equip_head_iron",          "weight": 3,     "difficulty": 4},
+            { "id": "equip_feet_iron",          "weight": 2,     "difficulty": 4}
         ]
     },
     {

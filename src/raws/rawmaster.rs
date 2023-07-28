@@ -107,11 +107,11 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                     "EQUIP_MELEE" => eb = eb.with(Equippable { slot: EquipmentSlot::Melee }),
                     "EQUIP_SHIELD" => eb = eb.with(Equippable { slot: EquipmentSlot::Shield }),
                     "EQUIP_HEAD" => eb = eb.with(Equippable { slot: EquipmentSlot::Head }),
-                    "EQUIP_TORSO" => eb = eb.with(Equippable { slot: EquipmentSlot::Torso }),
-                    "EQUIP_LEGS" => eb = eb.with(Equippable { slot: EquipmentSlot::Legs }),
+                    "EQUIP_BODY" => eb = eb.with(Equippable { slot: EquipmentSlot::Body }),
                     "EQUIP_FEET" => eb = eb.with(Equippable { slot: EquipmentSlot::Feet }),
                     "EQUIP_HANDS" => eb = eb.with(Equippable { slot: EquipmentSlot::Hands }),
                     "EQUIP_NECK" => eb = eb.with(Equippable { slot: EquipmentSlot::Neck }),
+                    "EQUIP_BACK" => eb = eb.with(Equippable { slot: EquipmentSlot::Back }),
                     "WAND" => eb = eb.with(Wand { uses: 3, max_uses: 3 }),
                     "FOOD" => eb = eb.with(ProvidesNutrition {}),
                     "STRENGTH" => weapon_type = 0,
@@ -285,7 +285,15 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
             eb = eb.with(natural);
         }
 
-        return Some(eb.build());
+        let new_mob = eb.build();
+
+        // Build entity, then check for anything they're wearing
+        if let Some(wielding) = &mob_template.equipped {
+            for tag in wielding.iter() {
+                spawn_named_entity(raws, ecs, tag, SpawnType::Equipped { by: new_mob });
+            }
+        }
+        return Some(new_mob);
     }
     None
 }
@@ -414,6 +422,12 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
             match flag.as_str() {
                 "EQUIP_MELEE" => return EquipmentSlot::Melee,
                 "EQUIP_SHIELD" => return EquipmentSlot::Shield,
+                "EQUIP_BODY" => return EquipmentSlot::Body,
+                "EQUIP_HEAD" => return EquipmentSlot::Head,
+                "EQUIP_FEET" => return EquipmentSlot::Feet,
+                "EQUIP_NECK" => return EquipmentSlot::Neck,
+                "EQUIP_BACK" => return EquipmentSlot::Back,
+                "EQUIP_HANDS" => return EquipmentSlot::Hands,
                 _ => {}
             }
         }

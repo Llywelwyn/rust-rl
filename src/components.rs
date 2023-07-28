@@ -173,11 +173,11 @@ pub enum EquipmentSlot {
     Melee,
     Shield,
     Head,
-    Neck,
-    Torso,
+    Body,
     Hands,
-    Legs,
     Feet,
+    Neck,
+    Back,
 }
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
