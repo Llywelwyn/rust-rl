@@ -100,12 +100,19 @@ pub struct HungerClock {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct ProvidesNutrition {}
 
-#[derive(Component, Debug, ConvertSaveload, Clone)]
-pub struct CombatStats {
-    pub max_hp: i32,
-    pub hp: i32,
-    pub defence: i32,
-    pub power: i32,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Pool {
+    pub max: i32,
+    pub current: i32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Pools {
+    pub hit_points: Pool,
+    pub mana: Pool,
+    pub xp: i32,
+    pub bac: i32,
+    pub level: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -113,6 +120,18 @@ pub struct Attribute {
     pub base: i32,
     pub modifiers: i32,
     pub bonus: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum Skill {
+    Melee,
+    Defence,
+    Magic,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Skills {
+    pub skills: HashMap<Skill, i32>,
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -153,15 +172,46 @@ pub struct Item {}
 pub enum EquipmentSlot {
     Melee,
     Shield,
+    Head,
+    Neck,
+    Torso,
+    Hands,
+    Legs,
+    Feet,
+}
+
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum WeaponAttribute {
+    Strength,
+    Dexterity,
+    Finesse,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct MeleeWeapon {
+    pub attribute: WeaponAttribute,
+    pub damage_n_dice: i32,
+    pub damage_die_type: i32,
+    pub damage_bonus: i32,
+    pub hit_bonus: i32,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct NaturalAttack {
+    pub name: String,
+    pub damage_n_dice: i32,
+    pub damage_die_type: i32,
+    pub damage_bonus: i32,
+    pub hit_bonus: i32,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct NaturalAttacks {
+    pub attacks: Vec<NaturalAttack>,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
-pub struct MeleePowerBonus {
-    pub amount: i32,
-}
-
-#[derive(Component, ConvertSaveload, Clone)]
-pub struct DefenceBonus {
+pub struct ArmourClassBonus {
     pub amount: i32,
 }
 

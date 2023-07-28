@@ -1,11 +1,11 @@
-use super::{gamelog, CombatStats, Entities, Item, Map, Name, Player, Position, RunState, SufferDamage};
+use super::{gamelog, Entities, Item, Map, Name, Player, Pools, Position, RunState, SufferDamage};
 use specs::prelude::*;
 
 pub struct DamageSystem {}
 
 impl<'a> System<'a> for DamageSystem {
     type SystemData = (
-        WriteStorage<'a, CombatStats>,
+        WriteStorage<'a, Pools>,
         WriteStorage<'a, SufferDamage>,
         WriteExpect<'a, Map>,
         ReadStorage<'a, Position>,
@@ -16,7 +16,7 @@ impl<'a> System<'a> for DamageSystem {
         let (mut stats, mut damage, mut map, positions, entities) = data;
 
         for (entity, mut stats, damage) in (&entities, &mut stats, &damage).join() {
-            stats.hp -= damage.amount.iter().sum::<i32>();
+            stats.hit_points.current -= damage.amount.iter().sum::<i32>();
             let pos = positions.get(entity);
             if let Some(pos) = pos {
                 let idx = map.xy_idx(pos.x, pos.y);
@@ -32,13 +32,13 @@ pub fn delete_the_dead(ecs: &mut World) {
     let mut dead: Vec<Entity> = Vec::new();
     // Using scope to make borrow checker happy
     {
-        let combat_stats = ecs.read_storage::<CombatStats>();
+        let combat_stats = ecs.read_storage::<Pools>();
         let players = ecs.read_storage::<Player>();
         let names = ecs.read_storage::<Name>();
         let items = ecs.read_storage::<Item>();
         let entities = ecs.entities();
         for (entity, stats) in (&entities, &combat_stats).join() {
-            if stats.hp < 1 {
+            if stats.hit_points.current < 1 {
                 let player = players.get(entity);
                 match player {
                     None => {

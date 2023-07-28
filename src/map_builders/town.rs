@@ -233,14 +233,8 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator,
     ) {
-        for y in building.1..building.1 + building.3 {
-            for x in building.0..building.0 + building.2 {
-                let idx = build_data.map.xy_idx(x, y);
-                if build_data.map.tiles[idx] == TileType::WoodFloor && idx != 0 && rng.roll_dice(1, 3) == 1 {
-                    build_data.spawn_list.push((idx, "rat".to_string()));
-                }
-            }
-        }
+        let mut to_place: Vec<&str> = vec!["rat", "rat", "rat"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
     }
 
     fn grass_layer(&mut self, build_data: &mut BuilderMap) {

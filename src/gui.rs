@@ -1,6 +1,6 @@
 use super::{
-    camera, gamelog, rex_assets::RexAssets, CombatStats, Equipped, Hidden, HungerClock, HungerState, InBackpack, Map,
-    Name, Player, Point, Position, RunState, State, Viewshed,
+    camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes, Equipped, Hidden, HungerClock,
+    HungerState, InBackpack, Map, Name, Player, Point, Pools, Position, RunState, Skill, Skills, State, Viewshed,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -40,13 +40,69 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     ctx.draw_hollow_box(71, 0, 28, 55, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Side box
 
     // Render stats
-    let combat_stats = ecs.read_storage::<CombatStats>();
+    let pools = ecs.read_storage::<Pools>();
+    let attributes = ecs.read_storage::<Attributes>();
     let players = ecs.read_storage::<Player>();
     let hunger = ecs.read_storage::<HungerClock>();
-    for (_player, stats, hunger) in (&players, &combat_stats, &hunger).join() {
-        draw_lerping_bar(ctx, 2, 53, 26, stats.hp, stats.max_hp, RGB::from_u8(0, 255, 0), RGB::from_u8(255, 0, 0));
-        //ctx.draw_bar_horizontal(2, 53, 26, stats.hp, stats.max_hp, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK));
-        draw_lerping_bar(ctx, 2, 54, 26, stats.hp, stats.max_hp, RGB::named(rltk::BLUE), RGB::named(rltk::BLACK));
+    let skills = ecs.read_storage::<Skills>();
+    for (_player, stats, attributes, hunger, skills) in (&players, &pools, &attributes, &hunger, &skills).join() {
+        // Draw hp/mana bars
+        draw_lerping_bar(
+            ctx,
+            2,
+            53,
+            26,
+            stats.hit_points.current,
+            stats.hit_points.max,
+            RGB::from_u8(0, 255, 0),
+            RGB::from_u8(255, 0, 0),
+        );
+        draw_lerping_bar(
+            ctx,
+            2,
+            54,
+            26,
+            stats.mana.current,
+            stats.mana.max,
+            RGB::named(rltk::BLUE),
+            RGB::named(rltk::BLACK),
+        );
+        // Draw AC
+        let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
+        let mut armour_ac_bonus = 0;
+        let equipped = ecs.read_storage::<Equipped>();
+        let ac = ecs.read_storage::<ArmourClassBonus>();
+        let player_entity = ecs.fetch::<Entity>();
+        for (wielded, ac) in (&equipped, &ac).join() {
+            if wielded.owner == *player_entity {
+                armour_ac_bonus += ac.amount;
+            }
+        }
+        let armour_class = stats.bac - attributes.dexterity.bonus - skill_ac_bonus - armour_ac_bonus;
+        ctx.print_color(30, 53, RGB::named(rltk::PINK), RGB::named(rltk::BLACK), "AC");
+        ctx.print_color(32, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), armour_class);
+        // Draw level
+        ctx.print_color(
+            30,
+            54,
+            RGB::named(rltk::WHITE),
+            RGB::named(rltk::BLACK),
+            format!("XP{}/{}", stats.level, stats.xp),
+        );
+        // Draw attributes
+        ctx.print_color(36, 53, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "STR");
+        ctx.print_color(39, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.strength.base);
+        ctx.print_color(43, 53, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "DEX");
+        ctx.print_color(46, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.dexterity.base);
+        ctx.print_color(50, 53, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "CON");
+        ctx.print_color(53, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.constitution.base);
+        ctx.print_color(36, 54, RGB::named(rltk::CYAN), RGB::named(rltk::BLACK), "INT");
+        ctx.print_color(39, 54, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.intelligence.base);
+        ctx.print_color(43, 54, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "WIS");
+        ctx.print_color(46, 54, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.wisdom.base);
+        ctx.print_color(50, 54, RGB::named(rltk::PURPLE), RGB::named(rltk::BLACK), "CHA");
+        ctx.print_color(53, 54, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.charisma.base);
+        // Draw hunger
         match hunger.state {
             HungerState::Satiated => {
                 ctx.print_color_right(70, 53, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Satiated")

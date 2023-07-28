@@ -1,6 +1,6 @@
 use super::{
-    gamelog, CombatStats, Confusion, Consumable, Cursed, Destructible, Digger, Equippable, Equipped, HungerClock,
-    HungerState, InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Position, ProvidesHealing,
+    gamelog, Confusion, Consumable, Cursed, Destructible, Digger, Equippable, Equipped, HungerClock, HungerState,
+    InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Pools, Position, ProvidesHealing,
     ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed, Wand, WantsToDropItem,
     WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
@@ -60,7 +60,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, ProvidesHealing>,
         ReadStorage<'a, ProvidesNutrition>,
         WriteStorage<'a, HungerClock>,
-        WriteStorage<'a, CombatStats>,
+        WriteStorage<'a, Pools>,
         WriteStorage<'a, SufferDamage>,
         WriteExpect<'a, ParticleBuilder>,
         ReadStorage<'a, Position>,
@@ -268,7 +268,8 @@ impl<'a> System<'a> for ItemUseSystem {
                     for target in targets.iter() {
                         let stats = combat_stats.get_mut(*target);
                         if let Some(stats) = stats {
-                            stats.hp = i32::min(stats.max_hp, stats.hp + heal.amount);
+                            stats.hit_points.current =
+                                i32::min(stats.hit_points.max, stats.hit_points.current + heal.amount);
                             if entity == *player_entity {
                                 gamelog::Logger::new().append("Quaffing, you recover some vigour.").log();
                             }

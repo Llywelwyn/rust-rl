@@ -35,6 +35,7 @@ mod inventory_system;
 use inventory_system::*;
 mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
+mod gamesystem;
 mod random_table;
 mod rex_assets;
 
@@ -212,10 +213,10 @@ impl State {
             .append("recover some of your strength")
             .period()
             .log();
-        let mut player_health_store = self.ecs.write_storage::<CombatStats>();
-        let player_health = player_health_store.get_mut(*player_entity);
-        if let Some(player_health) = player_health {
-            player_health.hp = i32::max(player_health.hp, player_health.max_hp / 2);
+        let mut pools = self.ecs.write_storage::<Pools>();
+        let stats = pools.get_mut(*player_entity);
+        if let Some(stats) = stats {
+            stats.hit_points.current = i32::max(stats.hit_points.current, stats.hit_points.max / 2);
         }
     }
 
@@ -524,16 +525,18 @@ fn main() -> rltk::BError {
     gs.ecs.register::<BlocksTile>();
     gs.ecs.register::<BlocksVisibility>();
     gs.ecs.register::<Door>();
-    gs.ecs.register::<CombatStats>();
+    gs.ecs.register::<Pools>();
     gs.ecs.register::<Attributes>();
+    gs.ecs.register::<Skills>();
     gs.ecs.register::<HungerClock>();
     gs.ecs.register::<WantsToMelee>();
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
     gs.ecs.register::<Equippable>();
     gs.ecs.register::<Equipped>();
-    gs.ecs.register::<MeleePowerBonus>();
-    gs.ecs.register::<DefenceBonus>();
+    gs.ecs.register::<MeleeWeapon>();
+    gs.ecs.register::<NaturalAttacks>();
+    gs.ecs.register::<ArmourClassBonus>();
     gs.ecs.register::<Cursed>();
     gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<InflictsDamage>();
@@ -562,11 +565,11 @@ fn main() -> rltk::BError {
 
     raws::load_raws();
 
-    let player_entity = spawner::player(&mut gs.ecs, 0, 0);
+    gs.ecs.insert(rltk::RandomNumberGenerator::new());
     gs.ecs.insert(Map::new(1, 64, 64, 0));
     gs.ecs.insert(Point::new(0, 0));
+    let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity);
-    gs.ecs.insert(rltk::RandomNumberGenerator::new());
     gs.ecs.insert(RunState::MapGeneration {});
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());

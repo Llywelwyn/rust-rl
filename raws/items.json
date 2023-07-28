@@ -59,43 +59,43 @@
         "id": "equip_dagger",
         "name": { "name": "dagger", "plural": "daggers" },
         "renderable": { "glyph": ")", "fg": "#808080", "bg": "#000000", "order": 2 },
-        "flags": ["EQUIP_MELEE"],
-        "effects": { "melee_power_bonus": "1" }
+        "flags": ["EQUIP_MELEE", "FINESSE"],
+        "effects": { "base_damage": "1d4"}
     },
     {
         "id": "equip_shortsword",
         "name": { "name": "shortsword", "plural": "shortswords" },
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
-        "flags": ["EQUIP_MELEE"],
-        "effects": { "melee_power_bonus": "2" }
+        "flags": ["EQUIP_MELEE", "STRENGTH"],
+        "effects": { "base_damage": "1d6"}
     },
     {
         "id": "equip_longsword",
         "name": { "name": "longsword", "plural": "longswords" },
         "renderable": { "glyph": ")", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },
-        "flags": ["EQUIP_MELEE"],
-        "effects": { "melee_power_bonus": "3" }
+        "flags": ["EQUIP_MELEE", "STRENGTH"],
+        "effects": { "base_damage": "1d8" }
     },
     {
         "id": "equip_smallshield",
         "name": { "name": "buckler", "plural": "bucklers" },
         "renderable": { "glyph": "[", "fg": "#808080", "bg": "#000000", "order": 2 },
         "flags": ["EQUIP_SHIELD"],
-        "effects": { "defence_bonus": "1" }
+        "effects": { "ac": "1" }
     },
     {
         "id": "equip_mediumshield",
         "name": { "name": "medium shield", "plural": "medium shields" },
         "renderable": { "glyph": "[", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "flags": ["EQUIP_SHIELD"],
-        "effects": { "defence_bonus": "2", "melee_power_bonus": "-1" }
+        "effects": { "ac": "2", "melee_power_bonus": "-1" }
     },
     {
         "id": "equip_largeshield",
         "name": { "name": "large shield", "plural": "large shields" },
         "renderable": { "glyph": "[", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },
         "flags": ["EQUIP_SHIELD"],
-        "effects": { "defence_bonus": "4", "melee_power_bonus": "-2" }
+        "effects": { "ac": "4", "melee_power_bonus": "-2" }
     },
     {
         "id": "wand_magicmissile",

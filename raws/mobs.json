@@ -3,204 +3,233 @@
         "id": "npc_barkeep",
         "name": "barkeep",
         "renderable": { "glyph": "@", "fg": "#EE82EE", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "ai": "bystander",
         "quips": ["Drink?"]
     },
     {
         "id": "npc_townsperson",
         "name": "townsperson",
         "renderable": { "glyph": "@", "fg": "#9fa86c", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "ai": "bystander",
         "quips": ["You won't catch me quipping."]
     },
     {
         "id": "npc_drunk",
         "name": "drunk",
         "renderable": { "glyph": "@", "fg": "#a0a83c", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "ai": "bystander",
         "quips": ["Hic!", "H-Hic'."]
     },
     {
         "id": "npc_fisher",
         "name": "fisher",
         "renderable": { "glyph": "@", "fg": "#3ca3a8", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "ai": "bystander",
         "quips": ["Placeholder."]
     },
     {
         "id": "npc_dockworker",
         "name": "dock worker",
         "renderable": { "glyph": "@", "fg": "#68d8de", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "ai": "bystander",
         "quips": ["Placeholder."]
     },
     {
         "id": "npc_priest",
         "name": "priest",
         "renderable": { "glyph": "@", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
-        "vision_range": 4,
-        "ai": "bystander"
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "vision_range": 4
     },
     {
         "id": "npc_miner",
         "name": "miner",
         "renderable": { "glyph": "@", "fg": "#946123", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "ai": "bystander"
+        "attacks": [
+            { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
+        ]
     },
     {
         "id": "npc_guard",
         "name": "smalltown guard",
         "renderable": { "glyph": "@", "fg": "#034efc", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 12, "hp": 12, "defence": 3, "power": 3 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "level": 2,
         "vision_range": 4,
-        "ai": "bystander",
-        "quips": ["You wont catch me down the mine.", "I'm not paid enough for that."]
+        "quips": ["You wont catch me down the mine.", "I'm not paid enough for that."],
+        "attacks": [
+            { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
+        ]
     },
     {
         "id": "dog_little",
         "name": "little dog",
         "renderable": { "glyph": "d", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "level": 2,
+        "bac": 6,
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d6"}
+        ]
     },
     {
         "id": "rat",
         "name": "rat",
         "renderable": { "glyph": "r", "fg": "#aa6000", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 4, "hp": 4, "defence": 0, "power": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "bac": 6,
         "vision_range": 8,
-        "ai": "melee"
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d2"}
+        ]
     },
     {
         "id": "rat_giant",
         "name": "giant rat",
         "renderable": { "glyph": "r", "fg": "#bb8000", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 4, "hp": 4, "defence": 0, "power": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 2,
+        "bac": 7,
         "vision_range": 8,
-        "ai": "melee"
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d3"}
+        ]
     },
     {
         "id": "dog",
         "name": "dog",
         "renderable": { "glyph": "d", "fg": "#EEEEEE", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 2 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 4,
+        "bac": 5,
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d6"}
+        ]
     },
     {
         "id": "dog_large",
         "name": "large dog",
         "renderable": { "glyph": "d", "fg": "#DDDDDD", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 12, "hp": 12, "defence": 0, "power": 3 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 6,
+        "bac": 4,
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "2d4"}
+        ]
     },
     {
         "id": "goblin",
         "name": "goblin",
         "renderable": { "glyph": "g", "fg": "#00FF00", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 2 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "hits", "hit_bonus": 0, "damage": "1d4"}
+        ]
     },
     {
         "id": "kobold",
         "name": "kobold",
         "renderable": { "glyph": "k", "fg": "#AA5500", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
         "vision_range": 7,
-        "ai": "melee"
+        "attacks": [
+            { "name": "hits", "hit_bonus": 0, "damage": "1d4"}
+        ]
     },
     {
         "id": "jackal",
         "name": "jackal",
         "renderable": { "glyph": "d", "fg": "#AA5500", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 6, "hp": 6, "defence": 0, "power": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "bac": 7,
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d2"}
+        ]
     },
     {
         "id": "fox",
         "name": "fox",
         "renderable": { "glyph": "d", "fg": "#FF0000", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 4, "hp": 4, "defence": 0, "power": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "bac": 7,
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d3"}
+        ]
     },
     {
         "id": "coyote",
         "name": "coyote",
         "renderable": { "glyph": "d", "fg": "#6E3215", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 2 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "bac": 7,
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d4"}
+        ]
+    },
+    {
+        "id": "wolf",
+        "name": "wolf",
+        "renderable": { "glyph": "d", "fg": "#5E4225", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "bac": 4,
+        "vision_range": 12,
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "2d4"}
+        ]
     },
     {
         "id": "goblin_chieftain",
         "name": "goblin chieftain",
         "renderable": { "glyph": "G", "fg": "#00FF00", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 2 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 2,
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
+        ]
     },
     {
         "id": "orc",
         "name": "orc",
         "renderable": { "glyph": "o", "fg": "#00FF00", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 3 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "hits", "hit_bonus": 0, "damage": "1d6"}
+        ]
     },
     {
         "id": "orc_large",
         "name": "large orc",
         "renderable": { "glyph": "o", "fg": "#008000", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 12, "hp": 12, "defence": 1, "power": 3 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 2,
         "vision_range": 12,
-        "ai": "melee"
+        "attacks": [
+            { "name": "hits", "hit_bonus": 0, "damage": "1d6"}
+        ]
     },
     {
         "id": "ogre",
         "name": "ogre",
         "renderable": { "glyph": "O", "fg": "#00FF00", "bg": "#000000", "order": 1 },
-        "flags": ["BLOCKS_TILE"],
-        "stats": { "max_hp": 24, "hp": 24, "defence": 3, "power": 3 },
-        "vision_range": 8,
-        "ai": "melee"
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 5,
+        "bac": 5,
+        "vision_range": 8
     }
 ]

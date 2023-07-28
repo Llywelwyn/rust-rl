@@ -69,7 +69,7 @@ pub const GOBLINS_4X4: PrefabVault =
     PrefabVault { template: GOBLINS_4X4_V, width: 4, height: 4, first_id: 0, last_id: 100, can_flip: Flipping::Both };
 const GOBLINS_4X4_V: &str = "
 #^  
- #G#
+ #$#
 #g# 
  ^g^
 ";
@@ -78,13 +78,13 @@ pub const GOBLINS2_4X4: PrefabVault =
     PrefabVault { template: GOBLINS2_4X4_V, width: 4, height: 4, first_id: 0, last_id: 100, can_flip: Flipping::Both };
 const GOBLINS2_4X4_V: &str = "
 #^#g
-G# #
+$# #
  g# 
 # g^
 ";
 
 pub const GOBLINS_5X5: PrefabVault =
-    PrefabVault { template: GOBLINS_5X5_V, width: 5, height: 5, first_id: 0, last_id: 100, can_flip: Flipping::Both };
+    PrefabVault { template: GOBLINS_5X5_V, width: 5, height: 5, first_id: 3, last_id: 100, can_flip: Flipping::Both };
 const GOBLINS_5X5_V: &str = "
  ^#g 
 G#?#^
@@ -94,7 +94,7 @@ G#?#^
 ";
 
 pub const GOBLINS_6X6: PrefabVault =
-    PrefabVault { template: GOBLINS_6X6_V, width: 6, height: 6, first_id: 0, last_id: 100, can_flip: Flipping::Both };
+    PrefabVault { template: GOBLINS_6X6_V, width: 6, height: 6, first_id: 5, last_id: 100, can_flip: Flipping::Both };
 const GOBLINS_6X6_V: &str = "
    #  
  #^#g 
@@ -157,7 +157,7 @@ const HOUSE_TRAP_7X7_V: &str = "
 ";
 
 pub const ORC_HOUSE_8X8: PrefabVault =
-    PrefabVault { template: ORC_HOUSE_8X8_V, width: 8, height: 8, first_id: 0, last_id: 100, can_flip: Flipping::Both };
+    PrefabVault { template: ORC_HOUSE_8X8_V, width: 8, height: 8, first_id: 2, last_id: 100, can_flip: Flipping::Both };
 const ORC_HOUSE_8X8_V: &str = "
         
  ###### 

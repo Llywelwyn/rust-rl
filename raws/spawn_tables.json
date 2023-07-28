@@ -60,10 +60,13 @@
             { "id": "orc_large",            "weight": 1,    "difficulty": 3},
             { "id": "goblin_chieftain",     "weight": 1,    "difficulty": 3},
 
-            { "id": "dog",                  "weight": 1,    "difficulty": 4},
             { "id": "ogre",                 "weight": 1,    "difficulty": 4},
 
-            { "id": "dog_large",            "weight": 1,    "difficulty": 5}
+            { "id": "dog",                  "weight": 1,    "difficulty": 5},
+
+            { "id": "wolf",                 "weight": 2,    "difficulty": 6},
+
+            { "id": "dog_large",            "weight": 1,    "difficulty": 7}
         ]
     },
     {

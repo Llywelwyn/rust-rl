@@ -1,7 +1,7 @@
 use super::{
-    gamelog, BlocksTile, BlocksVisibility, Bystander, CombatStats, Door, EntityMoved, Hidden, HungerClock, HungerState,
-    Item, Map, Monster, Name, ParticleBuilder, Player, Position, Renderable, RunState, State, SufferDamage, Telepath,
-    TileType, Viewshed, WantsToMelee, WantsToPickupItem,
+    gamelog, Attributes, BlocksTile, BlocksVisibility, Bystander, Door, EntityMoved, Hidden, HungerClock, HungerState,
+    Item, Map, Monster, Name, ParticleBuilder, Player, Pools, Position, Renderable, RunState, State, SufferDamage,
+    Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -11,6 +11,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
+    let attributes = ecs.read_storage::<Attributes>();
     let map = ecs.fetch::<Map>();
 
     let entities = ecs.entities();
@@ -24,7 +25,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
     let mut door_pos: Option<Point> = None;
 
-    for (_entity, _player, pos) in (&entities, &mut players, &mut positions).join() {
+    for (_entity, _player, pos, attributes) in (&entities, &mut players, &mut positions, &attributes).join() {
         let delta_x = i;
         let delta_y = j;
 
@@ -46,7 +47,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             if let Some(name) = names.get(*potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("is blocked.").log();
                             }
-                        } else if rng.roll_dice(1, 6) == 1 {
+                        } else if rng.roll_dice(1, 6) + attributes.strength.bonus < 5 {
                             if let Some(name) = names.get(*potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
                             }
@@ -91,6 +92,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
+    let attributes = ecs.read_storage::<Attributes>();
     let map = ecs.fetch::<Map>();
 
     let entities = ecs.entities();
@@ -104,7 +106,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
     let mut door_pos: Option<Point> = None;
 
-    for (_entity, _player, pos) in (&entities, &mut players, &mut positions).join() {
+    for (_entity, _player, pos, attributes) in (&entities, &mut players, &mut positions, &attributes).join() {
         let delta_x = i;
         let delta_y = j;
 
@@ -122,7 +124,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                 let door = doors.get_mut(*potential_target);
                 if let Some(door) = door {
                     if door.open == false {
-                        if rng.roll_dice(1, 6) == 1 {
+                        if rng.roll_dice(1, 6) + attributes.strength.bonus < 5 {
                             if let Some(name) = names.get(*potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
                             }
@@ -166,6 +168,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         let mut positions = ecs.write_storage::<Position>();
         let mut players = ecs.write_storage::<Player>();
         let mut viewsheds = ecs.write_storage::<Viewshed>();
+        let attributes = ecs.read_storage::<Attributes>();
         let map = ecs.fetch::<Map>();
 
         let entities = ecs.entities();
@@ -173,7 +176,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         let names = ecs.read_storage::<Name>();
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
 
-        for (entity, _player, pos) in (&entities, &mut players, &mut positions).join() {
+        for (entity, _player, pos, attributes) in (&entities, &mut players, &mut positions, &attributes).join() {
             let delta_x = i;
             let delta_y = j;
 
@@ -210,8 +213,8 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                             if door.open == false {
                                 let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
                                 particle_builder.kick(pos.x + delta_x, pos.y + delta_y);
-                                // 33% chance of breaking it down.
-                                if rng.roll_dice(1, 3) == 1 {
+                                // 33% chance of breaking it down + str
+                                if rng.roll_dice(1, 6) + attributes.strength.bonus > 4 {
                                     gamelog::Logger::new()
                                         .append("As you kick the")
                                         .item_name_n(target_name)
@@ -273,7 +276,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let mut telepaths = ecs.write_storage::<Telepath>();
     let mut entity_moved = ecs.write_storage::<EntityMoved>();
     let friendlies = ecs.read_storage::<Bystander>();
-    let combat_stats = ecs.read_storage::<CombatStats>();
+    let pools = ecs.read_storage::<Pools>();
     let map = ecs.fetch::<Map>();
 
     let entities = ecs.entities();
@@ -304,7 +307,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
                 ppos.x = pos.x;
                 ppos.y = pos.y;
             } else {
-                let target = combat_stats.get(*potential_target);
+                let target = pools.get(*potential_target);
                 if let Some(_target) = target {
                     wants_to_melee
                         .insert(entity, WantsToMelee { target: *potential_target })
@@ -538,12 +541,12 @@ fn skip_turn(ecs: &mut World) -> bool {
 
     let mut did_heal = false;
     if can_heal {
-        let mut health_components = ecs.write_storage::<CombatStats>();
-        let player_hp = health_components.get_mut(*player_entity).unwrap();
+        let mut health_components = ecs.write_storage::<Pools>();
+        let pools = health_components.get_mut(*player_entity).unwrap();
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let roll = rng.roll_dice(1, 6);
-        if (roll == 6) && player_hp.hp < player_hp.max_hp {
-            player_hp.hp += 1;
+        if (roll == 6) && pools.hit_points.current < pools.hit_points.max {
+            pools.hit_points.current += 1;
             did_heal = true;
         }
     }

@@ -67,6 +67,17 @@ impl ParticleBuilder {
         );
     }
 
+    pub fn attack_miss(&mut self, x: i32, y: i32) {
+        self.request(
+            x,
+            y,
+            rltk::RGB::named(rltk::CYAN),
+            rltk::RGB::named(rltk::BLACK),
+            rltk::to_cp437('‼'),
+            DEFAULT_PARTICLE_LIFETIME,
+        );
+    }
+
     pub fn trap_triggered(&mut self, x: i32, y: i32) {
         self.request(
             x,
