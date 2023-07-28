@@ -151,8 +151,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
             if COMBAT_LOGGING {
                 rltk::console::log(format!(
-                    "ATTACKLOG: {} *ATTACKED* {}: rolled ({}) 1d20 vs. {} (10 + {}AC + {}to-hit)",
-                    &name.name, &target_name.name, d20, target_number, armour_class, attacker_bonuses
+                    "ATTACKLOG: {} *{}* {}: rolled ({}) 1d20 vs. {} (10 + {}AC + {}to-hit)",
+                    &name.name, attack_verb, &target_name.name, d20, target_number, armour_class, attacker_bonuses
                 ));
             }
 
@@ -166,10 +166,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
                 if COMBAT_LOGGING {
                     rltk::console::log(format!(
-                        "ATTACKLOG: {} *{}* {} for {} ({}[{}d{}]+{}[skill]+{}[attr])",
+                        "ATTACKLOG: {} HIT for {} ({}[{}d{}]+{}[skill]+{}[attr])",
                         &name.name,
-                        attack_verb,
-                        &target_name.name,
                         damage,
                         base_damage,
                         weapon_info.damage_n_dice,
@@ -220,7 +218,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 }
             } else {
                 if COMBAT_LOGGING {
-                    rltk::console::log(format!("ATTACKLOG: {} *MISSED* {}", &name.name, &target_name.name,));
+                    rltk::console::log(format!("ATTACKLOG: {} *MISSED*", &name.name));
                 }
 
                 let pos = positions.get(wants_melee.target);

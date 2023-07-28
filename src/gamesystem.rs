@@ -32,7 +32,7 @@ pub fn mana_per_level(rng: &mut rltk::RandomNumberGenerator, intelligence: i32) 
 }
 
 pub fn mana_at_level(rng: &mut rltk::RandomNumberGenerator, intelligence: i32, level: i32) -> i32 {
-    let mut total = 12;
+    let mut total = 0;
     for _i in 0..level {
         total += mana_per_level(rng, intelligence);
     }

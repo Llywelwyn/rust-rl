@@ -492,7 +492,8 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
             if distance <= range as f32 {
                 let screen_x = idx.x - min_x;
                 let screen_y = idx.y - min_y;
-                if screen_x > 0 && screen_x < (max_x - min_x) && screen_y > 0 && screen_y < (max_y - min_y) {
+                if screen_x > 1 && screen_x < (max_x - min_x) - 1 && screen_y > 1 && screen_y < (max_y - min_y) - 1 {
+                    rltk::console::log("yo");
                     ctx.set_bg(screen_x + x_offset, screen_y + y_offset, RGB::named(rltk::BLUE));
                     available_cells.push(idx);
                 }
@@ -505,8 +506,8 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
     // Draw mouse cursor
     let mouse_pos = ctx.mouse_pos();
     let mut mouse_pos_adjusted = mouse_pos;
-    mouse_pos_adjusted.0 += min_x;
-    mouse_pos_adjusted.1 += min_y;
+    mouse_pos_adjusted.0 += min_x - x_offset;
+    mouse_pos_adjusted.1 += min_y - y_offset;
     let map = gs.ecs.fetch::<Map>();
     let mut valid_target = false;
     for idx in available_cells.iter() {
@@ -525,12 +526,12 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
                 ctx.set_bg(tile.x - min_x + x_offset, tile.y - min_y + y_offset, RGB::named(rltk::DARKCYAN));
             }
         }
-        ctx.set_bg(mouse_pos.0 + x_offset, mouse_pos.1 + y_offset, RGB::named(rltk::CYAN));
+        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::CYAN));
         if ctx.left_click {
             return (ItemMenuResult::Selected, Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)));
         }
     } else {
-        ctx.set_bg(mouse_pos.0 + x_offset, mouse_pos.1 + y_offset, RGB::named(rltk::RED));
+        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::RED));
         if ctx.left_click {
             return (ItemMenuResult::Cancel, None);
         }

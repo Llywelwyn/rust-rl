@@ -7,6 +7,8 @@ use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::{HashMap, HashSet};
 
+const SPAWN_LOGGING: bool = true;
+
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },
     Equipped { by: Entity },
@@ -243,11 +245,10 @@ pub fn spawn_named_mob(
 
         let base_mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 0 };
         let mut mob_level = base_mob_level;
-        let difficulty = 0;
-        if base_mob_level > difficulty {
+        if base_mob_level > map_difficulty {
             mob_level -= 1;
-        } else if base_mob_level < difficulty {
-            mob_level += (difficulty - base_mob_level) / 5;
+        } else if base_mob_level < map_difficulty {
+            mob_level += (map_difficulty - base_mob_level) / 5;
 
             if mob_level as f32 > 1.5 * base_mob_level as f32 {
                 let mob_levelf32 = (1.5 * base_mob_level as f32).trunc();
@@ -261,6 +262,13 @@ pub fn spawn_named_mob(
         let mob_hp = npc_hp(&mut rng, mob_con, mob_level);
         let mob_mana = mana_at_level(&mut rng, mob_int, mob_level);
         let mob_bac = if mob_template.bac.is_some() { mob_template.bac.unwrap() } else { 10 };
+
+        if SPAWN_LOGGING {
+            rltk::console::log(format!(
+                "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} (base level: {}, map difficulty: {})",
+                &mob_template.name, mob_hp, mob_mana, mob_bac, mob_level, base_mob_level, map_difficulty
+            ));
+        }
 
         let pools = Pools {
             level: mob_level,
