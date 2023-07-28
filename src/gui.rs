@@ -120,8 +120,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         }
     }
 
-    // Render the message log at [1, 46], descending, with 6 lines.
-    gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console, Point::new(1, 7), false, 7);
+    // Render the message log at [1, 7], ascending, with 7 lines and a max width of 68.
+    gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console, Point::new(1, 7), false, 7, 68);
 
     // Render id
     let map = ecs.fetch::<Map>();
@@ -493,7 +493,6 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
                 let screen_x = idx.x - min_x;
                 let screen_y = idx.y - min_y;
                 if screen_x > 1 && screen_x < (max_x - min_x) - 1 && screen_y > 1 && screen_y < (max_y - min_y) - 1 {
-                    rltk::console::log("yo");
                     ctx.set_bg(screen_x + x_offset, screen_y + y_offset, RGB::named(rltk::BLUE));
                     available_cells.push(idx);
                 }

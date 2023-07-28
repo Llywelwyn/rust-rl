@@ -19,19 +19,33 @@ pub fn clear_log() {
     LOG.lock().unwrap().clear();
 }
 
-pub fn print_log(console: &mut Box<dyn Console>, pos: Point, descending: bool, len: usize) {
+pub fn print_log(console: &mut Box<dyn Console>, pos: Point, descending: bool, len: usize, maximum_len: i32) {
     let mut y = pos.y;
     let mut x = pos.x;
     LOG.lock().unwrap().iter().rev().take(len).for_each(|log| {
+        let mut len_so_far: i32 = 0;
+        let mut entry_len = 0;
         log.iter().for_each(|frag| {
-            console.print_color(x, y, frag.colour.into(), RGB::named(rltk::BLACK).into(), &frag.text);
+            entry_len += frag.text.len() as i32;
+        });
+        let lines = entry_len / maximum_len;
+        y -= lines;
+        log.iter().for_each(|frag| {
+            if len_so_far + frag.text.len() as i32 > maximum_len {
+                y += 1;
+                x = pos.x;
+                len_so_far = 0;
+            }
+            if y > pos.y - len as i32 {
+                console.print_color(x, y, frag.colour.into(), RGB::named(rltk::BLACK).into(), &frag.text);
+            }
             x += frag.text.len() as i32;
-            x += 0;
+            len_so_far += frag.text.len() as i32;
         });
         if descending {
             y += 1;
         } else {
-            y -= 1;
+            y -= 1 + lines;
         }
         x = pos.x;
     });
@@ -40,9 +54,7 @@ pub fn print_log(console: &mut Box<dyn Console>, pos: Point, descending: bool, l
 pub fn setup_log() {
     clear_log();
     events::clear_events();
-    for _ in 0..5 {
-        Logger::new().log();
-    }
+
     Logger::new()
         .append("Welcome!")
         .colour(rltk::CYAN)

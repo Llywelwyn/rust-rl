@@ -238,18 +238,18 @@ impl<'a> System<'a> for ItemUseSystem {
                     for (item_entity, already_equipped, _name) in (&entities, &equipped, &names).join() {
                         if already_equipped.owner == target && already_equipped.slot == target_slot {
                             to_unequip.push(item_entity);
-                            /*if target == *player_entity {
-                                gamelog::Logger::new()
-                                    .append("You unequip the")
-                                    .item_name_n(&item_being_used.name)
-                                    .period()
-                                    .log();
-                            }*/
                         }
                     }
                     for item in to_unequip.iter() {
                         equipped.remove(*item);
                         backpack.insert(*item, InBackpack { owner: target }).expect("Unable to insert backpack");
+                        if target == *player_entity {
+                            gamelog::Logger::new()
+                                .append("You remove your")
+                                .item_name_n(&item_being_used.name)
+                                .period()
+                                .log();
+                        }
                     }
 
                     // Wield the item

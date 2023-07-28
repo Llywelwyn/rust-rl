@@ -183,6 +183,15 @@ pub fn spawn_named_mob(
 ) -> Option<Entity> {
     if raws.mob_index.contains_key(key) {
         let mob_template = &raws.raws.mobs[raws.mob_index[key]];
+        let mut player_level = 1;
+        {
+            let pools = ecs.read_storage::<Pools>();
+            let player_entity = ecs.fetch::<Entity>();
+            let player_pool = pools.get(*player_entity);
+            if let Some(pool) = player_pool {
+                player_level = pool.level;
+            }
+        }
 
         let mut eb;
         // New entity with a position, name, combatstats, and viewshed
@@ -245,16 +254,19 @@ pub fn spawn_named_mob(
 
         let base_mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 0 };
         let mut mob_level = base_mob_level;
+        // If the level difficulty is smaller than the mob's base level, subtract 1;
+        // else, if the level difficulty is larger, add one-fifth of the difference
         if base_mob_level > map_difficulty {
             mob_level -= 1;
         } else if base_mob_level < map_difficulty {
             mob_level += (map_difficulty - base_mob_level) / 5;
-
-            if mob_level as f32 > 1.5 * base_mob_level as f32 {
-                let mob_levelf32 = (1.5 * base_mob_level as f32).trunc();
-                mob_level = mob_levelf32 as i32;
-            }
         }
+        // If the player is a higher level than the mob, add one-fifth of the difference
+        if base_mob_level < player_level {
+            mob_level += (player_level - base_mob_level) / 4;
+        }
+        // If the resulting mob level is more than 1.5x the base, lower it to that number
+        mob_level = i32::min(mob_level, (1.5 * base_mob_level as f32).trunc() as i32);
 
         // Should really use existing RNG here
         let mut rng = rltk::RandomNumberGenerator::new();
@@ -265,8 +277,8 @@ pub fn spawn_named_mob(
 
         if SPAWN_LOGGING {
             rltk::console::log(format!(
-                "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} (base level: {}, map difficulty: {})",
-                &mob_template.name, mob_hp, mob_mana, mob_bac, mob_level, base_mob_level, map_difficulty
+                "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level])",
+                &mob_template.name, mob_hp, mob_mana, mob_bac, mob_level, base_mob_level, map_difficulty, player_level
             ));
         }
 
