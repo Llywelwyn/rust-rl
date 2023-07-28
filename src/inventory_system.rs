@@ -110,6 +110,8 @@ impl<'a> System<'a> for ItemUseSystem {
             let mut used_item = true;
             let mut aoe_item = false;
 
+            let mut logger = gamelog::Logger::new();
+
             let is_cursed = cursed_items.get(wants_to_use.item);
             let wand = wands.get_mut(wants_to_use.item);
             if let Some(wand) = wand {
@@ -120,10 +122,7 @@ impl<'a> System<'a> for ItemUseSystem {
                         gamelog::Logger::new().append("The wand does nothing.").log();
                         break;
                     }
-                    gamelog::Logger::new()
-                        .colour(rltk::YELLOW)
-                        .append("You wrest one last charge from the worn-out wand.")
-                        .log();
+                    logger = logger.colour(rltk::YELLOW).append("You wrest one last charge from the worn-out wand.");
                     consumables.insert(wants_to_use.item, Consumable {}).expect("Could not insert consumable");
                 }
                 verb = "zap";
@@ -144,11 +143,8 @@ impl<'a> System<'a> for ItemUseSystem {
                 verb = "equip"
             }
 
-            gamelog::Logger::new()
-                .append(format!("You {} the", verb))
-                .item_name_n(format!("{}", &item_being_used.name))
-                .period()
-                .log();
+            logger =
+                logger.append(format!("You {} the", verb)).item_name_n(format!("{}", &item_being_used.name)).period();
 
             // TARGETING
             let mut targets: Vec<Entity> = Vec::new();
@@ -182,7 +178,7 @@ impl<'a> System<'a> for ItemUseSystem {
                                     if let Some(pos) = pos {
                                         target = Point::new(pos.x, pos.y);
                                     }
-                                    gamelog::Logger::new()
+                                    logger = logger
                                         .append("The")
                                         .item_name(&item_being_used.name)
                                         .colour(rltk::WHITE)
@@ -244,11 +240,7 @@ impl<'a> System<'a> for ItemUseSystem {
                         equipped.remove(*item);
                         backpack.insert(*item, InBackpack { owner: target }).expect("Unable to insert backpack");
                         if target == *player_entity {
-                            gamelog::Logger::new()
-                                .append("You remove your")
-                                .item_name_n(&item_being_used.name)
-                                .period()
-                                .log();
+                            logger = logger.append("You remove your").item_name_n(&item_being_used.name).period();
                         }
                     }
 
@@ -271,7 +263,7 @@ impl<'a> System<'a> for ItemUseSystem {
                             stats.hit_points.current =
                                 i32::min(stats.hit_points.max, stats.hit_points.current + heal.amount);
                             if entity == *player_entity {
-                                gamelog::Logger::new().append("Quaffing, you recover some vigour.").log();
+                                logger = logger.append("You recover some vigour.");
                             }
                             let pos = positions.get(entity);
                             if let Some(pos) = pos {
@@ -281,6 +273,9 @@ impl<'a> System<'a> for ItemUseSystem {
                     }
                 }
             }
+
+            let mut damage_logger = gamelog::Logger::new();
+            let mut needs_damage_log = false;
 
             // DAMAGING ITEM
             let item_damages = inflicts_damage.get(wants_to_use.item);
@@ -305,7 +300,7 @@ impl<'a> System<'a> for ItemUseSystem {
                             None => {
                                 SufferDamage::new_damage(&mut suffer_damage, *mob, damage.amount);
                                 if entity == *player_entity {
-                                    gamelog::Logger::new()
+                                    damage_logger = damage_logger
                                         .append("The")
                                         .npc_name(&entity_name.name)
                                         .colour(rltk::WHITE)
@@ -314,17 +309,17 @@ impl<'a> System<'a> for ItemUseSystem {
                                         .colour(rltk::WHITE)
                                         .append("damage from the")
                                         .item_name_n(format!("{}", &item_being_used.name))
-                                        .period()
-                                        .log();
+                                        .period();
+                                    needs_damage_log = true;
                                 }
                             }
                             Some(_destructible) => {
-                                gamelog::Logger::new()
+                                damage_logger = damage_logger
                                     .append("The")
                                     .item_name(&entity_name.name)
                                     .colour(rltk::WHITE)
-                                    .append("is destroyed!")
-                                    .log();
+                                    .append("is destroyed!");
+                                needs_damage_log = true;
                                 entities.delete(*mob).expect("Delete failed");
                             }
                         }
@@ -360,19 +355,14 @@ impl<'a> System<'a> for ItemUseSystem {
                     used_item = true;
                     match is_cursed {
                         None => {
-                            gamelog::Logger::new()
+                            logger = logger
                                 .append("You feel")
                                 .colour(rltk::GREEN)
-                                .append("a sense of acuity towards your surroundings.")
-                                .log();
+                                .append("a sense of acuity towards your surroundings.");
                             *runstate = RunState::MagicMapReveal { row: 0, cursed: false };
                         }
                         Some(_) => {
-                            gamelog::Logger::new()
-                                .append("You")
-                                .colour(rltk::RED)
-                                .append("forget where you last were.")
-                                .log();
+                            logger = logger.append("You").colour(rltk::RED).append("forget where you last were.");
                             *runstate = RunState::MagicMapReveal { row: 0, cursed: true };
                         }
                     }
@@ -409,6 +399,11 @@ impl<'a> System<'a> for ItemUseSystem {
                         entities.delete(wants_to_use.item).expect("Delete failed");
                     }
                 }
+            }
+
+            logger.log();
+            if needs_damage_log {
+                damage_logger.log();
             }
         }
         wants_to_use.clear();

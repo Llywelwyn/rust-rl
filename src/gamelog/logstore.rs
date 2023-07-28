@@ -19,34 +19,57 @@ pub fn clear_log() {
     LOG.lock().unwrap().clear();
 }
 
-pub fn print_log(console: &mut Box<dyn Console>, pos: Point, descending: bool, len: usize, maximum_len: i32) {
+pub fn print_log(console: &mut Box<dyn Console>, pos: Point, _descending: bool, len: usize, maximum_len: i32) {
+    // Start at x, y
     let mut y = pos.y;
     let mut x = pos.x;
+    // Reverse the log, take the number we want to show, and iterate through them
     LOG.lock().unwrap().iter().rev().take(len).for_each(|log| {
         let mut len_so_far: i32 = 0;
         let mut entry_len = 0;
+        // Iterate through each message fragment, and get the total length
+        // in lines, by adding the length of every fragment and dividing it
+        // by the maximum length we desire.
         log.iter().for_each(|frag| {
             entry_len += frag.text.len() as i32;
         });
         let lines = entry_len / maximum_len;
+        // If the fragment is more than one line long, move our y-value up
+        // by this much.
         y -= lines;
+        // Iterate through each fragment now, for the draw loop
         log.iter().for_each(|frag| {
-            if len_so_far + frag.text.len() as i32 > maximum_len {
-                y += 1;
-                x = pos.x;
-                len_so_far = 0;
+            // Split every fragment up into single characters
+            let parts = frag.text.split("");
+            // For every character, check if the length will exceed
+            // the maximum length we're looking for. If it will, go
+            // down 1 in the y-axis, return us to the start of the line,
+            // and reset our length counter to 0.
+            for part in parts {
+                if len_so_far + part.len() as i32 > maximum_len {
+                    y += 1;
+                    x = pos.x;
+                    len_so_far = 0;
+                }
+                // If we're still within our "range" (we haven't gone up
+                // further in the y-axis than our desired amount), then
+                // print the next character. Otherwise, just skip it.
+                // -- this makes sure we don't continue drawing outside of
+                // the bounds of our message box.
+                if y > pos.y - len as i32 {
+                    console.print_color(x, y, frag.colour.into(), RGB::named(rltk::BLACK).into(), part);
+                }
+                // Move across by 1 in the x-axis, and add the length to our counter.
+                x += part.len() as i32;
+                len_so_far += part.len() as i32;
             }
-            if y > pos.y - len as i32 {
-                console.print_color(x, y, frag.colour.into(), RGB::named(rltk::BLACK).into(), &frag.text);
-            }
-            x += frag.text.len() as i32;
-            len_so_far += frag.text.len() as i32;
         });
-        if descending {
-            y += 1;
-        } else {
-            y -= 1 + lines;
-        }
+        // Descending is deprecated for now, so we always ascending upwards.
+        // Take away one from the y-axis, because we want to start each entry
+        // on a new line, and go up an additional amount depending on how many
+        // lines our *previous* entry took.
+        y -= 1 + lines;
+        // Go back to the start of the new line.
         x = pos.x;
     });
 }
