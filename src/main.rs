@@ -496,7 +496,6 @@ fn main() -> rltk::BError {
     let context = RltkBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
-        .with_fps_cap(60.0)
         .with_font("curses14x16.png", 14, 16)
         .with_tile_dimensions(14, 16)
         .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses14x16.png")

@@ -249,9 +249,10 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
     }
 }
 
-fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain) {
+fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain) -> bool {
     // Pick an initial builder
     let builder_roll = rng.roll_dice(1, 16);
+    let mut want_doors = true;
     match builder_roll {
         1 => builder.start_with(CellularAutomataBuilder::new()),
         2 => builder.start_with(DrunkardsWalkBuilder::open_area()),
@@ -259,7 +260,10 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
         4 => builder.start_with(DrunkardsWalkBuilder::winding_passages()),
         5 => builder.start_with(DrunkardsWalkBuilder::fat_passages()),
         6 => builder.start_with(DrunkardsWalkBuilder::fearful_symmetry()),
-        7 => builder.start_with(MazeBuilder::new()),
+        7 => {
+            builder.start_with(MazeBuilder::new());
+            want_doors = false;
+        }
         8 => builder.start_with(DLABuilder::walk_inwards()),
         9 => builder.start_with(DLABuilder::walk_outwards()),
         10 => builder.start_with(DLABuilder::central_attractor()),
@@ -280,6 +284,8 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
     // Place the exit and spawn mobs
     builder.with(VoronoiSpawning::new());
     builder.with(DistantExit::new());
+
+    return want_doors;
 }
 
 pub fn random_builder(
@@ -292,9 +298,10 @@ pub fn random_builder(
     rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
     let mut builder = BuilderChain::new(new_id, width, height, difficulty);
     let type_roll = rng.roll_dice(1, 2);
+    let mut want_doors = true;
     match type_roll {
         1 => random_room_builder(rng, &mut builder),
-        _ => random_shape_builder(rng, &mut builder),
+        _ => want_doors = random_shape_builder(rng, &mut builder),
     }
 
     /*
@@ -314,11 +321,14 @@ pub fn random_builder(
     }
     */
 
-    builder.with(DoorPlacement::new());
+    if want_doors {
+        builder.with(DoorPlacement::new());
+    }
 
     if rng.roll_dice(1, 20) == 1 {
         builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
     }
+
     builder.with(PrefabBuilder::vaults());
     // Regardless of anything else, fill the edges back in with walls. We can't walk
     // there anyway, and we don't want an open line of sight into the unmapped void.

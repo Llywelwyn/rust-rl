@@ -47,7 +47,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             if let Some(name) = names.get(*potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("is blocked.").log();
                             }
-                        } else if rng.roll_dice(1, 6) + attributes.strength.bonus < 5 {
+                        } else if rng.roll_dice(1, 6) + attributes.strength.bonus < 2 {
                             if let Some(name) = names.get(*potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
                             }
@@ -124,7 +124,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                 let door = doors.get_mut(*potential_target);
                 if let Some(door) = door {
                     if door.open == false {
-                        if rng.roll_dice(1, 6) + attributes.strength.bonus < 5 {
+                        if rng.roll_dice(1, 6) + attributes.strength.bonus < 2 {
                             if let Some(name) = names.get(*potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
                             }
@@ -213,8 +213,8 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                             if door.open == false {
                                 let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
                                 particle_builder.kick(pos.x + delta_x, pos.y + delta_y);
-                                // 33% chance of breaking it down + str
-                                if rng.roll_dice(1, 6) + attributes.strength.bonus > 4 {
+                                // ~33% chance of breaking it down + str
+                                if rng.roll_dice(1, 10) + attributes.strength.bonus > 6 {
                                     gamelog::Logger::new()
                                         .append("As you kick the")
                                         .item_name_n(target_name)

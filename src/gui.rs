@@ -1,6 +1,7 @@
 use super::{
-    camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes, Equipped, Hidden, HungerClock,
-    HungerState, InBackpack, Map, Name, Player, Point, Pools, Position, RunState, Skill, Skills, State, Viewshed,
+    camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes, Consumable, Equippable, Equipped,
+    Hidden, HungerClock, HungerState, InBackpack, Map, Name, Player, Point, Pools, Position, Prop, Renderable,
+    RunState, Skill, Skills, State, Viewshed,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -116,6 +117,82 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             }
             HungerState::Fainting => {
                 ctx.print_color_right(70, 53, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Fainting")
+            }
+        }
+
+        // Draw equipment
+        let names = ecs.read_storage::<Name>();
+        let backpack = ecs.read_storage::<InBackpack>();
+        let equippables = ecs.read_storage::<Equippable>();
+        let mut equipment: Vec<String> = Vec::new();
+        for (_entity, _pack, name) in
+            (&equippables, &backpack, &names).join().filter(|item| item.1.owner == *player_entity)
+        {
+            equipment.push(format!("- {}", &name.name));
+        }
+        for (_equipped, name) in (&equipped, &names).join().filter(|item| item.0.owner == *player_entity) {
+            equipment.push(format!("- {} (worn)", &name.name));
+        }
+        let mut y = 1;
+        if !equipment.is_empty() {
+            ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Equipment");
+            for item in equipment {
+                y += 1;
+                ctx.print_color(72, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), item);
+            }
+            y += 2;
+        }
+
+        // Draw consumables
+        ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Consumables");
+        let consumables = ecs.read_storage::<Consumable>();
+        for (_entity, _pack, name) in
+            (&consumables, &backpack, &names).join().filter(|item| item.1.owner == *player_entity)
+        {
+            y += 1;
+            ctx.print_color(72, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), format!("- {}", &name.name));
+        }
+
+        // Draw entities seen on screen
+        let viewsheds = ecs.read_storage::<Viewshed>();
+        let renderables = ecs.read_storage::<Renderable>();
+        let hidden = ecs.read_storage::<Hidden>();
+        let props = ecs.read_storage::<Prop>();
+        let map = ecs.fetch::<Map>();
+        let viewshed = viewsheds.get(*player_entity).unwrap();
+        let mut seen_entities: Vec<(String, RGB)> = Vec::new();
+        for tile in viewshed.visible_tiles.iter() {
+            let idx = map.xy_idx(tile.x, tile.y);
+            for entity in map.tile_content[idx].iter() {
+                let mut draw = true;
+                let prop = props.get(*entity);
+                if let Some(_) = prop {
+                    draw = false;
+                }
+                let is_hidden = hidden.get(*entity);
+                if let Some(_) = is_hidden {
+                    draw = false;
+                }
+                if entity == &*player_entity {
+                    draw = false;
+                }
+                let name = &names.get(*entity);
+                if let Some(name) = name {
+                    if draw {
+                        let fg = renderables.get(*entity).unwrap().fg;
+                        seen_entities.push((name.name.to_string(), fg));
+                    }
+                }
+            }
+        }
+        seen_entities.sort_by(|a, b| b.0.cmp(&a.0));
+
+        if !seen_entities.is_empty() {
+            y += 2;
+            ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "You see");
+            for entity in seen_entities {
+                y += 1;
+                ctx.print_color(72, y, entity.1, RGB::named(rltk::BLACK), entity.0);
             }
         }
     }
