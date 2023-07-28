@@ -37,11 +37,9 @@ mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
 mod random_table;
 mod rex_assets;
+
 #[macro_use]
 extern crate lazy_static;
-
-// Embedded resources for use in wasm build
-rltk::embedded_resource!(CURSES14X16, "../resources/curses_14x16.png");
 
 //Consts
 pub const SHOW_MAPGEN: bool = false;
@@ -208,7 +206,12 @@ impl State {
 
         // Notify player, restore health up to a point.
         let player_entity = self.ecs.fetch::<Entity>();
-        gamelog::Logger::new().append("You descend the stairwell, and take a moment to gather your strength.").log();
+        gamelog::Logger::new()
+            .append("Taking a short rest, you manage to")
+            .colour((0, 255, 0))
+            .append("recover some of your strength")
+            .period()
+            .log();
         let mut player_health_store = self.ecs.write_storage::<CombatStats>();
         let player_health = player_health_store.get_mut(*player_entity);
         if let Some(player_health) = player_health {
@@ -482,15 +485,20 @@ const DISPLAYWIDTH: i32 = 100;
 const DISPLAYHEIGHT: i32 = 56;
 
 fn main() -> rltk::BError {
-    rltk::link_resource!(CURSES14X16, "../resources/curses_14x16.png");
+    // Embedded resources for use in wasm build
+    const CURSES_14_16_BYTES: &[u8] = include_bytes!("../resources/curses14x16.png");
+    rltk::embedding::EMBED.lock().add_resource("resources/curses14x16.png".to_string(), CURSES_14_16_BYTES);
+
+    //rltk::link_resource!(CURSES14X16, "../resources/curses_14x16.png");
+
     use rltk::RltkBuilder;
     let context = RltkBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
         .with_fps_cap(60.0)
-        .with_font("curses_14x16.png", 14, 16)
+        .with_font("curses14x16.png", 14, 16)
         .with_tile_dimensions(14, 16)
-        .with_fancy_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses_14x16.png")
+        .with_fancy_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses14x16.png")
         //.with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
         .build()?;
 
