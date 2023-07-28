@@ -1,14 +1,14 @@
 use super::{Hidden, Map, Mind, Position, Prop, Renderable};
-use rltk::{Point, Rltk, RGB};
+use rltk::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
 
 const SHOW_BOUNDARIES: bool = false;
 
-pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32) {
+pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
     //let (x_chars, y_chars) = ctx.get_char_size();
-    let (x_chars, y_chars) = (80, 43);
+    let (x_chars, y_chars, x_offset, y_offset) = (69, 41, 1, 10);
 
     let centre_x = (x_chars / 2) as i32;
     let centre_y = (y_chars / 2) as i32;
@@ -18,30 +18,26 @@ pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32) {
     let max_x = min_x + x_chars as i32;
     let max_y = min_y + y_chars as i32;
 
-    (min_x, max_x, min_y, max_y)
+    (min_x, max_x, min_y, max_y, x_offset, y_offset)
 }
 
 pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
     let map = ecs.fetch::<Map>();
-    let (min_x, max_x, min_y, max_y) = get_screen_bounds(ecs, ctx);
-
-    // Might need to -1 here?
-    let map_width = map.width;
-    let map_height = map.height;
+    let (min_x, max_x, min_y, max_y, x_offset, y_offset) = get_screen_bounds(ecs, ctx);
 
     // Render map
     let mut y = 0;
     for t_y in min_y..max_y {
         let mut x = 0;
         for t_x in min_x..max_x {
-            if t_x >= 0 && t_x < map.width && t_y >= 0 && t_y < map_height {
+            if t_x >= 0 && t_x < map.width && t_y >= 0 && t_y < map.height {
                 let idx = map.xy_idx(t_x, t_y);
                 if map.revealed_tiles[idx] {
                     let (glyph, fg, bg) = crate::map::themes::get_tile_glyph(idx, &*map);
-                    ctx.set(x, y, fg, bg, glyph);
+                    ctx.set(x + x_offset, y + y_offset, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
-                ctx.set(x, y, RGB::named(rltk::DARKSLATEGRAY), RGB::named(rltk::BLACK), rltk::to_cp437('#'));
+                ctx.set(x + x_offset, y + y_offset, RGB::named(DARKSLATEGRAY), RGB::named(BLACK), rltk::to_cp437('#'));
             }
             x += 1;
         }
@@ -64,8 +60,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
             let idx = map.xy_idx(pos.x, pos.y);
             let entity_offset_x = pos.x - min_x;
             let entity_offset_y = pos.y - min_y;
-            if entity_offset_x > 0 && entity_offset_x < map_width && entity_offset_y > 0 && entity_offset_y < map_height
-            {
+            if pos.x < max_x && pos.y < max_y && pos.x >= min_x && pos.y >= min_y {
                 let mut draw = false;
                 let mut fg = render.fg;
                 let (_glyph, _fg, bg) = crate::map::themes::get_tile_glyph(idx, &*map);
@@ -90,7 +85,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                     }
                 }
                 if draw {
-                    ctx.set(entity_offset_x, entity_offset_y, fg, bg, render.glyph);
+                    ctx.set(entity_offset_x + x_offset, entity_offset_y + y_offset, fg, bg, render.glyph);
                 }
             }
         }

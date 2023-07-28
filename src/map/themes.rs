@@ -16,7 +16,7 @@ pub fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
     let mut fg: RGB = RGB::new();
     let mut bg: RGB;
 
-    let default_bg: RGB = RGB::from_u8(39, 67, 67);
+    let default_bg: RGB = RGB::from_u8(29, 50, 50);
 
     match map.tiles[idx] {
         TileType::Floor => {
@@ -26,12 +26,12 @@ pub fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
         }
         TileType::WoodFloor => {
             glyph = rltk::to_cp437('.');
-            bg = RGB::from_u8(48, 43, 40);
+            bg = RGB::from_u8(41, 30, 20);
         }
         TileType::Fence => {
             glyph = rltk::to_cp437('=');
-            fg = RGB::from_u8(99, 48, 9);
-            bg = RGB::from_u8(48, 43, 33);
+            fg = RGB::from_u8(110, 24, 0);
+            bg = RGB::from_u8(45, 30, 10);
         }
         TileType::Wall => {
             let x = idx as i32 % map.width;
@@ -47,40 +47,40 @@ pub fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
         }
         TileType::Bridge => {
             glyph = rltk::to_cp437('.');
-            bg = RGB::from_u8(59, 49, 43);
+            bg = RGB::from_u8(42, 48, 37);
         }
         TileType::Gravel => {
             glyph = rltk::to_cp437(';');
-            bg = RGB::from_u8(39, 39, 54);
+            bg = RGB::from_u8(26, 26, 53);
         }
         TileType::Road => {
             glyph = rltk::to_cp437('.');
             //fg = RGB::from_u8(112, 105, 94);
-            bg = RGB::from_u8(29, 45, 46);
+            bg = RGB::from_u8(8, 38, 40);
         }
         TileType::Grass => {
             glyph = rltk::to_cp437('"');
-            bg = RGB::from_u8(39, 67, 39);
+            bg = RGB::from_u8(9, 65, 6);
         }
         TileType::Foliage => {
             glyph = rltk::to_cp437(':');
-            bg = RGB::from_u8(35, 62, 36);
+            bg = RGB::from_u8(5, 60, 5);
         }
         TileType::HeavyFoliage => {
             glyph = rltk::to_cp437(';');
-            bg = RGB::from_u8(32, 62, 32);
+            bg = RGB::from_u8(5, 55, 5);
         }
         TileType::Sand => {
             glyph = rltk::to_cp437('.');
-            bg = RGB::from_u8(92, 92, 66);
+            bg = RGB::from_u8(70, 70, 21);
         }
         TileType::ShallowWater => {
             glyph = rltk::to_cp437('~');
-            bg = RGB::from_u8(51, 63, 91);
+            bg = RGB::from_u8(24, 47, 99);
         }
         TileType::DeepWater => {
             glyph = rltk::to_cp437('~');
-            bg = RGB::from_u8(36, 45, 61);
+            bg = RGB::from_u8(18, 33, 63);
         }
     }
     if map.bloodstains.contains(&idx) {

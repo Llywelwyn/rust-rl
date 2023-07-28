@@ -54,6 +54,7 @@ impl<'a> System<'a> for BystanderAI {
                         (rng.roll_dice(1, quip.available.len() as i32) - 1) as usize
                     };
                     gamelog::Logger::new()
+                        .append("The")
                         .npc_name(&name.unwrap().name)
                         .append_n("says \"")
                         .append_n(&quip.available[quip_index])

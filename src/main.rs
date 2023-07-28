@@ -41,12 +41,10 @@ mod rex_assets;
 extern crate lazy_static;
 
 // Embedded resources for use in wasm build
-rltk::embedded_resource!(TERMINAL8X8, "../resources/terminal8x8.jpg");
-rltk::embedded_resource!(SCANLINESFS, "../resources/scanlines.fs");
-rltk::embedded_resource!(SCANLINESVS, "../resources/scanlines.vs");
+rltk::embedded_resource!(CURSES14X16, "../resources/curses_14x16.png");
 
 //Consts
-pub const SHOW_MAPGEN: bool = true;
+pub const SHOW_MAPGEN: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -475,22 +473,26 @@ impl GameState for State {
         }
 
         damage_system::delete_the_dead(&mut self.ecs);
+
+        let _ = rltk::render_draw_buffer(ctx);
     }
 }
 
-const DISPLAYWIDTH: i32 = 80;
-const DISPLAYHEIGHT: i32 = 51;
+const DISPLAYWIDTH: i32 = 100;
+const DISPLAYHEIGHT: i32 = 56;
 
 fn main() -> rltk::BError {
+    rltk::link_resource!(CURSES14X16, "../resources/curses_14x16.png");
     use rltk::RltkBuilder;
-    let mut context = RltkBuilder::simple(DISPLAYWIDTH, DISPLAYHEIGHT)
-        .unwrap()
+    let context = RltkBuilder::new()
         .with_title("rust-rl")
-        .with_tile_dimensions(16, 16)
+        .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
+        .with_fps_cap(60.0)
+        .with_font("curses_14x16.png", 14, 16)
+        .with_tile_dimensions(14, 16)
+        .with_fancy_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses_14x16.png")
         //.with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
         .build()?;
-    context.with_post_scanlines(false);
-    //context.screen_burn_color(RGB::named((150, 255, 255)));
 
     let mut gs = State {
         ecs: World::new(),

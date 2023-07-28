@@ -6,54 +6,80 @@ use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 use std::collections::BTreeMap;
 
+pub fn draw_lerping_bar(
+    ctx: &mut Rltk,
+    sx: i32,
+    sy: i32,
+    width: i32,
+    n: i32,
+    max: i32,
+    full_colour: RGB,
+    empty_colour: RGB,
+) {
+    let percent = n as f32 / max as f32;
+    let fill_width = (percent * width as f32) as i32;
+    let bg = empty_colour.lerp(full_colour, percent);
+    let fg = RGB::named(rltk::BLACK);
+    for x in 0..width {
+        if x <= fill_width {
+            ctx.print_color(sx + x, sy, fg, bg, " ");
+        } else {
+            ctx.print_color(sx + x, sy, RGB::named(rltk::BLACK), RGB::named(rltk::BLACK), " ");
+        }
+    }
+    ctx.print(sx - 1, sy, "[");
+    let health = format!("{}/{}", n, max);
+    ctx.print_color(sx + 1, sy, fg, bg, health);
+    ctx.print(sx + width, sy, "]");
+}
+
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
-    ctx.draw_box_double(0, 43, 79, 7, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_hollow_box(0, 0, 70, 8, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Log box
+    ctx.draw_hollow_box(0, 9, 70, 42, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Camera box
+    ctx.draw_hollow_box(0, 52, 70, 3, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Stats box
+    ctx.draw_hollow_box(71, 0, 28, 55, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Side box
 
     // Render stats
     let combat_stats = ecs.read_storage::<CombatStats>();
     let players = ecs.read_storage::<Player>();
     let hunger = ecs.read_storage::<HungerClock>();
     for (_player, stats, hunger) in (&players, &combat_stats, &hunger).join() {
-        let health = format!(" HP {}/{} ", stats.hp, stats.max_hp);
-        ctx.print_color_right(36, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
-        ctx.draw_bar_horizontal(38, 43, 34, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
+        draw_lerping_bar(ctx, 2, 53, 26, stats.hp, stats.max_hp, RGB::from_u8(0, 255, 0), RGB::from_u8(255, 0, 0));
+        //ctx.draw_bar_horizontal(2, 53, 26, stats.hp, stats.max_hp, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK));
+        draw_lerping_bar(ctx, 2, 54, 26, stats.hp, stats.max_hp, RGB::named(rltk::BLUE), RGB::named(rltk::BLACK));
         match hunger.state {
             HungerState::Satiated => {
-                ctx.print_color_right(72, 42, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Satiated")
+                ctx.print_color_right(70, 53, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Satiated")
             }
             HungerState::Normal => {}
             HungerState::Hungry => {
-                ctx.print_color_right(72, 42, RGB::named(rltk::BROWN1), RGB::named(rltk::BLACK), "Hungry")
+                ctx.print_color_right(70, 53, RGB::named(rltk::BROWN1), RGB::named(rltk::BLACK), "Hungry")
             }
             HungerState::Weak => {
-                ctx.print_color_right(72, 42, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Weak")
+                ctx.print_color_right(70, 53, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Weak")
             }
             HungerState::Fainting => {
-                ctx.print_color_right(72, 42, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Fainting")
+                ctx.print_color_right(70, 53, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Fainting")
             }
         }
     }
 
     // Render the message log at [1, 46], descending, with 6 lines.
-    gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console, Point::new(1, 44), true, 6);
+    gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console, Point::new(1, 7), false, 7);
 
     // Render id
     let map = ecs.fetch::<Map>();
-    let id = format!(" D{} ", map.id);
-    ctx.print_color_right(78, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &id);
+    let id = format!("D{}", map.id);
+    ctx.print_color_right(70, 54, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &id);
 
     // Render turn
     ctx.print_color_right(
-        78,
-        50,
+        64,
+        54,
         RGB::named(rltk::YELLOW),
         RGB::named(rltk::BLACK),
-        &format!(" T{} ", crate::gamelog::get_event_count("turns")),
+        &format!("T{}", crate::gamelog::get_event_count("turns")),
     );
-
-    // Render mouse cursor
-    let mouse_pos = ctx.mouse_pos();
-    ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::YELLOW));
 
     draw_tooltips(ecs, ctx);
 }
@@ -63,7 +89,15 @@ pub fn get_input_direction(
     ctx: &mut Rltk,
     function: fn(i: i32, j: i32, ecs: &mut World) -> RunState,
 ) -> RunState {
-    ctx.print_color(1, 1, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "In what direction? [0-9]/[YUHJKLBN]");
+    let (_, _, _, _, x_offset, y_offset) = camera::get_screen_bounds(ecs, ctx);
+
+    ctx.print_color(
+        1 + x_offset,
+        1 + y_offset,
+        RGB::named(rltk::WHITE),
+        RGB::named(rltk::BLACK),
+        "In what direction? [0-9]/[YUHJKLBN]",
+    );
     match ctx.key {
         None => return RunState::ActionWithDirection { function },
         Some(key) => match key {
@@ -83,7 +117,7 @@ pub fn get_input_direction(
 }
 
 fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
-    let (min_x, _max_x, min_y, _max_y) = camera::get_screen_bounds(ecs, ctx);
+    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
@@ -91,8 +125,8 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
 
     let mouse_pos = ctx.mouse_pos();
     let mut mouse_pos_adjusted = mouse_pos;
-    mouse_pos_adjusted.0 += min_x;
-    mouse_pos_adjusted.1 += min_y;
+    mouse_pos_adjusted.0 += min_x - x_offset;
+    mouse_pos_adjusted.1 += min_y - y_offset;
     if mouse_pos_adjusted.0 >= map.width
         || mouse_pos_adjusted.1 >= map.height
         || mouse_pos_adjusted.1 < 0 // Might need to be 1, and -1 from map height/width.
@@ -120,7 +154,7 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
             for s in tooltip.iter() {
                 for i in 0..2 {
                     ctx.print_color(
-                        arrow_pos.x - i,
+                        arrow_pos.x + i,
                         y,
                         RGB::named(rltk::WHITE),
                         RGB::named(rltk::GREY),
@@ -211,7 +245,7 @@ pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut y: i32, ctx
 
 pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     let mut x = 3;
-    let mut y = 3;
+    let mut y = 12;
     let height = 22;
     let width = 25;
     ctx.draw_box(x, y, width, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
@@ -379,12 +413,18 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
 }
 
 pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (ItemMenuResult, Option<Point>) {
-    let (min_x, max_x, min_y, max_y) = camera::get_screen_bounds(&gs.ecs, ctx);
+    let (min_x, max_x, min_y, max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs, ctx);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
 
-    ctx.print_color(1, 1, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Targeting which tile? [mouse input]");
+    ctx.print_color(
+        1 + x_offset,
+        1 + y_offset,
+        RGB::named(rltk::WHITE),
+        RGB::named(rltk::BLACK),
+        "Targeting which tile? [mouse input]",
+    );
 
     // Highlight available cells
     let mut available_cells = Vec::new();
@@ -397,7 +437,7 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
                 let screen_x = idx.x - min_x;
                 let screen_y = idx.y - min_y;
                 if screen_x > 0 && screen_x < (max_x - min_x) && screen_y > 0 && screen_y < (max_y - min_y) {
-                    ctx.set_bg(screen_x, screen_y, RGB::named(rltk::BLUE));
+                    ctx.set_bg(screen_x + x_offset, screen_y + y_offset, RGB::named(rltk::BLUE));
                     available_cells.push(idx);
                 }
             }
@@ -426,15 +466,15 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
                 rltk::field_of_view(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1), aoe, &*map);
             blast_tiles.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
             for tile in blast_tiles.iter() {
-                ctx.set_bg(tile.x - min_x, tile.y - min_y, RGB::named(rltk::DARKCYAN));
+                ctx.set_bg(tile.x - min_x + x_offset, tile.y - min_y + y_offset, RGB::named(rltk::DARKCYAN));
             }
         }
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::CYAN));
+        ctx.set_bg(mouse_pos.0 + x_offset, mouse_pos.1 + y_offset, RGB::named(rltk::CYAN));
         if ctx.left_click {
             return (ItemMenuResult::Selected, Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)));
         }
     } else {
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::RED));
+        ctx.set_bg(mouse_pos.0 + x_offset, mouse_pos.1 + y_offset, RGB::named(rltk::RED));
         if ctx.left_click {
             return (ItemMenuResult::Cancel, None);
         }
@@ -543,7 +583,7 @@ pub enum YesNoResult {
 
 pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
     let mut x = 3;
-    let mut y = 3;
+    let mut y = 12;
     let width = 45;
     let height = 20;
     ctx.draw_box(x, y, width, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));

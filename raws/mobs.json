@@ -6,7 +6,8 @@
         "flags": ["BLOCKS_TILE"],
         "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 1 },
         "vision_range": 4,
-        "ai": "bystander"
+        "ai": "bystander",
+        "quips": ["Drink?"]
     },
     {
         "id": "npc_townsperson",
@@ -16,7 +17,7 @@
         "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
         "vision_range": 4,
         "ai": "bystander",
-        "quips": [ "I don't get paid nearly enough to"]
+        "quips": ["You won't catch me quipping."]
     },
     {
         "id": "npc_drunk",
@@ -26,7 +27,7 @@
         "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
         "vision_range": 4,
         "ai": "bystander",
-        "quips": [ "Hic!", "H-Hic'."]
+        "quips": ["Hic!", "H-Hic'."]
     },
     {
         "id": "npc_fisher",
@@ -36,7 +37,7 @@
         "stats": { "max_hp": 8, "hp": 8, "defence": 0, "power": 1 },
         "vision_range": 4,
         "ai": "bystander",
-        "quips": [ "Placeholder."]
+        "quips": ["Placeholder."]
     },
     {
         "id": "npc_dockworker",
@@ -46,7 +47,7 @@
         "stats": { "max_hp": 8, "hp": 8, "defence": 1, "power": 1 },
         "vision_range": 4,
         "ai": "bystander",
-        "quips": [ "Placeholder."]
+        "quips": ["Placeholder."]
     },
     {
         "id": "npc_priest",
@@ -74,7 +75,7 @@
         "stats": { "max_hp": 12, "hp": 12, "defence": 3, "power": 3 },
         "vision_range": 4,
         "ai": "bystander",
-        "quips": ["I don't get paid nearly enough to go down the mine."]
+        "quips": ["You wont catch me down the mine.", "I'm not paid enough for that."]
     },
     {
         "id": "dog_little",
