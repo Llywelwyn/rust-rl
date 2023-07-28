@@ -46,6 +46,21 @@ impl<'a> System<'a> for MeleeCombatSystem {
             mut rng,
         ) = data;
 
+        //  Combat works with the older system of AC being a bonus to to-hit to the attacker. When an
+        //  attacker tries to hit a victim, the attacker rolls a d20, and must roll *less than* the
+        //  value of 10 + victim's AC + attacker's to-hit bonuses.
+        //
+        //  e.g. An attacker with +0 to-hit hitting a target with 10 AC:
+        //       1d20 must be less than 20, 95% chance of a hit.
+        //
+        //  e.g. An attacker with +1 to-hit from being satiated hits a rat with 7 AC:
+        //       1d20 must be less than 18 (10+7+1), 85% chance of a hit.
+        //
+        //  e.g. An attacker with +0 to-hit hitting a target with 0 AC:
+        //       1d20 must be less than 10, 45% chance of a hit
+
+        const COMBAT_LOGGING: bool = true;
+
         for (entity, wants_melee, name, attacker_attributes, attacker_skills, attacker_pools) in
             (&entities, &wants_melee, &names, &attributes, &skills, &pools).join()
         {
@@ -72,7 +87,6 @@ impl<'a> System<'a> for MeleeCombatSystem {
             let mut attack_verb = "hits";
 
             if let Some(nat) = natural_attacks.get(entity) {
-                rltk::console::log("Natural attack found");
                 if !nat.attacks.is_empty() {
                     let attack_index = if nat.attacks.len() == 1 {
                         0
@@ -95,7 +109,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
             // Get all offensive bonuses
             let d20 = rng.roll_dice(1, 20);
-            let attribute_hit_bonus = attacker_attributes.strength.bonus;
+            let attribute_hit_bonus = attacker_attributes.dexterity.bonus;
             let skill_hit_bonus = gamesystem::skill_bonus(Skill::Melee, &*attacker_skills);
             let weapon_hit_bonus = weapon_info.hit_bonus;
             let mut status_hit_bonus = 0;
@@ -114,7 +128,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     _ => {}
                 }
             }
-            let modified_hit_roll = d20 - attribute_hit_bonus - skill_hit_bonus - weapon_hit_bonus - status_hit_bonus;
+            let attacker_bonuses =
+                attacker_pools.level + attribute_hit_bonus + skill_hit_bonus + weapon_hit_bonus + status_hit_bonus;
 
             // Get armour class
             let bac = target_pools.bac;
@@ -126,18 +141,54 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     armour_ac_bonus += ac.amount;
                 }
             }
-            let armour_class = bac - attribute_ac_bonus - skill_ac_bonus - armour_ac_bonus;
+            let mut armour_class = bac - attribute_ac_bonus - skill_ac_bonus - armour_ac_bonus;
 
-            let target_number = 10 + armour_class + attacker_pools.level;
+            if armour_class < 0 {
+                armour_class = rng.roll_dice(1, armour_class);
+            }
 
-            if d20 != 1 && (d20 == 20 || modified_hit_roll < target_number) {
+            let target_number = 10 + armour_class + attacker_bonuses;
+
+            if COMBAT_LOGGING {
+                rltk::console::log(format!(
+                    "ATTACKLOG: {} *ATTACKED* {}: rolled ({}) 1d20 vs. {} (10 + {}AC + {}to-hit)",
+                    &name.name, &target_name.name, d20, target_number, armour_class, attacker_bonuses
+                ));
+            }
+
+            if d20 < target_number {
                 // Target hit!
                 let base_damage = rng.roll_dice(weapon_info.damage_n_dice, weapon_info.damage_die_type);
-                let attribute_damage_bonus = attacker_attributes.strength.bonus;
                 let skill_damage_bonus = gamesystem::skill_bonus(Skill::Melee, &*attacker_skills);
-                let weapon_damage_bonus = weapon_info.damage_bonus;
-                let damage =
-                    i32::max(0, base_damage + attribute_damage_bonus + skill_damage_bonus + weapon_damage_bonus);
+                let attribute_damage_bonus = weapon_info.damage_bonus;
+                let mut damage =
+                    i32::max(0, base_damage + attribute_damage_bonus + skill_damage_bonus + attribute_damage_bonus);
+
+                if COMBAT_LOGGING {
+                    rltk::console::log(format!(
+                        "ATTACKLOG: {} *{}* {} for {} ({}[{}d{}]+{}[skill]+{}[attr])",
+                        &name.name,
+                        attack_verb,
+                        &target_name.name,
+                        damage,
+                        base_damage,
+                        weapon_info.damage_n_dice,
+                        weapon_info.damage_die_type,
+                        skill_damage_bonus,
+                        attribute_damage_bonus
+                    ));
+                }
+
+                if armour_class < 0 {
+                    let ac_damage_reduction = rng.roll_dice(1, armour_class);
+                    damage = i32::min(1, damage - ac_damage_reduction);
+                    if COMBAT_LOGGING {
+                        rltk::console::log(format!(
+                            "ATTACKLOG: {} reduced their damage taken by {} (1dAC), and took {} hp damage.",
+                            &target_name.name, ac_damage_reduction, damage
+                        ));
+                    }
+                }
 
                 let pos = positions.get(wants_melee.target);
                 if let Some(pos) = pos {
@@ -168,6 +219,10 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         .log();
                 }
             } else {
+                if COMBAT_LOGGING {
+                    rltk::console::log(format!("ATTACKLOG: {} *MISSED* {}", &name.name, &target_name.name,));
+                }
+
                 let pos = positions.get(wants_melee.target);
                 if let Some(pos) = pos {
                     particle_builder.attack_miss(pos.x, pos.y)

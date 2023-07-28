@@ -17,6 +17,9 @@ pub fn player_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i
 }
 
 pub fn npc_hp(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
+    if level == 0 {
+        return rng.roll_dice(1, 4);
+    }
     let mut total = 1;
     for _i in 0..level {
         total += rng.roll_dice(1, 8) + attr_bonus(constitution);

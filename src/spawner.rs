@@ -62,8 +62,15 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         ecs,
         "equip_dagger",
         raws::SpawnType::Equipped { by: player },
+        0,
     );
-    raws::spawn_named_entity(&raws::RAWS.lock().unwrap(), ecs, "food_apple", raws::SpawnType::Carried { by: player });
+    raws::spawn_named_entity(
+        &raws::RAWS.lock().unwrap(),
+        ecs,
+        "food_apple",
+        raws::SpawnType::Carried { by: player },
+        0,
+    );
 
     return player;
 }
@@ -143,13 +150,19 @@ pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], 
 /// Spawns a named entity (name in tuple.1) at the location in (tuple.0)
 pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
     let map = ecs.fetch::<Map>();
+    let map_difficulty = map.difficulty;
     let width = map.width as usize;
     let x = (*spawn.0 % width) as i32;
     let y = (*spawn.0 / width) as i32;
     std::mem::drop(map);
 
-    let spawn_result =
-        raws::spawn_named_entity(&raws::RAWS.lock().unwrap(), ecs, &spawn.1, raws::SpawnType::AtPosition { x, y });
+    let spawn_result = raws::spawn_named_entity(
+        &raws::RAWS.lock().unwrap(),
+        ecs,
+        &spawn.1,
+        raws::SpawnType::AtPosition { x, y },
+        map_difficulty,
+    );
     if spawn_result.is_some() {
         return;
     }

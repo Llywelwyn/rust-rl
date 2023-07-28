@@ -72,11 +72,17 @@ impl RawMaster {
     }
 }
 
-pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_entity(
+    raws: &RawMaster,
+    ecs: &mut World,
+    key: &str,
+    pos: SpawnType,
+    map_difficulty: i32,
+) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         return spawn_named_item(raws, ecs, key, pos);
     } else if raws.mob_index.contains_key(key) {
-        return spawn_named_mob(raws, ecs, key, pos);
+        return spawn_named_mob(raws, ecs, key, pos, map_difficulty);
     } else if raws.prop_index.contains_key(key) {
         return spawn_named_prop(raws, ecs, key, pos);
     }
@@ -166,7 +172,13 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     None
 }
 
-pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_mob(
+    raws: &RawMaster,
+    ecs: &mut World,
+    key: &str,
+    pos: SpawnType,
+    map_difficulty: i32,
+) -> Option<Entity> {
     if raws.mob_index.contains_key(key) {
         let mob_template = &raws.raws.mobs[raws.mob_index[key]];
 
@@ -228,7 +240,20 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
             }
         }
         eb = eb.with(attr);
-        let mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 1 };
+
+        let base_mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 0 };
+        let mut mob_level = base_mob_level;
+        let difficulty = 0;
+        if base_mob_level > difficulty {
+            mob_level -= 1;
+        } else if base_mob_level < difficulty {
+            mob_level += (difficulty - base_mob_level) / 5;
+
+            if mob_level as f32 > 1.5 * base_mob_level as f32 {
+                let mob_levelf32 = (1.5 * base_mob_level as f32).trunc();
+                mob_level = mob_levelf32 as i32;
+            }
+        }
 
         // Should really use existing RNG here
         let mut rng = rltk::RandomNumberGenerator::new();
@@ -290,7 +315,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         // Build entity, then check for anything they're wearing
         if let Some(wielding) = &mob_template.equipped {
             for tag in wielding.iter() {
-                spawn_named_entity(raws, ecs, tag, SpawnType::Equipped { by: new_mob });
+                spawn_named_entity(raws, ecs, tag, SpawnType::Equipped { by: new_mob }, map_difficulty);
             }
         }
         return Some(new_mob);
