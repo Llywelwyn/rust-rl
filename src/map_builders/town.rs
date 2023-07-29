@@ -2,9 +2,9 @@ use super::{BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType};
 use std::collections::HashSet;
 
 pub fn town_builder(new_id: i32, _rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
-    let difficulty = 7;
+    let difficulty = 0;
     rltk::console::log(format!("DEBUGINFO: Building town (ID:{}, DIFF:{})", new_id, difficulty));
-    let mut chain = BuilderChain::new(new_id, width, height, difficulty);
+    let mut chain = BuilderChain::new(new_id, width, height, difficulty, "<PLACEHOLDER>");
     chain.start_with(TownBuilder::new());
 
     return chain;
@@ -71,7 +71,7 @@ impl TownBuilder {
         building_size[1].2 = BuildingTag::Temple;
         building_size[2].2 = BuildingTag::Mine;
         building_size[3].2 = BuildingTag::PlayerHouse;
-        for b in building_size.iter_mut().skip(3) {
+        for b in building_size.iter_mut().skip(4) {
             b.2 = BuildingTag::NPCHouse
         }
         let last_idx = building_size.len() - 1;
@@ -121,12 +121,21 @@ impl TownBuilder {
     ) {
         for idx in available_building_tiles.iter() {
             if rng.roll_dice(1, 40) == 1 {
-                let roll = rng.roll_dice(1, 3);
+                let roll = rng.roll_dice(1, 6);
                 match roll {
                     1 => build_data.spawn_list.push((*idx, "npc_fisher".to_string())),
                     2 => build_data.spawn_list.push((*idx, "npc_dockworker".to_string())),
-                    3 => build_data.spawn_list.push((*idx, "npc_townsperson".to_string())),
-                    _ => build_data.spawn_list.push((*idx, "npc_drunk".to_string())),
+                    3 => build_data.spawn_list.push((*idx, "npc_drunk".to_string())),
+                    4 => build_data.spawn_list.push((*idx, "npc_townsperson".to_string())),
+                    5 => build_data.spawn_list.push((*idx, "npc_guard".to_string())),
+                    _ => {
+                        let animal_roll = rng.roll_dice(1, 3);
+                        match animal_roll {
+                            1 => build_data.spawn_list.push((*idx, "chicken_little".to_string())),
+                            2 => build_data.spawn_list.push((*idx, "chicken".to_string())),
+                            _ => build_data.spawn_list.push((*idx, "dog_little".to_string())),
+                        }
+                    }
                 }
             }
         }
@@ -171,11 +180,10 @@ impl TownBuilder {
         let mut to_place: Vec<&str> = vec![
             "npc_barkeep",
             "npc_townsperson",
-            "npc_townsperson",
             "npc_drunk",
             "npc_drunk",
-            "npc_guard",
             "prop_keg",
+            "prop_table",
             "prop_table",
             "prop_chair",
             "prop_chair",
@@ -189,8 +197,17 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator,
     ) {
-        let mut to_place: Vec<&str> =
-            vec!["npc_priest", "prop_chair", "prop_chair", "prop_table", "prop_candle", "prop_candle"];
+        let mut to_place: Vec<&str> = vec![
+            "npc_priest",
+            "prop_altar",
+            "prop_chair",
+            "prop_chair",
+            "prop_chair",
+            "prop_table",
+            "prop_table",
+            "prop_candle",
+            "prop_candle",
+        ];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0)
     }
 
@@ -203,7 +220,7 @@ impl TownBuilder {
         // Place exit
         let exit_idx = build_data.map.xy_idx(building.0 + (building.2 / 2), building.1 + (building.3 / 2));
         build_data.map.tiles[exit_idx] = TileType::DownStair;
-        let mut to_place: Vec<&str> = vec!["npc_miner", "npc_miner", "npc_guard"];
+        let mut to_place: Vec<&str> = vec!["npc_miner", "npc_miner", "npc_guard", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, exit_idx)
     }
 
@@ -213,7 +230,7 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator,
     ) {
-        let mut to_place: Vec<&str> = vec!["prop_bed", "prop_table"];
+        let mut to_place: Vec<&str> = vec!["prop_bed", "prop_table", "dog_little", "prop_chair", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
     }
 
@@ -223,7 +240,7 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator,
     ) {
-        let mut to_place: Vec<&str> = vec!["prop_bed", "prop_table"];
+        let mut to_place: Vec<&str> = vec!["npc_townsperson", "prop_bed", "prop_table", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
     }
 
@@ -233,7 +250,7 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator,
     ) {
-        let mut to_place: Vec<&str> = vec!["rat", "rat", "rat"];
+        let mut to_place: Vec<&str> = vec!["rat", "rat", "rat", "prop_table", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
     }
 
@@ -335,7 +352,7 @@ impl TownBuilder {
 
         const BORDER: i32 = 4;
         const OFFSET_FROM_LEFT: i32 = 25 + BORDER;
-        const PATH_OFFSET_FROM_CENTRE: i32 = 4;
+        const PATH_OFFSET_FROM_CENTRE: i32 = 10;
         const HALF_PATH_THICKNESS: i32 = 3;
 
         let wall_gap_y =

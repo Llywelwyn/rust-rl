@@ -92,13 +92,13 @@ pub struct BuilderChain {
 }
 
 impl BuilderChain {
-    pub fn new(new_id: i32, width: i32, height: i32, difficulty: i32) -> BuilderChain {
+    pub fn new<S: ToString>(new_id: i32, width: i32, height: i32, difficulty: i32, name: S) -> BuilderChain {
         BuilderChain {
             starter: None,
             builders: Vec::new(),
             build_data: BuilderMap {
                 spawn_list: Vec::new(),
-                map: Map::new(new_id, width, height, difficulty),
+                map: Map::new(new_id, width, height, difficulty, name),
                 starting_position: None,
                 rooms: None,
                 corridors: None,
@@ -296,7 +296,7 @@ pub fn random_builder(
     difficulty: i32,
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
-    let mut builder = BuilderChain::new(new_id, width, height, difficulty);
+    let mut builder = BuilderChain::new(new_id, width, height, difficulty, "<PLACEHOLDER>");
     let type_roll = rng.roll_dice(1, 2);
     let mut want_doors = true;
     match type_roll {

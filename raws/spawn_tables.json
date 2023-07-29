@@ -61,6 +61,7 @@
     {
         "id": "mobs",
         "table": [
+            { "id": "chicken",              "weight": 1,    "difficulty": 1},
             { "id": "rat",                  "weight": 1,    "difficulty": 1},
             { "id": "goblin",               "weight": 3,    "difficulty": 1},
             { "id": "kobold",               "weight": 1,    "difficulty": 1},

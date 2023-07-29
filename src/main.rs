@@ -566,7 +566,7 @@ fn main() -> rltk::BError {
     raws::load_raws();
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
-    gs.ecs.insert(Map::new(1, 64, 64, 0));
+    gs.ecs.insert(Map::new(1, 64, 64, 0, "New Map"));
     gs.ecs.insert(Point::new(0, 0));
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity);

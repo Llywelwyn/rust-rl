@@ -6,6 +6,12 @@
         "flags": ["BLOCKS_TILE", "BLOCKS_VISIBILITY", "DOOR", "PROP"]
     },
     {
+        "id": "prop_altar",
+        "name": "altar",
+        "renderable": { "glyph": "_", "fg": "#FFFFFF", "bg": "#000000", "order": 2 },
+        "flags": ["PROP"]
+    },
+    {
         "id": "prop_keg",
         "name": "keg",
         "renderable": { "glyph": "φ", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },

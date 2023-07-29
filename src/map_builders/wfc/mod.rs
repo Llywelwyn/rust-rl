@@ -31,8 +31,13 @@ impl WaveFunctionCollapseBuilder {
         let constraints = patterns_to_constraints(patterns, CHUNK_SIZE);
         self.render_tile_gallery(&constraints, CHUNK_SIZE, build_data);
 
-        build_data.map =
-            Map::new(build_data.map.id, build_data.map.width, build_data.map.height, build_data.map.difficulty);
+        build_data.map = Map::new(
+            build_data.map.id,
+            build_data.map.width,
+            build_data.map.height,
+            build_data.map.difficulty,
+            &build_data.map.name,
+        );
         loop {
             let mut solver = Solver::new(constraints.clone(), CHUNK_SIZE, &build_data.map);
             while !solver.iteration(&mut build_data.map, rng) {
@@ -47,7 +52,7 @@ impl WaveFunctionCollapseBuilder {
     }
 
     fn render_tile_gallery(&mut self, constraints: &[MapChunk], chunk_size: i32, build_data: &mut BuilderMap) {
-        build_data.map = Map::new(0, build_data.width, build_data.height, 0);
+        build_data.map = Map::new(0, build_data.width, build_data.height, 0, &build_data.map.name);
         let mut counter = 0;
         let mut x = 1;
         let mut y = 1;
@@ -63,7 +68,7 @@ impl WaveFunctionCollapseBuilder {
                 if y + chunk_size > build_data.map.height {
                     // Move to the next page
                     build_data.take_snapshot();
-                    build_data.map = Map::new(0, build_data.width, build_data.height, 0);
+                    build_data.map = Map::new(0, build_data.width, build_data.height, 0, &build_data.map.name);
 
                     x = 1;
                     y = 1;

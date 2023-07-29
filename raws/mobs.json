@@ -5,7 +5,7 @@
         "renderable": { "glyph": "@", "fg": "#EE82EE", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "quips": ["Drink?"]
+        "quips": ["Drink?", "Something to eat?", "Don't go out on an empty stomach."]
     },
     {
         "id": "npc_townsperson",
@@ -13,7 +13,7 @@
         "renderable": { "glyph": "@", "fg": "#9fa86c", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "quips": ["You won't catch me quipping."]
+        "quips": ["Hello!", "Good morning.", "<a quiet complaint about chores>"]
     },
     {
         "id": "npc_drunk",
@@ -21,7 +21,7 @@
         "renderable": { "glyph": "@", "fg": "#a0a83c", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "quips": ["Hic!", "H-Hic'."]
+        "quips": ["Hic!", "H-Hic'.", "Get me 'nother, would you?"]
     },
     {
         "id": "npc_fisher",
@@ -29,7 +29,7 @@
         "renderable": { "glyph": "@", "fg": "#3ca3a8", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "quips": ["Placeholder."]
+        "quips": ["Hey."]
     },
     {
         "id": "npc_dockworker",
@@ -37,13 +37,14 @@
         "renderable": { "glyph": "@", "fg": "#68d8de", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "quips": ["Placeholder."]
+        "quips": ["No boat for a few days.", "Not much for us to do."]
     },
     {
         "id": "npc_priest",
         "name": "priest",
         "renderable": { "glyph": "@", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "quips": ["Light's givings.", "<a quiet prayer>", "Bless you."],
         "vision_range": 4
     },
     {
@@ -52,6 +53,7 @@
         "renderable": { "glyph": "@", "fg": "#946123", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
+        "quips": ["You're not borrowing my pick."],
         "attacks": [
             { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
         ]
@@ -63,7 +65,7 @@
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "level": 2,
         "vision_range": 4,
-        "quips": ["You wont catch me down the mine.", "I'm not paid enough for that."],
+        "quips": ["You wont catch me down the mine.", "Staying out of trouble?"],
         "attacks": [
             { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
         ],
@@ -77,6 +79,7 @@
         "level": 2,
         "bac": 6,
         "vision_range": 12,
+        "quips": ["<woof!>", "<bark!>", "<grrr..>"],
         "attacks": [
             { "name": "bites", "hit_bonus": 0, "damage": "1d6"}
         ]
@@ -88,6 +91,28 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "bac": 6,
         "vision_range": 8,
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d2"}
+        ]
+    },
+    {
+        "id": "chicken",
+        "name": "chicken",
+        "renderable": { "glyph": "c", "fg": "#BB6000", "bg": "#000000", "order": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "bac": 8,
+        "vision_range": 4,
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "1d3"}
+        ]
+    },
+    {
+        "id": "chicken_little",
+        "name": "chick",
+        "renderable": { "glyph": "c", "fg": "#fae478", "bg": "#000000", "order": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "bac": 10,
+        "vision_range": 4,
         "attacks": [
             { "name": "bites", "hit_bonus": 0, "damage": "1d2"}
         ]
