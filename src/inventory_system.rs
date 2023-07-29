@@ -284,11 +284,9 @@ impl<'a> System<'a> for ItemUseSystem {
                 Some(damage) => {
                     let target_point = wants_to_use.target.unwrap();
                     if !aoe_item {
-                        particle_builder.request_star(
+                        particle_builder.request_rainbow_star(
                             target_point.x,
                             target_point.y,
-                            rltk::RGB::named(rltk::CYAN),
-                            rltk::RGB::named(rltk::BLACK),
                             rltk::to_cp437('*'),
                             DEFAULT_PARTICLE_LIFETIME,
                         );

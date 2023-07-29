@@ -79,7 +79,7 @@ pub fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
             bg = RGB::from_u8(24, 47, 99);
         }
         TileType::DeepWater => {
-            glyph = rltk::to_cp437('~');
+            glyph = rltk::to_cp437('≈');
             bg = RGB::from_u8(18, 33, 63);
         }
     }
