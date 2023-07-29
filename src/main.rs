@@ -531,6 +531,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToMelee>();
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
+    gs.ecs.register::<GrantsXP>();
     gs.ecs.register::<Equippable>();
     gs.ecs.register::<Equipped>();
     gs.ecs.register::<MeleeWeapon>();

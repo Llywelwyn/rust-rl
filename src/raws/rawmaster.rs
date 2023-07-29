@@ -275,13 +275,6 @@ pub fn spawn_named_mob(
         let mob_mana = mana_at_level(&mut rng, mob_int, mob_level);
         let mob_bac = if mob_template.bac.is_some() { mob_template.bac.unwrap() } else { 10 };
 
-        if SPAWN_LOGGING {
-            rltk::console::log(format!(
-                "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level])",
-                &mob_template.name, mob_hp, mob_mana, mob_bac, mob_level, base_mob_level, map_difficulty, player_level
-            ));
-        }
-
         let pools = Pools {
             level: mob_level,
             xp: 0,
@@ -330,6 +323,32 @@ pub fn spawn_named_mob(
             eb = eb.with(natural);
         }
 
+        let mut xp_value = 1;
+        xp_value += mob_level * mob_level;
+        // if speed > 18, +5
+        // if speed > 12, +3
+        if mob_bac < 0 {
+            xp_value += 14 + 2 * mob_bac;
+        } else if mob_bac == 0 {
+            xp_value += 7;
+        } else if mob_bac == 1 {
+            xp_value += 6;
+        } else if mob_bac == 2 {
+            xp_value += 5;
+        }
+        if mob_level > 9 {
+            xp_value += 50;
+        }
+
+        eb = eb.with(GrantsXP { amount: xp_value });
+
+        if SPAWN_LOGGING {
+            rltk::console::log(format!(
+                "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level]), worth {} XP",
+                &mob_template.name, mob_hp, mob_mana, mob_bac, mob_level, base_mob_level, map_difficulty, player_level, xp_value
+            ));
+        }
+
         let new_mob = eb.build();
 
         // Build entity, then check for anything they're wearing
@@ -338,6 +357,7 @@ pub fn spawn_named_mob(
                 spawn_named_entity(raws, ecs, tag, SpawnType::Equipped { by: new_mob }, map_difficulty);
             }
         }
+
         return Some(new_mob);
     }
     None
@@ -421,7 +441,7 @@ pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTabl
         let available_options: Vec<&SpawnTableEntry> = spawn_table
             .table
             .iter()
-            .filter(|entry| entry.difficulty >= lower_bound && entry.difficulty <= upper_bound)
+            .filter(|entry| entry.difficulty > lower_bound && entry.difficulty <= upper_bound)
             .collect();
 
         let mut rt = RandomTable::new();

@@ -298,13 +298,10 @@ impl<'a> System<'a> for ItemUseSystem {
                         let entity_name = names.get(*mob).unwrap();
                         match destructible {
                             None => {
-                                SufferDamage::new_damage(&mut suffer_damage, *mob, damage.amount);
+                                SufferDamage::new_damage(&mut suffer_damage, *mob, damage.amount, true);
                                 if entity == *player_entity {
-                                    damage_logger = damage_logger
-                                        .append("The")
-                                        .npc_name(&entity_name.name)
-                                        .append("is hit!")
-                                        .period();
+                                    damage_logger =
+                                        damage_logger.append("The").npc_name(&entity_name.name).append("is hit!");
                                     needs_damage_log = true;
                                 }
                             }

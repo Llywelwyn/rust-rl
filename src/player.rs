@@ -190,7 +190,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                 if map.tile_content[destination_idx].len() == 0 {
                     if rng.roll_dice(1, 20) == 20 {
                         let mut suffer_damage = ecs.write_storage::<SufferDamage>();
-                        SufferDamage::new_damage(&mut suffer_damage, entity, 1);
+                        SufferDamage::new_damage(&mut suffer_damage, entity, 1, false);
                         gamelog::Logger::new().append("Ouch! You kick the open air, and pull something.").log();
                         break;
                     } else {

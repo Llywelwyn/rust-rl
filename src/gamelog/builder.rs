@@ -73,6 +73,7 @@ impl Logger {
     }
 
     /// Appends text in RED to the current message logger.
+    #[allow(dead_code)]
     pub fn damage(mut self, damage: i32) -> Self {
         self.fragments.push(LogFragment { colour: RGB::named(rltk::RED), text: format!("{} ", damage).to_string() });
         return self;

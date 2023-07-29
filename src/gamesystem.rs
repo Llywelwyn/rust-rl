@@ -8,6 +8,7 @@ pub fn player_hp_per_level(rng: &mut rltk::RandomNumberGenerator, constitution: 
     return rng.roll_dice(1, 8) + attr_bonus(constitution);
 }
 
+#[allow(dead_code)]
 pub fn player_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
     let mut total = 10 + attr_bonus(constitution);
     for _i in 0..level {

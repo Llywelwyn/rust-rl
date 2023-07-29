@@ -71,7 +71,7 @@ impl<'a> System<'a> for HungerSystem {
                     }
                 }
                 HungerState::Fainting => {
-                    SufferDamage::new_damage(&mut inflict_damage, entity, 1);
+                    SufferDamage::new_damage(&mut inflict_damage, entity, 1, false);
                     if entity == *player_entity {
                         gamelog::Logger::new().colour(rltk::RED).append("You can't go on without food...").log();
                     }
