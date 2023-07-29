@@ -251,7 +251,7 @@ impl GameState for State {
         }
         // Clear screen
         ctx.cls();
-        particle_system::cull_dead_particles(&mut self.ecs, ctx);
+        particle_system::particle_ticker(&mut self.ecs, ctx);
 
         match new_runstate {
             RunState::MainMenu { .. } => {}
