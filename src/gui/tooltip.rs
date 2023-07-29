@@ -1,0 +1,153 @@
+use super::{camera::get_screen_bounds, Attributes, Hidden, Map, Name, Pools, Position, Rltk, World, RGB};
+use rltk::prelude::*;
+use specs::prelude::*;
+
+struct Tooltip {
+    lines: Vec<String>,
+}
+
+impl Tooltip {
+    fn new() -> Tooltip {
+        return Tooltip { lines: Vec::new() };
+    }
+    fn add<S: ToString>(&mut self, line: S) {
+        self.lines.push(line.to_string());
+    }
+    fn width(&self) -> i32 {
+        let mut max = 0;
+        for s in self.lines.iter() {
+            if s.len() > max {
+                max = s.len();
+            }
+        }
+        return max as i32 + 2i32;
+    }
+    fn height(&self) -> i32 {
+        return self.lines.len() as i32 + 2i32;
+    }
+    fn render(&self, ctx: &mut Rltk, x: i32, y: i32) {
+        let weak = RGB::named(rltk::CYAN);
+        let strong = RGB::named(rltk::ORANGE);
+
+        ctx.draw_box(x, y, self.width() - 1, self.height() - 1, RGB::named(WHITE), RGB::named(BLACK));
+        for (i, s) in self.lines.iter().enumerate() {
+            let col = if i == 0 {
+                RGB::named(WHITE)
+            } else if s.starts_with('-') {
+                weak
+            } else {
+                strong
+            };
+            ctx.print_color(x + 1, y + i as i32 + 1, col, RGB::named(BLACK), &s);
+        }
+    }
+}
+
+#[rustfmt::skip]
+pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
+    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(ecs, ctx);
+    let map = ecs.fetch::<Map>();
+    let names = ecs.read_storage::<Name>();
+    let positions = ecs.read_storage::<Position>();
+    let hidden = ecs.read_storage::<Hidden>();
+    let attributes = ecs.read_storage::<Attributes>();
+    let pools = ecs.read_storage::<Pools>();
+    let entities = ecs.entities();
+    let player_entity = ecs.fetch::<Entity>();
+
+    let mouse_pos = ctx.mouse_pos();
+    let mut mouse_pos_adjusted = mouse_pos;
+    mouse_pos_adjusted.0 += min_x - x_offset;
+    mouse_pos_adjusted.1 += min_y - y_offset;
+    if mouse_pos_adjusted.0 >= map.width
+        || mouse_pos_adjusted.1 >= map.height
+        || mouse_pos_adjusted.1 < 0 // Might need to be 1, and -1 from map height/width.
+        || mouse_pos_adjusted.0 < 0
+    {
+        return;
+    }
+    if !(map.visible_tiles[map.xy_idx(mouse_pos_adjusted.0, mouse_pos_adjusted.1)]
+        || map.telepath_tiles[map.xy_idx(mouse_pos_adjusted.0, mouse_pos_adjusted.1)])
+    {
+        return;
+    }
+
+    let mut tooltips: Vec<Tooltip> = Vec::new();
+    for (entity, name, position, _hidden) in (&entities, &names, &positions, !&hidden).join() {
+        if position.x == mouse_pos_adjusted.0 && position.y == mouse_pos_adjusted.1 {
+            let mut tip = Tooltip::new();
+            tip.add(name.name.to_string());
+            // Attributes
+            let attr = attributes.get(entity);
+            if let Some(a) = attr {
+                let mut s = "".to_string();
+                if a.strength.bonus < -2 { s += "weak "};
+                if a.strength.bonus > 2 { s += "strong "};
+                if a.dexterity.bonus < -2 { s += "clumsy "};
+                if a.dexterity.bonus > 2 { s += "agile "};
+                if a.constitution.bonus < -2 { s += "frail "};
+                if a.constitution.bonus > 2 { s += "hardy "};
+                if a.intelligence.bonus < -2 { s += "dim "};
+                if a.intelligence.bonus > 2 { s += "smart "};
+                if a.wisdom.bonus < -2 { s += "unwise "};
+                if a.wisdom.bonus > 2 { s += "wisened "};
+                if a.charisma.bonus < -2 { s += "ugly "};
+                if a.charisma.bonus > 2 { s += "attractive "};
+                if !s.is_empty() {
+                    tip.add(s);
+                }
+            }
+            // Pools
+            let pool = pools.get(entity);
+            let player_pool = pools.get(*player_entity).unwrap();
+            if let Some(p) = pool {
+                let level_diff: i32 = p.level - player_pool.level;
+                if level_diff <= -2 {
+                    tip.add("-weak-");
+                } else if level_diff >= 2 {
+                    tip.add("*threatening*");
+                }
+            }
+            tooltips.push(tip);
+        }
+    }
+
+    if tooltips.is_empty() { return ; }
+
+    let box_gray : RGB = RGB::from_hex("#999999").expect("Oops");
+    let white = RGB::named(rltk::WHITE);
+
+    let arrow;
+    let arrow_x;
+    let arrow_y = mouse_pos.1;
+    if mouse_pos.0 < 50 {
+        // Render to the left
+        arrow = to_cp437('→');
+        arrow_x = mouse_pos.0 - 1;
+    } else {
+        // Render to the right
+        arrow = to_cp437('←');
+        arrow_x = mouse_pos.0 + 1;
+    }
+    ctx.set(arrow_x, arrow_y, white, box_gray, arrow);
+
+    let mut total_height = 0;
+    for t in tooltips.iter() {
+        total_height += t.height();
+    }
+
+    let mut y = mouse_pos.1 - (total_height / 2);
+    while y + (total_height / 2) > 50 {
+        y -= 1;
+    }
+
+    for t in tooltips.iter() {
+        let x = if mouse_pos.0 < 40 {
+            mouse_pos.0 - (1 + t.width())
+        } else {
+            mouse_pos.0 + (1 + t.width())
+        };
+        t.render(ctx, x, y);
+        y += t.height();
+    }
+}

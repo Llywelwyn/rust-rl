@@ -416,7 +416,7 @@ pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTabl
         use super::SpawnTableEntry;
 
         let upper_bound = difficulty;
-        let lower_bound = 1;
+        let lower_bound = difficulty / 6;
 
         let available_options: Vec<&SpawnTableEntry> = spawn_table
             .table
@@ -425,14 +425,21 @@ pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTabl
             .collect();
 
         let mut rt = RandomTable::new();
-        for e in available_options.iter() {
-            rt = rt.add(e.id.clone(), e.weight);
-        }
+        if !available_options.is_empty() {
+            for e in available_options.iter() {
+                rt = rt.add(e.id.clone(), e.weight);
+            }
 
-        return rt;
-    } else {
-        return RandomTable::new().add("debug", 1);
+            return rt;
+        }
     }
+    if SPAWN_LOGGING {
+        rltk::console::log(format!(
+            "SPAWNLOG: Something went wrong when trying to spawn {} @ map difficulty {}. Returned debug entry.",
+            key, difficulty
+        ));
+    }
+    return RandomTable::new().add("debug", 1);
 }
 
 pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {

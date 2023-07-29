@@ -6,6 +6,7 @@ use super::{
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 use std::collections::BTreeMap;
+mod tooltip;
 
 pub fn draw_lerping_bar(
     ctx: &mut Rltk,
@@ -38,7 +39,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     ctx.draw_hollow_box(0, 0, 70, 8, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Log box
     ctx.draw_hollow_box(0, 9, 70, 42, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Camera box
     ctx.draw_hollow_box(0, 52, 70, 3, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Stats box
-    ctx.draw_hollow_box(71, 0, 28, 55, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Side box
+    ctx.draw_hollow_box(71, 0, 33, 55, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Side box
 
     // Render stats
     let pools = ecs.read_storage::<Pools>();
@@ -144,14 +145,10 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         }
 
         // Draw consumables
-        ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Consumables");
-        let consumables = ecs.read_storage::<Consumable>();
-        for (_entity, _pack, name) in
-            (&consumables, &backpack, &names).join().filter(|item| item.1.owner == *player_entity)
-        {
-            y += 1;
-            ctx.print_color(72, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), format!("- {}", &name.name));
-        }
+        ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Backpack");
+        y += 1;
+        let (player_inventory, _inventory_ids) = get_player_inventory(&ecs);
+        y = print_options(player_inventory, 72, y, ctx);
 
         // Draw entities seen on screen
         let viewsheds = ecs.read_storage::<Viewshed>();
@@ -188,8 +185,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         seen_entities.sort_by(|a, b| b.0.cmp(&a.0));
 
         if !seen_entities.is_empty() {
-            y += 2;
-            ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "You see");
+            y += 1;
+            ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "In View");
             for entity in seen_entities {
                 y += 1;
                 ctx.print_color(72, y, entity.1, RGB::named(rltk::BLACK), entity.0);
@@ -214,7 +211,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         &format!("T{}", crate::gamelog::get_event_count("turns")),
     );
 
-    draw_tooltips(ecs, ctx);
+    tooltip::draw_tooltips(ecs, ctx);
 }
 
 pub fn get_input_direction(
@@ -249,89 +246,6 @@ pub fn get_input_direction(
     }
 }
 
-fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
-    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(ecs, ctx);
-    let map = ecs.fetch::<Map>();
-    let names = ecs.read_storage::<Name>();
-    let positions = ecs.read_storage::<Position>();
-    let hidden = ecs.read_storage::<Hidden>();
-
-    let mouse_pos = ctx.mouse_pos();
-    let mut mouse_pos_adjusted = mouse_pos;
-    mouse_pos_adjusted.0 += min_x - x_offset;
-    mouse_pos_adjusted.1 += min_y - y_offset;
-    if mouse_pos_adjusted.0 >= map.width
-        || mouse_pos_adjusted.1 >= map.height
-        || mouse_pos_adjusted.1 < 0 // Might need to be 1, and -1 from map height/width.
-        || mouse_pos_adjusted.0 < 0
-    {
-        return;
-    }
-    if !(map.visible_tiles[map.xy_idx(mouse_pos_adjusted.0, mouse_pos_adjusted.1)]
-        || map.telepath_tiles[map.xy_idx(mouse_pos_adjusted.0, mouse_pos_adjusted.1)])
-    {
-        return;
-    }
-    let mut tooltip: Vec<String> = Vec::new();
-    for (name, position, _hidden) in (&names, &positions, !&hidden).join() {
-        if position.x == mouse_pos_adjusted.0 && position.y == mouse_pos_adjusted.1 {
-            tooltip.push(name.name.to_string());
-        }
-    }
-
-    if !tooltip.is_empty() {
-        if mouse_pos.0 > 40 {
-            let arrow_pos = Point::new(mouse_pos.0 - 2, mouse_pos.1);
-            let left_x = mouse_pos.0 - 3;
-            let mut y = mouse_pos.1;
-            for s in tooltip.iter() {
-                for i in 0..2 {
-                    ctx.print_color(
-                        arrow_pos.x + i,
-                        y,
-                        RGB::named(rltk::WHITE),
-                        RGB::named(rltk::GREY),
-                        &" ".to_string(),
-                    );
-                }
-                ctx.print_color_right(left_x, y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), s);
-                y += 1;
-            }
-            ctx.print_color(
-                arrow_pos.x,
-                arrow_pos.y,
-                RGB::named(rltk::WHITE),
-                RGB::named(rltk::GREY),
-                &"->".to_string(),
-            );
-        } else {
-            let arrow_pos = Point::new(mouse_pos.0 + 1, mouse_pos.1);
-            let left_x = mouse_pos.0 + 3;
-            let mut y = mouse_pos.1;
-            for s in tooltip.iter() {
-                for i in 0..2 {
-                    ctx.print_color(
-                        arrow_pos.x + 1 + i,
-                        y,
-                        RGB::named(rltk::WHITE),
-                        RGB::named(rltk::GREY),
-                        &" ".to_string(),
-                    );
-                }
-                ctx.print_color(left_x + 1, y, RGB::named(rltk::WHITE), RGB::named(rltk::DARKGREY), s);
-                y += 1;
-            }
-            ctx.print_color(
-                arrow_pos.x,
-                arrow_pos.y,
-                RGB::named(rltk::WHITE),
-                RGB::named(rltk::GREY),
-                &"<-".to_string(),
-            );
-        }
-    }
-}
-
 #[derive(PartialEq, Copy, Clone)]
 pub enum ItemMenuResult {
     Cancel,
@@ -339,15 +253,16 @@ pub enum ItemMenuResult {
     Selected,
 }
 
-pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut y: i32, ctx: &mut Rltk) {
+pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut x: i32, mut y: i32, ctx: &mut Rltk) -> i32 {
     let mut j = 0;
+    let initial_x: i32 = x;
     for (name, item_count) in &inventory {
+        x = initial_x;
         // Print the character required to access this item. i.e. (a)
-        ctx.set(17, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437('('));
-        ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
-        ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
+        ctx.set(x, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
 
-        let mut x = 21;
+        x += 2;
+
         if item_count > &1 {
             // If more than one, print the number and pluralise
             // i.e. (a) 3 daggers
@@ -374,6 +289,8 @@ pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut y: i32, ctx
         y += 1;
         j += 1;
     }
+
+    return y;
 }
 
 pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
@@ -423,14 +340,12 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     }
 }
 
-pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
-    let player_entity = gs.ecs.fetch::<Entity>();
-    let names = gs.ecs.read_storage::<Name>();
-    let backpack = gs.ecs.read_storage::<InBackpack>();
-    let entities = gs.ecs.entities();
+pub fn get_player_inventory(ecs: &World) -> (BTreeMap<(String, String), i32>, BTreeMap<String, Entity>) {
+    let player_entity = ecs.fetch::<Entity>();
+    let names = ecs.read_storage::<Name>();
+    let backpack = ecs.read_storage::<InBackpack>();
+    let entities = ecs.entities();
 
-    // FIXME: This is unwieldy. Having a separate data structure for (name, id) and (name, count) is not good.
-    // But it works, and this might get cut anyway as I get further along in the design, so leaving as is atm.
     let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
     let mut player_inventory: BTreeMap<(String, String), i32> = BTreeMap::new();
     for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity) {
@@ -441,13 +356,18 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
         inventory_ids.entry(name.name.to_string()).or_insert(entity);
     }
 
+    return (player_inventory, inventory_ids);
+}
+
+pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+    let (player_inventory, inventory_ids) = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
     let y = (25 - (count / 2)) as i32;
     ctx.draw_box(15, y - 2, 45, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
     ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Inventory");
     ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "ESC to cancel");
 
-    print_options(player_inventory, y, ctx);
+    print_options(player_inventory, 17, y, ctx);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -465,28 +385,14 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
 }
 
 pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
-    let player_entity = gs.ecs.fetch::<Entity>();
-    let names = gs.ecs.read_storage::<Name>();
-    let backpack = gs.ecs.read_storage::<InBackpack>();
-    let entities = gs.ecs.entities();
-
-    let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
-    let mut player_inventory: BTreeMap<(String, String), i32> = BTreeMap::new();
-    for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity) {
-        player_inventory
-            .entry((name.name.to_string(), name.plural.to_string()))
-            .and_modify(|count| *count += 1)
-            .or_insert(1);
-        inventory_ids.entry(name.name.to_string()).or_insert(entity);
-    }
-
+    let (player_inventory, inventory_ids) = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
     let y = (25 - (count / 2)) as i32;
     ctx.draw_box(15, y - 2, 45, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
     ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Drop what?");
     ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "ESC to cancel");
 
-    print_options(player_inventory, y, ctx);
+    print_options(player_inventory, 17, y, ctx);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -636,34 +542,41 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
 
     ctx.render_xp_sprite(&assets.menu, 0, 0);
 
-    ctx.print_color(50, 26, RGB::named(rltk::GREEN), RGB::from_f32(0.11, 0.11, 0.11), "RUST-RL");
+    let x = 46;
+    let mut y = 26;
+    let mut height = 8;
+    if !save_exists {
+        height -= 1;
+    }
+
+    ctx.draw_box_double(x, y - 4, 13, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.print_color(x + 3, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "RUST-RL!");
 
     if let RunState::MainMenu { menu_selection: selection } = *runstate {
-        let mut y = 29;
-        if selection == MainMenuSelection::NewGame {
-            ctx.print_color(47, y, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "[");
-            ctx.print_color(49, y, RGB::named(rltk::GREEN), RGB::from_f32(0.11, 0.11, 0.11), "new game");
-            ctx.print_color(58, y, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "]");
-        } else {
-            ctx.print_color(49, y, RGB::named(rltk::WHITE), RGB::from_f32(0.11, 0.11, 0.11), "new game");
-        }
-        y += 2;
         if save_exists {
             if selection == MainMenuSelection::LoadGame {
-                ctx.print_color(46, y, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "[");
-                ctx.print_color(48, y, RGB::named(rltk::GREEN), RGB::from_f32(0.11, 0.11, 0.11), "load game");
-                ctx.print_color(58, y, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "]");
+                ctx.print_color(x + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "[");
+                ctx.print_color(x + 3, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "continue");
+                ctx.print_color(x + 11, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "]");
             } else {
-                ctx.print_color(48, y, RGB::named(rltk::WHITE), RGB::from_f32(0.11, 0.11, 0.11), "load game");
+                ctx.print_color(x + 3, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "continue");
             }
-            y += 2;
+            y += 1;
         }
-        if selection == MainMenuSelection::Quit {
-            ctx.print_color(47, y, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "[");
-            ctx.print_color(49, y, RGB::named(rltk::GREEN), RGB::from_f32(0.11, 0.11, 0.11), "goodbye!");
-            ctx.print_color(58, y, RGB::named(rltk::YELLOW), RGB::from_f32(0.11, 0.11, 0.11), "]");
+        if selection == MainMenuSelection::NewGame {
+            ctx.print_color(x + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "[");
+            ctx.print_color(x + 3, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "new game");
+            ctx.print_color(x + 11, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "]");
         } else {
-            ctx.print_color(53, y, RGB::named(rltk::WHITE), RGB::from_f32(0.11, 0.11, 0.11), "quit");
+            ctx.print_color(x + 3, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "new game");
+        }
+        y += 1;
+        if selection == MainMenuSelection::Quit {
+            ctx.print_color(x + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "[");
+            ctx.print_color(x + 3, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "goodbye!");
+            ctx.print_color(x + 11, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "]");
+        } else {
+            ctx.print_color(x + 5, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "quit");
         }
 
         match ctx.key {
@@ -677,9 +590,9 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
                 VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
                     let mut new_selection;
                     match selection {
-                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::Quit,
-                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
-                        MainMenuSelection::Quit => new_selection = MainMenuSelection::LoadGame,
+                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::LoadGame,
+                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::Quit,
+                        MainMenuSelection::Quit => new_selection = MainMenuSelection::NewGame,
                     }
                     if new_selection == MainMenuSelection::LoadGame && !save_exists {
                         new_selection = MainMenuSelection::NewGame;
@@ -689,9 +602,9 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
                 VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
                     let mut new_selection;
                     match selection {
-                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::LoadGame,
-                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::Quit,
-                        MainMenuSelection::Quit => new_selection = MainMenuSelection::NewGame,
+                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::Quit,
+                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
+                        MainMenuSelection::Quit => new_selection = MainMenuSelection::LoadGame,
                     }
                     if new_selection == MainMenuSelection::LoadGame && !save_exists {
                         new_selection = MainMenuSelection::Quit;

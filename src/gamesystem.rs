@@ -47,6 +47,7 @@ pub fn skill_bonus(skill: Skill, skills: &Skills) -> i32 {
     }
 }
 
+/// Roll 4d6 and drop the lowest, for rolling d20-style stats
 pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
     let mut rolls: Vec<i32> = Vec::new();
     for _i in 0..4 {
@@ -55,10 +56,8 @@ pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
     rolls.sort_unstable();
 
     let mut roll = 0;
-    rltk::console::log(format!("roll 0"));
     for i in 1..rolls.len() {
         roll += rolls[i];
-        rltk::console::log(format!("+ {}", rolls[i]));
     }
 
     return roll;

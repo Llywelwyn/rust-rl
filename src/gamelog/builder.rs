@@ -35,7 +35,7 @@ impl Logger {
 
     /// Appends a period to the current message logger.
     pub fn period(mut self) -> Self {
-        self.fragments.push(LogFragment { colour: self.current_colour, text: ".".to_string() });
+        self.fragments.push(LogFragment { colour: self.current_colour, text: ". ".to_string() });
         return self;
     }
 

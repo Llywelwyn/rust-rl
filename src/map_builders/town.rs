@@ -2,7 +2,7 @@ use super::{BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType};
 use std::collections::HashSet;
 
 pub fn town_builder(new_id: i32, _rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
-    let difficulty = 0;
+    let difficulty = 7;
     rltk::console::log(format!("DEBUGINFO: Building town (ID:{}, DIFF:{})", new_id, difficulty));
     let mut chain = BuilderChain::new(new_id, width, height, difficulty);
     chain.start_with(TownBuilder::new());

@@ -482,7 +482,7 @@ impl GameState for State {
     }
 }
 
-const DISPLAYWIDTH: i32 = 100;
+const DISPLAYWIDTH: i32 = 105;
 const DISPLAYHEIGHT: i32 = 56;
 
 fn main() -> rltk::BError {

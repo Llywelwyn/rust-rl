@@ -303,12 +303,7 @@ impl<'a> System<'a> for ItemUseSystem {
                                     damage_logger = damage_logger
                                         .append("The")
                                         .npc_name(&entity_name.name)
-                                        .colour(rltk::WHITE)
-                                        .append("takes")
-                                        .damage(damage.amount)
-                                        .colour(rltk::WHITE)
-                                        .append("damage from the")
-                                        .item_name_n(format!("{}", &item_being_used.name))
+                                        .append("is hit!")
                                         .period();
                                     needs_damage_log = true;
                                 }
