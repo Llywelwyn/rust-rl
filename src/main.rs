@@ -43,7 +43,7 @@ mod rex_assets;
 extern crate lazy_static;
 
 //Consts
-pub const SHOW_MAPGEN: bool = true;
+pub const SHOW_MAPGEN: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -558,6 +558,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Hidden>();
     gs.ecs.register::<EntryTrigger>();
     gs.ecs.register::<EntityMoved>();
+    gs.ecs.register::<MultiAttack>();
     gs.ecs.register::<ParticleLifetime>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();

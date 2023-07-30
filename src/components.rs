@@ -320,3 +320,6 @@ pub struct EntryTrigger {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct EntityMoved {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MultiAttack {}

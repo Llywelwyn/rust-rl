@@ -209,6 +209,7 @@ pub fn spawn_named_mob(
                     "BLOCKS_TILE" => eb = eb.with(BlocksTile {}),
                     "BYSTANDER" => eb = eb.with(Bystander {}),
                     "MONSTER" => eb = eb.with(Monster {}),
+                    "MULTIATTACK" => eb = eb.with(MultiAttack {}),
                     _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
                 }
             }

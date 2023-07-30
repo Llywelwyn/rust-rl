@@ -77,7 +77,7 @@
             { "id": "goblin_chieftain",     "weight": 1,    "difficulty": 3},
             { "id": "ogre",                 "weight": 1,    "difficulty": 4},
             { "id": "horse_little",         "weight": 2,    "difficulty": 4},
-            { "id": "dog",                  "weight": 1,    "difficulty": 5},
+            { "id": "dog",                  "weight": 1,    "difficulty": 5}, 
             { "id": "wolf",                 "weight": 2,    "difficulty": 6},
             { "id": "dog_large",            "weight": 1,    "difficulty": 7},
             { "id": "horse",                "weight": 2,    "difficulty": 7},
