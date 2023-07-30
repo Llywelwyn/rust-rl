@@ -73,7 +73,25 @@ i'll try to remember to update the web version on my page at the end of every we
     
     ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/98d15bee-e825-47ea-9ef8-04d8312f00af)
 
+</details>
 
+---
 
+<details>
+  <summary>week 4</summary>
 
+- d20/hacklike combat overhaul
+  - the framework for levels, attributes, and skills are all in, as well as a lot of the associated systems. it now uses a system that trends way closer to the -hack brand of roguelikes (it's almost identical). i thought about doing something more novel just because then i could say i made it on my own, but then i decided i'd rather lean on the 35 years of balance tweaks nethack has had than start all over from scratch. not having to worry so much about balance gives me time to do other stuff, and i think the familiarity for players will be nice too. my favourite addition is a MULTIATTACK flag for mobs - if they have it, they'll use all their natural attacks in a turn instead of picking a random one
+ 
+- extremely free-form loot tables (like rats spawning... lambs?)
+  - i realised my loot table structure wasn't very different from the spawn tables i'd been using for mapgen. other than one field, the structures were identical, so i decided to massively generalise how loot spawning works. instead of only allowing mobs to drop items from the specifically defined loot tables, they now have the capability to drop _anything_ from _any_ table -- for example, an animal can drop stuff from the animal drop table, or it could be set to drop a random scroll, or literally any other entity... including other mobs! i decided to test this with rats that had a 25% chance to "drop" anything from the _mobs_ spawn table on death. in this case, one rat left behind a lamb, and another left behind a fawn.
+ 
+    ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/b4c79e09-e8a7-4303-a9e8-bee03afb7afe)
+
+- and a huge visual overhaul!
+  - a whole new ui, a new font (a 14x16 curses variant), a system to spawn particles on a delay for proper - if basic - animation, and a couple new features to fill in the expanded ui space (like being able to see a list of entities in view on the sidebar).
+
+   ![week 4 - visual overhaul](https://github.com/Llywelwyn/rust-rl/assets/82828093/8b6485af-a7a5-4102-9df1-896538cf8e50)
+
+  
 </details>
