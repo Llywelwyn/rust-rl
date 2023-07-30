@@ -85,7 +85,8 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "bac": 6,
         "vision_range": 8,
-        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }],
+        "equipped": ["equip_shortsword", "equip_body_leather", "equip_head_leather"]
     },
     {
         "id": "chicken",

@@ -1,0 +1,9 @@
+[
+    {
+        "id": "animal",
+        "table": [
+            { "id": "animal_hide",      "weight": 1},
+            { "id": "animal_meat",      "weight": 1}
+        ]
+    }
+]

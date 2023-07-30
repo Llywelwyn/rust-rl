@@ -21,16 +21,24 @@ pub struct RawMaster {
     mob_index: HashMap<String, usize>,
     prop_index: HashMap<String, usize>,
     table_index: HashMap<String, usize>,
+    loot_index: HashMap<String, usize>,
 }
 
 impl RawMaster {
     pub fn empty() -> RawMaster {
         RawMaster {
-            raws: Raws { items: Vec::new(), mobs: Vec::new(), props: Vec::new(), spawn_tables: Vec::new() },
+            raws: Raws {
+                items: Vec::new(),
+                mobs: Vec::new(),
+                props: Vec::new(),
+                spawn_tables: Vec::new(),
+                loot_tables: Vec::new(),
+            },
             item_index: HashMap::new(),
             mob_index: HashMap::new(),
             prop_index: HashMap::new(),
             table_index: HashMap::new(),
+            loot_index: HashMap::new(),
         }
     }
 
