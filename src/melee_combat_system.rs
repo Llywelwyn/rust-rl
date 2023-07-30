@@ -1,7 +1,7 @@
 use super::{
     gamelog, gamesystem, ArmourClassBonus, Attributes, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon,
-    MultiAttack, Name, NaturalAttack, NaturalAttacks, ParticleBuilder, Pools, Position, Skill, Skills, SufferDamage,
-    WantsToMelee, WeaponAttribute,
+    MultiAttack, Name, NaturalAttacks, ParticleBuilder, Pools, Position, Skill, Skills, SufferDamage, WantsToMelee,
+    WeaponAttribute,
 };
 use specs::prelude::*;
 

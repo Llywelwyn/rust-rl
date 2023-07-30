@@ -194,6 +194,7 @@ pub fn spawn_named_mob(
         }
 
         let mut eb;
+        let mut xp_value = 1;
         // New entity with a position, name, combatstats, and viewshed
         eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
@@ -209,7 +210,10 @@ pub fn spawn_named_mob(
                     "BLOCKS_TILE" => eb = eb.with(BlocksTile {}),
                     "BYSTANDER" => eb = eb.with(Bystander {}),
                     "MONSTER" => eb = eb.with(Monster {}),
-                    "MULTIATTACK" => eb = eb.with(MultiAttack {}),
+                    "MULTIATTACK" => {
+                        eb = eb.with(MultiAttack {});
+                        xp_value += 3;
+                    }
                     _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
                 }
             }
@@ -271,7 +275,6 @@ pub fn spawn_named_mob(
 
         // Should really use existing RNG here
         let mut rng = rltk::RandomNumberGenerator::new();
-
         let mob_hp = npc_hp(&mut rng, mob_con, mob_level);
         let mob_mana = mana_at_level(&mut rng, mob_int, mob_level);
         let mob_bac = if mob_template.bac.is_some() { mob_template.bac.unwrap() } else { 10 };
@@ -324,7 +327,6 @@ pub fn spawn_named_mob(
             eb = eb.with(natural);
         }
 
-        let mut xp_value = 1;
         xp_value += mob_level * mob_level;
         // if speed > 18, +5
         // if speed > 12, +3
@@ -340,6 +342,7 @@ pub fn spawn_named_mob(
         if mob_level > 9 {
             xp_value += 50;
         }
+        // Final xp value = 1 + level^2 + bonus for low ac + bonus for speed + bonus for multiattack + bonus for level>9
 
         eb = eb.with(GrantsXP { amount: xp_value });
 
