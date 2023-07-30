@@ -1,6 +1,11 @@
-/target
-.rustfmt.toml
+# Build files, documentation, benchmarks
+target
+docs/*
+
+# VSCode/IDE config files
 .vscode/*
-docs/gifs/*
-.savegames/*
+.rustfmt.toml
+.prettierignore
+
+# Savegame
 savegame.json

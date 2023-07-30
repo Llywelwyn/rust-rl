@@ -67,21 +67,15 @@
             { "id": "kobold",               "weight": 1,    "difficulty": 1},
             { "id": "fox",                  "weight": 1,    "difficulty": 1},
             { "id": "jackal",               "weight": 4,    "difficulty": 1},
-
-            { "id": "rat_giant",            "weight": 2,    "difficulty": 2},
+            { "id": "rat_giant",            "weight": 2,    "difficulty": 2}, 
             { "id": "coyote",               "weight": 4,    "difficulty": 2},
-
             { "id": "dog_little",           "weight": 1,    "difficulty": 3},
             { "id": "orc",                  "weight": 2,    "difficulty": 3},
             { "id": "orc_large",            "weight": 1,    "difficulty": 3},
             { "id": "goblin_chieftain",     "weight": 1,    "difficulty": 3},
-
             { "id": "ogre",                 "weight": 1,    "difficulty": 4},
-
             { "id": "dog",                  "weight": 1,    "difficulty": 5},
-
             { "id": "wolf",                 "weight": 2,    "difficulty": 6},
-
             { "id": "dog_large",            "weight": 1,    "difficulty": 7}
         ]
     },

@@ -60,8 +60,6 @@ impl<'a> System<'a> for DamageSystem {
             let mut player_stats = stats.get_mut(*player).unwrap();
             let player_attributes = attributes.get(*player).unwrap();
             player_stats.xp += xp_gain;
-            rltk::console::log(xp_gain);
-
             let mut next_level_requirement = -1;
             if player_stats.level < 10 {
                 next_level_requirement = 20 * 2_i32.pow(player_stats.level as u32 - 1);
@@ -70,7 +68,6 @@ impl<'a> System<'a> for DamageSystem {
             } else if player_stats.level < 30 {
                 next_level_requirement = 10000000 * (player_stats.level - 19);
             }
-
             if next_level_requirement != -1 && player_stats.xp >= next_level_requirement {
                 // We've gone up a level!
                 player_stats.level += 1;
@@ -91,13 +88,14 @@ impl<'a> System<'a> for DamageSystem {
                         );
                     }
                 }
+                // Roll for HP gain this level
                 let hp_gained = player_hp_per_level(
                     &mut rng,
                     player_attributes.constitution.base + player_attributes.constitution.modifiers,
                 );
                 player_stats.hit_points.max += hp_gained;
                 player_stats.hit_points.current += hp_gained;
-
+                // Roll for MANA gain this level
                 let mana_gained = mana_per_level(
                     &mut rng,
                     player_attributes.intelligence.base + player_attributes.intelligence.modifiers,
@@ -106,7 +104,7 @@ impl<'a> System<'a> for DamageSystem {
                 player_stats.mana.current += mana_gained;
             }
         }
-
+        // Clear the queue
         damage.clear();
     }
 }
@@ -146,6 +144,7 @@ pub fn delete_the_dead(ecs: &mut World) {
                         }
                         dead.push(entity)
                     }
+                    // The player died, go to GameOver.
                     Some(_) => {
                         let mut runstate = ecs.write_resource::<RunState>();
                         *runstate = RunState::GameOver;
@@ -154,7 +153,7 @@ pub fn delete_the_dead(ecs: &mut World) {
             }
         }
     }
-
+    // For everything that died, increment the event log, and delete.
     for victim in dead {
         gamelog::record_event("death_count", 1);
         ecs.delete_entity(victim).expect("Unable to delete.");

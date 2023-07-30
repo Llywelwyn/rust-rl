@@ -54,9 +54,7 @@
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
         "quips": ["You're not borrowing my pick."],
-        "attacks": [
-            { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
-        ]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }]
     },
     {
         "id": "npc_guard",
@@ -66,9 +64,7 @@
         "level": 2,
         "vision_range": 4,
         "quips": ["You wont catch me down the mine.", "Staying out of trouble?"],
-        "attacks": [
-            { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
-        ],
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
         "equipped": ["equip_shortsword", "equip_body_leather"]
     },
     {
@@ -80,9 +76,7 @@
         "bac": 6,
         "vision_range": 12,
         "quips": ["<woof!>", "<bark!>", "<grrr..>"],
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d6"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }]
     },
     {
         "id": "rat",
@@ -91,9 +85,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "bac": 6,
         "vision_range": 8,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d2"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
     },
     {
         "id": "chicken",
@@ -102,9 +94,7 @@
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "bac": 8,
         "vision_range": 4,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d3"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
     },
     {
         "id": "chicken_little",
@@ -113,9 +103,7 @@
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "bac": 10,
         "vision_range": 4,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d2"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
     },
     {
         "id": "rat_giant",
@@ -125,9 +113,7 @@
         "level": 1,
         "bac": 7,
         "vision_range": 8,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d3"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
     },
     {
         "id": "dog",
@@ -137,9 +123,7 @@
         "level": 4,
         "bac": 5,
         "vision_range": 12,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d6"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }]
     },
     {
         "id": "dog_large",
@@ -149,9 +133,7 @@
         "level": 6,
         "bac": 4,
         "vision_range": 12,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "2d4"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "2d4" }]
     },
     {
         "id": "goblin",
@@ -160,9 +142,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 1,
         "vision_range": 12,
-        "attacks": [
-            { "name": "hits", "hit_bonus": 0, "damage": "1d4"}
-        ]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d4" }]
     },
     {
         "id": "kobold",
@@ -171,9 +151,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 1,
         "vision_range": 7,
-        "attacks": [
-            { "name": "hits", "hit_bonus": 0, "damage": "1d4"}
-        ]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d4" }]
     },
     {
         "id": "jackal",
@@ -182,9 +160,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "bac": 7,
         "vision_range": 12,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d2"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
     },
     {
         "id": "fox",
@@ -193,9 +169,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "bac": 7,
         "vision_range": 12,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d3"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
     },
     {
         "id": "coyote",
@@ -205,9 +179,7 @@
         "level": 1,
         "bac": 7,
         "vision_range": 12,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "1d4"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d4" }]
     },
     {
         "id": "wolf",
@@ -217,9 +189,7 @@
         "level": 5,
         "bac": 4,
         "vision_range": 12,
-        "attacks": [
-            { "name": "bites", "hit_bonus": 0, "damage": "2d4"}
-        ]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "2d4" }]
     },
     {
         "id": "goblin_chieftain",
@@ -228,9 +198,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 2,
         "vision_range": 12,
-        "attacks": [
-            { "name": "hits", "hit_bonus": 0, "damage": "1d8"}
-        ]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }]
     },
     {
         "id": "orc",
@@ -238,9 +206,7 @@
         "renderable": { "glyph": "o", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "vision_range": 12,
-        "attacks": [
-            { "name": "hits", "hit_bonus": 0, "damage": "1d6"}
-        ]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }]
     },
     {
         "id": "orc_large",
@@ -249,9 +215,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 2,
         "vision_range": 12,
-        "attacks": [
-            { "name": "hits", "hit_bonus": 0, "damage": "1d6"}
-        ]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }]
     },
     {
         "id": "ogre",
