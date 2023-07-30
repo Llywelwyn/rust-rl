@@ -7,6 +7,7 @@ pub enum TileType {
     // Impassable (transparent)
     DeepWater,
     Fence,
+    Bars,
     // Floors (walkable)
     Floor,
     WoodFloor,

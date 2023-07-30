@@ -60,6 +60,8 @@ mod fill_edges;
 use fill_edges::FillEdges;
 mod town;
 use town::town_builder;
+mod forest;
+use forest::forest_builder;
 
 // Shared data to be passed around build chain
 pub struct BuilderMap {
@@ -342,6 +344,7 @@ pub fn level_builder(new_id: i32, rng: &mut rltk::RandomNumberGenerator, width: 
     let difficulty = new_id;
     match new_id {
         1 => town_builder(new_id, rng, width, height),
+        2 => forest_builder(new_id, rng, width, height, difficulty),
         _ => random_builder(new_id, rng, width, height, difficulty),
     }
 }

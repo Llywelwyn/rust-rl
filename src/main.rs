@@ -43,7 +43,7 @@ mod rex_assets;
 extern crate lazy_static;
 
 //Consts
-pub const SHOW_MAPGEN: bool = false;
+pub const SHOW_MAPGEN: bool = true;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {

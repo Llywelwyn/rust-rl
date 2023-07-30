@@ -97,6 +97,24 @@
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
     },
     {
+        "id": "deer_little",
+        "name": "fawn",
+        "renderable": { "glyph": "q", "fg": "#a57037", "bg": "#000000", "order": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "bac": 8,
+        "vision_range": 8,
+        "attacks": [{ "name": "kicks", "hit_bonus": 0, "damage": "1d2" }]
+    },
+    {
+        "id": "sheep_little",
+        "name": "lamb",
+        "renderable": { "glyph": "q", "fg": "#e7e7e7", "bg": "#000000", "order": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "bac": 10,
+        "vision_range": 4,
+        "attacks": [{ "name": "kicks", "hit_bonus": 0, "damage": "1d2" }]
+    },
+    {
         "id": "chicken_little",
         "name": "chick",
         "renderable": { "glyph": "c", "fg": "#fae478", "bg": "#000000", "order": 1 },
@@ -104,6 +122,45 @@
         "bac": 10,
         "vision_range": 4,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
+    },
+    {
+        "id": "horse_little",
+        "name": "pony",
+        "renderable": { "glyph": "u", "fg": "#b36c29", "bg": "#000000", "order": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "level": 3,
+        "bac": 6,
+        "vision_range": 8,
+        "attacks": [
+            { "name": "kicks", "hit_bonus": 0, "damage": "1d6" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d2" }
+        ]
+    },
+    {
+        "id": "horse",
+        "name": "horse",
+        "renderable": { "glyph": "u", "fg": "#744d29", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 5,
+        "bac": 5,
+        "vision_range": 8,
+        "attacks": [
+            { "name": "kicks", "hit_bonus": 0, "damage": "1d8" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d3" }
+        ]
+    },
+    {
+        "id": "horse_large",
+        "name": "warhorse",
+        "renderable": { "glyph": "u", "fg": "#8a3520", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 7,
+        "bac": 4,
+        "vision_range": 8,
+        "attacks": [
+            { "name": "kicks", "hit_bonus": 0, "damage": "1d10" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d4" }
+        ]
     },
     {
         "id": "rat_giant",

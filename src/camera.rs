@@ -33,7 +33,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
             if t_x >= 0 && t_x < map.width && t_y >= 0 && t_y < map.height {
                 let idx = map.xy_idx(t_x, t_y);
                 if map.revealed_tiles[idx] {
-                    let (glyph, fg, bg) = crate::map::themes::get_tile_glyph(idx, &*map);
+                    let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(idx, &*map);
                     ctx.set(x + x_offset, y + y_offset, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
@@ -63,7 +63,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
             if pos.x < max_x && pos.y < max_y && pos.x >= min_x && pos.y >= min_y {
                 let mut draw = false;
                 let mut fg = render.fg;
-                let (_glyph, _fg, bg) = crate::map::themes::get_tile_glyph(idx, &*map);
+                let (_glyph, _fg, bg) = crate::map::themes::get_tile_renderables_for_id(idx, &*map);
                 // Draw entities on visible tiles
                 if map.visible_tiles[idx] {
                     draw = true;
@@ -114,7 +114,7 @@ pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
             if tx >= 0 && tx < map_width && ty >= 0 && ty < map_height {
                 let idx = map.xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
-                    let (glyph, fg, bg) = crate::map::themes::get_tile_glyph(idx, &*map);
+                    let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(idx, &*map);
                     ctx.set(x, y, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {

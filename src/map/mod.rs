@@ -2,6 +2,8 @@ use rltk::{Algorithm2D, BaseMap, Point};
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use std::collections::HashSet;
+pub mod colours;
+mod glyphs;
 mod tiletype;
 pub use tiletype::{tile_cost, tile_opaque, tile_walkable, TileType};
 pub mod themes;
@@ -50,7 +52,7 @@ impl Map {
             lit_tiles: vec![true; map_tile_count], // NYI: Light sources. Once those exist, we can set this to false.
             telepath_tiles: vec![false; map_tile_count],
             colour_offset: vec![(1.0, 1.0, 1.0); map_tile_count],
-            additional_fg_offset: rltk::RGB::from_u8(HALF_OFFSET, HALF_OFFSET, HALF_OFFSET),
+            additional_fg_offset: rltk::RGB::from_u8(OFFSET_PERCENT as u8, OFFSET_PERCENT as u8, OFFSET_PERCENT as u8),
             blocked: vec![false; map_tile_count],
             id: new_id,
             name: name.to_string(),
@@ -60,7 +62,6 @@ impl Map {
             tile_content: vec![Vec::new(); map_tile_count],
         };
 
-        const HALF_OFFSET: u8 = 5;
         const OFFSET_PERCENT: i32 = 10;
         const TWICE_OFFSET: i32 = OFFSET_PERCENT * 2;
         let mut rng = rltk::RandomNumberGenerator::new();

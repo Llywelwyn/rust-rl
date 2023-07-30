@@ -1,107 +1,68 @@
-use super::{Map, TileType};
+use super::{colours::*, glyphs::*, Map, TileType};
 use rltk::RGB;
 use std::ops::{Add, Mul};
 
-pub fn offset(rgb: rltk::RGB, offsets: (f32, f32, f32)) -> RGB {
-    let r = rgb.r * offsets.0;
-    let g = rgb.g * offsets.1;
-    let b = rgb.b * offsets.2;
+pub fn get_tile_renderables_for_id(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
+    let (glyph, mut fg, mut bg) = match map.id {
+        2 => get_forest_theme_renderables(idx, map),
+        _ => get_default_theme_renderables(idx, map),
+    };
 
-    return rltk::RGB::from_f32(r, g, b);
-}
-
-pub fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
-    let offsets = map.colour_offset[idx];
-    let glyph: rltk::FontCharType;
-    let mut fg: RGB = RGB::new();
-    let mut bg: RGB;
-
-    let default_bg: RGB = RGB::from_u8(29, 50, 50);
-
-    match map.tiles[idx] {
-        TileType::Floor => {
-            glyph = rltk::to_cp437('.');
-            fg = RGB::from_f32(0.1, 0.8, 0.5);
-            bg = default_bg;
-        }
-        TileType::WoodFloor => {
-            glyph = rltk::to_cp437('.');
-            bg = RGB::from_u8(41, 30, 20);
-        }
-        TileType::Fence => {
-            glyph = rltk::to_cp437('=');
-            fg = RGB::from_u8(110, 24, 0);
-            bg = RGB::from_u8(45, 30, 10);
-        }
-        TileType::Wall => {
-            let x = idx as i32 % map.width;
-            let y = idx as i32 / map.width;
-            glyph = wall_glyph(&*map, x, y);
-            fg = RGB::from_f32(0.9, 0.75, 0.37);
-            bg = default_bg;
-        }
-        TileType::DownStair => {
-            glyph = rltk::to_cp437('>');
-            fg = RGB::from_u8(200, 200, 0);
-            bg = default_bg;
-        }
-        TileType::Bridge => {
-            glyph = rltk::to_cp437('.');
-            bg = RGB::from_u8(42, 48, 37);
-        }
-        TileType::Gravel => {
-            glyph = rltk::to_cp437(';');
-            bg = RGB::from_u8(26, 26, 53);
-        }
-        TileType::Road => {
-            glyph = rltk::to_cp437('.');
-            //fg = RGB::from_u8(112, 105, 94);
-            bg = RGB::from_u8(8, 38, 40);
-        }
-        TileType::Grass => {
-            glyph = rltk::to_cp437('"');
-            bg = RGB::from_u8(9, 65, 6);
-        }
-        TileType::Foliage => {
-            glyph = rltk::to_cp437(':');
-            bg = RGB::from_u8(5, 60, 5);
-        }
-        TileType::HeavyFoliage => {
-            glyph = rltk::to_cp437(';');
-            bg = RGB::from_u8(5, 55, 5);
-        }
-        TileType::Sand => {
-            glyph = rltk::to_cp437('.');
-            bg = RGB::from_u8(70, 70, 21);
-        }
-        TileType::ShallowWater => {
-            glyph = rltk::to_cp437('~');
-            bg = RGB::from_u8(24, 47, 99);
-        }
-        TileType::DeepWater => {
-            glyph = rltk::to_cp437('≈');
-            bg = RGB::from_u8(18, 33, 63);
-        }
-    }
-    if map.bloodstains.contains(&idx) {
-        bg = bg.add(RGB::from_f32(0.6, 0., 0.));
-    }
-
-    // If the foreground hasn't been changed, just add
-    // the bg to it. Otherwise, leave it as is.
+    // If one of the colours was left blank, make them the same.
     if fg == RGB::new() {
-        fg = fg.add(bg).add(map.additional_fg_offset).add(map.additional_fg_offset);
+        fg = bg
+    } else if bg == RGB::new() {
+        bg = fg;
     }
 
-    fg = offset(fg, offsets);
-    bg = offset(bg, offsets);
-
-    if !map.visible_tiles[idx] {
-        fg = fg.mul(0.7);
-        bg = bg.mul(0.7);
-    }
+    fg = fg.add(map.additional_fg_offset);
+    (fg, bg) = apply_colour_offset(fg, bg, map, idx);
+    bg = apply_bloodstain_if_necessary(bg, map, idx);
+    (fg, bg) = darken_if_not_visible(fg, bg, map, idx);
 
     return (glyph, fg, bg);
+}
+
+#[rustfmt::skip]
+pub fn get_default_theme_renderables(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
+    let glyph: rltk::FontCharType;
+    let mut fg: RGB = RGB::new();
+    let mut bg: RGB = RGB::new();
+
+    match map.tiles[idx] {
+        TileType::Floor => { glyph = rltk::to_cp437(FLOOR_GLYPH); fg = RGB::named(FLOOR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
+        TileType::WoodFloor => { glyph = rltk::to_cp437(WOOD_FLOOR_GLYPH); bg = RGB::named(WOOD_FLOOR_COLOUR); }
+        TileType::Fence => { glyph = rltk::to_cp437(FENCE_GLYPH); fg = RGB::named(FENCE_FG_COLOUR); bg = RGB::named(FENCE_COLOUR); }
+        TileType::Wall => { let x = idx as i32 % map.width; let y = idx as i32 / map.width; glyph = wall_glyph(&*map, x, y); fg = RGB::named(WALL_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
+        TileType::DownStair => { glyph = rltk::to_cp437(DOWN_STAIR_GLYPH); fg = RGB::named(DOWN_STAIR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
+        TileType::Bridge => { glyph = rltk::to_cp437(BRIDGE_GLYPH); bg = RGB::named(BRIDGE_COLOUR); }
+        TileType::Gravel => { glyph = rltk::to_cp437(GRAVEL_GLYPH); bg = RGB::named(GRAVEL_COLOUR); }
+        TileType::Road => { glyph = rltk::to_cp437(ROAD_GLYPH); bg = RGB::named(ROAD_COLOUR); }
+        TileType::Grass => { glyph = rltk::to_cp437(GRASS_GLYPH); bg = RGB::named(GRASS_COLOUR); }
+        TileType::Foliage => { glyph = rltk::to_cp437(FOLIAGE_GLYPH); bg = RGB::named(FOLIAGE_COLOUR); }
+        TileType::HeavyFoliage => { glyph = rltk::to_cp437(HEAVY_FOLIAGE_GLYPH); bg = RGB::named(HEAVY_FOLIAGE_COLOUR); }
+        TileType::Sand => { glyph = rltk::to_cp437(SAND_GLYPH); bg = RGB::named(SAND_COLOUR); }
+        TileType::ShallowWater => { glyph = rltk::to_cp437(SHALLOW_WATER_GLYPH); bg = RGB::named(SHALLOW_WATER_COLOUR); }
+        TileType::DeepWater => { glyph = rltk::to_cp437(DEEP_WATER_GLYPH); bg = RGB::named(DEEP_WATER_COLOUR); }
+        TileType::Bars => { glyph = rltk::to_cp437(BARS_GLYPH); fg = RGB::named(BARS_COLOUR); bg = RGB::named(FLOOR_COLOUR); }
+    }
+    return (glyph, fg, bg);
+}
+
+#[rustfmt::skip]
+fn get_forest_theme_renderables(idx:usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
+    let glyph;
+    let mut fg = RGB::new();
+    let mut bg = RGB::new();
+
+    match map.tiles[idx] {
+        TileType::Wall => { glyph = rltk::to_cp437(FOREST_WALL_GLYPH); fg = RGB::named(FOREST_WALL_COLOUR); bg = RGB::named(GRASS_COLOUR) }
+        TileType::Road => { glyph = rltk::to_cp437(ROAD_GLYPH); bg = RGB::named(ROAD_COLOUR); }
+        TileType::ShallowWater => { glyph = rltk::to_cp437(SHALLOW_WATER_GLYPH); bg = RGB::named(SHALLOW_WATER_COLOUR); }
+        _ => { (glyph, fg, _) = get_default_theme_renderables(idx, map); bg = RGB::named(GRASS_COLOUR) }
+    }
+
+    (glyph, fg, bg)
 }
 
 fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
@@ -244,4 +205,34 @@ fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
         239 => 200, // Everything except SW
         _ => 35,    // We missed one?
     }
+}
+
+fn apply_colour_offset(mut fg: RGB, mut bg: RGB, map: &Map, idx: usize) -> (RGB, RGB) {
+    let offsets = map.colour_offset[idx];
+    fg = multiply_by_float(fg.add(map.additional_fg_offset), offsets);
+    bg = multiply_by_float(bg, offsets);
+    return (fg, bg);
+}
+
+fn darken_if_not_visible(mut fg: RGB, mut bg: RGB, map: &Map, idx: usize) -> (RGB, RGB) {
+    if !map.visible_tiles[idx] {
+        fg = fg.mul(NON_VISIBLE_MULTIPLIER);
+        bg = bg.mul(NON_VISIBLE_MULTIPLIER);
+    }
+    return (fg, bg);
+}
+
+fn apply_bloodstain_if_necessary(mut bg: RGB, map: &Map, idx: usize) -> RGB {
+    if map.bloodstains.contains(&idx) {
+        bg = bg.add(RGB::named(BLOODSTAIN_COLOUR));
+    }
+    return bg;
+}
+
+pub fn multiply_by_float(rgb: rltk::RGB, offsets: (f32, f32, f32)) -> RGB {
+    let r = rgb.r * offsets.0;
+    let g = rgb.g * offsets.1;
+    let b = rgb.b * offsets.2;
+
+    return rltk::RGB::from_f32(r, g, b);
 }

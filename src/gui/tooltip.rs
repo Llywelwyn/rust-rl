@@ -26,17 +26,21 @@ impl Tooltip {
         return self.lines.len() as i32 + 2i32;
     }
     fn render(&self, ctx: &mut Rltk, x: i32, y: i32) {
+        let white = RGB::named(rltk::WHITE);
         let weak = RGB::named(rltk::CYAN);
         let strong = RGB::named(rltk::ORANGE);
+        let attribute = RGB::named(rltk::PINK);
 
         ctx.draw_box(x, y, self.width() - 1, self.height() - 1, RGB::named(WHITE), RGB::named(BLACK));
         for (i, s) in self.lines.iter().enumerate() {
             let col = if i == 0 {
-                RGB::named(WHITE)
+                white
             } else if s.starts_with('-') {
                 weak
-            } else {
+            } else if s.starts_with('*') {
                 strong
+            } else {
+                attribute
             };
             ctx.print_color(x + 1, y + i as i32 + 1, col, RGB::named(BLACK), &s);
         }
@@ -91,9 +95,12 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
                 if a.intelligence.bonus > 2 { s += "smart "};
                 if a.wisdom.bonus < -2 { s += "unwise "};
                 if a.wisdom.bonus > 2 { s += "wisened "};
-                if a.charisma.bonus < -2 { s += "ugly "};
-                if a.charisma.bonus > 2 { s += "attractive "};
+                if a.charisma.bonus < -2 { s += "ugly"};
+                if a.charisma.bonus > 2 { s += "attractive"};
                 if !s.is_empty() {
+                    if s.ends_with(" ") {
+                        s.pop();
+                    }
                     tip.add(s);
                 }
             }
@@ -114,13 +121,12 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
 
     if tooltips.is_empty() { return ; }
 
-    let box_gray : RGB = RGB::from_hex("#999999").expect("Oops");
     let white = RGB::named(rltk::WHITE);
 
     let arrow;
     let arrow_x;
     let arrow_y = mouse_pos.1;
-    if mouse_pos.0 < 50 {
+    if mouse_pos.0 < 35 {
         // Render to the left
         arrow = to_cp437('→');
         arrow_x = mouse_pos.0 - 1;
@@ -129,7 +135,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
         arrow = to_cp437('←');
         arrow_x = mouse_pos.0 + 1;
     }
-    ctx.set(arrow_x, arrow_y, white, box_gray, arrow);
+    ctx.set(arrow_x, arrow_y, white, RGB::named(rltk::BLACK), arrow);
 
     let mut total_height = 0;
     for t in tooltips.iter() {
@@ -142,10 +148,10 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     }
 
     for t in tooltips.iter() {
-        let x = if mouse_pos.0 < 40 {
+        let x = if mouse_pos.0 < 35 {
             mouse_pos.0 - (1 + t.width())
         } else {
-            mouse_pos.0 + (1 + t.width())
+            mouse_pos.0 + (1 + 1)
         };
         t.render(ctx, x, y);
         y += t.height();
