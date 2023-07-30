@@ -75,9 +75,6 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     return player;
 }
 
-// Consts
-const MAX_ENTITIES: i32 = 2;
-
 /// Fills a room with stuff!
 pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, spawn_list: &mut Vec<(usize, String)>) {
     let mut possible_targets: Vec<usize> = Vec::new();
@@ -100,51 +97,59 @@ pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], 
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
     let difficulty = map.difficulty;
-
+    // If no area, log and return.
     if areas.len() == 0 {
         rltk::console::log("DEBUGINFO: No areas capable of spawning mobs!");
         return;
     }
-
-    if rng.roll_dice(1, 3) == 1 {
-        let array_idx = if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32) - 1) as usize };
-        let map_idx = areas[array_idx];
-        spawn_points.insert(map_idx, mob_table(difficulty).roll(rng));
-        areas.remove(array_idx);
+    // Get num of each entity type.
+    let num_mobs = match rng.roll_dice(1, 20) {
+        1..=4 => 1, // 20% chance of spawning 1 mob.
+        5 => 3,     // 5% chance of spawning 3 mobs.
+        _ => 0,     // 75% chance of spawning 0
+    };
+    let num_items = match rng.roll_dice(1, 20) {
+        1..=2 => 1, // 10% chance of spawning 1 item
+        3 => 2,     // 5% chance of spawning 2 items
+        4 => 3,     // 5% chance of spawning 3 items
+        _ => 0,     // 80% chance of spawning nothing
+    };
+    let num_traps = match rng.roll_dice(1, 20) {
+        1 => 1, // 5% chance of spawning 1 trap
+        2 => 2, // 5% chance of spawning 2 traps
+        _ => 0, // 85% chance of spawning nothing
+    };
+    // Roll on each table, getting an entity + spawn point
+    for _i in 0..num_mobs {
+        entity_from_table_to_spawn_list(rng, &mut areas, mob_table(difficulty), &mut spawn_points);
     }
-
-    let num_spawns = i32::min(areas.len() as i32, rng.roll_dice(1, MAX_ENTITIES + 2) - 2);
-    if num_spawns <= 0 {
-        return;
+    for _i in 0..num_traps {
+        entity_from_table_to_spawn_list(rng, &mut areas, trap_table(difficulty), &mut spawn_points);
     }
-
-    for _i in 0..num_spawns {
-        let category = category_table().roll(rng);
-        let spawn_table;
-        match category.as_ref() {
-            "item" => {
-                let item_category = item_category_table().roll(rng);
-                match item_category.as_ref() {
-                    "equipment" => spawn_table = equipment_table(difficulty),
-                    "potion" => spawn_table = potion_table(difficulty),
-                    "scroll" => spawn_table = scroll_table(difficulty),
-                    "wand" => spawn_table = wand_table(difficulty),
-                    _ => spawn_table = debug_table(),
-                }
-            }
-            "food" => spawn_table = food_table(difficulty),
-            "trap" => spawn_table = trap_table(difficulty),
-            _ => spawn_table = debug_table(),
-        }
-        let array_idx = if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32) - 1) as usize };
-        let map_idx = areas[array_idx];
-        spawn_points.insert(map_idx, spawn_table.roll(rng));
-        areas.remove(array_idx);
+    for _i in 0..num_items {
+        let spawn_table = get_random_item_category(rng, difficulty);
+        entity_from_table_to_spawn_list(rng, &mut areas, spawn_table, &mut spawn_points);
     }
-
+    // Push entities and their spawn points to map's spawn list
     for spawn in spawn_points.iter() {
         spawn_list.push((*spawn.0, spawn.1.to_string()));
     }
+}
+
+fn entity_from_table_to_spawn_list(
+    rng: &mut RandomNumberGenerator,
+    possible_areas: &mut Vec<usize>,
+    table: RandomTable,
+    spawn_points: &mut HashMap<usize, String>,
+) {
+    if possible_areas.len() == 0 {
+        return;
+    }
+    let array_idx =
+        if possible_areas.len() == 1 { 0usize } else { (rng.roll_dice(1, possible_areas.len() as i32) - 1) as usize };
+    let map_idx = possible_areas[array_idx];
+    spawn_points.insert(map_idx, table.roll(rng));
+    possible_areas.remove(array_idx);
 }
 
 /// Spawns a named entity (name in tuple.1) at the location in (tuple.0)
@@ -170,18 +175,25 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
     rltk::console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
 }
 
-// 3 items : 1 food : 1 trap
-fn category_table() -> RandomTable {
-    return RandomTable::new().add("item", 3).add("food", 1).add("trap", 1);
-}
-
 // 3 scrolls : 3 potions : 1 equipment : 1 wand?
 fn item_category_table() -> RandomTable {
-    return RandomTable::new().add("equipment", 1).add("potion", 3).add("scroll", 3).add("wand", 1);
+    return RandomTable::new().add("equipment", 20).add("food", 20).add("potion", 16).add("scroll", 16).add("wand", 4);
 }
 
 fn debug_table() -> RandomTable {
     return RandomTable::new().add("debug", 1);
+}
+
+fn get_random_item_category(rng: &mut RandomNumberGenerator, difficulty: i32) -> RandomTable {
+    let item_category = item_category_table().roll(rng);
+    match item_category.as_ref() {
+        "equipment" => return equipment_table(difficulty),
+        "food" => return food_table(difficulty),
+        "potion" => return potion_table(difficulty),
+        "scroll" => return scroll_table(difficulty),
+        "wand" => return wand_table(difficulty),
+        _ => return debug_table(),
+    };
 }
 
 pub fn equipment_table(difficulty: i32) -> RandomTable {

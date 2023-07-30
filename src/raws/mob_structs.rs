@@ -16,6 +16,7 @@ pub struct Mob {
     pub vision_range: i32,
     pub quips: Option<Vec<String>>,
     pub equipped: Option<Vec<String>>,
+    pub loot: Option<LootTableInfo>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -33,4 +34,10 @@ pub struct NaturalAttack {
     pub name: String,
     pub hit_bonus: i32,
     pub damage: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct LootTableInfo {
+    pub table: String,
+    pub chance: f32,
 }

@@ -41,6 +41,12 @@ pub struct Prop {}
 pub struct Monster {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct LootTable {
+    pub table: String,
+    pub chance: f32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Bystander {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

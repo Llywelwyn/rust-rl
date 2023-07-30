@@ -86,7 +86,8 @@
         "bac": 6,
         "vision_range": 8,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }],
-        "equipped": ["equip_shortsword", "equip_body_leather", "equip_head_leather"]
+        "equipped": ["equip_shortsword", "equip_body_leather"],
+        "loot": { "table": "scrolls", "chance": 0.05 }
     },
     {
         "id": "chicken",
@@ -171,7 +172,8 @@
         "level": 1,
         "bac": 7,
         "vision_range": 8,
-        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }],
+        "loot": { "table": "scrolls", "chance": 0.05 }
     },
     {
         "id": "dog",
@@ -209,7 +211,8 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 1,
         "vision_range": 7,
-        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d4" }]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d4" }],
+        "loot": { "table": "food", "chance": 0.05 }
     },
     {
         "id": "jackal",
@@ -256,7 +259,8 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 2,
         "vision_range": 12,
-        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
+        "loot": { "table": "wands", "chance": 0.05 }
     },
     {
         "id": "orc",
@@ -264,7 +268,8 @@
         "renderable": { "glyph": "o", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "vision_range": 12,
-        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }],
+        "loot": { "table": "equipment", "chance": 0.05 }
     },
     {
         "id": "orc_large",
@@ -273,7 +278,8 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 2,
         "vision_range": 12,
-        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }],
+        "loot": { "table": "equipment", "chance": 0.05 }
     },
     {
         "id": "ogre",
@@ -282,6 +288,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 5,
         "bac": 5,
-        "vision_range": 8
+        "vision_range": 8,
+        "loot": { "table": "food", "chance": 0.05 }
     }
 ]

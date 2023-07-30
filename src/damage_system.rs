@@ -1,6 +1,6 @@
 use super::{
-    gamelog, Attributes, Equipped, GrantsXP, InBackpack, Item, Map, Name, ParticleBuilder, Player, Pools, Position,
-    RunState, SufferDamage,
+    gamelog, Attributes, Equipped, GrantsXP, InBackpack, Item, LootTable, Map, Name, ParticleBuilder, Player, Pools,
+    Position, RunState, SufferDamage,
 };
 use crate::gamesystem::{mana_per_level, player_hp_per_level};
 use rltk::prelude::*;
@@ -155,7 +155,16 @@ pub fn delete_the_dead(ecs: &mut World) {
             }
         }
     }
-    let items_to_delete = drop_some_held_items_and_return_the_rest(ecs, &dead);
+    let (items_to_delete, loot_to_spawn) = handle_dead_entity_items(ecs, &dead);
+    for loot in loot_to_spawn {
+        crate::raws::spawn_named_entity(
+            &crate::raws::RAWS.lock().unwrap(),
+            ecs,
+            &loot.0,
+            crate::raws::SpawnType::AtPosition { x: loot.1.x, y: loot.1.y },
+            0,
+        );
+    }
     for item in items_to_delete {
         ecs.delete_entity(item).expect("Unable to delete item.");
     }
@@ -166,19 +175,21 @@ pub fn delete_the_dead(ecs: &mut World) {
     }
 }
 
-fn drop_some_held_items_and_return_the_rest(ecs: &mut World, dead: &Vec<Entity>) -> Vec<Entity> {
+fn handle_dead_entity_items(ecs: &mut World, dead: &Vec<Entity>) -> (Vec<Entity>, Vec<(String, Position)>) {
     let mut to_drop: Vec<(Entity, Position)> = Vec::new();
+    let mut to_spawn: Vec<(String, Position)> = Vec::new();
     let entities = ecs.entities();
     let mut equipped = ecs.write_storage::<Equipped>();
     let mut carried = ecs.write_storage::<InBackpack>();
     let mut positions = ecs.write_storage::<Position>();
+    let loot_tables = ecs.read_storage::<LootTable>();
     let mut rng = ecs.write_resource::<RandomNumberGenerator>();
     // Make list of every item in every dead thing's inv/equip
     for victim in dead.iter() {
+        let pos = positions.get(*victim);
         for (entity, equipped) in (&entities, &equipped).join() {
             if equipped.owner == *victim {
                 // Push equipped item entities and positions
-                let pos = positions.get(*victim);
                 if let Some(pos) = pos {
                     to_drop.push((entity, pos.clone()));
                 }
@@ -187,9 +198,20 @@ fn drop_some_held_items_and_return_the_rest(ecs: &mut World, dead: &Vec<Entity>)
         for (entity, backpack) in (&entities, &carried).join() {
             if backpack.owner == *victim {
                 // Push backpack item entities and positions
-                let pos = positions.get(*victim);
                 if let Some(pos) = pos {
                     to_drop.push((entity, pos.clone()));
+                }
+            }
+        }
+        if let Some(table) = loot_tables.get(*victim) {
+            let roll: f32 = rng.rand();
+            if roll < table.chance {
+                let potential_drop =
+                    crate::raws::roll_on_loot_table(&crate::raws::RAWS.lock().unwrap(), &mut rng, &table.table);
+                if let Some(id) = potential_drop {
+                    if let Some(pos) = pos {
+                        to_spawn.push((id, pos.clone()));
+                    }
                 }
             }
         }
@@ -205,5 +227,5 @@ fn drop_some_held_items_and_return_the_rest(ecs: &mut World, dead: &Vec<Entity>)
             to_return.push(drop.0);
         }
     }
-    return to_return;
+    return (to_return, to_spawn);
 }

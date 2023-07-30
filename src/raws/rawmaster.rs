@@ -3,6 +3,7 @@ use crate::components::*;
 use crate::gamesystem::*;
 use crate::random_table::RandomTable;
 use regex::Regex;
+use rltk::prelude::*;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::{HashMap, HashSet};
@@ -46,39 +47,48 @@ impl RawMaster {
         self.raws = raws;
         let mut used_names: HashSet<String> = HashSet::new();
         for (i, item) in self.raws.items.iter().enumerate() {
-            if used_names.contains(&item.id) {
-                rltk::console::log(format!("DEBUGINFO: Duplicate Item ID found in raws [{}]", item.id));
-            }
+            check_for_duplicate_entries(&used_names, &item.id);
             self.item_index.insert(item.id.clone(), i);
             used_names.insert(item.id.clone());
         }
         for (i, mob) in self.raws.mobs.iter().enumerate() {
-            if used_names.contains(&mob.id) {
-                rltk::console::log(format!("DEBUGINFO: Duplicate Mob ID found in raws [{}]", mob.id));
-            }
+            check_for_duplicate_entries(&used_names, &mob.id);
             self.mob_index.insert(mob.id.clone(), i);
             used_names.insert(mob.id.clone());
         }
         for (i, prop) in self.raws.props.iter().enumerate() {
-            if used_names.contains(&prop.id) {
-                rltk::console::log(format!("DEBUGINFO: Duplicate Prop ID found in raws [{}]", prop.id));
-            }
+            check_for_duplicate_entries(&used_names, &prop.id);
             self.prop_index.insert(prop.id.clone(), i);
             used_names.insert(prop.id.clone());
         }
         for (i, table) in self.raws.spawn_tables.iter().enumerate() {
-            if used_names.contains(&table.id) {
-                rltk::console::log(format!("DEBUGINFO: Duplicate SpawnTable ID found in raws [{}]", table.id));
-            }
+            check_for_duplicate_entries(&used_names, &table.id);
             self.table_index.insert(table.id.clone(), i);
             used_names.insert(table.id.clone());
-
             for entry in table.table.iter() {
-                if !used_names.contains(&entry.id) {
-                    rltk::console::log(format!("DEBUGINFO: SpawnTables references unspecified entity [{}]", entry.id));
-                }
+                check_for_unspecified_entity(&used_names, &entry.id)
             }
         }
+        for (i, loot_table) in self.raws.loot_tables.iter().enumerate() {
+            check_for_duplicate_entries(&used_names, &loot_table.id);
+            self.loot_index.insert(loot_table.id.clone(), i);
+            for entry in loot_table.table.iter() {
+                check_for_unspecified_entity(&used_names, &entry.id)
+            }
+        }
+    }
+}
+
+/// Checks a string against a HashSet, logging if a duplicate is found.
+fn check_for_duplicate_entries(used_names: &HashSet<String>, id: &String) {
+    if used_names.contains(id) {
+        rltk::console::log(format!("DEBUGINFO: Duplicate ID found in raws [{}]", id));
+    }
+}
+/// Checks a string against a HashSet, logging if the string isn't found.
+fn check_for_unspecified_entity(used_names: &HashSet<String>, id: &String) {
+    if !used_names.contains(id) {
+        rltk::console::log(format!("DEBUGINFO: Table references unspecified entity [{}]", id));
     }
 }
 
@@ -179,6 +189,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
 
         return Some(eb.build());
     }
+    console::log(format!("DEBUGINFO: Tried to spawn named item [{}] but failed", key));
     None
 }
 
@@ -354,6 +365,11 @@ pub fn spawn_named_mob(
 
         eb = eb.with(GrantsXP { amount: xp_value });
 
+        // Setup loot table
+        if let Some(loot) = &mob_template.loot {
+            eb = eb.with(LootTable { table: loot.table.clone(), chance: loot.chance });
+        }
+
         if SPAWN_LOGGING {
             rltk::console::log(format!(
                 "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level]), worth {} XP",
@@ -517,4 +533,26 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
         }
     }
     panic!("Trying to equip {}, but it has no slot tag.", tag);
+}
+
+pub fn roll_on_loot_table(raws: &RawMaster, rng: &mut RandomNumberGenerator, key: &str) -> Option<String> {
+    if raws.loot_index.contains_key(key) {
+        console::log(format!("DEBUGINFO: Rolling on loot table: {}", key));
+        let mut rt = RandomTable::new();
+        let available_options = &raws.raws.loot_tables[raws.loot_index[key]];
+        for item in available_options.table.iter() {
+            rt = rt.add(item.id.clone(), item.weight);
+        }
+        return Some(rt.roll(rng));
+    } else if raws.table_index.contains_key(key) {
+        console::log(format!("DEBUGINFO: No loot table found, so using spawn table: {}", key));
+        let mut rt = RandomTable::new();
+        let available_options = &raws.raws.spawn_tables[raws.table_index[key]];
+        for item in available_options.table.iter() {
+            rt = rt.add(item.id.clone(), item.weight);
+        }
+        return Some(rt.roll(rng));
+    }
+    console::log(format!("DEBUGINFO: Unknown loot table {}", key));
+    return None;
 }
