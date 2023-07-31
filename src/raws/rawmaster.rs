@@ -469,7 +469,7 @@ pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTabl
         use super::SpawnTableEntry;
 
         let upper_bound = difficulty;
-        let lower_bound = difficulty / 6;
+        let lower_bound = if key != "mobs" { 0 } else { difficulty / 6 };
 
         let available_options: Vec<&SpawnTableEntry> = spawn_table
             .table
@@ -558,4 +558,27 @@ pub fn roll_on_loot_table(raws: &RawMaster, rng: &mut RandomNumberGenerator, key
     }
     console::log(format!("DEBUGINFO: Unknown loot table {}", key));
     return None;
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum SpawnsAs {
+    Single,
+    SmallGroup,
+    LargeGroup,
+}
+
+pub fn check_if_mob_spawns_in_group(raws: &RawMaster, key: &str) -> SpawnsAs {
+    if raws.mob_index.contains_key(key) {
+        let mob_template = &raws.raws.mobs[raws.mob_index[key]];
+        if let Some(flags) = &mob_template.flags {
+            for flag in flags {
+                match flag.as_str() {
+                    "SMALL_GROUP" => return SpawnsAs::SmallGroup,
+                    "LARGE_GROUP" => return SpawnsAs::LargeGroup,
+                    _ => {}
+                }
+            }
+        }
+    }
+    return SpawnsAs::Single;
 }

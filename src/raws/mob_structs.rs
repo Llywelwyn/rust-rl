@@ -15,9 +15,9 @@ pub struct Mob {
     pub attributes: Option<MobAttributes>,
     pub skills: Option<HashMap<String, i32>>,
     pub vision_range: i32,
-    pub quips: Option<Vec<String>>,
     pub equipped: Option<Vec<String>>,
     pub loot: Option<LootTableInfo>,
+    pub quips: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Debug)]

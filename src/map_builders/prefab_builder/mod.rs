@@ -69,6 +69,7 @@ impl PrefabBuilder {
     }
 
     fn char_to_map(&mut self, ch: char, idx: usize, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+        let difficulty = (build_data.map.difficulty + build_data.initial_player_level) / 2;
         match ch {
             ' ' => build_data.map.tiles[idx] = TileType::Floor,
             '#' => build_data.map.tiles[idx] = TileType::Wall,
@@ -102,23 +103,23 @@ impl PrefabBuilder {
             }
             '%' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::food_table(build_data.map.difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::food_table(difficulty).roll(rng)));
             }
             '!' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::potion_table(build_data.map.difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::potion_table(difficulty).roll(rng)));
             }
             '/' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::wand_table(build_data.map.difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::wand_table(difficulty).roll(rng)));
             }
             '?' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::scroll_table(build_data.map.difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::scroll_table(difficulty).roll(rng)));
             }
             ')' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::equipment_table(build_data.map.difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::equipment_table(difficulty).roll(rng)));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph '{}' when loading prefab", (ch as u8) as char));

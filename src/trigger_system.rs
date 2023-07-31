@@ -21,6 +21,7 @@ impl<'a> System<'a> for TriggerSystem {
         ReadStorage<'a, Name>,
         WriteExpect<'a, ParticleBuilder>,
         Entities<'a>,
+        WriteExpect<'a, rltk::RandomNumberGenerator>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -37,6 +38,7 @@ impl<'a> System<'a> for TriggerSystem {
             names,
             mut particle_builder,
             entities,
+            mut rng,
         ) = data;
 
         // Iterate entities that moved, and their final position
@@ -60,7 +62,12 @@ impl<'a> System<'a> for TriggerSystem {
                             let damage = inflicts_damage.get(*entity_id);
                             if let Some(damage) = damage {
                                 particle_builder.damage_taken(pos.x, pos.y);
-                                SufferDamage::new_damage(&mut inflict_damage, entity, damage.amount, false);
+                                SufferDamage::new_damage(
+                                    &mut inflict_damage,
+                                    entity,
+                                    rng.roll_dice(1, damage.amount),
+                                    false,
+                                );
                             }
 
                             let confuses = confusion.get(*entity_id);

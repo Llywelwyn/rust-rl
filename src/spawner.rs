@@ -78,7 +78,13 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
 }
 
 /// Fills a room with stuff!
-pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, spawn_list: &mut Vec<(usize, String)>) {
+pub fn spawn_room(
+    map: &Map,
+    rng: &mut RandomNumberGenerator,
+    room: &Rect,
+    spawn_list: &mut Vec<(usize, String)>,
+    player_level: i32,
+) {
     let mut possible_targets: Vec<usize> = Vec::new();
     {
         // Borrow scope - to keep access to the map separated
@@ -92,24 +98,26 @@ pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, spawn
         }
     }
 
-    spawn_region(map, rng, &possible_targets, spawn_list);
+    spawn_region(map, rng, &possible_targets, spawn_list, player_level);
 }
 
-pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], spawn_list: &mut Vec<(usize, String)>) {
+pub fn spawn_region(
+    map: &Map,
+    rng: &mut RandomNumberGenerator,
+    area: &[usize],
+    spawn_list: &mut Vec<(usize, String)>,
+    player_level: i32,
+) {
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
-    let difficulty = map.difficulty;
+    let difficulty = (map.difficulty + player_level) / 2;
     // If no area, log and return.
     if areas.len() == 0 {
         rltk::console::log("DEBUGINFO: No areas capable of spawning mobs!");
         return;
     }
     // Get num of each entity type.
-    let num_mobs = match rng.roll_dice(1, 20) {
-        1..=4 => 1, // 20% chance of spawning 1 mob.
-        5 => 3,     // 5% chance of spawning 3 mobs.
-        _ => 0,     // 75% chance of spawning 0
-    };
+    let spawn_mob: bool = rng.roll_dice(1, 3) == 1;
     let num_items = match rng.roll_dice(1, 20) {
         1..=2 => 1, // 10% chance of spawning 1 item
         3 => 2,     // 5% chance of spawning 2 items
@@ -122,15 +130,45 @@ pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], 
         _ => 0, // 85% chance of spawning nothing
     };
     // Roll on each table, getting an entity + spawn point
-    for _i in 0..num_mobs {
-        entity_from_table_to_spawn_list(rng, &mut areas, mob_table(difficulty), &mut spawn_points);
+    if spawn_mob {
+        let key = mob_table(difficulty).roll(rng);
+        let spawn_type = raws::check_if_mob_spawns_in_group(&raws::RAWS.lock().unwrap(), &key);
+        let n = match spawn_type {
+            raws::SpawnsAs::Single => 1,
+            raws::SpawnsAs::SmallGroup => {
+                if rng.roll_dice(1, 2) == 1 {
+                    1
+                } else {
+                    4
+                }
+            }
+            raws::SpawnsAs::LargeGroup => {
+                if rng.roll_dice(1, 2) == 1 {
+                    4
+                } else {
+                    11
+                }
+            }
+        };
+        let mut roll = if n == 1 { 1 } else { rng.roll_dice(2, n) };
+        roll = match player_level {
+            0..=2 => i32::min(1, roll / 4),
+            3..=4 => i32::min(1, roll / 2),
+            _ => roll,
+        };
+        for _i in 0..roll {
+            entity_to_spawn_list(rng, &mut areas, key.clone(), &mut spawn_points);
+        }
     }
     for _i in 0..num_traps {
-        entity_from_table_to_spawn_list(rng, &mut areas, trap_table(difficulty), &mut spawn_points);
+        let key = trap_table(difficulty).roll(rng);
+        entity_to_spawn_list(rng, &mut areas, key, &mut spawn_points);
     }
     for _i in 0..num_items {
-        let spawn_table = get_random_item_category(rng, difficulty);
-        entity_from_table_to_spawn_list(rng, &mut areas, spawn_table, &mut spawn_points);
+        // Player level isn't taken into account for item spawning, to encourage
+        // delving deeper to gear up more quickly.
+        let key = get_random_item_category(rng, map.difficulty).roll(rng);
+        entity_to_spawn_list(rng, &mut areas, key, &mut spawn_points);
     }
     // Push entities and their spawn points to map's spawn list
     for spawn in spawn_points.iter() {
@@ -138,10 +176,10 @@ pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], 
     }
 }
 
-fn entity_from_table_to_spawn_list(
+fn entity_to_spawn_list(
     rng: &mut RandomNumberGenerator,
     possible_areas: &mut Vec<usize>,
-    table: RandomTable,
+    key: String,
     spawn_points: &mut HashMap<usize, String>,
 ) {
     if possible_areas.len() == 0 {
@@ -150,7 +188,7 @@ fn entity_from_table_to_spawn_list(
     let array_idx =
         if possible_areas.len() == 1 { 0usize } else { (rng.roll_dice(1, possible_areas.len() as i32) - 1) as usize };
     let map_idx = possible_areas[array_idx];
-    spawn_points.insert(map_idx, table.roll(rng));
+    spawn_points.insert(map_idx, key);
     possible_areas.remove(array_idx);
 }
 

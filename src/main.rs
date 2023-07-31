@@ -82,7 +82,15 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
-        let mut builder = map_builders::level_builder(new_id, &mut rng, 100, 50);
+        let mut player_level = 1;
+        {
+            let player = self.ecs.read_storage::<Player>();
+            let pools = self.ecs.read_storage::<Pools>();
+            for (_p, pool) in (&player, &pools).join() {
+                player_level = pool.level;
+            }
+        }
+        let mut builder = map_builders::level_builder(new_id, &mut rng, 100, 50, player_level);
         builder.build_map(&mut rng);
         std::mem::drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -125,6 +133,7 @@ impl State {
         let mut vis = VisibilitySystem {};
         let mut energy = ai::EnergySystem {};
         let mut turn_status_system = ai::TurnStatusSystem {};
+        let mut quip_system = ai::QuipSystem {};
         let mut mob = MonsterAI {};
         let mut bystanders = bystander_ai_system::BystanderAI {};
         let mut trigger_system = trigger_system::TriggerSystem {};
@@ -141,6 +150,7 @@ impl State {
         vis.run_now(&self.ecs);
         energy.run_now(&self.ecs);
         turn_status_system.run_now(&self.ecs);
+        quip_system.run_now(&self.ecs);
         mob.run_now(&self.ecs);
         bystanders.run_now(&self.ecs);
         trigger_system.run_now(&self.ecs);
@@ -595,11 +605,11 @@ fn main() -> rltk::BError {
     raws::load_raws();
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
-    gs.ecs.insert(Map::new(1, 64, 64, 0, "New Map"));
-    gs.ecs.insert(Point::new(0, 0));
+    gs.ecs.insert(Map::new(1, 64, 64, 0, "New Map")); // Map
+    gs.ecs.insert(Point::new(0, 0)); // Player pos
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
-    gs.ecs.insert(player_entity);
-    gs.ecs.insert(RunState::MapGeneration {});
+    gs.ecs.insert(player_entity); // Player entity
+    gs.ecs.insert(RunState::MapGeneration {}); // RunState
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());
 

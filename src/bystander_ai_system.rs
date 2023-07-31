@@ -1,4 +1,4 @@
-use super::{gamelog, Bystander, EntityMoved, Map, Name, Point, Position, Quips, TakingTurn, Viewshed};
+use super::{Bystander, EntityMoved, Map, Position, TakingTurn, Viewshed};
 use specs::prelude::*;
 
 pub struct BystanderAI {}
@@ -13,54 +13,15 @@ impl<'a> System<'a> for BystanderAI {
         WriteStorage<'a, Position>,
         WriteStorage<'a, EntityMoved>,
         WriteExpect<'a, rltk::RandomNumberGenerator>,
-        ReadExpect<'a, Point>,
-        WriteStorage<'a, Quips>,
-        ReadStorage<'a, Name>,
         ReadStorage<'a, TakingTurn>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (
-            mut map,
-            entities,
-            mut viewshed,
-            bystander,
-            mut position,
-            mut entity_moved,
-            mut rng,
-            player_pos,
-            mut quips,
-            names,
-            turns,
-        ) = data;
+        let (mut map, entities, mut viewshed, bystander, mut position, mut entity_moved, mut rng, turns) = data;
 
         for (entity, mut viewshed, _bystander, mut pos, _turn) in
             (&entities, &mut viewshed, &bystander, &mut position, &turns).join()
         {
-            // Possibly quip
-            let quip = quips.get_mut(entity);
-            if let Some(quip) = quip {
-                if !quip.available.is_empty()
-                    && viewshed.visible_tiles.contains(&player_pos)
-                    && rng.roll_dice(1, 20) == 1
-                {
-                    let name = names.get(entity);
-                    let quip_index = if quip.available.len() == 1 {
-                        0
-                    } else {
-                        (rng.roll_dice(1, quip.available.len() as i32) - 1) as usize
-                    };
-                    gamelog::Logger::new()
-                        .append("The")
-                        .npc_name(&name.unwrap().name)
-                        .append_n("says \"")
-                        .append_n(&quip.available[quip_index])
-                        .append("\"")
-                        .log();
-                    quip.available.remove(quip_index);
-                }
-            }
-
             // Try to move randomly
             let mut x = pos.x;
             let mut y = pos.y;

@@ -1,23 +1,29 @@
-use super::{camera::get_screen_bounds, Attributes, Hidden, Map, Name, Pools, Position, Rltk, World, RGB};
+use super::{camera::get_screen_bounds, Attributes, Hidden, Map, Name, Pools, Position, Renderable, Rltk, World, RGB};
 use rltk::prelude::*;
 use specs::prelude::*;
 
 struct Tooltip {
-    lines: Vec<String>,
+    lines: Vec<(String, RGB)>,
 }
+
+const ATTRIBUTE_COLOUR: RGB = RGB { r: 1.0, g: 0.75, b: 0.8 };
+const RED_WARNING: RGB = RGB { r: 1.0, g: 0.0, b: 0.0 };
+const ORANGE_WARNING: RGB = RGB { r: 1.0, g: 0.65, b: 0.0 };
+const YELLOW_WARNING: RGB = RGB { r: 1.0, g: 1.0, b: 0.0 };
+const GREEN_WARNING: RGB = RGB { r: 0.0, g: 1.0, b: 0.0 };
 
 impl Tooltip {
     fn new() -> Tooltip {
         return Tooltip { lines: Vec::new() };
     }
-    fn add<S: ToString>(&mut self, line: S) {
-        self.lines.push(line.to_string());
+    fn add<S: ToString>(&mut self, line: S, fg: RGB) {
+        self.lines.push((line.to_string(), fg));
     }
     fn width(&self) -> i32 {
         let mut max = 0;
         for s in self.lines.iter() {
-            if s.len() > max {
-                max = s.len();
+            if s.0.len() > max {
+                max = s.0.len();
             }
         }
         return max as i32 + 2i32;
@@ -26,23 +32,9 @@ impl Tooltip {
         return self.lines.len() as i32 + 2i32;
     }
     fn render(&self, ctx: &mut Rltk, x: i32, y: i32) {
-        let white = RGB::named(rltk::WHITE);
-        let weak = RGB::named(rltk::CYAN);
-        let strong = RGB::named(rltk::ORANGE);
-        let attribute = RGB::named(rltk::PINK);
-
         ctx.draw_box(x, y, self.width() - 1, self.height() - 1, RGB::named(WHITE), RGB::named(BLACK));
         for (i, s) in self.lines.iter().enumerate() {
-            let col = if i == 0 {
-                white
-            } else if s.starts_with('-') {
-                weak
-            } else if s.starts_with('*') {
-                strong
-            } else {
-                attribute
-            };
-            ctx.print_color(x + 1, y + i as i32 + 1, col, RGB::named(BLACK), &s);
+            ctx.print_color(x + 1, y + i as i32 + 1, s.1, RGB::named(BLACK), &s.0);
         }
     }
 }
@@ -53,6 +45,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
+    let renderables = ecs.read_storage::<Renderable>();
     let hidden = ecs.read_storage::<Hidden>();
     let attributes = ecs.read_storage::<Attributes>();
     let pools = ecs.read_storage::<Pools>();
@@ -77,10 +70,10 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     }
 
     let mut tooltips: Vec<Tooltip> = Vec::new();
-    for (entity, name, position, _hidden) in (&entities, &names, &positions, !&hidden).join() {
+    for (entity, name, position, renderable, _hidden) in (&entities, &names, &positions, &renderables, !&hidden).join() {
         if position.x == mouse_pos_adjusted.0 && position.y == mouse_pos_adjusted.1 {
             let mut tip = Tooltip::new();
-            tip.add(name.name.to_string());
+            tip.add(name.name.to_string(), renderable.fg);
             // Attributes
             let attr = attributes.get(entity);
             if let Some(a) = attr {
@@ -101,7 +94,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
                     if s.ends_with(" ") {
                         s.pop();
                     }
-                    tip.add(s);
+                    tip.add(s, ATTRIBUTE_COLOUR);
                 }
             }
             // Pools
@@ -110,9 +103,19 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
             if let Some(p) = pool {
                 let level_diff: i32 = p.level - player_pool.level;
                 if level_diff <= -2 {
-                    tip.add("-weak-");
+                    tip.add("-weak-", YELLOW_WARNING);
                 } else if level_diff >= 2 {
-                    tip.add("*threatening*");
+                    tip.add("*threatening*", ORANGE_WARNING);
+                }
+                let health_percent: f32 = p.hit_points.current as f32 / p.hit_points.max as f32;
+                if health_percent == 1.0 {
+                    tip.add("healthy", GREEN_WARNING);
+                } else if health_percent <= 0.25 {
+                    tip.add("*critical*", RED_WARNING);
+                } else if health_percent <= 0.5 {
+                    tip.add("-bloodied-", ORANGE_WARNING);
+                } else if health_percent <= 0.75 {
+                    tip.add("injured", YELLOW_WARNING);
                 }
             }
             tooltips.push(tip);

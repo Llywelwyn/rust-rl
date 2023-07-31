@@ -468,7 +468,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
         1 + y_offset,
         RGB::named(rltk::WHITE),
         RGB::named(rltk::BLACK),
-        "Drop what? [aA-zZ][Esc.]",
+        "Unequip what? [aA-zZ][Esc.]",
     );
 
     let mut equippable: Vec<(Entity, String)> = Vec::new();

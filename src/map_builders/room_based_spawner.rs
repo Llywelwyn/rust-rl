@@ -18,7 +18,13 @@ impl RoomBasedSpawner {
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         if let Some(rooms) = &build_data.rooms {
             for room in rooms.iter().skip(1) {
-                spawner::spawn_room(&build_data.map, rng, room, &mut build_data.spawn_list);
+                spawner::spawn_room(
+                    &build_data.map,
+                    rng,
+                    room,
+                    &mut build_data.spawn_list,
+                    build_data.initial_player_level,
+                );
             }
         } else {
             panic!("RoomBasedSpawner only works after rooms have been created");

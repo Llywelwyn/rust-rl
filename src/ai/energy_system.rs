@@ -32,6 +32,7 @@ impl<'a> System<'a> for EnergySystem {
             if energy.current >= TURN_COST {
                 energy.current -= TURN_COST;
                 crate::gamelog::record_event("turns", 1);
+                // Handle spawning mobs each turn
                 if LOG_TICKS {
                     console::log(format!("===== TURN {} =====", crate::gamelog::get_event_count("turns")));
                 }

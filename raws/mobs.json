@@ -44,8 +44,8 @@
         "name": "priest",
         "renderable": { "glyph": "@", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
-        "quips": ["Light's givings.", "<a quiet prayer>", "Bless you."],
-        "vision_range": 4
+        "vision_range": 4,
+        "quips": ["Light's givings.", "<a quiet prayer>", "Bless you."]
     },
     {
         "id": "npc_miner",
@@ -53,8 +53,8 @@
         "renderable": { "glyph": "@", "fg": "#946123", "bg": "#000000", "order": 1 },
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "vision_range": 4,
-        "quips": ["You're not borrowing my pick."],
-        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }]
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
+        "quips": ["You're not borrowing my pick."]
     },
     {
         "id": "npc_guard",
@@ -63,20 +63,9 @@
         "flags": ["BYSTANDER", "BLOCKS_TILE"],
         "level": 2,
         "vision_range": 4,
-        "quips": ["You wont catch me down the mine.", "Staying out of trouble?"],
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
-        "equipped": ["equip_shortsword", "equip_body_leather"]
-    },
-    {
-        "id": "dog_little",
-        "name": "little dog",
-        "renderable": { "glyph": "d", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
-        "flags": ["BYSTANDER", "BLOCKS_TILE"],
-        "level": 2,
-        "bac": 6,
-        "vision_range": 12,
-        "quips": ["<woof!>", "<bark!>", "<grrr..>"],
-        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }]
+        "equipped": ["equip_shortsword", "equip_body_leather"],
+        "quips": ["You wont catch me down the mine.", "Staying out of trouble?"]
     },
     {
         "id": "rat",
@@ -86,8 +75,7 @@
         "bac": 6,
         "vision_range": 8,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }],
-        "equipped": ["equip_shortsword", "equip_body_leather"],
-        "loot": { "table": "scrolls", "chance": 0.05 }
+        "loot": { "table": "food", "chance": 0.1 }
     },
     {
         "id": "chicken",
@@ -111,7 +99,7 @@
         "id": "sheep_little",
         "name": "lamb",
         "renderable": { "glyph": "q", "fg": "#e7e7e7", "bg": "#000000", "order": 1 },
-        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "flags": ["BYSTANDER", "BLOCKS_TILE", "SMALL_GROUP"],
         "bac": 10,
         "vision_range": 4,
         "attacks": [{ "name": "kicks", "hit_bonus": 0, "damage": "1d2" }]
@@ -132,11 +120,13 @@
         "flags": ["BYSTANDER", "BLOCKS_TILE", "MULTIATTACK"],
         "level": 3,
         "bac": 6,
+        "speed": 16,
         "vision_range": 8,
         "attacks": [
             { "name": "kicks", "hit_bonus": 0, "damage": "1d6" },
             { "name": "bites", "hit_bonus": 0, "damage": "1d2" }
-        ]
+        ],
+        "quips": ["<a disgruntled neigh>"]
     },
     {
         "id": "horse",
@@ -145,6 +135,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE", "MULTIATTACK"],
         "level": 5,
         "bac": 5,
+        "speed": 20,
         "vision_range": 8,
         "attacks": [
             { "name": "kicks", "hit_bonus": 0, "damage": "1d8" },
@@ -158,6 +149,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE", "MULTIATTACK"],
         "level": 7,
         "bac": 4,
+        "speed": 24,
         "vision_range": 8,
         "attacks": [
             { "name": "kicks", "hit_bonus": 0, "damage": "1d10" },
@@ -168,12 +160,24 @@
         "id": "rat_giant",
         "name": "giant rat",
         "renderable": { "glyph": "r", "fg": "#bb8000", "bg": "#000000", "order": 1 },
-        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "flags": ["MONSTER", "BLOCKS_TILE", "SMALL_GROUP"],
         "level": 1,
         "bac": 7,
         "vision_range": 8,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }],
         "loot": { "table": "scrolls", "chance": 0.05 }
+    },
+    {
+        "id": "dog_little",
+        "name": "little dog",
+        "renderable": { "glyph": "d", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
+        "flags": ["BYSTANDER", "BLOCKS_TILE"],
+        "level": 2,
+        "bac": 6,
+        "speed": 18,
+        "vision_range": 12,
+        "quips": ["<woof!>", "<bark!>", "<grrr..>"],
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }]
     },
     {
         "id": "dog",
@@ -182,6 +186,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 4,
         "bac": 5,
+        "speed": 16,
         "vision_range": 12,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }]
     },
@@ -192,6 +197,7 @@
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 6,
         "bac": 4,
+        "speed": 15,
         "vision_range": 12,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "2d4" }]
     },
@@ -201,6 +207,7 @@
         "renderable": { "glyph": "g", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 1,
+        "speed": 9,
         "vision_range": 12,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d4" }]
     },
@@ -218,7 +225,7 @@
         "id": "jackal",
         "name": "jackal",
         "renderable": { "glyph": "d", "fg": "#AA5500", "bg": "#000000", "order": 1 },
-        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "flags": ["MONSTER", "BLOCKS_TILE", "SMALL_GROUP"],
         "bac": 7,
         "vision_range": 12,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
@@ -236,7 +243,7 @@
         "id": "coyote",
         "name": "coyote",
         "renderable": { "glyph": "d", "fg": "#6E3215", "bg": "#000000", "order": 1 },
-        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "flags": ["MONSTER", "BLOCKS_TILE", "SMALL_GROUP"],
         "level": 1,
         "bac": 7,
         "vision_range": 12,
@@ -258,6 +265,7 @@
         "renderable": { "glyph": "G", "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 2,
+        "speed": 9,
         "vision_range": 12,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
         "loot": { "table": "wands", "chance": 0.05 }
@@ -266,29 +274,48 @@
         "id": "orc",
         "name": "orc",
         "renderable": { "glyph": "o", "fg": "#00FF00", "bg": "#000000", "order": 1 },
-        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "flags": ["MONSTER", "BLOCKS_TILE", "SMALL_GROUP"],
+        "level": 1,
+        "speed": 9,
         "vision_range": 12,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }],
         "loot": { "table": "equipment", "chance": 0.05 }
     },
     {
-        "id": "orc_large",
-        "name": "large orc",
-        "renderable": { "glyph": "o", "fg": "#008000", "bg": "#000000", "order": 1 },
-        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "id": "orc_hill",
+        "name": "hill orc",
+        "renderable": { "glyph": "o", "fg": "#dbd830", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE", "LARGE_GROUP"],
         "level": 2,
-        "vision_range": 12,
+        "speed": 9,
+        "vision_range": 11,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }],
+        "loot": { "table": "equipment", "chance": 0.05 }
+    },
+    {
+        "id": "orc_captain",
+        "name": "orc captain",
+        "renderable": { "glyph": "o", "fg": "#9331ac", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE", "MULTIATTACK"],
+        "level": 5,
+        "speed": 5,
+        "vision_range": 12,
+        "attacks": [
+            { "name": "hits", "hit_bonus": 0, "damage": "2d4" },
+            { "name": "hits", "hit_bonus": 0, "damage": "2d4" }
+        ],
         "loot": { "table": "equipment", "chance": 0.05 }
     },
     {
         "id": "ogre",
         "name": "ogre",
         "renderable": { "glyph": "O", "fg": "#00FF00", "bg": "#000000", "order": 1 },
-        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "flags": ["MONSTER", "BLOCKS_TILE", "SMALL_GROUP"],
         "level": 5,
         "bac": 5,
+        "speed": 10,
         "vision_range": 8,
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "2d5" }],
         "loot": { "table": "food", "chance": 0.05 }
     }
 ]
