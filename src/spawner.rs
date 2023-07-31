@@ -1,7 +1,7 @@
 use super::{
-    gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute, Attributes, Energy, HungerClock,
-    HungerState, Map, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe, Skill, Skills, TileType,
-    Viewshed,
+    ai::NORMAL_SPEED, gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute, Attributes,
+    Clock, Energy, HungerClock, HungerState, Map, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe,
+    Skill, Skills, TileType, Viewshed,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -24,7 +24,8 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     let cha = gamesystem::roll_4d6(&mut rng);
     std::mem::drop(rng);
 
-    // d8 hit die - but always maxxed at level 1, so player doesn't have to roll.
+    // We only create the player once, so create the Clock here for counting turns too.
+    ecs.create_entity().with(Clock {}).with(Energy { current: 0, speed: NORMAL_SPEED }).build();
     let player = ecs
         .create_entity()
         .with(Position { x: player_x, y: player_y })
@@ -37,7 +38,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Player {})
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: "you".to_string(), plural: "you".to_string() })
-        .with(HungerClock { state: HungerState::Satiated, duration: 50 })
+        .with(HungerClock { state: HungerState::Satiated, duration: 200 })
         .with(Attributes {
             strength: Attribute { base: str, modifiers: 0, bonus: attr_bonus(str) },
             dexterity: Attribute { base: dex, modifiers: 0, bonus: attr_bonus(dex) },
@@ -54,7 +55,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             bac: 10,
         })
         .with(skills)
-        .with(Energy { current: 0, speed: 12 })
+        .with(Energy { current: 0, speed: NORMAL_SPEED })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 

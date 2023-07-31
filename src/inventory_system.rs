@@ -217,7 +217,7 @@ impl<'a> System<'a> for ItemUseSystem {
                     let hc = hunger_clock.get_mut(target);
                     if let Some(hc) = hc {
                         hc.state = HungerState::Satiated;
-                        hc.duration = 50;
+                        hc.duration = 200;
                     }
                 }
             }

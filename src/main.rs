@@ -50,8 +50,7 @@ pub const SHOW_MAPGEN: bool = false;
 pub enum RunState {
     AwaitingInput,
     PreRun,
-    PlayerTurn,
-    MonsterTurn,
+    Ticking,
     ShowInventory,
     ShowDropItem,
     ShowRemoveItem,
@@ -120,10 +119,12 @@ impl State {
     }
 
     fn run_systems(&mut self) {
+        let mut mapindex = MapIndexingSystem {};
         let mut vis = VisibilitySystem {};
+        let mut energy = ai::EnergySystem {};
+        let mut turn_status_system = ai::TurnStatusSystem {};
         let mut mob = MonsterAI {};
         let mut bystanders = bystander_ai_system::BystanderAI {};
-        let mut mapindex = MapIndexingSystem {};
         let mut trigger_system = trigger_system::TriggerSystem {};
         let mut melee_system = MeleeCombatSystem {};
         let mut damage_system = DamageSystem {};
@@ -134,10 +135,12 @@ impl State {
         let mut hunger_clock = hunger_system::HungerSystem {};
         let mut particle_system = particle_system::ParticleSpawnSystem {};
 
+        mapindex.run_now(&self.ecs);
         vis.run_now(&self.ecs);
+        energy.run_now(&self.ecs);
+        turn_status_system.run_now(&self.ecs);
         mob.run_now(&self.ecs);
         bystanders.run_now(&self.ecs);
-        mapindex.run_now(&self.ecs);
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
         item_use_system.run_now(&self.ecs);
@@ -149,6 +152,11 @@ impl State {
         particle_system.run_now(&self.ecs);
 
         self.ecs.maintain();
+    }
+
+    fn run_map_index(&mut self) {
+        let mut mapindex = MapIndexingSystem {};
+        mapindex.run_now(&self.ecs);
     }
 
     fn entities_to_remove_on_level_change(&mut self) -> Vec<Entity> {
@@ -270,23 +278,36 @@ impl GameState for State {
                 new_runstate = RunState::AwaitingInput;
             }
             RunState::AwaitingInput => {
-                new_runstate = player_input(self, ctx);
-            }
-            RunState::PlayerTurn => {
-                self.run_systems();
-                self.ecs.maintain();
-                gamelog::record_event("turns", 1);
-                match *self.ecs.fetch::<RunState>() {
-                    RunState::MagicMapReveal { row, cursed } => {
-                        new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
+                self.run_map_index();
+                // Sanity-checking that the player actually *should*
+                // be taking a turn before giving them one. If they
+                // don't have a turn component, go back to ticking.
+                let mut can_act = false;
+                {
+                    let player_entity = self.ecs.fetch::<Entity>();
+                    let turns = self.ecs.read_storage::<TakingTurn>();
+                    if let Some(_) = turns.get(*player_entity) {
+                        can_act = true;
                     }
-                    _ => new_runstate = RunState::MonsterTurn,
+                }
+                if can_act {
+                    new_runstate = player_input(self, ctx);
+                } else {
+                    new_runstate = RunState::Ticking;
                 }
             }
-            RunState::MonsterTurn => {
-                self.run_systems();
-                self.ecs.maintain();
-                new_runstate = RunState::AwaitingInput;
+            RunState::Ticking => {
+                while new_runstate == RunState::Ticking {
+                    self.run_systems();
+                    self.ecs.maintain();
+                    match *self.ecs.fetch::<RunState>() {
+                        RunState::AwaitingInput => new_runstate = RunState::AwaitingInput,
+                        RunState::MagicMapReveal { row, cursed } => {
+                            new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
+                        }
+                        _ => new_runstate = RunState::Ticking,
+                    }
+                }
             }
             RunState::ShowInventory => {
                 let result = gui::show_inventory(self, ctx);
@@ -315,7 +336,7 @@ impl GameState for State {
                             intent
                                 .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item: item_entity, target: None })
                                 .expect("Unable to insert intent.");
-                            new_runstate = RunState::PlayerTurn;
+                            new_runstate = RunState::Ticking;
                         }
                     }
                 }
@@ -331,7 +352,7 @@ impl GameState for State {
                         intent
                             .insert(*self.ecs.fetch::<Entity>(), WantsToDropItem { item: item_entity })
                             .expect("Unable to insert intent");
-                        new_runstate = RunState::PlayerTurn;
+                        new_runstate = RunState::Ticking;
                     }
                 }
             }
@@ -346,7 +367,7 @@ impl GameState for State {
                         intent
                             .insert(*self.ecs.fetch::<Entity>(), WantsToRemoveItem { item: item_entity })
                             .expect("Unable to insert intent");
-                        new_runstate = RunState::PlayerTurn;
+                        new_runstate = RunState::Ticking;
                     }
                 }
             }
@@ -360,7 +381,7 @@ impl GameState for State {
                         intent
                             .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item, target: result.1 })
                             .expect("Unable to insert intent.");
-                        new_runstate = RunState::PlayerTurn;
+                        new_runstate = RunState::Ticking;
                     }
                 }
             }
@@ -447,7 +468,7 @@ impl GameState for State {
                 }
 
                 if row as usize == map.height as usize - 1 {
-                    new_runstate = RunState::MonsterTurn;
+                    new_runstate = RunState::Ticking;
                 } else {
                     new_runstate = RunState::MagicMapReveal { row: row + 1, cursed: cursed };
                 }
@@ -515,6 +536,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Prop>();
     gs.ecs.register::<Player>();
+    gs.ecs.register::<Clock>();
     gs.ecs.register::<Monster>();
     gs.ecs.register::<Bystander>();
     gs.ecs.register::<Quips>();

@@ -53,6 +53,9 @@ pub struct Energy {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Clock {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct TakingTurn {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

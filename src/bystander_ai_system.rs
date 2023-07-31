@@ -1,4 +1,4 @@
-use super::{gamelog, Bystander, EntityMoved, Map, Name, Point, Position, Quips, RunState, Viewshed};
+use super::{gamelog, Bystander, EntityMoved, Map, Name, Point, Position, Quips, TakingTurn, Viewshed};
 use specs::prelude::*;
 
 pub struct BystanderAI {}
@@ -7,7 +7,6 @@ impl<'a> System<'a> for BystanderAI {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         WriteExpect<'a, Map>,
-        ReadExpect<'a, RunState>,
         Entities<'a>,
         WriteStorage<'a, Viewshed>,
         ReadStorage<'a, Bystander>,
@@ -17,12 +16,12 @@ impl<'a> System<'a> for BystanderAI {
         ReadExpect<'a, Point>,
         WriteStorage<'a, Quips>,
         ReadStorage<'a, Name>,
+        ReadStorage<'a, TakingTurn>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (
             mut map,
-            runstate,
             entities,
             mut viewshed,
             bystander,
@@ -32,13 +31,11 @@ impl<'a> System<'a> for BystanderAI {
             player_pos,
             mut quips,
             names,
+            turns,
         ) = data;
 
-        if *runstate != RunState::MonsterTurn {
-            return;
-        }
-
-        for (entity, mut viewshed, _bystander, mut pos) in (&entities, &mut viewshed, &bystander, &mut position).join()
+        for (entity, mut viewshed, _bystander, mut pos, _turn) in
+            (&entities, &mut viewshed, &bystander, &mut position, &turns).join()
         {
             // Possibly quip
             let quip = quips.get_mut(entity);

@@ -66,7 +66,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             render_data.glyph = rltk::to_cp437('+'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
-                        result = RunState::PlayerTurn;
+                        result = RunState::Ticking;
                     } else {
                         gamelog::Logger::new().append("It's already closed.").log();
                     }
@@ -139,7 +139,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                             render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
-                        result = RunState::PlayerTurn;
+                        result = RunState::Ticking;
                     } else {
                         gamelog::Logger::new().append("It's already open.").log();
                     }
@@ -266,7 +266,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
     }
 
     gamelog::record_event("kick_count", 1);
-    return RunState::PlayerTurn;
+    return RunState::Ticking;
 }
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
@@ -483,7 +483,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
         },
     }
     if result {
-        return RunState::PlayerTurn;
+        return RunState::Ticking;
     } else {
         return RunState::AwaitingInput;
     }
