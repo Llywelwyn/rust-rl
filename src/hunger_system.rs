@@ -1,4 +1,4 @@
-use super::{gamelog, HungerClock, HungerState, SufferDamage};
+use super::{gamelog, HungerClock, HungerState, SufferDamage, LOG_TICKS};
 use specs::prelude::*;
 
 pub struct HungerSystem {}
@@ -12,8 +12,8 @@ impl<'a> System<'a> for HungerSystem {
         let (entities, mut hunger_clock, player_entity, mut inflict_damage) = data;
 
         for (entity, mut clock) in (&entities, &mut hunger_clock).join() {
-            if entity == *player_entity {
-                rltk::console::log(format!("HUNGER TICK for Player [current clock: {}]", clock.duration));
+            if LOG_TICKS && entity == *player_entity {
+                rltk::console::log(format!("HUNGER SYSTEM: Ticked for player entity. [clock: {}]", clock.duration));
             }
             clock.duration -= 1;
             if clock.duration > 0 {

@@ -2,13 +2,12 @@ use super::Raws;
 use crate::components::*;
 use crate::gamesystem::*;
 use crate::random_table::RandomTable;
+use crate::LOG_SPAWNING;
 use regex::Regex;
 use rltk::prelude::*;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::{HashMap, HashSet};
-
-const SPAWN_LOGGING: bool = true;
 
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },
@@ -376,7 +375,7 @@ pub fn spawn_named_mob(
             eb = eb.with(LootTable { table: loot.table.clone(), chance: loot.chance });
         }
 
-        if SPAWN_LOGGING {
+        if LOG_SPAWNING {
             rltk::console::log(format!(
                 "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level]), worth {} XP",
                 &mob_template.name, mob_hp, mob_mana, mob_bac, mob_level, base_mob_level, map_difficulty, player_level, xp_value
@@ -487,12 +486,10 @@ pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTabl
             return rt;
         }
     }
-    if SPAWN_LOGGING {
-        rltk::console::log(format!(
-            "SPAWNLOG: Something went wrong when trying to spawn {} @ map difficulty {}. Returned debug entry.",
-            key, difficulty
-        ));
-    }
+    rltk::console::log(format!(
+        "DEBUGINFO: Something went wrong when trying to spawn {} @ map difficulty {}. Returned debug entry.",
+        key, difficulty
+    ));
     return RandomTable::new().add("debug", 1);
 }
 

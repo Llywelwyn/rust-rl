@@ -1,4 +1,4 @@
-use crate::{Clock, Energy, Position, RunState, TakingTurn};
+use crate::{Clock, Energy, Name, Position, RunState, TakingTurn, LOG_TICKS};
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -18,10 +18,11 @@ impl<'a> System<'a> for EnergySystem {
         WriteExpect<'a, RandomNumberGenerator>,
         WriteExpect<'a, RunState>,
         ReadExpect<'a, Entity>,
+        ReadStorage<'a, Name>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (clock, mut energies, positions, mut turns, entities, mut rng, mut runstate, player) = data;
+        let (clock, mut energies, positions, mut turns, entities, mut rng, mut runstate, player, names) = data;
         // If not ticking, do nothing.
         if *runstate != RunState::Ticking {
             return;
@@ -31,6 +32,9 @@ impl<'a> System<'a> for EnergySystem {
             if energy.current >= TURN_COST {
                 energy.current -= TURN_COST;
                 crate::gamelog::record_event("turns", 1);
+                if LOG_TICKS {
+                    console::log(format!("===== TURN {} =====", crate::gamelog::get_event_count("turns")));
+                }
             }
         }
         // Clear TakingTurn{} from every entity.
@@ -38,23 +42,11 @@ impl<'a> System<'a> for EnergySystem {
         for (entity, energy, _pos) in (&entities, &mut energies, &positions).join() {
             // Every entity has a POTENTIAL equal to their speed.
             let mut energy_potential: i32 = energy.speed;
-            if entity == *player {
-                console::log(format!(
-                    "TICK for Player with speed {}: [current energy: {}]",
-                    energy.speed, energy.current
-                ));
-            }
             // Increment current energy by NORMAL_SPEED for every
             // whole number of NORMAL_SPEEDS in their POTENTIAL.
             while energy_potential >= NORMAL_SPEED {
                 energy_potential -= NORMAL_SPEED;
                 energy.current += NORMAL_SPEED;
-                if entity == *player {
-                    console::log(format!(
-                        "Gained 12 energy. [current: {}, potential: {}]",
-                        energy.current, energy_potential
-                    ));
-                }
             }
             // Roll a NORMAL_SPEED-sided die. If less than their
             // remaining POTENTIAL, increment current energy by
@@ -64,12 +56,6 @@ impl<'a> System<'a> for EnergySystem {
             if energy_potential > 0 {
                 if rng.roll_dice(1, NORMAL_SPEED) <= energy_potential {
                     energy.current += NORMAL_SPEED;
-                    if entity == *player {
-                        console::log(format!(
-                            "Rolled for remainder! Gained 12 energy. [current energy: {}]",
-                            energy.current
-                        ));
-                    }
                 }
             }
             // TURN_COST is equal to 4 * NORMAL_SPEED. If the current entity
@@ -78,13 +64,14 @@ impl<'a> System<'a> for EnergySystem {
             if energy.current >= TURN_COST {
                 turns.insert(entity, TakingTurn {}).expect("Unable to insert turn.");
                 energy.current -= TURN_COST;
+                if LOG_TICKS {
+                    let name = if let Some(name) = names.get(entity) { &name.name } else { "Unknown entity" };
+                    console::log(format!(
+                        "ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].",
+                        name, energy.current
+                    ));
+                }
                 if entity == *player {
-                    if entity == *player {
-                        console::log(format!(
-                            "Player has >=TURN_COST energy, granting a turn. [remaining energy: {}]",
-                            energy.current
-                        ));
-                    }
                     *runstate = RunState::AwaitingInput;
                 }
             }
