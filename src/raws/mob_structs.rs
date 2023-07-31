@@ -10,6 +10,7 @@ pub struct Mob {
     pub flags: Option<Vec<String>>,
     pub level: Option<i32>,
     pub bac: Option<i32>,
+    pub speed: Option<i32>,
     pub attacks: Option<Vec<NaturalAttack>>,
     pub attributes: Option<MobAttributes>,
     pub skills: Option<HashMap<String, i32>>,

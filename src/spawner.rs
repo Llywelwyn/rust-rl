@@ -1,5 +1,5 @@
 use super::{
-    gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute, Attributes, HungerClock,
+    gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute, Attributes, Energy, HungerClock,
     HungerState, Map, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe, Skill, Skills, TileType,
     Viewshed,
 };
@@ -54,6 +54,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             bac: 10,
         })
         .with(skills)
+        .with(Energy { current: 0, speed: 12 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 

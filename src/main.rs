@@ -35,6 +35,7 @@ mod inventory_system;
 use inventory_system::*;
 mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
+mod ai;
 mod gamesystem;
 mod random_table;
 mod rex_assets;
@@ -533,6 +534,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Item>();
     gs.ecs.register::<GrantsXP>();
     gs.ecs.register::<LootTable>();
+    gs.ecs.register::<Energy>();
+    gs.ecs.register::<TakingTurn>();
     gs.ecs.register::<Equippable>();
     gs.ecs.register::<Equipped>();
     gs.ecs.register::<MeleeWeapon>();

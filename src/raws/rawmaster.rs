@@ -276,6 +276,9 @@ pub fn spawn_named_mob(
         }
         eb = eb.with(attr);
 
+        let speed = if mob_template.speed.is_some() { mob_template.speed.unwrap() } else { 12 };
+        eb = eb.with(Energy { current: 0, speed: speed });
+
         let base_mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 0 };
         let mut mob_level = base_mob_level;
         // If the level difficulty is smaller than the mob's base level, subtract 1;
@@ -347,8 +350,11 @@ pub fn spawn_named_mob(
         }
 
         xp_value += mob_level * mob_level;
-        // if speed > 18, +5
-        // if speed > 12, +3
+        if speed > 18 {
+            xp_value += 5;
+        } else if speed > 12 {
+            xp_value += 3;
+        }
         if mob_bac < 0 {
             xp_value += 14 + 2 * mob_bac;
         } else if mob_bac == 0 {

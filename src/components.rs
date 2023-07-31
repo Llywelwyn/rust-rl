@@ -47,6 +47,15 @@ pub struct LootTable {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Energy {
+    pub current: i32,
+    pub speed: i32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct TakingTurn {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Bystander {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
