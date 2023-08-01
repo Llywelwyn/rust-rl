@@ -572,7 +572,7 @@ pub enum SpawnsAs {
     LargeGroup,
 }
 
-pub fn check_if_mob_spawns_in_group(raws: &RawMaster, key: &str) -> SpawnsAs {
+pub fn get_mob_spawn_type(raws: &RawMaster, key: &str) -> SpawnsAs {
     if raws.mob_index.contains_key(key) {
         let mob_template = &raws.raws.mobs[raws.mob_index[key]];
         if let Some(flags) = &mob_template.flags {
@@ -586,4 +586,35 @@ pub fn check_if_mob_spawns_in_group(raws: &RawMaster, key: &str) -> SpawnsAs {
         }
     }
     return SpawnsAs::Single;
+}
+
+pub fn get_mob_spawn_amount(rng: &mut RandomNumberGenerator, spawn_type: &SpawnsAs, player_level: i32) -> i32 {
+    let n = match spawn_type {
+        // Single mobs always spawn alone.
+        SpawnsAs::Single => 1,
+        // Small groups either spawn alone or as a small group (2-4).
+        SpawnsAs::SmallGroup => {
+            if rng.roll_dice(1, 2) == 1 {
+                1
+            } else {
+                4
+            }
+        }
+        // Large groups either spawn in a small group or as a large group (2-11).
+        SpawnsAs::LargeGroup => {
+            if rng.roll_dice(1, 2) == 1 {
+                4
+            } else {
+                11
+            }
+        }
+    };
+    let roll = if n == 1 { 1 } else { rng.roll_dice(2, n) };
+    // We want to constrain group sizes depending on player's level, so
+    // we don't get large groups of mobs when the player is unequipped.
+    match player_level {
+        0..=2 => return i32::max(1, roll / 4),
+        3..=4 => return i32::max(1, roll / 2),
+        _ => return roll,
+    };
 }

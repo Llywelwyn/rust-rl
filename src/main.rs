@@ -45,7 +45,7 @@ extern crate lazy_static;
 
 //Consts
 pub const SHOW_MAPGEN: bool = false;
-pub const LOG_SPAWNING: bool = false;
+pub const LOG_SPAWNING: bool = true;
 pub const LOG_TICKS: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]

@@ -132,30 +132,8 @@ pub fn spawn_region(
     // Roll on each table, getting an entity + spawn point
     if spawn_mob {
         let key = mob_table(difficulty).roll(rng);
-        let spawn_type = raws::check_if_mob_spawns_in_group(&raws::RAWS.lock().unwrap(), &key);
-        let n = match spawn_type {
-            raws::SpawnsAs::Single => 1,
-            raws::SpawnsAs::SmallGroup => {
-                if rng.roll_dice(1, 2) == 1 {
-                    1
-                } else {
-                    4
-                }
-            }
-            raws::SpawnsAs::LargeGroup => {
-                if rng.roll_dice(1, 2) == 1 {
-                    4
-                } else {
-                    11
-                }
-            }
-        };
-        let mut roll = if n == 1 { 1 } else { rng.roll_dice(2, n) };
-        roll = match player_level {
-            0..=2 => i32::min(1, roll / 4),
-            3..=4 => i32::min(1, roll / 2),
-            _ => roll,
-        };
+        let spawn_type = raws::get_mob_spawn_type(&raws::RAWS.lock().unwrap(), &key);
+        let roll = raws::get_mob_spawn_amount(rng, &spawn_type, player_level);
         for _i in 0..roll {
             entity_to_spawn_list(rng, &mut areas, key.clone(), &mut spawn_points);
         }
