@@ -45,8 +45,8 @@ extern crate lazy_static;
 
 //Consts
 pub const SHOW_MAPGEN: bool = false;
-pub const LOG_SPAWNING: bool = true;
-pub const LOG_TICKS: bool = true;
+pub const LOG_SPAWNING: bool = false;
+pub const LOG_TICKS: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -132,6 +132,7 @@ impl State {
         let mut mapindex = MapIndexingSystem {};
         let mut vis = VisibilitySystem {};
         let mut energy = ai::EnergySystem {};
+        let mut regen_system = ai::RegenSystem {};
         let mut turn_status_system = ai::TurnStatusSystem {};
         let mut quip_system = ai::QuipSystem {};
         let mut mob = MonsterAI {};
@@ -148,6 +149,7 @@ impl State {
 
         mapindex.run_now(&self.ecs);
         vis.run_now(&self.ecs);
+        regen_system.run_now(&self.ecs);
         energy.run_now(&self.ecs);
         turn_status_system.run_now(&self.ecs);
         quip_system.run_now(&self.ecs);
@@ -260,6 +262,7 @@ impl State {
         self.generate_world_map(1);
 
         gamelog::setup_log();
+        gamelog::record_event("player_level", 1);
     }
 }
 
@@ -614,6 +617,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(rex_assets::RexAssets::new());
 
     gamelog::setup_log();
+    gamelog::record_event("player_level", 1);
     gs.generate_world_map(1);
 
     rltk::main_loop(context, gs)

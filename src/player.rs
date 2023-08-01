@@ -539,7 +539,6 @@ fn skip_turn(ecs: &mut World) -> bool {
         }
     }
 
-    let mut did_heal = false;
     if can_heal {
         let mut health_components = ecs.write_storage::<Pools>();
         let pools = health_components.get_mut(*player_entity).unwrap();
@@ -547,15 +546,10 @@ fn skip_turn(ecs: &mut World) -> bool {
         let roll = rng.roll_dice(1, 6);
         if (roll == 6) && pools.hit_points.current < pools.hit_points.max {
             pools.hit_points.current += 1;
-            did_heal = true;
         }
     }
 
-    if did_heal {
-        gamelog::Logger::new().append("You wait a turn, and").colour(rltk::GREEN).append("recover a hit point.").log();
-    } else {
-        gamelog::Logger::new().append("You wait a turn.").log();
-    }
+    gamelog::Logger::new().append("You wait a turn.").log();
 
     return true;
 }

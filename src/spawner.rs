@@ -1,7 +1,7 @@
 use super::{
-    ai::NORMAL_SPEED, gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute, Attributes,
-    Clock, Energy, HungerClock, HungerState, Map, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe,
-    Skill, Skills, TileType, Viewshed,
+    ai::NORMAL_SPEED, gamelog, gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute,
+    Attributes, Clock, Energy, HungerClock, HungerState, Map, Name, Player, Pool, Pools, Position, Rect, Renderable,
+    SerializeMe, Skill, Skills, TileType, Viewshed,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;

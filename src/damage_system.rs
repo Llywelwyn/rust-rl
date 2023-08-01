@@ -73,6 +73,7 @@ impl<'a> System<'a> for DamageSystem {
             if next_level_requirement != -1 && player_stats.xp >= next_level_requirement {
                 // We've gone up a level!
                 player_stats.level += 1;
+                gamelog::record_event("player_level", 1);
                 gamelog::Logger::new()
                     .append("Welcome to experience level")
                     .append(player_stats.level)

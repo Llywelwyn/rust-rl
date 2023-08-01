@@ -27,9 +27,13 @@ impl<'a> System<'a> for EnergySystem {
         if *runstate != RunState::Ticking {
             return;
         }
-        for (_entity, _clock, energy) in (&entities, &clock, &mut energies).join() {
+        // Clear TakingTurn{} from every entity.
+        turns.clear();
+        // TURN COUNTER
+        for (entity, _clock, energy) in (&entities, &clock, &mut energies).join() {
             energy.current += NORMAL_SPEED;
             if energy.current >= TURN_COST {
+                turns.insert(entity, TakingTurn {}).expect("Unable to insert turn for turn counter.");
                 energy.current -= TURN_COST;
                 crate::gamelog::record_event("turns", 1);
                 // Handle spawning mobs each turn
@@ -38,8 +42,7 @@ impl<'a> System<'a> for EnergySystem {
                 }
             }
         }
-        // Clear TakingTurn{} from every entity.
-        turns.clear();
+        // EVERYTHING ELSE
         for (entity, energy, _pos) in (&entities, &mut energies, &positions).join() {
             // Every entity has a POTENTIAL equal to their speed.
             let mut energy_potential: i32 = energy.speed;
