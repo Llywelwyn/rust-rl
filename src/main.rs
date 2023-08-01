@@ -131,8 +131,8 @@ impl State {
     fn run_systems(&mut self) {
         let mut mapindex = MapIndexingSystem {};
         let mut vis = VisibilitySystem {};
-        let mut energy = ai::EnergySystem {};
         let mut regen_system = ai::RegenSystem {};
+        let mut energy = ai::EnergySystem {};
         let mut turn_status_system = ai::TurnStatusSystem {};
         let mut quip_system = ai::QuipSystem {};
         let mut mob = MonsterAI {};

@@ -215,19 +215,20 @@ pub fn spawn_named_mob(
         let mut xp_value = 1;
         // New entity with a position, name, combatstats, and viewshed
         eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
-
         eb = spawn_position(pos, eb, key, raws);
         eb = eb.with(Name { name: mob_template.name.clone(), plural: mob_template.name.clone() });
         eb = eb.with(Viewshed { visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
         if let Some(renderable) = &mob_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
         }
+        let mut has_mind = true;
         if let Some(flags) = &mob_template.flags {
             for flag in flags.iter() {
                 match flag.as_str() {
                     "BLOCKS_TILE" => eb = eb.with(BlocksTile {}),
                     "BYSTANDER" => eb = eb.with(Bystander {}),
                     "MONSTER" => eb = eb.with(Monster {}),
+                    "MINDLESS" => has_mind = false,
                     "SMALL_GROUP" => {} // These flags are for region spawning,
                     "LARGE_GROUP" => {} // and don't matter here (yet)?
                     "MULTIATTACK" => {
@@ -237,6 +238,9 @@ pub fn spawn_named_mob(
                     _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
                 }
             }
+        }
+        if has_mind {
+            eb = eb.with(Mind {});
         }
         if let Some(quips) = &mob_template.quips {
             eb = eb.with(Quips { available: quips.clone() });
