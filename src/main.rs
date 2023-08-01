@@ -176,6 +176,7 @@ impl State {
     fn entities_to_remove_on_level_change(&mut self) -> Vec<Entity> {
         let entities = self.ecs.entities();
         let player = self.ecs.read_storage::<Player>();
+        let clock = self.ecs.read_storage::<Clock>();
         let backpack = self.ecs.read_storage::<InBackpack>();
         let player_entity = self.ecs.fetch::<Entity>();
         let equipped = self.ecs.read_storage::<Equipped>();
@@ -183,6 +184,12 @@ impl State {
         let mut to_delete: Vec<Entity> = Vec::new();
         for entity in entities.join() {
             let mut should_delete = true;
+
+            // Don't delete the turn clock
+            let c = clock.get(entity);
+            if let Some(_c) = c {
+                should_delete = false;
+            }
 
             // Don't delete player
             let p = player.get(entity);

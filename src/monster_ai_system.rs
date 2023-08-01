@@ -1,4 +1,4 @@
-use super::{EntityMoved, Map, Monster, Position, TakingTurn, Viewshed, WantsToMelee};
+use super::{bystander_ai_system, EntityMoved, Map, Monster, Position, TakingTurn, Viewshed, WantsToMelee};
 use rltk::Point;
 use specs::prelude::*;
 
@@ -8,6 +8,7 @@ impl<'a> System<'a> for MonsterAI {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         WriteExpect<'a, Map>,
+        WriteExpect<'a, rltk::RandomNumberGenerator>,
         ReadExpect<'a, Point>,
         ReadExpect<'a, Entity>,
         Entities<'a>,
@@ -22,6 +23,7 @@ impl<'a> System<'a> for MonsterAI {
     fn run(&mut self, data: Self::SystemData) {
         let (
             mut map,
+            mut rng,
             player_pos,
             player_entity,
             entities,
@@ -55,6 +57,10 @@ impl<'a> System<'a> for MonsterAI {
                     idx = map.xy_idx(pos.x, pos.y);
                     map.blocked[idx] = true;
                     viewshed.dirty = true;
+                    entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
+                }
+            } else {
+                if bystander_ai_system::try_move_randomly(&mut pos, &mut rng, &mut map, &mut viewshed) {
                     entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
                 }
             }
