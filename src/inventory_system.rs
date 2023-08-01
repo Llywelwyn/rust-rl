@@ -240,7 +240,9 @@ impl<'a> System<'a> for ItemUseSystem {
                         equipped.remove(*item);
                         backpack.insert(*item, InBackpack { owner: target }).expect("Unable to insert backpack");
                         if target == *player_entity {
-                            logger = logger.append("You remove your").item_name_n(&item_being_used.name).period();
+                            if let Some(name) = names.get(*item) {
+                                logger = logger.append("You remove your").item_name_n(&name.name).period();
+                            }
                         }
                     }
 

@@ -63,6 +63,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
         //       1d20 must be less than 10, 45% chance of a hit
 
         const COMBAT_LOGGING: bool = true;
+        let mut logger = gamelog::Logger::new();
+        let mut something_to_log = false;
 
         for (entity, wants_melee, name, attacker_attributes, attacker_skills, attacker_pools) in
             (&entities, &wants_melee, &names, &attributes, &skills, &pools).join()
@@ -223,18 +225,18 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     }
                     SufferDamage::new_damage(&mut inflict_damage, wants_melee.target, damage, entity == *player_entity);
                     if entity == *player_entity {
-                        gamelog::Logger::new() // You hit the <name>.
+                        something_to_log = true;
+                        logger = logger // You hit the <name>.
                             .append("You hit the")
                             .npc_name_n(&target_name.name)
-                            .period()
-                            .log();
+                            .period();
                     } else if wants_melee.target == *player_entity {
-                        gamelog::Logger::new() // <name> hits you!
+                        something_to_log = true;
+                        logger = logger // <name> hits you!
                             .append("The")
                             .npc_name(&name.name)
                             .append(attack_verb)
-                            .append("you!")
-                            .log();
+                            .append("you!");
                     } else {
                         gamelog::Logger::new() // <name> misses the <target>.
                             .append("The")
@@ -255,16 +257,16 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         particle_builder.attack_miss(pos.x, pos.y)
                     }
                     if entity == *player_entity {
-                        gamelog::Logger::new() // You miss.
-                            .append("You miss.")
-                            .log();
+                        something_to_log = true;
+                        logger = logger // You miss.
+                            .append("You miss.");
                     } else if wants_melee.target == *player_entity {
-                        gamelog::Logger::new() // <name> misses!
+                        something_to_log = true;
+                        logger = logger // <name> misses!
                             .append("The")
                             .npc_name(&name.name)
                             .colour(rltk::WHITE)
-                            .append("misses!")
-                            .log();
+                            .append("misses!");
                     } else {
                         gamelog::Logger::new() // <name> misses the <target>.
                             .append("The")
@@ -278,8 +280,10 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 }
             }
         }
-
         wants_melee.clear();
+        if something_to_log {
+            logger.log();
+        }
     }
 }
 
