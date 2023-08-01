@@ -202,6 +202,28 @@
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "2d4" }]
     },
     {
+        "id": "gnome",
+        "name": "gnome",
+        "renderable": { "glyph": "G", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE", "SMALL_GROUP"],
+        "level": 1,
+        "speed": 6,
+        "vision_range": 12,
+        "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d6" }],
+        "loot": { "table": "wands", "chance": 0.05 }
+    },
+    {
+        "id": "zombie_gnome",
+        "name": "gnome zombie",
+        "renderable": { "glyph": "G", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 1,
+        "speed": 6,
+        "vision_range": 7,
+        "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d4" }],
+        "loot": { "table": "wands", "chance": 0.05 }
+    },
+    {
         "id": "goblin",
         "name": "goblin",
         "renderable": { "glyph": "g", "fg": "#00FF00", "bg": "#000000", "order": 1 },
@@ -217,9 +239,92 @@
         "renderable": { "glyph": "k", "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["MONSTER", "BLOCKS_TILE"],
         "level": 1,
+        "speed": 6,
         "vision_range": 7,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d4" }],
         "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "zombie_kobold",
+        "name": "kobold zombie",
+        "renderable": { "glyph": "z", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 1,
+        "speed": 6,
+        "vision_range": 7,
+        "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d4" }],
+        "loot": { "table": "scrolls", "chance": 0.05 }
+    },
+    {
+        "id": "kobold_large",
+        "name": "large kobold",
+        "renderable": { "glyph": "k", "fg": "#70461b", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 1,
+        "speed": 6,
+        "vision_range": 8,
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "zombie_orc",
+        "name": "orc zombie",
+        "renderable": { "glyph": "z", "fg": "#dbd830", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 2,
+        "bac": 9,
+        "speed": 6,
+        "vision_range": 8,
+        "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d6" }],
+        "loot": { "table": "potions", "chance": 0.05 }
+    },
+    {
+        "id": "dwarf",
+        "name": "dwarf",
+        "renderable": { "glyph": "h", "fg": "#d61b1b", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 2,
+        "bac": 10,
+        "speed": 6,
+        "vision_range": 8,
+        "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d8" }],
+        "equipped": ["equip_feet_iron"],
+        "loot": { "table": "equipment", "chance": 0.05 }
+    },
+    {
+        "id": "zombie_dwarf",
+        "name": "dwarf zombie",
+        "renderable": { "glyph": "z", "fg": "#d61b1b", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 2,
+        "bac": 9,
+        "speed": 6,
+        "vision_range": 8,
+        "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d6" }],
+        "loot": { "table": "equipment", "chance": 0.05 }
+    },
+    {
+        "id": "kobold_captain",
+        "name": "kobold captain",
+        "renderable": { "glyph": "k", "fg": "#9331ac", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE"],
+        "level": 2,
+        "speed": 6,
+        "vision_range": 7,
+        "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "2d4" }],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "spider_cave",
+        "name": "cave spider",
+        "renderable": { "glyph": "s", "fg": "#6b6b6b", "bg": "#000000", "order": 1 },
+        "flags": ["MONSTER", "BLOCKS_TILE", "SMALL_GROUP"],
+        "level": 1,
+        "bac": 3,
+        "speed": 12,
+        "vision_range": 12,
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }],
+        "loot": { "table": "scrolls", "chance": 0.05 }
     },
     {
         "id": "jackal",
