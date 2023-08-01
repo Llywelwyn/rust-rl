@@ -228,6 +228,8 @@ pub fn spawn_named_mob(
                     "BLOCKS_TILE" => eb = eb.with(BlocksTile {}),
                     "BYSTANDER" => eb = eb.with(Bystander {}),
                     "MONSTER" => eb = eb.with(Monster {}),
+                    "SMALL_GROUP" => {} // These flags are for region spawning,
+                    "LARGE_GROUP" => {} // and don't matter here (yet)?
                     "MULTIATTACK" => {
                         eb = eb.with(MultiAttack {});
                         xp_value += 3;
@@ -463,18 +465,17 @@ fn get_renderable_component(renderable: &super::item_structs::Renderable) -> cra
 }
 
 pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTable {
+    let upper_bound = difficulty;
+    let lower_bound = if key != "mobs" { 0 } else { difficulty / 6 };
     if raws.table_index.contains_key(key) {
         let spawn_table = &raws.raws.spawn_tables[raws.table_index[key]];
 
         use super::SpawnTableEntry;
 
-        let upper_bound = difficulty;
-        let lower_bound = if key != "mobs" { 0 } else { difficulty / 6 };
-
         let available_options: Vec<&SpawnTableEntry> = spawn_table
             .table
             .iter()
-            .filter(|entry| entry.difficulty > lower_bound && entry.difficulty <= upper_bound)
+            .filter(|entry| entry.difficulty >= lower_bound && entry.difficulty <= upper_bound)
             .collect();
 
         let mut rt = RandomTable::new();
@@ -487,8 +488,8 @@ pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTabl
         }
     }
     rltk::console::log(format!(
-        "DEBUGINFO: Something went wrong when trying to spawn {} @ map difficulty {}. Returned debug entry.",
-        key, difficulty
+        "DEBUGINFO: Something went wrong when trying to spawn {} @ map difficulty {} [upper bound: {}, lower bound: {}]. Returned debug entry.",
+        key, difficulty, upper_bound, lower_bound
     ));
     return RandomTable::new().add("debug", 1);
 }

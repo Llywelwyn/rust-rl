@@ -315,6 +315,7 @@ impl GameState for State {
                 while new_runstate == RunState::Ticking {
                     self.run_systems();
                     self.ecs.maintain();
+                    try_spawn_interval(&mut self.ecs);
                     match *self.ecs.fetch::<RunState>() {
                         RunState::AwaitingInput => new_runstate = RunState::AwaitingInput,
                         RunState::MagicMapReveal { row, cursed } => {
