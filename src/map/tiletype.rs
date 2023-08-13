@@ -21,6 +21,7 @@ pub enum TileType {
     Bridge,
     // Stairs (changes floor)
     DownStair,
+    UpStair,
 }
 
 pub fn tile_walkable(tt: TileType) -> bool {
@@ -35,7 +36,8 @@ pub fn tile_walkable(tt: TileType) -> bool {
         | TileType::Sand
         | TileType::ShallowWater
         | TileType::Bridge
-        | TileType::DownStair => true,
+        | TileType::DownStair
+        | TileType::UpStair => true,
         _ => false,
     }
 }

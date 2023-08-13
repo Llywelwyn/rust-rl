@@ -3,6 +3,7 @@
 pub const WALL_GLYPH: char = '#';
 pub const FLOOR_GLYPH: char = '.';
 pub const DOWN_STAIR_GLYPH: char = '>';
+pub const UP_STAIR_GLYPH: char = '<';
 pub const WOOD_FLOOR_GLYPH: char = '.';
 pub const FENCE_GLYPH: char = '=';
 pub const BRIDGE_GLYPH: char = '.';

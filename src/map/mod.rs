@@ -9,6 +9,7 @@ pub use tiletype::{tile_cost, tile_opaque, tile_walkable, TileType};
 mod interval_spawning_system;
 pub use interval_spawning_system::try_spawn_interval;
 pub mod dungeon;
+pub use dungeon::{level_transition, MasterDungeonMap};
 pub mod themes;
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.

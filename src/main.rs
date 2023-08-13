@@ -81,50 +81,9 @@ impl State {
         self.mapgen_index = 0;
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
-        let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
-        let mut player_level = 1;
-        {
-            let player = self.ecs.read_storage::<Player>();
-            let pools = self.ecs.read_storage::<Pools>();
-            for (_p, pool) in (&player, &pools).join() {
-                player_level = pool.level;
-            }
-        }
-        let mut builder = map_builders::level_builder(new_id, &mut rng, 100, 50, player_level);
-        builder.build_map(&mut rng);
-        std::mem::drop(rng);
-        self.mapgen_history = builder.build_data.history.clone();
-        let player_start;
-        {
-            let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            *worldmap_resource = builder.build_data.map.clone();
-            // Unwrap so we get a CTD if there's no starting pos.
-            player_start = builder.build_data.starting_position.as_mut().unwrap().clone();
-        }
-        // Spawn entities
-        builder.spawn_entities(&mut self.ecs);
-
-        // Place player and update resources
-        let mut player_position = self.ecs.write_resource::<Point>();
-        *player_position = Point::new(player_start.x, player_start.y);
-        let mut position_components = self.ecs.write_storage::<Position>();
-        let player_entity = self.ecs.fetch::<Entity>();
-        let player_pos_component = position_components.get_mut(*player_entity);
-        if let Some(player_pos_component) = player_pos_component {
-            player_pos_component.x = player_start.x;
-            player_pos_component.y = player_start.y;
-        }
-
-        // Mark viewshed as dirty (force refresh)
-        let mut viewshed_components = self.ecs.write_storage::<Viewshed>();
-        let mut telepath_components = self.ecs.write_storage::<Telepath>();
-        let vision_vs = viewshed_components.get_mut(*player_entity);
-        let telepath_vs = telepath_components.get_mut(*player_entity);
-        if let Some(vs) = vision_vs {
-            vs.dirty = true;
-        }
-        if let Some(vs) = telepath_vs {
-            vs.dirty = true;
+        let map_building_info = map::level_transition(&mut self.ecs, new_id);
+        if let Some(history) = map_building_info {
+            self.mapgen_history = history;
         }
     }
 
@@ -266,6 +225,8 @@ impl State {
             let mut player_entity_writer = self.ecs.write_resource::<Entity>();
             *player_entity_writer = player_entity;
         }
+        // Replace map list
+        self.ecs.insert(map::dungeon::MasterDungeonMap::new());
         self.generate_world_map(1);
 
         gamelog::setup_log();
@@ -615,7 +576,9 @@ fn main() -> rltk::BError {
 
     raws::load_raws();
 
+    // Insert calls
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
+    gs.ecs.insert(map::MasterDungeonMap::new()); // Master map list
     gs.ecs.insert(Map::new(1, 64, 64, 0, "New Map")); // Map
     gs.ecs.insert(Point::new(0, 0)); // Player pos
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
