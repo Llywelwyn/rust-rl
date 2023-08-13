@@ -313,6 +313,7 @@ pub fn spawn_named_mob(
             hit_points: Pool { current: mob_hp, max: mob_hp },
             mana: Pool { current: mob_mana, max: mob_mana },
             weight: 0.0,
+            god: false,
         };
         eb = eb.with(pools);
         eb = eb.with(EquipmentChanged {});

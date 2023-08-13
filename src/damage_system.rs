@@ -42,7 +42,9 @@ impl<'a> System<'a> for DamageSystem {
 
         for (entity, mut stats, damage) in (&entities, &mut stats, &damage).join() {
             for dmg in damage.amount.iter() {
-                stats.hit_points.current -= dmg.0;
+                if !stats.god {
+                    stats.hit_points.current -= dmg.0;
+                }
                 let pos = positions.get(entity);
                 if let Some(pos) = pos {
                     let idx = map.xy_idx(pos.x, pos.y);

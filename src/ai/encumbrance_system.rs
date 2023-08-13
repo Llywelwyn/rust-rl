@@ -3,6 +3,8 @@ use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::HashMap;
 
+pub const CARRY_CAPACITY_PER_STRENGTH: i32 = 8;
+
 pub struct EncumbranceSystem {}
 
 impl<'a> System<'a> for EncumbranceSystem {
@@ -49,7 +51,8 @@ impl<'a> System<'a> for EncumbranceSystem {
             if let Some(pool) = pools.get_mut(*entity) {
                 pool.weight = *weight;
                 if let Some(attr) = attributes.get(*entity) {
-                    let carry_capacity_lbs = (attr.strength.base + attr.strength.modifiers) * 10;
+                    let carry_capacity_lbs =
+                        (attr.strength.base + attr.strength.modifiers) * CARRY_CAPACITY_PER_STRENGTH;
                     if pool.weight as i32 > 3 * carry_capacity_lbs {
                         // Overloaded
                         burdened

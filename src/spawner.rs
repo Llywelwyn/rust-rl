@@ -54,6 +54,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             level: 1,
             bac: 10,
             weight: 0.0,
+            god: false,
         })
         .with(EquipmentChanged {})
         .with(skills)

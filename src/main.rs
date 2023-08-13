@@ -260,6 +260,28 @@ impl GameState for State {
                         self.mapgen_next_state = Some(RunState::PreRun);
                         new_runstate = RunState::MapGeneration;
                     }
+                    gui::CheatMenuResult::Heal => {
+                        let player = self.ecs.fetch::<Entity>();
+                        let mut pools = self.ecs.write_storage::<Pools>();
+                        let mut player_pools = pools.get_mut(*player).unwrap();
+                        player_pools.hit_points.current = player_pools.hit_points.max;
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                    gui::CheatMenuResult::MagicMap => {
+                        let mut map = self.ecs.fetch_mut::<Map>();
+                        for v in map.revealed_tiles.iter_mut() {
+                            *v = true;
+                        }
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                    gui::CheatMenuResult::GodMode => {
+                        let player = self.ecs.fetch::<Entity>();
+                        let mut pools = self.ecs.write_storage::<Pools>();
+                        let mut player_pools = pools.get_mut(*player).unwrap();
+                        gamelog::Logger::new().item_name("TOGGLED GOD MODE!").log();
+                        player_pools.god = !player_pools.god;
+                        new_runstate = RunState::AwaitingInput;
+                    }
                 }
             }
             RunState::ShowInventory => {

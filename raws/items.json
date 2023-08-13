@@ -75,7 +75,7 @@
         "id": "equip_dagger",
         "name": { "name": "dagger", "plural": "daggers" },
         "renderable": { "glyph": ")", "fg": "#808080", "bg": "#000000", "order": 2 },
-        "weight": 130,
+        "weight": 1,
         "value": 2,
         "flags": ["EQUIP_MELEE", "FINESSE"],
         "effects": { "base_damage": "1d4" }

@@ -144,6 +144,7 @@ pub struct Pools {
     pub bac: i32,
     pub level: i32,
     pub weight: f32,
+    pub god: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

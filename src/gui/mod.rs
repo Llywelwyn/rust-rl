@@ -1,7 +1,7 @@
 use super::{
-    camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes, Burden, Equipped, Hidden,
-    HungerClock, HungerState, InBackpack, Map, Name, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill,
-    Skills, State, Viewshed,
+    ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes,
+    Burden, Equipped, Hidden, HungerClock, HungerState, InBackpack, Map, Name, Player, Point, Pools, Position, Prop,
+    Renderable, RunState, Skill, Skills, State, Viewshed,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -139,6 +139,9 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                 }
             }
         }
+        if stats.god {
+            ctx.print_color(20, 20, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "--- GODMODE: ON ---");
+        }
         // Draw equipment
         let names = ecs.read_storage::<Name>();
         let mut equipment: Vec<String> = Vec::new();
@@ -163,7 +166,11 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             y,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            &format!("[{:.1}/{} lbs]", stats.weight, (attributes.strength.base + attributes.strength.modifiers) * 10),
+            &format!(
+                "[{:.1}/{} lbs]",
+                stats.weight,
+                (attributes.strength.base + attributes.strength.modifiers) * CARRY_CAPACITY_PER_STRENGTH
+            ),
         );
         y += 1;
         let (player_inventory, _inventory_ids) = get_player_inventory(&ecs);
