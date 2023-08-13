@@ -229,6 +229,11 @@ pub struct ObfuscatedName {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct IdentifiedItem {
+    pub name: String,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct EquipmentChanged {}
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]

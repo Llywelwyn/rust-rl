@@ -108,6 +108,7 @@ impl State {
         let mut item_use_system = ItemUseSystem {};
         let mut item_drop_system = ItemDropSystem {};
         let mut item_remove_system = ItemRemoveSystem {};
+        let mut item_id_system = ItemIdentificationSystem {};
         let mut hunger_clock = hunger_system::HungerSystem {};
         let mut particle_system = particle_system::ParticleSpawnSystem {};
 
@@ -125,6 +126,7 @@ impl State {
         item_use_system.run_now(&self.ecs);
         item_drop_system.run_now(&self.ecs);
         item_remove_system.run_now(&self.ecs);
+        item_id_system.run_now(&self.ecs);
         melee_system.run_now(&self.ecs);
         damage_system.run_now(&self.ecs);
         hunger_clock.run_now(&self.ecs);
@@ -537,6 +539,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToMelee>();
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
+    gs.ecs.register::<IdentifiedItem>();
     gs.ecs.register::<MagicItem>();
     gs.ecs.register::<GrantsXP>();
     gs.ecs.register::<LootTable>();

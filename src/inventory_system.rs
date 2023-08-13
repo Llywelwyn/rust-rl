@@ -1,8 +1,8 @@
 use super::{
     gamelog, Confusion, Consumable, Cursed, Destructible, Digger, EquipmentChanged, Equippable, Equipped, HungerClock,
-    HungerState, InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Pools, Position,
-    ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed, Wand,
-    WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME,
+    HungerState, IdentifiedItem, InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Pools,
+    Position, ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed,
+    Wand, WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME,
     LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
@@ -48,6 +48,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
 // systems.
 type EquipComponents<'a> =
     (ReadStorage<'a, Equippable>, WriteStorage<'a, Equipped>, WriteStorage<'a, EquipmentChanged>);
+type NameComponents<'a> = (WriteStorage<'a, Name>, WriteStorage<'a, IdentifiedItem>);
 
 pub struct ItemUseSystem {}
 impl<'a> System<'a> for ItemUseSystem {
@@ -58,7 +59,7 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteExpect<'a, RandomNumberGenerator>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
-        WriteStorage<'a, Name>,
+        NameComponents<'a>,
         WriteStorage<'a, Consumable>,
         WriteStorage<'a, Wand>,
         ReadStorage<'a, Destructible>,
@@ -88,7 +89,7 @@ impl<'a> System<'a> for ItemUseSystem {
             mut rng,
             entities,
             mut wants_to_use,
-            mut names,
+            (mut names, mut identified_items),
             mut consumables,
             mut wands,
             destructibles,
@@ -393,6 +394,12 @@ impl<'a> System<'a> for ItemUseSystem {
 
             // ITEM DELETION AFTER USE
             if used_item {
+                // Identify
+                if entity == *player_entity {
+                    identified_items
+                        .insert(entity, IdentifiedItem { name: item_being_used.name.clone() })
+                        .expect("Unable to insert");
+                }
                 let consumable = consumables.get(wants_to_use.item);
                 match consumable {
                     None => {}
@@ -408,6 +415,39 @@ impl<'a> System<'a> for ItemUseSystem {
             }
         }
         wants_to_use.clear();
+    }
+}
+
+pub struct ItemIdentificationSystem {}
+
+impl<'a> System<'a> for ItemIdentificationSystem {
+    #[allow(clippy::type_complexity)]
+    type SystemData = (
+        ReadStorage<'a, crate::components::Player>,
+        WriteStorage<'a, IdentifiedItem>,
+        WriteExpect<'a, crate::map::MasterDungeonMap>,
+        ReadStorage<'a, crate::Item>,
+        ReadStorage<'a, Name>,
+        WriteStorage<'a, crate::ObfuscatedName>,
+        Entities<'a>,
+    );
+
+    fn run(&mut self, data: Self::SystemData) {
+        let (player, mut identified, mut dm, items, names, mut obfuscated_names, entities) = data;
+        for (_p, id) in (&player, &identified).join() {
+            let tag = crate::raws::get_id_from_name(id.name.clone());
+            if !dm.identified_items.contains(&id.name) && crate::raws::is_tag_magic(&tag) {
+                dm.identified_items.insert(id.name.clone());
+
+                for (entity, _item, name) in (&entities, &items, &names).join() {
+                    if name.name == id.name {
+                        obfuscated_names.remove(entity);
+                    }
+                }
+            }
+        }
+        // Clean up
+        identified.clear();
     }
 }
 

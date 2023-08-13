@@ -185,6 +185,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         // Draw entities seen on screen
         let viewsheds = ecs.read_storage::<Viewshed>();
         let renderables = ecs.read_storage::<Renderable>();
+        let names = ecs.read_storage::<Name>();
         let hidden = ecs.read_storage::<Hidden>();
         let props = ecs.read_storage::<Prop>();
         let map = ecs.fetch::<Map>();
@@ -193,7 +194,10 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         for tile in viewshed.visible_tiles.iter() {
             let idx = map.xy_idx(tile.x, tile.y);
             for entity in map.tile_content[idx].iter() {
-                let mut draw = true;
+                let mut draw = false;
+                if let Some(_) = names.get(*entity) {
+                    draw = true;
+                }
                 let prop = props.get(*entity);
                 if let Some(_) = prop {
                     draw = false;

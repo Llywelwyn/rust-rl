@@ -111,7 +111,10 @@ pub fn spawn_named_entity(
 pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         let item_template = &raws.raws.items[raws.item_index[key]];
-        let scroll_names = ecs.fetch::<crate::map::MasterDungeonMap>().scroll_map.clone();
+        let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
+        let scroll_names = dm.scroll_map.clone();
+        let identified_items = dm.identified_items.clone();
+        std::mem::drop(dm);
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
         eb = eb.with(Name { name: item_template.name.name.clone(), plural: item_template.name.plural.clone() });
@@ -178,15 +181,17 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
             };
             eb = eb.with(MagicItem { class: item_class });
 
-            #[allow(clippy::single_match)]
-            match magic_item.naming.as_str() {
-                "scroll" => {
-                    eb = eb.with(ObfuscatedName {
-                        name: scroll_names[&item_template.name.name].0.clone(),
-                        plural: scroll_names[&item_template.name.name].1.clone(),
-                    })
+            if !identified_items.contains(&item_template.name.name) {
+                #[allow(clippy::single_match)]
+                match magic_item.naming.as_str() {
+                    "scroll" => {
+                        eb = eb.with(ObfuscatedName {
+                            name: scroll_names[&item_template.name.name].0.clone(),
+                            plural: scroll_names[&item_template.name.name].1.clone(),
+                        })
+                    }
+                    _ => {}
                 }
-                _ => {}
             }
         }
 
@@ -654,4 +659,24 @@ pub fn get_scroll_tags() -> Vec<String> {
         }
     }
     return result;
+}
+
+pub fn get_id_from_name(name: String) -> String {
+    let raws = &super::RAWS.lock().unwrap();
+    for item in &raws.raws.items {
+        if item.name.name == name {
+            return item.id.clone();
+        }
+    }
+    return "null".to_string();
+}
+
+pub fn is_tag_magic(tag: &str) -> bool {
+    let raws = &super::RAWS.lock().unwrap();
+    if raws.item_index.contains_key(tag) {
+        let item_template = &raws.raws.items[raws.item_index[tag]];
+        return item_template.magic.is_some();
+    } else {
+        return false;
+    }
 }
