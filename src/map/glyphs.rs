@@ -1,4 +1,5 @@
 // DEFAULT THEME
+#[allow(dead_code)]
 pub const WALL_GLYPH: char = '#';
 pub const FLOOR_GLYPH: char = '.';
 pub const DOWN_STAIR_GLYPH: char = '>';

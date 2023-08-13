@@ -26,7 +26,9 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map) -> (rltk::FontCharType
 #[rustfmt::skip]
 pub fn get_default_theme_renderables(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
     let glyph: rltk::FontCharType;
+    #[allow(unused_assignments)]
     let mut fg: RGB = RGB::new();
+    #[allow(unused_assignments)]
     let mut bg: RGB = RGB::new();
 
     match map.tiles[idx] {
@@ -52,7 +54,9 @@ pub fn get_default_theme_renderables(idx: usize, map: &Map) -> (rltk::FontCharTy
 #[rustfmt::skip]
 fn get_forest_theme_renderables(idx:usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
     let glyph;
+    #[allow(unused_assignments)]
     let mut fg = RGB::new();
+    #[allow(unused_assignments)]
     let mut bg = RGB::new();
 
     match map.tiles[idx] {
