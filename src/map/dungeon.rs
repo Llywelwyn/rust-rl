@@ -31,12 +31,12 @@ impl MasterDungeonMap {
     }
 }
 
-pub fn level_transition(ecs: &mut World, new_id: i32) -> Option<Vec<Map>> {
+pub fn level_transition(ecs: &mut World, new_id: i32, offset: i32) -> Option<Vec<Map>> {
     // Obtain master
     let dungeon_master = ecs.read_resource::<MasterDungeonMap>();
     if dungeon_master.get_map(new_id).is_some() {
         std::mem::drop(dungeon_master);
-        transition_to_existing_map(ecs, new_id);
+        transition_to_existing_map(ecs, new_id, offset);
         return None;
     } else {
         std::mem::drop(dungeon_master);
@@ -44,7 +44,7 @@ pub fn level_transition(ecs: &mut World, new_id: i32) -> Option<Vec<Map>> {
     }
 }
 
-fn transition_to_existing_map(ecs: &mut World, new_id: i32) {
+fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32) {
     let dungeon_master = ecs.read_resource::<MasterDungeonMap>();
     // Unwrapping here panics if new_id isn't present. But this should
     // never be called without new_id being present by level_transition.
@@ -53,8 +53,9 @@ fn transition_to_existing_map(ecs: &mut World, new_id: i32) {
     let player_entity = ecs.fetch::<Entity>();
     // Find down stairs, place player
     let w = map.width;
+    let stair_type = if offset < 0 { TileType::DownStair } else { TileType::UpStair };
     for (idx, tt) in map.tiles.iter().enumerate() {
-        if *tt == TileType::DownStair {
+        if *tt == stair_type {
             let mut player_position = ecs.write_resource::<Point>();
             *player_position = Point::new(idx as i32 % w, idx as i32 / w);
             let mut position_components = ecs.write_storage::<Position>();

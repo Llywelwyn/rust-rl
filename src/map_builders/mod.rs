@@ -308,7 +308,7 @@ pub fn random_builder(
     initial_player_level: i32,
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
-    let mut builder = BuilderChain::new(new_id, width, height, difficulty, "<PLACEHOLDER>", initial_player_level);
+    let mut builder = BuilderChain::new(new_id, width, height, difficulty, "the dungeon", initial_player_level);
     let type_roll = rng.roll_dice(1, 2);
     let mut want_doors = true;
     match type_roll {

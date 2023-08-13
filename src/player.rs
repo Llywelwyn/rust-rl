@@ -457,6 +457,14 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                     result = skip_turn(&mut gs.ecs); // (Wait a turn)
                 }
             }
+            VirtualKeyCode::Comma => {
+                if ctx.shift {
+                    if !try_previous_level(&mut gs.ecs) {
+                        return RunState::AwaitingInput;
+                    }
+                    return RunState::PreviousLevel; // < to ascend
+                }
+            }
             VirtualKeyCode::Slash => {
                 if ctx.shift {
                     return RunState::HelpScreen;
@@ -496,7 +504,19 @@ pub fn try_next_level(ecs: &mut World) -> bool {
     if map.tiles[player_idx] == TileType::DownStair {
         return true;
     } else {
-        gamelog::Logger::new().append("You don't see a way down.").log();
+        gamelog::Logger::new().append("You don't see a way down from here.").log();
+        return false;
+    }
+}
+
+pub fn try_previous_level(ecs: &mut World) -> bool {
+    let player_pos = ecs.fetch::<Point>();
+    let map = ecs.fetch::<Map>();
+    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
+    if map.tiles[player_idx] == TileType::UpStair {
+        return true;
+    } else {
+        gamelog::Logger::new().append("You don't see a way up from here.").log();
         return false;
     }
 }

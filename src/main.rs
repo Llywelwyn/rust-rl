@@ -62,6 +62,7 @@ pub enum RunState {
     SaveGame,
     GameOver,
     NextLevel,
+    PreviousLevel,
     HelpScreen,
     MagicMapReveal { row: i32, cursed: bool },
     MapGeneration,
@@ -76,12 +77,12 @@ pub struct State {
 }
 
 impl State {
-    fn generate_world_map(&mut self, new_id: i32) {
+    fn generate_world_map(&mut self, new_id: i32, offset: i32) {
         // Visualisation stuff
         self.mapgen_index = 0;
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
-        let map_building_info = map::level_transition(&mut self.ecs, new_id);
+        let map_building_info = map::level_transition(&mut self.ecs, new_id, offset);
         if let Some(history) = map_building_info {
             self.mapgen_history = history;
         }
@@ -178,7 +179,7 @@ impl State {
         return to_delete;
     }
 
-    fn goto_next_level(&mut self) {
+    fn goto_level(&mut self, offset: i32) {
         // Delete entities that aren't player/player's equipment
         let to_delete = self.entities_to_remove_on_level_change();
         for target in to_delete {
@@ -192,21 +193,9 @@ impl State {
             current_id = worldmap_resource.id;
         }
         gamelog::record_event("descended", 1);
-        self.generate_world_map(current_id + 1);
-
-        // Notify player, restore health up to a point.
-        let player_entity = self.ecs.fetch::<Entity>();
-        gamelog::Logger::new()
-            .append("Taking a short rest, you manage to")
-            .colour((0, 255, 0))
-            .append_n("recover some of your strength")
-            .period()
-            .log();
-        let mut pools = self.ecs.write_storage::<Pools>();
-        let stats = pools.get_mut(*player_entity);
-        if let Some(stats) = stats {
-            stats.hit_points.current = i32::max(stats.hit_points.current, stats.hit_points.max / 2);
-        }
+        self.generate_world_map(current_id + offset, offset);
+        let mapname = self.ecs.fetch::<Map>().name.clone();
+        gamelog::Logger::new().append("You head to").npc_name_n(mapname).period().log();
     }
 
     fn game_over_cleanup(&mut self) {
@@ -227,7 +216,7 @@ impl State {
         }
         // Replace map list
         self.ecs.insert(map::dungeon::MasterDungeonMap::new());
-        self.generate_world_map(1);
+        self.generate_world_map(1, 0);
 
         gamelog::setup_log();
         gamelog::record_event("player_level", 1);
@@ -408,7 +397,12 @@ impl GameState for State {
                 }
             }
             RunState::NextLevel => {
-                self.goto_next_level();
+                self.goto_level(1);
+                self.mapgen_next_state = Some(RunState::PreRun);
+                new_runstate = RunState::MapGeneration;
+            }
+            RunState::PreviousLevel => {
+                self.goto_level(-1);
                 self.mapgen_next_state = Some(RunState::PreRun);
                 new_runstate = RunState::MapGeneration;
             }
@@ -589,7 +583,7 @@ fn main() -> rltk::BError {
 
     gamelog::setup_log();
     gamelog::record_event("player_level", 1);
-    gs.generate_world_map(1);
+    gs.generate_world_map(1, 0);
 
     rltk::main_loop(context, gs)
 }
