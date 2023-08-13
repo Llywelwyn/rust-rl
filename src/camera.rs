@@ -63,7 +63,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
             if pos.x < max_x && pos.y < max_y && pos.x >= min_x && pos.y >= min_y {
                 let mut draw = false;
                 let mut fg = render.fg;
-                let mut bg = if render.bg == (RGB { r: 0.0, g: 0.0, b: 0.0 }) {
+                let bg = if render.bg == (RGB { r: 0.0, g: 0.0, b: 0.0 }) {
                     crate::map::themes::get_tile_renderables_for_id(idx, &*map).2
                 } else {
                     render.bg
@@ -73,7 +73,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                     draw = true;
                 } else {
                     fg = fg.mul(0.75);
-                    bg = bg.mul(0.75);
+                    // We don't darken BG, because get_tile_renderables_for_id handles this.
                 }
                 // Draw entities with minds within telepath range
                 if map.telepath_tiles[idx] {
