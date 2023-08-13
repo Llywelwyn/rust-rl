@@ -10,6 +10,7 @@ pub struct Item {
     pub value: Option<f32>,
     pub flags: Option<Vec<String>>,
     pub effects: Option<HashMap<String, String>>,
+    pub magic: Option<MagicItem>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -24,4 +25,10 @@ pub struct Renderable {
     pub fg: String,
     pub bg: String,
     pub order: i32,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MagicItem {
+    pub class: String,
+    pub naming: String,
 }

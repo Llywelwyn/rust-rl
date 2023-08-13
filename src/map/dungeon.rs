@@ -3,17 +3,28 @@ use crate::{gamelog, map_builders, OtherLevelPosition, Position, Telepath, Views
 use rltk::prelude::*;
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct MasterDungeonMap {
     maps: HashMap<i32, Map>,
+    pub identified_items: HashSet<String>,
+    pub scroll_map: HashMap<String, (String, String)>,
 }
 
 impl MasterDungeonMap {
     /// Initialises a blank MasterDungeonMap
     pub fn new() -> MasterDungeonMap {
-        return MasterDungeonMap { maps: HashMap::new() };
+        let mut dm =
+            MasterDungeonMap { maps: HashMap::new(), identified_items: HashSet::new(), scroll_map: HashMap::new() };
+        // TODO: Use stored RNG
+        let mut rng = RandomNumberGenerator::new();
+        for scroll_tag in crate::raws::get_scroll_tags().iter() {
+            let (unid_singular, unid_plural) = make_scroll_name(&mut rng);
+            dm.scroll_map.insert(scroll_tag.to_string(), (unid_singular, unid_plural));
+        }
+
+        return dm;
     }
     /// Stores the given map in the MasterDungeonMap
     pub fn store_map(&mut self, map: &Map) {
@@ -29,6 +40,52 @@ impl MasterDungeonMap {
             return None;
         }
     }
+}
+
+fn make_scroll_name(rng: &mut RandomNumberGenerator) -> (String, String) {
+    let len = 4 + rng.roll_dice(1, 4);
+    let mut singular = "scroll of ".to_string();
+    let mut plural = "scrolls of ".to_string();
+    for i in 0..len {
+        if i % 2 == 0 {
+            let char = match rng.roll_dice(1, 5) {
+                1 => "a",
+                2 => "e",
+                3 => "i",
+                4 => "o",
+                _ => "u",
+            };
+            singular += char;
+            plural += char;
+        } else {
+            let char = match rng.roll_dice(1, 21) {
+                1 => "b",
+                2 => "c",
+                3 => "d",
+                4 => "f",
+                5 => "g",
+                6 => "h",
+                7 => "j",
+                8 => "k",
+                9 => "l",
+                10 => "m",
+                11 => "n",
+                12 => "p",
+                13 => "q",
+                14 => "r",
+                15 => "s",
+                16 => "t",
+                17 => "v",
+                18 => "w",
+                19 => "x",
+                20 => "y",
+                _ => "z",
+            };
+            singular += char;
+            plural += char;
+        }
+    }
+    return (singular, plural);
 }
 
 pub fn level_transition(ecs: &mut World, new_id: i32, offset: i32) -> Option<Vec<Map>> {

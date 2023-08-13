@@ -526,6 +526,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<Telepath>();
     gs.ecs.register::<Name>();
+    gs.ecs.register::<ObfuscatedName>();
     gs.ecs.register::<BlocksTile>();
     gs.ecs.register::<BlocksVisibility>();
     gs.ecs.register::<Door>();

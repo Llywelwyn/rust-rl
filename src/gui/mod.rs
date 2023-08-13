@@ -1,7 +1,7 @@
 use super::{
     ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes,
-    Burden, Equipped, Hidden, HungerClock, HungerState, InBackpack, Map, Name, Player, Point, Pools, Position, Prop,
-    Renderable, RunState, Skill, Skills, State, Viewshed,
+    Burden, Equipped, Hidden, HungerClock, HungerState, InBackpack, MagicItem, Map, Name, ObfuscatedName, Player,
+    Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -143,13 +143,13 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             ctx.print_color(20, 20, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "--- GODMODE: ON ---");
         }
         // Draw equipment
-        let names = ecs.read_storage::<Name>();
         let renderables = ecs.read_storage::<Renderable>();
         let mut equipment: Vec<(String, RGB)> = Vec::new();
-        for (_equipped, name, renderable) in
-            (&equipped, &names, &renderables).join().filter(|item| item.0.owner == *player_entity)
+        let entities = ecs.entities();
+        for (entity, _equipped, renderable) in
+            (&entities, &equipped, &renderables).join().filter(|item| item.1.owner == *player_entity)
         {
-            equipment.push((name.name.to_string(), renderable.fg));
+            equipment.push((get_item_display_name(ecs, entity).0, renderable.fg));
         }
         let mut y = 1;
         if !equipment.is_empty() {
@@ -205,12 +205,13 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                 if entity == &*player_entity {
                     draw = false;
                 }
-                let name = &names.get(*entity);
-                if let Some(name) = name {
-                    if draw {
-                        let fg = renderables.get(*entity).unwrap().fg;
-                        seen_entities.push((name.name.to_string(), fg));
-                    }
+                if draw {
+                    let fg = if let Some(renderable) = renderables.get(*entity) {
+                        renderable.fg
+                    } else {
+                        RGB::named(rltk::WHITE)
+                    };
+                    seen_entities.push((get_item_display_name(ecs, *entity).0, fg));
                 }
             }
         }
@@ -360,6 +361,25 @@ pub fn get_max_inventory_width(inventory: &BTreeMap<(String, String, (u8, u8, u8
     return width;
 }
 
+pub fn get_item_display_name(ecs: &World, item: Entity) -> (String, String) {
+    if let Some(name) = ecs.read_storage::<Name>().get(item) {
+        if ecs.read_storage::<MagicItem>().get(item).is_some() {
+            let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
+            if dm.identified_items.contains(&name.name) {
+                return (name.name.clone(), name.plural.clone());
+            } else if let Some(obfuscated) = ecs.read_storage::<ObfuscatedName>().get(item) {
+                return (obfuscated.name.clone(), obfuscated.plural.clone());
+            } else {
+                return ("unid magic item".to_string(), "unid magic items".to_string());
+            }
+        } else {
+            return (name.name.clone(), name.plural.clone());
+        }
+    } else {
+        return ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
+    }
+}
+
 pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     let mut x = 3;
     let mut y = 12;
@@ -423,10 +443,8 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<(String, String, (u8, u8, 
         } else {
             (255, 255, 255)
         };
-        player_inventory
-            .entry((name.name.to_string(), name.plural.to_string(), (r, g, b)))
-            .and_modify(|count| *count += 1)
-            .or_insert(1);
+        let (singular, plural) = get_item_display_name(ecs, entity);
+        player_inventory.entry((singular, plural, (r, g, b))).and_modify(|count| *count += 1).or_insert(1);
         inventory_ids.entry(name.name.to_string()).or_insert(entity);
     }
 
@@ -505,10 +523,9 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
 
 pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
-    let names = gs.ecs.read_storage::<Name>();
     let backpack = gs.ecs.read_storage::<Equipped>();
     let entities = gs.ecs.entities();
-    let inventory = (&backpack, &names).join().filter(|item| item.0.owner == *player_entity);
+    let inventory = (&backpack).join().filter(|item| item.owner == *player_entity);
     let count = inventory.count();
 
     let (x_offset, y_offset) = (1, 10);
@@ -523,8 +540,8 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
 
     let mut equippable: Vec<(Entity, String)> = Vec::new();
     let mut width = 3;
-    for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity) {
-        let this_name = &name.name;
+    for (entity, _pack) in (&entities, &backpack).join().filter(|item| item.1.owner == *player_entity) {
+        let this_name = &get_item_display_name(&gs.ecs, entity).0;
         let this_width = 3 + this_name.len();
         width = if width > this_width { width } else { this_width };
         equippable.push((entity, this_name.to_string()));

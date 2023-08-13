@@ -24,7 +24,8 @@
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "ranged": "12", "damage": "10" }
+        "effects": { "ranged": "12", "damage": "10" },
+        "magic": { "class": "common", "naming": "scroll" }
     },
     {
         "id": "scroll_fireball",
@@ -33,7 +34,8 @@
         "weight": 0.5,
         "value": 150,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
+        "effects": { "ranged": "10", "damage": "15", "aoe": "3" },
+        "magic": { "class": "rare", "naming": "scroll" }
     },
     {
         "id": "scroll_fireball_c",
@@ -42,7 +44,8 @@
         "weight": 0.5,
         "value": 150,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
-        "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
+        "effects": { "ranged": "10", "damage": "15", "aoe": "3" },
+        "magic": { "class": "rare", "naming": "scroll" }
     },
     {
         "id": "scroll_confusion",
@@ -51,7 +54,8 @@
         "weight": 0.5,
         "value": 100,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "ranged": "10", "confusion": "4" }
+        "effects": { "ranged": "10", "confusion": "4" },
+        "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {
         "id": "scroll_magicmap",
@@ -60,7 +64,8 @@
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "magicmapper": "" }
+        "effects": { "magicmapper": "" },
+        "magic": { "class": "common", "naming": "scroll" }
     },
     {
         "id": "scroll_magicmap_c",
@@ -69,7 +74,8 @@
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
-        "effects": { "magicmapper": "" }
+        "effects": { "magicmapper": "" },
+        "magic": { "class": "common", "naming": "scroll" }
     },
     {
         "id": "equip_dagger",

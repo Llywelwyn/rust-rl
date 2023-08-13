@@ -223,6 +223,12 @@ pub struct MagicItem {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ObfuscatedName {
+    pub name: String,
+    pub plural: String,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct EquipmentChanged {}
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]

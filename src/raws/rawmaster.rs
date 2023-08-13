@@ -111,6 +111,7 @@ pub fn spawn_named_entity(
 pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         let item_template = &raws.raws.items[raws.item_index[key]];
+        let scroll_names = ecs.fetch::<crate::map::MasterDungeonMap>().scroll_map.clone();
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
         eb = eb.with(Name { name: item_template.name.name.clone(), plural: item_template.name.plural.clone() });
@@ -146,7 +147,6 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                 }
             }
         }
-
         let mut base_damage = "1d4";
         let mut hit_bonus = 0;
 
@@ -166,6 +166,27 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                     "digger" => eb = eb.with(Digger {}),
                     _ => rltk::console::log(format!("Warning: effect {} not implemented.", effect_name)),
                 }
+            }
+        }
+        if let Some(magic_item) = &item_template.magic {
+            let item_class = match magic_item.class.as_str() {
+                "common" => MagicItemClass::Common,
+                "uncommon" => MagicItemClass::Uncommon,
+                "rare" => MagicItemClass::Rare,
+                "veryrare" => MagicItemClass::VeryRare,
+                _ => MagicItemClass::Legendary,
+            };
+            eb = eb.with(MagicItem { class: item_class });
+
+            #[allow(clippy::single_match)]
+            match magic_item.naming.as_str() {
+                "scroll" => {
+                    eb = eb.with(ObfuscatedName {
+                        name: scroll_names[&item_template.name.name].0.clone(),
+                        plural: scroll_names[&item_template.name.name].1.clone(),
+                    })
+                }
+                _ => {}
             }
         }
 
@@ -620,4 +641,17 @@ pub fn get_mob_spawn_amount(rng: &mut RandomNumberGenerator, spawn_type: &Spawns
         3..=4 => return i32::max(1, roll / 2),
         _ => return roll,
     };
+}
+
+pub fn get_scroll_tags() -> Vec<String> {
+    let raws = &super::RAWS.lock().unwrap();
+    let mut result = Vec::new();
+    for item in raws.raws.items.iter() {
+        if let Some(magic) = &item.magic {
+            if &magic.naming == "scroll" {
+                result.push(item.name.name.clone());
+            }
+        }
+    }
+    return result;
 }
