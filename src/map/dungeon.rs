@@ -11,6 +11,7 @@ pub struct MasterDungeonMap {
     pub identified_items: HashSet<String>,
     pub scroll_map: HashMap<String, (String, String)>,
     pub potion_map: HashMap<String, String>,
+    pub wand_map: HashMap<String, String>,
 }
 
 impl MasterDungeonMap {
@@ -21,6 +22,7 @@ impl MasterDungeonMap {
             identified_items: HashSet::new(),
             scroll_map: HashMap::new(),
             potion_map: HashMap::new(),
+            wand_map: HashMap::new(),
         };
         // TODO: Use stored RNG
         let mut rng = RandomNumberGenerator::new();
@@ -32,6 +34,11 @@ impl MasterDungeonMap {
         for potion_tag in crate::raws::get_potion_tags().iter() {
             let unid_singular = make_potion_name(&mut rng, &mut used_potion_names);
             dm.potion_map.insert(potion_tag.to_string(), unid_singular);
+        }
+        let mut used_wand_names: HashSet<String> = HashSet::new();
+        for wand_tag in crate::raws::get_wand_tags().iter() {
+            let unid_singular = make_wand_name(&mut rng, &mut used_wand_names);
+            dm.wand_map.insert(wand_tag.to_string(), unid_singular);
         }
 
         return dm;
@@ -98,8 +105,10 @@ fn make_scroll_name(rng: &mut RandomNumberGenerator) -> (String, String) {
     return (singular, plural);
 }
 
-const POTION_COLOURS: &[&str] =
-    &["red", "orange", "yellow", "green", "blue", "indigo", "violet", "black", "white", "silver", "gold"];
+const POTION_COLOURS: &[&str] = &[
+    "red", "orange", "yellow", "green", "blue", "indigo", "violet", "black", "white", "silver", "gold", "rainbow",
+    "blood", "purple", "cyan", "brown", "grey",
+];
 const POTION_ADJECTIVES: &[&str] = &["swirling", "viscous", "effervescent", "slimy", "oily", "metallic"];
 
 fn make_potion_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
@@ -109,6 +118,32 @@ fn make_potion_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<St
         name += " ";
         name += POTION_COLOURS[rng.roll_dice(1, POTION_COLOURS.len() as i32) as usize - 1];
         name += " potion";
+
+        if !used_names.contains(&name) {
+            used_names.insert(name.clone());
+            return name;
+        }
+    }
+}
+
+const WAND_TYPES: &[&str] = &[
+    "iron",
+    "steel",
+    "silver",
+    "gold",
+    "octagonal",
+    "pointed",
+    "curved",
+    "jeweled",
+    "mahogany",
+    "crystalline",
+    "lead",
+];
+
+fn make_wand_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
+    loop {
+        let mut name: String = WAND_TYPES[rng.roll_dice(1, WAND_TYPES.len() as i32) as usize - 1].to_string();
+        name += " wand";
 
         if !used_names.contains(&name) {
             used_names.insert(name.clone());

@@ -114,6 +114,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
         let scroll_names = dm.scroll_map.clone();
         let potion_names = dm.potion_map.clone();
+        let wand_names = dm.wand_map.clone();
         let identified_items = dm.identified_items.clone();
         std::mem::drop(dm);
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
@@ -193,6 +194,12 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                     }
                     "potion" => {
                         let singular = potion_names[&item_template.name.name].clone();
+                        let mut plural = singular.clone();
+                        plural += "s";
+                        eb = eb.with(ObfuscatedName { name: singular, plural: plural })
+                    }
+                    "wand" => {
+                        let singular = wand_names[&item_template.name.name].clone();
                         let mut plural = singular.clone();
                         plural += "s";
                         eb = eb.with(ObfuscatedName { name: singular, plural: plural })
@@ -679,6 +686,19 @@ pub fn get_potion_tags() -> Vec<String> {
     for item in raws.raws.items.iter() {
         if let Some(magic) = &item.magic {
             if &magic.naming == "potion" {
+                result.push(item.name.name.clone());
+            }
+        }
+    }
+    return result;
+}
+
+pub fn get_wand_tags() -> Vec<String> {
+    let raws = &super::RAWS.lock().unwrap();
+    let mut result = Vec::new();
+    for item in raws.raws.items.iter() {
+        if let Some(magic) = &item.magic {
+            if &magic.naming == "wand" {
                 result.push(item.name.name.clone());
             }
         }
