@@ -85,6 +85,8 @@ impl State {
         let map_building_info = map::level_transition(&mut self.ecs, new_id, offset);
         if let Some(history) = map_building_info {
             self.mapgen_history = history;
+        } else {
+            map::dungeon::thaw_entities(&mut self.ecs);
         }
     }
 
@@ -133,58 +135,9 @@ impl State {
         mapindex.run_now(&self.ecs);
     }
 
-    fn entities_to_remove_on_level_change(&mut self) -> Vec<Entity> {
-        let entities = self.ecs.entities();
-        let player = self.ecs.read_storage::<Player>();
-        let clock = self.ecs.read_storage::<Clock>();
-        let backpack = self.ecs.read_storage::<InBackpack>();
-        let player_entity = self.ecs.fetch::<Entity>();
-        let equipped = self.ecs.read_storage::<Equipped>();
-
-        let mut to_delete: Vec<Entity> = Vec::new();
-        for entity in entities.join() {
-            let mut should_delete = true;
-
-            // Don't delete the turn clock
-            let c = clock.get(entity);
-            if let Some(_c) = c {
-                should_delete = false;
-            }
-
-            // Don't delete player
-            let p = player.get(entity);
-            if let Some(_p) = p {
-                should_delete = false;
-            }
-
-            // Don't delete player's equipment
-            let bp = backpack.get(entity);
-            if let Some(bp) = bp {
-                if bp.owner == *player_entity {
-                    should_delete = false;
-                }
-            }
-            let eq = equipped.get(entity);
-            if let Some(eq) = eq {
-                if eq.owner == *player_entity {
-                    should_delete = false;
-                }
-            }
-
-            if should_delete {
-                to_delete.push(entity);
-            }
-        }
-
-        return to_delete;
-    }
-
     fn goto_level(&mut self, offset: i32) {
-        // Delete entities that aren't player/player's equipment
-        let to_delete = self.entities_to_remove_on_level_change();
-        for target in to_delete {
-            self.ecs.delete_entity(target).expect("Unable to delete entity");
-        }
+        // Freeze the current level
+        map::dungeon::freeze_entities(&mut self.ecs);
 
         // Build new map + place player
         let current_id;
@@ -511,6 +464,7 @@ fn main() -> rltk::BError {
     };
 
     gs.ecs.register::<Position>();
+    gs.ecs.register::<OtherLevelPosition>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Prop>();
     gs.ecs.register::<Player>();

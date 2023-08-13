@@ -1,5 +1,5 @@
 use super::{Map, TileType};
-use crate::{gamelog, map_builders, Position, Telepath, Viewshed};
+use crate::{gamelog, map_builders, OtherLevelPosition, Position, Telepath, Viewshed};
 use rltk::prelude::*;
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
@@ -130,4 +130,50 @@ fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
     let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
     dungeon_master.store_map(&builder.build_data.map);
     return mapgen_history;
+}
+
+/// Iterate through entities on the current level, save the current position and floor
+/// of each entity-to-be-frozen, and then delete their current position.
+pub fn freeze_entities(ecs: &mut World) {
+    // Obtain reqs from ECS
+    let entities = ecs.entities();
+    let mut positions = ecs.write_storage::<Position>();
+    let mut other_positions = ecs.write_storage::<OtherLevelPosition>();
+    let player_entity = ecs.fetch::<Entity>();
+    let map_id = ecs.fetch::<Map>().id;
+    // Save Positions and mark for deletion
+    let mut pos_to_delete: Vec<Entity> = Vec::new();
+    for (entity, pos) in (&entities, &positions).join() {
+        if entity != *player_entity {
+            other_positions
+                .insert(entity, OtherLevelPosition { x: pos.x, y: pos.y, id: map_id })
+                .expect("Failed to insert OtherLevelPosition");
+            pos_to_delete.push(entity);
+        }
+    }
+    for p in pos_to_delete.iter() {
+        positions.remove(*p);
+    }
+}
+
+/// Iterate through entities, and insert a Position component if the
+/// entity has an OtherLevelPosition for the new map id.
+pub fn thaw_entities(ecs: &mut World) {
+    // Obtain reqs from ECS
+    let entities = ecs.entities();
+    let mut positions = ecs.write_storage::<Position>();
+    let mut other_positions = ecs.write_storage::<OtherLevelPosition>();
+    let player_entity = ecs.fetch::<Entity>();
+    let map_id = ecs.fetch::<Map>().id;
+    // Save Positions and mark for deletion
+    let mut pos_to_delete: Vec<Entity> = Vec::new();
+    for (entity, pos) in (&entities, &other_positions).join() {
+        if entity != *player_entity && pos.id == map_id {
+            positions.insert(entity, Position { x: pos.x, y: pos.y }).expect("Failed to insert OtherLevelPosition");
+            pos_to_delete.push(entity);
+        }
+    }
+    for p in pos_to_delete.iter() {
+        other_positions.remove(*p);
+    }
 }

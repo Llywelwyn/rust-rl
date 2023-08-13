@@ -23,6 +23,13 @@ pub struct Position {
     pub y: i32,
 }
 
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct OtherLevelPosition {
+    pub x: i32,
+    pub y: i32,
+    pub id: i32,
+}
+
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Renderable {
     pub glyph: rltk::FontCharType,
