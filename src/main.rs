@@ -50,9 +50,10 @@ pub const LOG_TICKS: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
-    AwaitingInput,
+    AwaitingInput, // Player's turn
     PreRun,
-    Ticking,
+    Ticking,       // Tick systems
+    ShowCheatMenu, // Teleport, godmode, etc. - for debugging
     ShowInventory,
     ShowDropItem,
     ShowRemoveItem,
@@ -64,7 +65,7 @@ pub enum RunState {
     NextLevel,
     PreviousLevel,
     HelpScreen,
-    MagicMapReveal { row: i32, cursed: bool },
+    MagicMapReveal { row: i32, cursed: bool }, // Animates magic mapping effect
     MapGeneration,
 }
 
@@ -136,16 +137,23 @@ impl State {
     }
 
     fn goto_level(&mut self, offset: i32) {
-        // Freeze the current level
-        map::dungeon::freeze_entities(&mut self.ecs);
-
         // Build new map + place player
         let current_id;
         {
             let worldmap_resource = self.ecs.fetch::<Map>();
             current_id = worldmap_resource.id;
         }
-        gamelog::record_event("descended", 1);
+        // Record the correct type of event
+        if offset > 0 {
+            gamelog::record_event("descended", 1);
+        } else if current_id == 1 {
+            gamelog::Logger::new().append("CHEAT MENU: YOU CAN'T DO THAT.").colour((255, 0, 0)).log();
+            return;
+        } else {
+            gamelog::record_event("ascended", 1);
+        }
+        // Freeze the current level
+        map::dungeon::freeze_entities(&mut self.ecs);
         self.generate_world_map(current_id + offset, offset);
         let mapname = self.ecs.fetch::<Map>().name.clone();
         gamelog::Logger::new().append("You head to").npc_name_n(mapname).period().log();
@@ -232,6 +240,23 @@ impl GameState for State {
                             new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
                         }
                         _ => new_runstate = RunState::Ticking,
+                    }
+                }
+            }
+            RunState::ShowCheatMenu => {
+                let result = gui::show_cheat_menu(self, ctx);
+                match result {
+                    gui::CheatMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::CheatMenuResult::NoResponse => {}
+                    gui::CheatMenuResult::Ascend => {
+                        self.goto_level(-1);
+                        self.mapgen_next_state = Some(RunState::PreRun);
+                        new_runstate = RunState::MapGeneration;
+                    }
+                    gui::CheatMenuResult::Descend => {
+                        self.goto_level(1);
+                        self.mapgen_next_state = Some(RunState::PreRun);
+                        new_runstate = RunState::MapGeneration;
                     }
                 }
             }

@@ -6,8 +6,10 @@ use super::{
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 use std::collections::BTreeMap;
+mod cheat_menu;
 mod letter_to_option;
 mod tooltip;
+pub use cheat_menu::*;
 
 pub fn draw_lerping_bar(
     ctx: &mut Rltk,

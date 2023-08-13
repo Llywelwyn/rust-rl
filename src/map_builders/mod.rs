@@ -361,6 +361,6 @@ pub fn level_builder(
     match new_id {
         1 => town_builder(new_id, rng, width, height, 0, initial_player_level),
         2 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
-        _ => random_builder(new_id, rng, 64, 64, difficulty, initial_player_level),
+        _ => random_builder(new_id, rng, width, height, difficulty, initial_player_level),
     }
 }
