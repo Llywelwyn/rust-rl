@@ -144,17 +144,23 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         }
         // Draw equipment
         let names = ecs.read_storage::<Name>();
-        let mut equipment: Vec<String> = Vec::new();
-        for (_equipped, name) in (&equipped, &names).join().filter(|item| item.0.owner == *player_entity) {
-            equipment.push(format!("{} (worn)", &name.name));
+        let renderables = ecs.read_storage::<Renderable>();
+        let mut equipment: Vec<(String, RGB)> = Vec::new();
+        for (_equipped, name, renderable) in
+            (&equipped, &names, &renderables).join().filter(|item| item.0.owner == *player_entity)
+        {
+            equipment.push((name.name.to_string(), renderable.fg));
         }
         let mut y = 1;
         if !equipment.is_empty() {
             ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Equipment");
+            let mut j = 0;
             for item in equipment {
                 y += 1;
-                ctx.print_color(72, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "-");
-                ctx.print_color(74, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), item);
+                ctx.set(72, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
+                j += 1;
+                ctx.print_color(74, y, item.1, RGB::named(rltk::BLACK), &item.0);
+                ctx.print_color(74 + &item.0.len() + 1, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "(worn)");
             }
             y += 2;
         }
@@ -280,11 +286,17 @@ pub enum ItemMenuResult {
     Selected,
 }
 
-pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut x: i32, mut y: i32, ctx: &mut Rltk) -> (i32, i32) {
+pub fn print_options(
+    inventory: BTreeMap<(String, String, (u8, u8, u8)), i32>,
+    mut x: i32,
+    mut y: i32,
+    ctx: &mut Rltk,
+) -> (i32, i32) {
     let mut j = 0;
     let initial_x: i32 = x;
     let mut width: i32 = -1;
     for (name, item_count) in &inventory {
+        let fg = RGB::from_u8(name.2 .0, name.2 .1, name.2 .2);
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
         if j < 26 {
@@ -299,25 +311,25 @@ pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut x: i32, mut
         if item_count > &1 {
             // If more than one, print the number and pluralise
             // i.e. (a) 3 daggers
-            ctx.print(x, y, item_count);
+            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item_count);
             x += 2;
-            ctx.print(x, y, name.1.to_string());
+            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), name.1.to_string());
         } else {
             if name.0.ends_with("s") {
-                ctx.print(x, y, "some");
+                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "some");
                 x += 5;
             } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| name.0.starts_with(v)) {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
-                ctx.print(x, y, "an");
+                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "an");
                 x += 3;
             } else {
                 // If one and not a vowel, print 'a'
                 // i.e. (a) a dagger
-                ctx.print(x, y, "a");
+                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "a");
                 x += 2;
             }
-            ctx.print(x, y, name.0.to_string());
+            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), name.0.to_string());
         }
         let this_width = x - initial_x + name.0.len() as i32;
         width = if width > this_width { width } else { this_width };
@@ -329,7 +341,7 @@ pub fn print_options(inventory: BTreeMap<(String, String), i32>, mut x: i32, mut
     return (y, width);
 }
 
-pub fn get_max_inventory_width(inventory: &BTreeMap<(String, String), i32>) -> i32 {
+pub fn get_max_inventory_width(inventory: &BTreeMap<(String, String, (u8, u8, u8)), i32>) -> i32 {
     let mut width: i32 = 0;
     for (name, count) in inventory {
         let mut this_width = name.0.len() as i32;
@@ -395,17 +407,24 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     }
 }
 
-pub fn get_player_inventory(ecs: &World) -> (BTreeMap<(String, String), i32>, BTreeMap<String, Entity>) {
+pub fn get_player_inventory(ecs: &World) -> (BTreeMap<(String, String, (u8, u8, u8)), i32>, BTreeMap<String, Entity>) {
     let player_entity = ecs.fetch::<Entity>();
     let names = ecs.read_storage::<Name>();
     let backpack = ecs.read_storage::<InBackpack>();
     let entities = ecs.entities();
+    let renderables = ecs.read_storage::<Renderable>();
 
     let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
-    let mut player_inventory: BTreeMap<(String, String), i32> = BTreeMap::new();
+    let mut player_inventory: BTreeMap<(String, String, (u8, u8, u8)), i32> = BTreeMap::new();
     for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity) {
+        // RGB can't be used as a key. This is converting the RGB (tuple of f32) into a tuple of u8s.
+        let (r, g, b): (u8, u8, u8) = if let Some(renderable) = renderables.get(entity) {
+            ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8)
+        } else {
+            (255, 255, 255)
+        };
         player_inventory
-            .entry((name.name.to_string(), name.plural.to_string()))
+            .entry((name.name.to_string(), name.plural.to_string(), (r, g, b)))
             .and_modify(|count| *count += 1)
             .or_insert(1);
         inventory_ids.entry(name.name.to_string()).or_insert(entity);
@@ -518,9 +537,11 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     y += 1;
 
     let mut j = 0;
-    for (_, name) in &equippable {
+    let renderables = gs.ecs.read_storage::<Renderable>();
+    for (e, name) in &equippable {
+        let fg = if let Some(renderable) = renderables.get(*e) { renderable.fg } else { RGB::named(rltk::WHITE) };
         ctx.set(x + 1, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
-        ctx.print(x + 3, y, name);
+        ctx.print_color(x + 3, y, fg, RGB::named(rltk::BLACK), name);
         y += 1;
         j += 1;
     }

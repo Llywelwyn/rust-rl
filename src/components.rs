@@ -208,6 +208,20 @@ pub struct Item {
     pub value: f32,  // base
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum MagicItemClass {
+    Common,
+    Uncommon,
+    Rare,
+    VeryRare,
+    Legendary,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MagicItem {
+    pub class: MagicItemClass,
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct EquipmentChanged {}
 
