@@ -96,6 +96,7 @@ impl State {
         let mut vis = VisibilitySystem {};
         let mut regen_system = ai::RegenSystem {};
         let mut energy = ai::EnergySystem {};
+        let mut encumbrance_system = ai::EncumbranceSystem {};
         let mut turn_status_system = ai::TurnStatusSystem {};
         let mut quip_system = ai::QuipSystem {};
         let mut mob = MonsterAI {};
@@ -113,6 +114,7 @@ impl State {
         mapindex.run_now(&self.ecs);
         vis.run_now(&self.ecs);
         regen_system.run_now(&self.ecs);
+        encumbrance_system.run_now(&self.ecs);
         energy.run_now(&self.ecs);
         turn_status_system.run_now(&self.ecs);
         quip_system.run_now(&self.ecs);
@@ -491,6 +493,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Position>();
     gs.ecs.register::<OtherLevelPosition>();
     gs.ecs.register::<Renderable>();
+    gs.ecs.register::<Burden>();
     gs.ecs.register::<Prop>();
     gs.ecs.register::<Player>();
     gs.ecs.register::<Clock>();
@@ -516,6 +519,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Energy>();
     gs.ecs.register::<TakingTurn>();
     gs.ecs.register::<Equippable>();
+    gs.ecs.register::<EquipmentChanged>();
     gs.ecs.register::<Equipped>();
     gs.ecs.register::<MeleeWeapon>();
     gs.ecs.register::<NaturalAttacks>();

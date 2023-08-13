@@ -1,7 +1,7 @@
 use super::{
-    camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes, Equipped, Hidden, HungerClock,
-    HungerState, InBackpack, Map, Name, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills,
-    State, Viewshed,
+    camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes, Burden, Equipped, Hidden,
+    HungerClock, HungerState, InBackpack, Map, Name, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill,
+    Skills, State, Viewshed,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -49,6 +49,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     let attributes = ecs.read_storage::<Attributes>();
     let players = ecs.read_storage::<Player>();
     let hunger = ecs.read_storage::<HungerClock>();
+    let burden = ecs.read_storage::<Burden>();
     let skills = ecs.read_storage::<Skills>();
     for (_player, stats, attributes, hunger, skills) in (&players, &pools, &attributes, &hunger, &skills).join() {
         // Draw hp/mana bars
@@ -56,7 +57,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             ctx,
             2,
             53,
-            26,
+            22,
             stats.hit_points.current,
             stats.hit_points.max,
             RGB::from_u8(0, 255, 0),
@@ -66,7 +67,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             ctx,
             2,
             54,
-            26,
+            22,
             stats.mana.current,
             stats.mana.max,
             RGB::named(rltk::BLUE),
@@ -84,11 +85,11 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             }
         }
         let armour_class = stats.bac - attributes.dexterity.bonus - skill_ac_bonus - armour_ac_bonus;
-        ctx.print_color(30, 53, RGB::named(rltk::PINK), RGB::named(rltk::BLACK), "AC");
-        ctx.print_color(32, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), armour_class);
+        ctx.print_color(26, 53, RGB::named(rltk::PINK), RGB::named(rltk::BLACK), "AC");
+        ctx.print_color(28, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), armour_class);
         // Draw level
         ctx.print_color(
-            30,
+            26,
             54,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
@@ -124,25 +125,46 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                 ctx.print_color_right(70, 53, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Fainting")
             }
         }
-
+        // Burden
+        if let Some(burden) = burden.get(*player_entity) {
+            match burden.level {
+                crate::BurdenLevel::Burdened => {
+                    ctx.print_color_right(70, 50, RGB::named(rltk::BROWN1), RGB::named(rltk::BLACK), "Burdened")
+                }
+                crate::BurdenLevel::Strained => {
+                    ctx.print_color_right(70, 50, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Strained")
+                }
+                crate::BurdenLevel::Overloaded => {
+                    ctx.print_color_right(70, 50, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Overloaded")
+                }
+            }
+        }
         // Draw equipment
         let names = ecs.read_storage::<Name>();
         let mut equipment: Vec<String> = Vec::new();
         for (_equipped, name) in (&equipped, &names).join().filter(|item| item.0.owner == *player_entity) {
-            equipment.push(format!("- {} (worn)", &name.name));
+            equipment.push(format!("{} (worn)", &name.name));
         }
         let mut y = 1;
         if !equipment.is_empty() {
             ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Equipment");
             for item in equipment {
                 y += 1;
-                ctx.print_color(72, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), item);
+                ctx.print_color(72, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "-");
+                ctx.print_color(74, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), item);
             }
             y += 2;
         }
 
         // Draw consumables
         ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Backpack");
+        ctx.print_color(
+            81,
+            y,
+            RGB::named(rltk::WHITE),
+            RGB::named(rltk::BLACK),
+            &format!("[{:.1}/{} lbs]", stats.weight, (attributes.strength.base + attributes.strength.modifiers) * 10),
+        );
         y += 1;
         let (player_inventory, _inventory_ids) = get_player_inventory(&ecs);
         y = print_options(player_inventory, 72, y, ctx).0;

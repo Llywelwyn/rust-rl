@@ -1,8 +1,9 @@
 use super::{
-    gamelog, Confusion, Consumable, Cursed, Destructible, Digger, Equippable, Equipped, HungerClock, HungerState,
-    InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Pools, Position, ProvidesHealing,
-    ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed, Wand, WantsToDropItem,
-    WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
+    gamelog, Confusion, Consumable, Cursed, Destructible, Digger, EquipmentChanged, Equippable, Equipped, HungerClock,
+    HungerState, InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Pools, Position,
+    ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed, Wand,
+    WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME,
+    LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -16,14 +17,18 @@ impl<'a> System<'a> for ItemCollectionSystem {
         WriteStorage<'a, Position>,
         ReadStorage<'a, Name>,
         WriteStorage<'a, InBackpack>,
+        WriteStorage<'a, EquipmentChanged>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut wants_pickup, mut positions, names, mut backpack) = data;
+        let (player_entity, mut wants_pickup, mut positions, names, mut backpack, mut equipment_changed) = data;
 
         for pickup in wants_pickup.join() {
             positions.remove(pickup.item);
             backpack.insert(pickup.item, InBackpack { owner: pickup.collected_by }).expect("Unable to pickup item.");
+            equipment_changed
+                .insert(pickup.collected_by, EquipmentChanged {})
+                .expect("Unable to insert EquipmentChanged.");
 
             if pickup.collected_by == *player_entity {
                 gamelog::Logger::new()
@@ -41,7 +46,8 @@ impl<'a> System<'a> for ItemCollectionSystem {
 // Grouping together components because of type complexity issues - SystemData was too large.
 // This is a temporary solution that'll be fixed once inventory use is refactored into separate
 // systems.
-type EquipComponents<'a> = (ReadStorage<'a, Equippable>, WriteStorage<'a, Equipped>);
+type EquipComponents<'a> =
+    (ReadStorage<'a, Equippable>, WriteStorage<'a, Equipped>, WriteStorage<'a, EquipmentChanged>);
 
 pub struct ItemUseSystem {}
 impl<'a> System<'a> for ItemUseSystem {
@@ -100,12 +106,15 @@ impl<'a> System<'a> for ItemUseSystem {
             mut confused,
             magic_mapper,
             mut runstate,
-            (equippable, mut equipped),
+            (equippable, mut equipped, mut equipment_changed),
             mut backpack,
             mut viewsheds,
         ) = data;
 
         for (entity, wants_to_use) in (&entities, &wants_to_use).join() {
+            // Could probably limit this insert only to if something is consumed/equipped/etc., but this is
+            // safer and items aren't used nearly frequently enough for this to cause performance issues.
+            equipment_changed.insert(entity, EquipmentChanged {}).expect("Unable to insert EquipmentChanged.");
             let mut verb = "use";
             let mut used_item = true;
             let mut aoe_item = false;
@@ -413,12 +422,14 @@ impl<'a> System<'a> for ItemDropSystem {
         ReadStorage<'a, Name>,
         WriteStorage<'a, Position>,
         WriteStorage<'a, InBackpack>,
+        WriteStorage<'a, EquipmentChanged>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, entities, mut wants_drop, names, mut positions, mut backpack) = data;
+        let (player_entity, entities, mut wants_drop, names, mut positions, mut backpack, mut equipment_changed) = data;
 
         for (entity, to_drop) in (&entities, &wants_drop).join() {
+            equipment_changed.insert(entity, EquipmentChanged {}).expect("Unable to insert EquipmentChanged.");
             let mut dropper_pos: Position = Position { x: 0, y: 0 };
             {
                 let dropped_pos = positions.get(entity).unwrap();

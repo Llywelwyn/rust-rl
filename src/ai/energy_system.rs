@@ -1,4 +1,4 @@
-use crate::{Clock, Energy, Name, Position, RunState, TakingTurn, LOG_TICKS};
+use crate::{Burden, BurdenLevel, Clock, Energy, Name, Position, RunState, TakingTurn, LOG_TICKS};
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -12,6 +12,7 @@ impl<'a> System<'a> for EnergySystem {
     type SystemData = (
         ReadStorage<'a, Clock>,
         WriteStorage<'a, Energy>,
+        ReadStorage<'a, Burden>,
         ReadStorage<'a, Position>,
         WriteStorage<'a, TakingTurn>,
         Entities<'a>,
@@ -22,7 +23,7 @@ impl<'a> System<'a> for EnergySystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (clock, mut energies, positions, mut turns, entities, mut rng, mut runstate, player, names) = data;
+        let (clock, mut energies, burdens, positions, mut turns, entities, mut rng, mut runstate, player, names) = data;
         // If not ticking, do nothing.
         if *runstate != RunState::Ticking {
             return;
@@ -44,8 +45,17 @@ impl<'a> System<'a> for EnergySystem {
         }
         // EVERYTHING ELSE
         for (entity, energy, _pos) in (&entities, &mut energies, &positions).join() {
+            let burden_modifier = if let Some(burden) = burdens.get(entity) {
+                match burden.level {
+                    BurdenLevel::Burdened => 0.75,
+                    BurdenLevel::Strained => 0.5,
+                    BurdenLevel::Overloaded => 0.25,
+                }
+            } else {
+                1.0
+            };
             // Every entity has a POTENTIAL equal to their speed.
-            let mut energy_potential: i32 = energy.speed;
+            let mut energy_potential: i32 = (energy.speed as f32 * burden_modifier) as i32;
             // Increment current energy by NORMAL_SPEED for every
             // whole number of NORMAL_SPEEDS in their POTENTIAL.
             while energy_potential >= NORMAL_SPEED {

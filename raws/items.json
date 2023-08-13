@@ -3,6 +3,8 @@
         "id": "potion_health",
         "name": { "name": "potion of health", "plural": "potions of health" },
         "renderable": { "glyph": "!", "fg": "#FF00FF", "bg": "#000000", "order": 2 },
+        "weight": 1,
+        "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "provides_healing": "12" }
     },
@@ -10,6 +12,8 @@
         "id": "potion_health_weak",
         "name": { "name": "potion of lesser health", "plural": "potions of lesser health" },
         "renderable": { "glyph": "!", "fg": "#FF00FF", "bg": "#000000", "order": 2 },
+        "weight": 1,
+        "value": 25,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "provides_healing": "6" }
     },
@@ -17,6 +21,8 @@
         "id": "scroll_magicmissile",
         "name": { "name": "scroll of magic missile", "plural": "scrolls of magic missile" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "ranged": "12", "damage": "10" }
     },
@@ -24,6 +30,8 @@
         "id": "scroll_fireball",
         "name": { "name": "scroll of fireball", "plural": "scrolls of fireball" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 150,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
     },
@@ -31,6 +39,8 @@
         "id": "scroll_fireball_c",
         "name": { "name": "cursed scroll of fireball", "plural": "cursed scrolls of fireball" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 150,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
         "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
     },
@@ -38,6 +48,8 @@
         "id": "scroll_confusion",
         "name": { "name": "scroll of confusion", "plural": "scrolls of confusion" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 100,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "ranged": "10", "confusion": "4" }
     },
@@ -45,6 +57,8 @@
         "id": "scroll_magicmap",
         "name": { "name": "scroll of magic mapping", "plural": "scrolls of magic mapping" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "magicmapper": "" }
     },
@@ -52,6 +66,8 @@
         "id": "scroll_magicmap_c",
         "name": { "name": "cursed scroll of magic mapping", "plural": "cursed scrolls of magic mapping" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
         "effects": { "magicmapper": "" }
     },
@@ -59,20 +75,26 @@
         "id": "equip_dagger",
         "name": { "name": "dagger", "plural": "daggers" },
         "renderable": { "glyph": ")", "fg": "#808080", "bg": "#000000", "order": 2 },
+        "weight": 130,
+        "value": 2,
         "flags": ["EQUIP_MELEE", "FINESSE"],
-        "effects": { "base_damage": "1d4"}
+        "effects": { "base_damage": "1d4" }
     },
     {
         "id": "equip_shortsword",
         "name": { "name": "shortsword", "plural": "shortswords" },
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 10,
         "flags": ["EQUIP_MELEE", "STRENGTH"],
-        "effects": { "base_damage": "1d6"}
+        "effects": { "base_damage": "1d6" }
     },
     {
         "id": "equip_longsword",
         "name": { "name": "longsword", "plural": "longswords" },
         "renderable": { "glyph": ")", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },
+        "weight": 3,
+        "value": 15,
         "flags": ["EQUIP_MELEE", "STRENGTH"],
         "effects": { "base_damage": "1d8" }
     },
@@ -80,6 +102,8 @@
         "id": "equip_smallshield",
         "name": { "name": "buckler", "plural": "bucklers" },
         "renderable": { "glyph": "[", "fg": "#808080", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 5,
         "flags": ["EQUIP_SHIELD"],
         "effects": { "ac": "1" }
     },
@@ -87,6 +111,8 @@
         "id": "equip_mediumshield",
         "name": { "name": "medium shield", "plural": "medium shields" },
         "renderable": { "glyph": "[", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "weight": 6,
+        "value": 10,
         "flags": ["EQUIP_SHIELD"],
         "effects": { "ac": "2", "melee_power_bonus": "-1" }
     },
@@ -94,6 +120,8 @@
         "id": "equip_largeshield",
         "name": { "name": "large shield", "plural": "large shields" },
         "renderable": { "glyph": "[", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },
+        "weight": 12,
+        "value": 35,
         "flags": ["EQUIP_SHIELD"],
         "effects": { "ac": "4", "melee_power_bonus": "-2" }
     },
@@ -101,6 +129,8 @@
         "id": "equip_body_weakleather",
         "name": { "name": "leather jacket", "plural": "leather jackets" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 8,
+        "value": 5,
         "flags": ["EQUIP_BODY"],
         "effects": { "ac": "1" }
     },
@@ -108,6 +138,8 @@
         "id": "equip_body_leather",
         "name": { "name": "leather chestpiece", "plural": "leather chestpiece" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 10,
+        "value": 10,
         "flags": ["EQUIP_BODY"],
         "effects": { "ac": "2" }
     },
@@ -115,6 +147,8 @@
         "id": "equip_body_studdedleather",
         "name": { "name": "studded leather chestpiece", "plural": "studded leather chestpieces" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 13,
+        "value": 45,
         "flags": ["EQUIP_BODY"],
         "effects": { "ac": "3" }
     },
@@ -122,6 +156,8 @@
         "id": "equip_body_ringmail_o",
         "name": { "name": "orcish ring mail", "plural": "orcish ring mail" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 45,
+        "value": 50,
         "flags": ["EQUIP_BODY"],
         "effects": { "ac": "3" }
     },
@@ -129,6 +165,8 @@
         "id": "equip_body_ringmail",
         "name": { "name": "ring mail", "plural": "ring mail" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 45,
+        "value": 70,
         "flags": ["EQUIP_BODY"],
         "effects": { "ac": "4" }
     },
@@ -136,6 +174,8 @@
         "id": "equip_head_leather",
         "name": { "name": "leather cap", "plural": "leather caps" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 10,
         "flags": ["EQUIP_HEAD"],
         "effects": { "ac": "1" }
     },
@@ -143,6 +183,8 @@
         "id": "equip_head_elvish",
         "name": { "name": "elvish leather helm", "plural": "elvish leather helms" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 25,
         "flags": ["EQUIP_HEAD"],
         "effects": { "ac": "2" }
     },
@@ -150,6 +192,8 @@
         "id": "equip_head_o",
         "name": { "name": "orcish helm", "plural": "orcish helm" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 6,
+        "value": 25,
         "flags": ["EQUIP_HEAD"],
         "effects": { "ac": "2" }
     },
@@ -157,6 +201,8 @@
         "id": "equip_head_iron",
         "name": { "name": "iron helm", "plural": "iron helm" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 10,
+        "value": 45,
         "flags": ["EQUIP_HEAD"],
         "effects": { "ac": "3" }
     },
@@ -164,12 +210,16 @@
         "id": "equip_feet_leather",
         "name": { "name": "leather shoes", "plural": "leather shoes" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 10,
         "flags": ["EQUIP_FEET"]
     },
     {
         "id": "equip_feet_elvish",
         "name": { "name": "elvish leather shoes", "plural": "elvish leather shoes" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 25,
         "flags": ["EQUIP_FEET"],
         "effects": { "ac": "1" }
     },
@@ -177,6 +227,8 @@
         "id": "equip_feet_o",
         "name": { "name": "orcish boots", "plural": "orcish boots" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 6,
+        "value": 25,
         "flags": ["EQUIP_FEET"],
         "effects": { "ac": "1" }
     },
@@ -184,6 +236,8 @@
         "id": "equip_feet_iron",
         "name": { "name": "iron boots", "plural": "iron boots" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 10,
+        "value": 45,
         "flags": ["EQUIP_FEET"],
         "effects": { "ac": "2" }
     },
@@ -191,6 +245,8 @@
         "id": "equip_neck_protection",
         "name": { "name": "amulet of protection", "plural": "amulets of protection" },
         "renderable": { "glyph": "\"", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 1,
+        "value": 200,
         "flags": ["EQUIP_NECK"],
         "effects": { "ac": "1" }
     },
@@ -198,6 +254,8 @@
         "id": "equip_back_protection",
         "name": { "name": "cloak of protection", "plural": "cloaks of protection" },
         "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 2 },
+        "weight": 1,
+        "value": 200,
         "flags": ["EQUIP_BACK"],
         "effects": { "ac": "1" }
     },
@@ -205,6 +263,8 @@
         "id": "wand_magicmissile",
         "name": { "name": "wand of magic missile", "plural": "wands of magic missile" },
         "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 100,
         "flags": ["WAND"],
         "effects": { "ranged": "12", "damage": "10" }
     },
@@ -212,6 +272,8 @@
         "id": "wand_fireball",
         "name": { "name": "wand of fireball", "plural": "wands of fireball" },
         "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 300,
         "flags": ["WAND"],
         "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
     },
@@ -219,6 +281,8 @@
         "id": "wand_confusion",
         "name": { "name": "wand of confusion", "plural": "wands of confusion" },
         "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 200,
         "flags": ["WAND"],
         "effects": { "ranged": "10", "confusion": "4" }
     },
@@ -226,6 +290,8 @@
         "id": "wand_digging",
         "name": { "name": "wand of digging", "plural": "wands of digging" },
         "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 300,
         "flags": ["WAND"],
         "effects": { "ranged": "10", "digger": "" }
     },
@@ -233,12 +299,16 @@
         "id": "food_rations",
         "name": { "name": "rations", "plural": "rations" },
         "renderable": { "glyph": "%", "fg": "#FFA07A", "bg": "#000000", "order": 2 },
+        "weight": 1,
+        "value": 1,
         "flags": ["FOOD", "CONSUMABLE"]
     },
     {
         "id": "food_apple",
         "name": { "name": "apple", "plural": "apples" },
         "renderable": { "glyph": "%", "fg": "#00FF00", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 1,
         "flags": ["FOOD", "CONSUMABLE"]
     }
 ]

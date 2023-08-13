@@ -114,7 +114,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
         eb = eb.with(Name { name: item_template.name.name.clone(), plural: item_template.name.plural.clone() });
-        eb = eb.with(Item {});
+        eb = eb.with(Item { weight: item_template.weight.unwrap_or(0.0), value: item_template.value.unwrap_or(0.0) });
         eb = spawn_position(pos, eb, key, raws);
 
         if let Some(renderable) = &item_template.renderable {
@@ -312,8 +312,10 @@ pub fn spawn_named_mob(
             bac: mob_bac,
             hit_points: Pool { current: mob_hp, max: mob_hp },
             mana: Pool { current: mob_mana, max: mob_mana },
+            weight: 0.0,
         };
         eb = eb.with(pools);
+        eb = eb.with(EquipmentChanged {});
 
         let mut skills = Skills { skills: HashMap::new() };
         skills.skills.insert(Skill::Melee, 0);

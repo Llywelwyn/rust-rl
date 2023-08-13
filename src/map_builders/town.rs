@@ -127,19 +127,27 @@ impl TownBuilder {
     ) {
         for idx in available_building_tiles.iter() {
             if rng.roll_dice(1, 40) == 1 {
-                let roll = rng.roll_dice(1, 6);
+                let roll = rng.roll_dice(1, 7);
                 match roll {
                     1 => build_data.spawn_list.push((*idx, "npc_fisher".to_string())),
                     2 => build_data.spawn_list.push((*idx, "npc_dockworker".to_string())),
                     3 => build_data.spawn_list.push((*idx, "npc_drunk".to_string())),
                     4 => build_data.spawn_list.push((*idx, "npc_townsperson".to_string())),
                     5 => build_data.spawn_list.push((*idx, "npc_guard".to_string())),
-                    _ => {
+                    6 => {
                         let animal_roll = rng.roll_dice(1, 3);
                         match animal_roll {
                             1 => build_data.spawn_list.push((*idx, "chicken_little".to_string())),
                             2 => build_data.spawn_list.push((*idx, "chicken".to_string())),
                             _ => build_data.spawn_list.push((*idx, "dog_little".to_string())),
+                        }
+                    }
+                    _ => {
+                        let prop_roll = rng.roll_dice(1, 3);
+                        match prop_roll {
+                            1 => build_data.spawn_list.push((*idx, "prop_hay".to_string())),
+                            2 => build_data.spawn_list.push((*idx, "prop_statue".to_string())),
+                            _ => {}
                         }
                     }
                 }

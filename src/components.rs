@@ -143,6 +143,7 @@ pub struct Pools {
     pub xp: i32,
     pub bac: i32,
     pub level: i32,
+    pub weight: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -201,7 +202,25 @@ impl SufferDamage {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Item {}
+pub struct Item {
+    pub weight: f32, // in lbs
+    pub value: f32,  // base
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EquipmentChanged {}
+
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum BurdenLevel {
+    Burdened,
+    Strained,
+    Overloaded,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Burden {
+    pub level: BurdenLevel,
+}
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum EquipmentSlot {

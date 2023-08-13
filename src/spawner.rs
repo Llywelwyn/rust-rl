@@ -1,7 +1,7 @@
 use super::{
     ai::NORMAL_SPEED, gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute, Attributes,
-    Clock, Energy, HungerClock, HungerState, Map, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe,
-    Skill, Skills, TileType, Viewshed,
+    Clock, Energy, EquipmentChanged, HungerClock, HungerState, Map, Name, Player, Pool, Pools, Position, Rect,
+    Renderable, SerializeMe, Skill, Skills, TileType, Viewshed,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -53,7 +53,9 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             xp: 0,
             level: 1,
             bac: 10,
+            weight: 0.0,
         })
+        .with(EquipmentChanged {})
         .with(skills)
         .with(Energy { current: 0, speed: NORMAL_SPEED })
         .marked::<SimpleMarker<SerializeMe>>()

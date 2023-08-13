@@ -6,6 +6,8 @@ pub struct Item {
     pub id: String,
     pub name: Name,
     pub renderable: Option<Renderable>,
+    pub weight: Option<f32>,
+    pub value: Option<f32>,
     pub flags: Option<Vec<String>>,
     pub effects: Option<HashMap<String, String>>,
 }

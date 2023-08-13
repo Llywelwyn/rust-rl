@@ -24,6 +24,18 @@
         "flags": ["PROP"]
     },
     {
+        "id": "prop_hay",
+        "name": "hay",
+        "renderable": { "glyph": "%", "fg": "#c7ad39", "bg": "#000000", "order": 2 },
+        "flags": ["PROP"]
+    },
+    {
+        "id": "prop_statue",
+        "name": "statue",
+        "renderable": { "glyph": "@", "fg": "#ffffff", "bg": "#000000", "order": 2 },
+        "flags": ["PROP"]
+    },
+    {
         "id": "prop_bed",
         "name": "bed",
         "renderable": { "glyph": "=", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
