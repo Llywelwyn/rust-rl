@@ -6,7 +6,8 @@
         "weight": 1,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "provides_healing": "12" }
+        "effects": { "provides_healing": "12" },
+        "magic": { "class": "common", "naming": "potion" }
     },
     {
         "id": "potion_health_weak",
@@ -15,7 +16,8 @@
         "weight": 1,
         "value": 25,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "provides_healing": "6" }
+        "effects": { "provides_healing": "6" },
+        "magic": { "class": "common", "naming": "potion" }
     },
     {
         "id": "scroll_magicmissile",
@@ -272,7 +274,8 @@
         "weight": 2,
         "value": 100,
         "flags": ["WAND"],
-        "effects": { "ranged": "12", "damage": "10" }
+        "effects": { "ranged": "12", "damage": "10" },
+        "magic": { "class": "uncommon", "naming": "wand" }
     },
     {
         "id": "wand_fireball",
@@ -281,7 +284,8 @@
         "weight": 2,
         "value": 300,
         "flags": ["WAND"],
-        "effects": { "ranged": "10", "damage": "15", "aoe": "3" }
+        "effects": { "ranged": "10", "damage": "15", "aoe": "3" },
+        "magic": { "class": "rare", "naming": "wand" }
     },
     {
         "id": "wand_confusion",
@@ -290,7 +294,8 @@
         "weight": 2,
         "value": 200,
         "flags": ["WAND"],
-        "effects": { "ranged": "10", "confusion": "4" }
+        "effects": { "ranged": "10", "confusion": "4" },
+        "magic": { "class": "uncommon", "naming": "wand" }
     },
     {
         "id": "wand_digging",
@@ -299,7 +304,8 @@
         "weight": 2,
         "value": 300,
         "flags": ["WAND"],
-        "effects": { "ranged": "10", "digger": "" }
+        "effects": { "ranged": "10", "digger": "" },
+        "magic": { "class": "rare", "naming": "wand" }
     },
     {
         "id": "food_rations",

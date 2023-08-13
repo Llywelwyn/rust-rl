@@ -47,7 +47,6 @@ pub fn show_cheat_menu(_gs: &mut State, ctx: &mut Rltk) -> CheatMenuResult {
     // Godmode
     ctx.set(x_offset + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), rltk::to_cp437('g'));
     ctx.print(x_offset + 4, y, "GOD MODE");
-    y += 1;
     // Match keys
     match ctx.key {
         None => CheatMenuResult::NoResponse,

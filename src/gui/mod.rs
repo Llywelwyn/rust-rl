@@ -292,7 +292,7 @@ pub enum ItemMenuResult {
 }
 
 pub fn print_options(
-    inventory: BTreeMap<(String, String, (u8, u8, u8)), i32>,
+    inventory: BTreeMap<UniqueInventoryItem, i32>,
     mut x: i32,
     mut y: i32,
     ctx: &mut Rltk,
@@ -300,8 +300,8 @@ pub fn print_options(
     let mut j = 0;
     let initial_x: i32 = x;
     let mut width: i32 = -1;
-    for (name, item_count) in &inventory {
-        let fg = RGB::from_u8(name.2 .0, name.2 .1, name.2 .2);
+    for (item, item_count) in &inventory {
+        let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
         if j < 26 {
@@ -318,12 +318,12 @@ pub fn print_options(
             // i.e. (a) 3 daggers
             ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item_count);
             x += 2;
-            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), name.1.to_string());
+            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.singular.to_string());
         } else {
-            if name.0.ends_with("s") {
+            if item.display_name.singular.ends_with("s") {
                 ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "some");
                 x += 5;
-            } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| name.0.starts_with(v)) {
+            } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.starts_with(v)) {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
                 ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "an");
@@ -334,9 +334,9 @@ pub fn print_options(
                 ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "a");
                 x += 2;
             }
-            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), name.0.to_string());
+            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.singular.to_string());
         }
-        let this_width = x - initial_x + name.0.len() as i32;
+        let this_width = x - initial_x + item.display_name.singular.len() as i32;
         width = if width > this_width { width } else { this_width };
 
         y += 1;
@@ -346,15 +346,15 @@ pub fn print_options(
     return (y, width);
 }
 
-pub fn get_max_inventory_width(inventory: &BTreeMap<(String, String, (u8, u8, u8)), i32>) -> i32 {
+pub fn get_max_inventory_width(inventory: &BTreeMap<UniqueInventoryItem, i32>) -> i32 {
     let mut width: i32 = 0;
-    for (name, count) in inventory {
-        let mut this_width = name.0.len() as i32;
+    for (item, count) in inventory {
+        let mut this_width = item.display_name.singular.len() as i32;
         if count < &1 {
             this_width += 4;
-            if name.0.ends_with("s") {
+            if item.display_name.singular.ends_with("s") {
                 this_width += 3;
-            } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| name.0.starts_with(v)) {
+            } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.starts_with(v)) {
                 this_width += 1;
             }
         } else {
@@ -366,22 +366,29 @@ pub fn get_max_inventory_width(inventory: &BTreeMap<(String, String, (u8, u8, u8
 }
 
 pub fn get_item_display_name(ecs: &World, item: Entity) -> (String, String) {
+    let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
     if let Some(name) = ecs.read_storage::<Name>().get(item) {
         if ecs.read_storage::<MagicItem>().get(item).is_some() {
             let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
             if dm.identified_items.contains(&name.name) {
-                return (name.name.clone(), name.plural.clone());
+                (singular, plural) = (name.name.clone(), name.plural.clone());
             } else if let Some(obfuscated) = ecs.read_storage::<ObfuscatedName>().get(item) {
-                return (obfuscated.name.clone(), obfuscated.plural.clone());
+                (singular, plural) = (obfuscated.name.clone(), obfuscated.plural.clone());
             } else {
-                return ("unid magic item".to_string(), "unid magic items".to_string());
+                (singular, plural) = ("unid magic item".to_string(), "unid magic items".to_string());
             }
         } else {
-            return (name.name.clone(), name.plural.clone());
+            (singular, plural) = (name.name.clone(), name.plural.clone());
         }
-    } else {
-        return ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
     }
+    if let Some(wand) = ecs.read_storage::<crate::Wand>().get(item) {
+        let used = wand.max_uses - wand.uses;
+        for _i in 0..used {
+            singular.push_str("*");
+            plural.push_str("*");
+        }
+    }
+    return (singular, plural);
 }
 
 pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
@@ -431,7 +438,20 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     }
 }
 
-pub fn get_player_inventory(ecs: &World) -> (BTreeMap<(String, String, (u8, u8, u8)), i32>, BTreeMap<String, Entity>) {
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+struct DisplayName {
+    singular: String,
+    plural: String,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub struct UniqueInventoryItem {
+    display_name: DisplayName,
+    rgb: (u8, u8, u8),
+    name: String,
+}
+
+pub fn get_player_inventory(ecs: &World) -> (BTreeMap<UniqueInventoryItem, i32>, BTreeMap<String, Entity>) {
     let player_entity = ecs.fetch::<Entity>();
     let names = ecs.read_storage::<Name>();
     let backpack = ecs.read_storage::<InBackpack>();
@@ -439,7 +459,7 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<(String, String, (u8, u8, 
     let renderables = ecs.read_storage::<Renderable>();
 
     let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
-    let mut player_inventory: BTreeMap<(String, String, (u8, u8, u8)), i32> = BTreeMap::new();
+    let mut player_inventory: BTreeMap<UniqueInventoryItem, i32> = BTreeMap::new();
     for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity) {
         // RGB can't be used as a key. This is converting the RGB (tuple of f32) into a tuple of u8s.
         let (r, g, b): (u8, u8, u8) = if let Some(renderable) = renderables.get(entity) {
@@ -448,8 +468,15 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<(String, String, (u8, u8, 
             (255, 255, 255)
         };
         let (singular, plural) = get_item_display_name(ecs, entity);
-        player_inventory.entry((singular, plural, (r, g, b))).and_modify(|count| *count += 1).or_insert(1);
-        inventory_ids.entry(name.name.to_string()).or_insert(entity);
+        player_inventory
+            .entry(UniqueInventoryItem {
+                display_name: DisplayName { singular: singular.clone(), plural: plural },
+                rgb: (r, g, b),
+                name: name.name.clone(),
+            })
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
+        inventory_ids.entry(singular).or_insert(entity);
     }
 
     return (player_inventory, inventory_ids);

@@ -10,18 +10,28 @@ pub struct MasterDungeonMap {
     maps: HashMap<i32, Map>,
     pub identified_items: HashSet<String>,
     pub scroll_map: HashMap<String, (String, String)>,
+    pub potion_map: HashMap<String, String>,
 }
 
 impl MasterDungeonMap {
     /// Initialises a blank MasterDungeonMap
     pub fn new() -> MasterDungeonMap {
-        let mut dm =
-            MasterDungeonMap { maps: HashMap::new(), identified_items: HashSet::new(), scroll_map: HashMap::new() };
+        let mut dm = MasterDungeonMap {
+            maps: HashMap::new(),
+            identified_items: HashSet::new(),
+            scroll_map: HashMap::new(),
+            potion_map: HashMap::new(),
+        };
         // TODO: Use stored RNG
         let mut rng = RandomNumberGenerator::new();
         for scroll_tag in crate::raws::get_scroll_tags().iter() {
             let (unid_singular, unid_plural) = make_scroll_name(&mut rng);
             dm.scroll_map.insert(scroll_tag.to_string(), (unid_singular, unid_plural));
+        }
+        let mut used_potion_names: HashSet<String> = HashSet::new();
+        for potion_tag in crate::raws::get_potion_tags().iter() {
+            let unid_singular = make_potion_name(&mut rng, &mut used_potion_names);
+            dm.potion_map.insert(potion_tag.to_string(), unid_singular);
         }
 
         return dm;
@@ -86,6 +96,25 @@ fn make_scroll_name(rng: &mut RandomNumberGenerator) -> (String, String) {
         }
     }
     return (singular, plural);
+}
+
+const POTION_COLOURS: &[&str] =
+    &["red", "orange", "yellow", "green", "blue", "indigo", "violet", "black", "white", "silver", "gold"];
+const POTION_ADJECTIVES: &[&str] = &["swirling", "viscous", "effervescent", "slimy", "oily", "metallic"];
+
+fn make_potion_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
+    loop {
+        let mut name: String =
+            POTION_ADJECTIVES[rng.roll_dice(1, POTION_ADJECTIVES.len() as i32) as usize - 1].to_string();
+        name += " ";
+        name += POTION_COLOURS[rng.roll_dice(1, POTION_COLOURS.len() as i32) as usize - 1];
+        name += " potion";
+
+        if !used_names.contains(&name) {
+            used_names.insert(name.clone());
+            return name;
+        }
+    }
 }
 
 pub fn level_transition(ecs: &mut World, new_id: i32, offset: i32) -> Option<Vec<Map>> {

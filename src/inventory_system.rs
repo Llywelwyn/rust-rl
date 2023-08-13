@@ -136,9 +136,6 @@ impl<'a> System<'a> for ItemUseSystem {
                     consumables.insert(wants_to_use.item, Consumable {}).expect("Could not insert consumable");
                 }
                 verb = "zap";
-                // TODO: Change this to track uses better, after adding in identification.
-                name.name.push_str("*");
-                name.plural.push_str("*");
                 wand.uses -= 1;
             }
 
@@ -435,6 +432,7 @@ impl<'a> System<'a> for ItemIdentificationSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (player, mut identified, mut dm, items, names, mut obfuscated_names, entities) = data;
         for (_p, id) in (&player, &identified).join() {
+            rltk::console::log(id.name.clone());
             let tag = crate::raws::get_id_from_name(id.name.clone());
             if !dm.identified_items.contains(&id.name) && crate::raws::is_tag_magic(&tag) {
                 dm.identified_items.insert(id.name.clone());
