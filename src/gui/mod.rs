@@ -1,7 +1,8 @@
 use super::{
     ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes,
-    Burden, Equipped, Hidden, HungerClock, HungerState, InBackpack, MagicItem, Map, MasterDungeonMap, Name,
-    ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed, Wand,
+    Burden, Equipped, Hidden, HungerClock, HungerState, InBackpack, MagicItem, MagicItemClass, Map, MasterDungeonMap,
+    Name, ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
+    Wand,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -144,12 +145,17 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         }
         // Draw equipment
         let renderables = ecs.read_storage::<Renderable>();
-        let mut equipment: Vec<(String, RGB)> = Vec::new();
+        let mut equipment: Vec<(String, RGB, RGB, rltk::FontCharType)> = Vec::new();
         let entities = ecs.entities();
         for (entity, _equipped, renderable) in
             (&entities, &equipped, &renderables).join().filter(|item| item.1.owner == *player_entity)
         {
-            equipment.push((get_item_display_name(ecs, entity).0, renderable.fg));
+            equipment.push((
+                get_item_display_name(ecs, entity).0,
+                get_item_colour(ecs, entity),
+                renderable.fg,
+                renderable.glyph,
+            ));
         }
         let mut y = 1;
         if !equipment.is_empty() {
@@ -159,8 +165,9 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                 y += 1;
                 ctx.set(72, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
                 j += 1;
-                ctx.print_color(74, y, item.1, RGB::named(rltk::BLACK), &item.0);
-                ctx.print_color(74 + &item.0.len() + 1, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "(worn)");
+                ctx.set(74, y, item.2, RGB::named(rltk::BLACK), item.3);
+                ctx.print_color(76, y, item.1, RGB::named(rltk::BLACK), &item.0);
+                ctx.print_color(76 + &item.0.len() + 1, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "(worn)");
             }
             y += 2;
         }
@@ -190,7 +197,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         let props = ecs.read_storage::<Prop>();
         let map = ecs.fetch::<Map>();
         let viewshed = viewsheds.get(*player_entity).unwrap();
-        let mut seen_entities: Vec<(String, RGB)> = Vec::new();
+        let mut seen_entities: Vec<(String, RGB, RGB, u16)> = Vec::new();
         for tile in viewshed.visible_tiles.iter() {
             let idx = map.xy_idx(tile.x, tile.y);
             for entity in map.tile_content[idx].iter() {
@@ -210,12 +217,17 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                     draw = false;
                 }
                 if draw {
-                    let fg = if let Some(renderable) = renderables.get(*entity) {
-                        renderable.fg
+                    let (render_fg, glyph) = if let Some(renderable) = renderables.get(*entity) {
+                        (renderable.fg, renderable.glyph)
                     } else {
-                        RGB::named(rltk::WHITE)
+                        (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
                     };
-                    seen_entities.push((get_item_display_name(ecs, *entity).0, fg));
+                    seen_entities.push((
+                        get_item_display_name(ecs, *entity).0,
+                        get_item_colour(ecs, *entity),
+                        render_fg,
+                        glyph,
+                    ));
                 }
             }
         }
@@ -226,7 +238,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "In View");
             for entity in seen_entities {
                 y += 1;
-                ctx.print_color(72, y, entity.1, RGB::named(rltk::BLACK), entity.0);
+                ctx.set(72, y, entity.2, RGB::named(rltk::BLACK), entity.3);
+                ctx.print_color(74, y, entity.1, RGB::named(rltk::BLACK), entity.0);
             }
         }
     }
@@ -301,7 +314,6 @@ pub fn print_options(
     let initial_x: i32 = x;
     let mut width: i32 = -1;
     for (item, item_count) in &inventory {
-        let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
         if j < 26 {
@@ -312,18 +324,27 @@ pub fn print_options(
         }
 
         x += 2;
+        let fg = RGB::from_u8(item.renderables.0, item.renderables.1, item.renderables.2);
+        ctx.set(x, y, fg, RGB::named(rltk::BLACK), item.glyph);
+        x += 2;
 
+        let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
         if item_count > &1 {
             // If more than one, print the number and pluralise
             // i.e. (a) 3 daggers
             ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item_count);
             x += 2;
-            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.singular.to_string());
+            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.plural.to_string());
+            let this_width = x - initial_x + item.display_name.plural.len() as i32;
+            width = if width > this_width { width } else { this_width };
         } else {
-            if item.display_name.singular.ends_with("s") {
+            if item.display_name.singular.to_lowercase().ends_with("s") {
                 ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "some");
                 x += 5;
-            } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.starts_with(v)) {
+            } else if ['a', 'e', 'i', 'o', 'u']
+                .iter()
+                .any(|&v| item.display_name.singular.to_lowercase().starts_with(v))
+            {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
                 ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "an");
@@ -335,9 +356,9 @@ pub fn print_options(
                 x += 2;
             }
             ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.singular.to_string());
+            let this_width = x - initial_x + item.display_name.singular.len() as i32;
+            width = if width > this_width { width } else { this_width };
         }
-        let this_width = x - initial_x + item.display_name.singular.len() as i32;
-        width = if width > this_width { width } else { this_width };
 
         y += 1;
         j += 1;
@@ -351,14 +372,14 @@ pub fn get_max_inventory_width(inventory: &BTreeMap<UniqueInventoryItem, i32>) -
     for (item, count) in inventory {
         let mut this_width = item.display_name.singular.len() as i32;
         if count < &1 {
-            this_width += 4;
+            this_width += 6;
             if item.display_name.singular.ends_with("s") {
-                this_width += 3;
+                this_width += 5;
             } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.starts_with(v)) {
-                this_width += 1;
+                this_width += 3;
             }
         } else {
-            this_width += 4;
+            this_width += 6;
         }
         width = if width > this_width { width } else { this_width };
     }
@@ -406,7 +427,7 @@ pub fn get_item_display_name(ecs: &World, item: Entity) -> (String, String) {
     let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
     if let Some(name) = ecs.read_storage::<Name>().get(item) {
         if ecs.read_storage::<MagicItem>().get(item).is_some() {
-            let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
+            let dm = ecs.fetch::<MasterDungeonMap>();
             if dm.identified_items.contains(&name.name) {
                 (singular, plural) = (name.name.clone(), name.plural.clone());
             } else if let Some(obfuscated) = ecs.read_storage::<ObfuscatedName>().get(item) {
@@ -426,6 +447,29 @@ pub fn get_item_display_name(ecs: &World, item: Entity) -> (String, String) {
         }
     }
     return (singular, plural);
+}
+
+pub fn get_item_colour(ecs: &World, item: Entity) -> RGB {
+    let dm = ecs.fetch::<MasterDungeonMap>();
+    if let Some(name) = ecs.read_storage::<Name>().get(item) {
+        if let Some(magic) = ecs.read_storage::<MagicItem>().get(item) {
+            if dm.identified_items.contains(&name.name) {
+                // If identified magic item, use rarity colour
+                match magic.class {
+                    MagicItemClass::Common => return RGB::named(rltk::WHITE),
+                    MagicItemClass::Uncommon => return RGB::named(rltk::GREEN),
+                    MagicItemClass::Rare => return RGB::named(rltk::BLUE),
+                    MagicItemClass::VeryRare => return RGB::named(rltk::PURPLE),
+                    MagicItemClass::Legendary => return RGB::named(rltk::GOLD),
+                }
+            } else {
+                // Unidentified magic item
+                return RGB::named(rltk::GREY);
+            }
+        }
+    }
+    // If nonmagic, just use white
+    return RGB::named(rltk::WHITE);
 }
 
 pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
@@ -485,6 +529,8 @@ struct DisplayName {
 pub struct UniqueInventoryItem {
     display_name: DisplayName,
     rgb: (u8, u8, u8),
+    renderables: (u8, u8, u8),
+    glyph: u16,
     name: String,
 }
 
@@ -497,18 +543,22 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<UniqueInventoryItem, i32>,
 
     let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
     let mut player_inventory: BTreeMap<UniqueInventoryItem, i32> = BTreeMap::new();
-    for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity) {
+    for (entity, _pack, name, renderable) in
+        (&entities, &backpack, &names, &renderables).join().filter(|item| item.1.owner == *player_entity)
+    {
         // RGB can't be used as a key. This is converting the RGB (tuple of f32) into a tuple of u8s.
-        let (r, g, b): (u8, u8, u8) = if let Some(renderable) = renderables.get(entity) {
-            ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8)
-        } else {
-            (255, 255, 255)
-        };
+        let item_colour = get_item_colour(ecs, entity);
+        let renderables =
+            ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8);
+        let (r, g, b): (u8, u8, u8) =
+            ((item_colour.r * 255.0) as u8, (item_colour.g * 255.0) as u8, (item_colour.b * 255.0) as u8);
         let (singular, plural) = get_item_display_name(ecs, entity);
         player_inventory
             .entry(UniqueInventoryItem {
                 display_name: DisplayName { singular: singular.clone(), plural: plural },
                 rgb: (r, g, b),
+                renderables: renderables,
+                glyph: renderable.glyph,
                 name: name.name.clone(),
             })
             .and_modify(|count| *count += 1)
@@ -607,10 +657,10 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     );
 
     let mut equippable: Vec<(Entity, String)> = Vec::new();
-    let mut width = 3;
+    let mut width = 2;
     for (entity, _pack) in (&entities, &backpack).join().filter(|item| item.1.owner == *player_entity) {
         let this_name = &get_item_display_name(&gs.ecs, entity).0;
-        let this_width = 3 + this_name.len();
+        let this_width = 5 + this_name.len();
         width = if width > this_width { width } else { this_width };
         equippable.push((entity, this_name.to_string()));
     }
@@ -624,9 +674,15 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     let mut j = 0;
     let renderables = gs.ecs.read_storage::<Renderable>();
     for (e, name) in &equippable {
-        let fg = if let Some(renderable) = renderables.get(*e) { renderable.fg } else { RGB::named(rltk::WHITE) };
+        let (mut fg, glyph) = if let Some(renderable) = renderables.get(*e) {
+            (renderable.fg, renderable.glyph)
+        } else {
+            (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
+        };
         ctx.set(x + 1, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
-        ctx.print_color(x + 3, y, fg, RGB::named(rltk::BLACK), name);
+        ctx.set(x + 3, y, fg, RGB::named(rltk::BLACK), glyph);
+        fg = get_item_colour(&gs.ecs, *e);
+        ctx.print_color(x + 5, y, fg, RGB::named(rltk::BLACK), name);
         y += 1;
         j += 1;
     }

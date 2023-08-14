@@ -193,10 +193,10 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                 #[allow(clippy::single_match)]
                 match magic_item.naming.as_str() {
                     "scroll" => {
-                        eb = eb.with(ObfuscatedName {
-                            name: scroll_names[&item_template.name.name].0.clone(),
-                            plural: scroll_names[&item_template.name.name].1.clone(),
-                        })
+                        let singular = scroll_names[&item_template.name.name].clone();
+                        let mut plural = singular.clone();
+                        plural += "s";
+                        eb = eb.with(ObfuscatedName { name: singular, plural: plural })
                     }
                     "potion" => {
                         let singular = potion_names[&item_template.name.name].clone();

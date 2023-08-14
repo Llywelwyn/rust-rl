@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 pub struct MasterDungeonMap {
     maps: HashMap<i32, Map>,
     pub identified_items: HashSet<String>,
-    pub scroll_map: HashMap<String, (String, String)>,
+    pub scroll_map: HashMap<String, String>,
     pub potion_map: HashMap<String, String>,
     pub wand_map: HashMap<String, String>,
 }
@@ -27,8 +27,8 @@ impl MasterDungeonMap {
         // TODO: Use stored RNG
         let mut rng = RandomNumberGenerator::new();
         for scroll_tag in crate::raws::get_scroll_tags().iter() {
-            let (unid_singular, unid_plural) = make_scroll_name(&mut rng);
-            dm.scroll_map.insert(scroll_tag.to_string(), (unid_singular, unid_plural));
+            let unid_singular = make_scroll_name(&mut rng);
+            dm.scroll_map.insert(scroll_tag.to_string(), unid_singular);
         }
         let mut used_potion_names: HashSet<String> = HashSet::new();
         for potion_tag in crate::raws::get_potion_tags().iter() {
@@ -59,12 +59,16 @@ impl MasterDungeonMap {
     }
 }
 
-fn make_scroll_name(rng: &mut RandomNumberGenerator) -> (String, String) {
-    let len = 4 + rng.roll_dice(1, 4);
-    let mut singular = "scroll of ".to_string();
-    let mut plural = "scrolls of ".to_string();
+fn make_scroll_name(rng: &mut RandomNumberGenerator) -> String {
+    let len = 4 + rng.roll_dice(1, 6);
+    let space_at_i = if len > 6 && rng.roll_dice(1, 2) == 1 { rng.roll_dice(1, len - 6) + 3 } else { -1 };
+    let offset = rng.roll_dice(1, 2) - 1;
+    let mut name = "".to_string();
     for i in 0..len {
-        if i % 2 == 0 {
+        if i == space_at_i {
+            name += " ";
+        }
+        if i % 2 == 0 + offset {
             let char = match rng.roll_dice(1, 5) {
                 1 => "A",
                 2 => "E",
@@ -72,8 +76,7 @@ fn make_scroll_name(rng: &mut RandomNumberGenerator) -> (String, String) {
                 4 => "O",
                 _ => "U",
             };
-            singular += char;
-            plural += char;
+            name += char;
         } else {
             let char = match rng.roll_dice(1, 21) {
                 1 => "B",
@@ -98,11 +101,11 @@ fn make_scroll_name(rng: &mut RandomNumberGenerator) -> (String, String) {
                 20 => "Y",
                 _ => "Z",
             };
-            singular += char;
-            plural += char;
+            name += char;
         }
     }
-    return (singular, plural);
+    name += " scroll";
+    return name;
 }
 
 const POTION_COLOURS: &[&str] = &[
