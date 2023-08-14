@@ -488,6 +488,10 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                 match effect_name {
                     "damage" => {
                         let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
+                        eb = eb.with(InflictsDamage { n_dice, sides, modifier })
+                    }
+                    "healing" => {
+                        let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
                         eb = eb.with(ProvidesHealing { n_dice, sides, modifier })
                     }
                     "confusion" => eb = eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
