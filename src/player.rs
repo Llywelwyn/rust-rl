@@ -349,13 +349,10 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
         let mut item_names: Vec<String> = Vec::new();
         let mut some = false;
         for entity in map.tile_content[destination_idx].iter() {
-            if let Some(_hidden) = hidden.get(*entity) {
-            } else {
-                if let Some(_) = names.get(*entity) {
-                    let item_name = get_item_display_name(ecs, *entity).0;
-                    item_names.push(item_name);
-                    some = true;
-                }
+            if !hidden.get(*entity).is_some() && names.get(*entity).is_some() {
+                let item_name = get_item_display_name(ecs, *entity).0;
+                item_names.push(item_name);
+                some = true;
             }
         }
         // If some names were found, append. Logger = logger is necessary
