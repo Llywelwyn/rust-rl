@@ -93,5 +93,14 @@ i'll try to remember to update the web version on my page at the end of every we
 
    ![week 4 - visual overhaul](https://github.com/Llywelwyn/rust-rl/assets/82828093/8b6485af-a7a5-4102-9df1-896538cf8e50)
 
-  
+</details>
+
+---
+
+<details>
+  <summary>week 5</summary>
+
+- not a whole lot
+  - busy week for me, so the only things i managed this week were finishing up some small things from the previous week. i started on combining logs that happen on the same tick (You hit the goblin. The goblin hits you.), and fixed up the _chance to spawn a guy each turn_ system to work with the groupsize flags, so there's a chance to spawn a pack of creatures each game turn rather than packs only spawning on map generation.
+
 </details>
