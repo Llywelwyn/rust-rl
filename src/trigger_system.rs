@@ -61,13 +61,9 @@ impl<'a> System<'a> for TriggerSystem {
 
                             let damage = inflicts_damage.get(*entity_id);
                             if let Some(damage) = damage {
+                                let damage_roll = rng.roll_dice(damage.n_dice, damage.sides) + damage.modifier;
                                 particle_builder.damage_taken(pos.x, pos.y);
-                                SufferDamage::new_damage(
-                                    &mut inflict_damage,
-                                    entity,
-                                    rng.roll_dice(1, damage.amount),
-                                    false,
-                                );
+                                SufferDamage::new_damage(&mut inflict_damage, entity, damage_roll, false);
                             }
 
                             let confuses = confusion.get(*entity_id);

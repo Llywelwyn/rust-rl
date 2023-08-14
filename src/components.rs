@@ -311,12 +311,16 @@ pub struct Cursed {}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct ProvidesHealing {
-    pub amount: i32,
+    pub n_dice: i32,
+    pub sides: i32,
+    pub modifier: i32,
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InflictsDamage {
-    pub amount: i32,
+    pub n_dice: i32,
+    pub sides: i32,
+    pub modifier: i32,
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]

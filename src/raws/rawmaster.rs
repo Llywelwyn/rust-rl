@@ -159,9 +159,15 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
             for effect in effects_list.iter() {
                 let effect_name = effect.0.as_str();
                 match effect_name {
-                    "provides_healing" => eb = eb.with(ProvidesHealing { amount: effect.1.parse::<i32>().unwrap() }),
+                    "provides_healing" => {
+                        let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
+                        eb = eb.with(ProvidesHealing { n_dice, sides, modifier })
+                    }
                     "ranged" => eb = eb.with(Ranged { range: effect.1.parse::<i32>().unwrap() }),
-                    "damage" => eb = eb.with(InflictsDamage { amount: effect.1.parse::<i32>().unwrap() }),
+                    "damage" => {
+                        let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
+                        eb = eb.with(InflictsDamage { n_dice, sides, modifier })
+                    }
                     "aoe" => eb = eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
                     "confusion" => eb = eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
                     "base_damage" => base_damage = effect.1,
@@ -480,7 +486,10 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
             for effect in effects_list.iter() {
                 let effect_name = effect.0.as_str();
                 match effect_name {
-                    "damage" => eb = eb.with(InflictsDamage { amount: effect.1.parse::<i32>().unwrap() }),
+                    "damage" => {
+                        let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
+                        eb = eb.with(ProvidesHealing { n_dice, sides, modifier })
+                    }
                     "confusion" => eb = eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
                     _ => rltk::console::log(format!("Warning: effect {} not implemented.", effect_name)),
                 }

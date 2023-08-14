@@ -125,7 +125,6 @@ impl<'a> System<'a> for ItemUseSystem {
             let is_cursed = cursed_items.get(wants_to_use.item);
             let wand = wands.get_mut(wants_to_use.item);
             if let Some(wand) = wand {
-                let name = names.get_mut(wants_to_use.item).unwrap();
                 // If want has no uses, roll 1d121. On a 121, wrest the wand, then delete it.
                 if wand.uses == 0 {
                     if rng.roll_dice(1, 121) != 121 {
@@ -269,8 +268,8 @@ impl<'a> System<'a> for ItemUseSystem {
                     for target in targets.iter() {
                         let stats = combat_stats.get_mut(*target);
                         if let Some(stats) = stats {
-                            stats.hit_points.current =
-                                i32::min(stats.hit_points.max, stats.hit_points.current + heal.amount);
+                            let roll = rng.roll_dice(heal.n_dice, heal.sides) + heal.modifier;
+                            stats.hit_points.current = i32::min(stats.hit_points.max, stats.hit_points.current + roll);
                             if entity == *player_entity {
                                 logger = logger.append("You recover some vigour.");
                             }
@@ -292,6 +291,7 @@ impl<'a> System<'a> for ItemUseSystem {
                 None => {}
                 Some(damage) => {
                     let target_point = wants_to_use.target.unwrap();
+                    let damage_roll = rng.roll_dice(damage.n_dice, damage.sides) + damage.modifier;
                     if !aoe_item {
                         particle_builder.request_rainbow_star(
                             target_point.x,
@@ -305,7 +305,7 @@ impl<'a> System<'a> for ItemUseSystem {
                         let entity_name = names.get(*mob).unwrap();
                         match destructible {
                             None => {
-                                SufferDamage::new_damage(&mut suffer_damage, *mob, damage.amount, true);
+                                SufferDamage::new_damage(&mut suffer_damage, *mob, damage_roll, true);
                                 if entity == *player_entity {
                                     damage_logger =
                                         damage_logger.append("The").npc_name(&entity_name.name).append("is hit!");
