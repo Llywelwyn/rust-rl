@@ -1,5 +1,4 @@
 use crate::{gamelog, Attributes, Burden, EquipmentChanged, Equipped, InBackpack, Item, Pools};
-use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::HashMap;
 

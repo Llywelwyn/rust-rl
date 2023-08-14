@@ -1,9 +1,9 @@
 use super::{
-    gamelog, Confusion, Consumable, Cursed, Destructible, Digger, EquipmentChanged, Equippable, Equipped, HungerClock,
-    HungerState, IdentifiedItem, InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Pools,
-    Position, ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed,
-    Wand, WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME,
-    LONG_PARTICLE_LIFETIME,
+    gamelog, gui::obfuscate_name, Confusion, Consumable, Cursed, Destructible, Digger, EquipmentChanged, Equippable,
+    Equipped, HungerClock, HungerState, IdentifiedItem, InBackpack, InflictsDamage, MagicItem, MagicMapper, Map,
+    MasterDungeonMap, Name, ObfuscatedName, ParticleBuilder, Point, Pools, Position, ProvidesHealing,
+    ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed, Wand, WantsToDropItem,
+    WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
@@ -18,10 +18,25 @@ impl<'a> System<'a> for ItemCollectionSystem {
         ReadStorage<'a, Name>,
         WriteStorage<'a, InBackpack>,
         WriteStorage<'a, EquipmentChanged>,
+        ReadStorage<'a, MagicItem>,
+        ReadStorage<'a, ObfuscatedName>,
+        ReadExpect<'a, MasterDungeonMap>,
+        ReadStorage<'a, Wand>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut wants_pickup, mut positions, names, mut backpack, mut equipment_changed) = data;
+        let (
+            player_entity,
+            mut wants_pickup,
+            mut positions,
+            names,
+            mut backpack,
+            mut equipment_changed,
+            magic_items,
+            obfuscated_names,
+            dm,
+            wands,
+        ) = data;
 
         for pickup in wants_pickup.join() {
             positions.remove(pickup.item);
@@ -33,7 +48,10 @@ impl<'a> System<'a> for ItemCollectionSystem {
             if pickup.collected_by == *player_entity {
                 gamelog::Logger::new()
                     .append("You pick up the")
-                    .item_name_n(format!("{}", &names.get(pickup.item).unwrap().name))
+                    .item_name_n(format!(
+                        "{}",
+                        obfuscate_name(pickup.item, &names, &magic_items, &obfuscated_names, &dm, Some(&wands)).0
+                    ))
                     .period()
                     .log();
             }
@@ -48,7 +66,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
 // systems.
 type EquipComponents<'a> =
     (ReadStorage<'a, Equippable>, WriteStorage<'a, Equipped>, WriteStorage<'a, EquipmentChanged>);
-type NameComponents<'a> = (WriteStorage<'a, Name>, WriteStorage<'a, IdentifiedItem>);
+type NameComponents<'a> = (ReadStorage<'a, Name>, WriteStorage<'a, IdentifiedItem>);
 
 pub struct ItemUseSystem {}
 impl<'a> System<'a> for ItemUseSystem {
@@ -89,7 +107,7 @@ impl<'a> System<'a> for ItemUseSystem {
             mut rng,
             entities,
             mut wants_to_use,
-            (mut names, mut identified_items),
+            (names, mut identified_items),
             mut consumables,
             mut wands,
             destructibles,
@@ -461,10 +479,26 @@ impl<'a> System<'a> for ItemDropSystem {
         WriteStorage<'a, Position>,
         WriteStorage<'a, InBackpack>,
         WriteStorage<'a, EquipmentChanged>,
+        ReadStorage<'a, MagicItem>,
+        ReadStorage<'a, ObfuscatedName>,
+        ReadExpect<'a, MasterDungeonMap>,
+        ReadStorage<'a, Wand>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, entities, mut wants_drop, names, mut positions, mut backpack, mut equipment_changed) = data;
+        let (
+            player_entity,
+            entities,
+            mut wants_drop,
+            names,
+            mut positions,
+            mut backpack,
+            mut equipment_changed,
+            magic_items,
+            obfuscated_names,
+            dm,
+            wands,
+        ) = data;
 
         for (entity, to_drop) in (&entities, &wants_drop).join() {
             equipment_changed.insert(entity, EquipmentChanged {}).expect("Unable to insert EquipmentChanged.");
@@ -482,7 +516,10 @@ impl<'a> System<'a> for ItemDropSystem {
             if entity == *player_entity {
                 gamelog::Logger::new()
                     .append("You drop the")
-                    .item_name_n(format!("{}", &names.get(to_drop.item).unwrap().name))
+                    .item_name_n(format!(
+                        "{}",
+                        obfuscate_name(to_drop.item, &names, &magic_items, &obfuscated_names, &dm, Some(&wands)).0
+                    ))
                     .period()
                     .log();
             }

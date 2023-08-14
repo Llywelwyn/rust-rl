@@ -1,7 +1,7 @@
 use super::{
-    gamelog, Attributes, BlocksTile, BlocksVisibility, Bystander, Door, EntityMoved, Hidden, HungerClock, HungerState,
-    Item, Map, Monster, Name, ParticleBuilder, Player, Pools, Position, Renderable, RunState, State, SufferDamage,
-    Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem,
+    gamelog, gui::get_item_display_name, Attributes, BlocksTile, BlocksVisibility, Bystander, Door, EntityMoved,
+    Hidden, HungerClock, HungerState, Item, Map, Monster, Name, ParticleBuilder, Player, Pools, Position, Renderable,
+    RunState, State, SufferDamage, Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -351,9 +351,9 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
         for entity in map.tile_content[destination_idx].iter() {
             if let Some(_hidden) = hidden.get(*entity) {
             } else {
-                if let Some(name) = names.get(*entity) {
-                    let item_name = &name.name;
-                    item_names.push(item_name.to_string());
+                if let Some(_) = names.get(*entity) {
+                    let item_name = get_item_display_name(ecs, *entity).0;
+                    item_names.push(item_name);
                     some = true;
                 }
             }

@@ -1,4 +1,4 @@
-use super::{camera::get_screen_bounds, Attributes, Hidden, Map, Name, Pools, Position, Renderable, Rltk, World, RGB};
+use super::{camera::get_screen_bounds, Attributes, Hidden, Map, Pools, Position, Renderable, Rltk, World, RGB};
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -43,7 +43,6 @@ impl Tooltip {
 pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
-    let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
     let renderables = ecs.read_storage::<Renderable>();
     let hidden = ecs.read_storage::<Hidden>();
@@ -70,10 +69,10 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     }
 
     let mut tooltips: Vec<Tooltip> = Vec::new();
-    for (entity, name, position, renderable, _hidden) in (&entities, &names, &positions, &renderables, !&hidden).join() {
+    for (entity, position, renderable, _hidden) in (&entities, &positions, &renderables, !&hidden).join() {
         if position.x == mouse_pos_adjusted.0 && position.y == mouse_pos_adjusted.1 {
             let mut tip = Tooltip::new();
-            tip.add(name.name.to_string(), renderable.fg);
+            tip.add(crate::gui::get_item_display_name(ecs, entity).0, renderable.fg);
             // Attributes
             let attr = attributes.get(entity);
             if let Some(a) = attr {

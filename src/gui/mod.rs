@@ -1,7 +1,7 @@
 use super::{
     ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes,
-    Burden, Equipped, Hidden, HungerClock, HungerState, InBackpack, MagicItem, Map, Name, ObfuscatedName, Player,
-    Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
+    Burden, Equipped, Hidden, HungerClock, HungerState, InBackpack, MagicItem, Map, MasterDungeonMap, Name,
+    ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed, Wand,
 };
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
@@ -365,6 +365,43 @@ pub fn get_max_inventory_width(inventory: &BTreeMap<UniqueInventoryItem, i32>) -
     return width;
 }
 
+// Inside the ECS
+pub fn obfuscate_name(
+    item: Entity,
+    names: &ReadStorage<Name>,
+    magic_items: &ReadStorage<MagicItem>,
+    obfuscated_names: &ReadStorage<ObfuscatedName>,
+    dm: &MasterDungeonMap,
+    wand: Option<&ReadStorage<Wand>>,
+) -> (String, String) {
+    let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
+    if let Some(name) = names.get(item) {
+        if magic_items.get(item).is_some() {
+            if dm.identified_items.contains(&name.name) {
+                (singular, plural) = (name.name.clone(), name.plural.clone());
+            } else if let Some(obfuscated) = obfuscated_names.get(item) {
+                (singular, plural) = (obfuscated.name.clone(), obfuscated.plural.clone());
+            } else {
+                (singular, plural) = ("unid magic item".to_string(), "unid magic items".to_string());
+            }
+        } else {
+            (singular, plural) = (name.name.clone(), name.plural.clone());
+        }
+    }
+    if wand.is_some() {
+        let wands = wand.unwrap();
+        if let Some(wand) = wands.get(item) {
+            let used = wand.max_uses - wand.uses;
+            for _i in 0..used {
+                singular.push_str("*");
+                plural.push_str("*");
+            }
+        }
+    }
+    return (singular, plural);
+}
+
+// Outside the ECS
 pub fn get_item_display_name(ecs: &World, item: Entity) -> (String, String) {
     let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
     if let Some(name) = ecs.read_storage::<Name>().get(item) {
@@ -381,7 +418,7 @@ pub fn get_item_display_name(ecs: &World, item: Entity) -> (String, String) {
             (singular, plural) = (name.name.clone(), name.plural.clone());
         }
     }
-    if let Some(wand) = ecs.read_storage::<crate::Wand>().get(item) {
+    if let Some(wand) = ecs.read_storage::<Wand>().get(item) {
         let used = wand.max_uses - wand.uses;
         for _i in 0..used {
             singular.push_str("*");
