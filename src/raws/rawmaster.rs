@@ -301,6 +301,10 @@ pub fn spawn_named_mob(
                         eb = eb.with(MoveMode { mode: Movement::Static });
                         has_move_mode = true;
                     }
+                    "RANDOM_PATH" => {
+                        eb = eb.with(MoveMode { mode: Movement::RandomWaypoint { path: None } });
+                        has_move_mode = true;
+                    }
                     "MINDLESS" => {
                         eb = eb.with(Faction { name: "mindless".to_string() });
                         has_faction = true;

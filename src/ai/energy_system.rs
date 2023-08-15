@@ -90,6 +90,7 @@ impl<'a> System<'a> for EnergySystem {
             // by TURN_COST. If the current entity is the player, await input.
             if energy.current >= TURN_COST {
                 let mut my_turn = true;
+                energy.current -= TURN_COST;
                 if entity == *player {
                     *runstate = RunState::AwaitingInput;
                 } else {
@@ -100,7 +101,6 @@ impl<'a> System<'a> for EnergySystem {
                 }
                 if my_turn {
                     turns.insert(entity, TakingTurn {}).expect("Unable to insert turn.");
-                    energy.current -= TURN_COST;
                     if LOG_TICKS {
                         let name = if let Some(name) = names.get(entity) { &name.name } else { "Unknown entity" };
                         console::log(format!(

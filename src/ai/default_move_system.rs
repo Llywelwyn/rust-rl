@@ -1,4 +1,4 @@
-use crate::{EntityMoved, Map, MoveMode, Movement, Position, TakingTurn, Telepath, Viewshed};
+use crate::{tile_walkable, EntityMoved, Map, MoveMode, Movement, Position, TakingTurn, Telepath, Viewshed};
 use specs::prelude::*;
 
 // Rolling a 1d8+x to decide where to move, where x are the number
@@ -10,7 +10,7 @@ pub struct DefaultAI {}
 impl<'a> System<'a> for DefaultAI {
     type SystemData = (
         WriteStorage<'a, TakingTurn>,
-        ReadStorage<'a, MoveMode>,
+        WriteStorage<'a, MoveMode>,
         WriteStorage<'a, Position>,
         WriteExpect<'a, Map>,
         WriteStorage<'a, Viewshed>,
@@ -23,7 +23,7 @@ impl<'a> System<'a> for DefaultAI {
     fn run(&mut self, data: Self::SystemData) {
         let (
             mut turns,
-            move_mode,
+            mut move_mode,
             mut positions,
             mut map,
             mut viewsheds,
@@ -33,11 +33,11 @@ impl<'a> System<'a> for DefaultAI {
             entities,
         ) = data;
         let mut turn_done: Vec<Entity> = Vec::new();
-        for (entity, _turn, mut pos, move_mode, mut viewshed) in
-            (&entities, &turns, &mut positions, &move_mode, &mut viewsheds).join()
+        for (entity, _turn, mut pos, mut move_mode, mut viewshed) in
+            (&entities, &turns, &mut positions, &mut move_mode, &mut viewsheds).join()
         {
             turn_done.push(entity);
-            match move_mode.mode {
+            match &mut move_mode.mode {
                 Movement::Static => {}
                 Movement::Random => {
                     let mut x = pos.x;
@@ -79,6 +79,43 @@ impl<'a> System<'a> for DefaultAI {
                             viewshed.dirty = true;
                             if let Some(is_telepath) = telepaths.get_mut(entity) {
                                 is_telepath.dirty = true;
+                            }
+                        }
+                    }
+                }
+                Movement::RandomWaypoint { path } => {
+                    if let Some(path) = path {
+                        // We have a path - follow it
+                        let mut idx = map.xy_idx(pos.x, pos.y);
+                        if path.len() > 1 {
+                            if !map.blocked[path[1] as usize] {
+                                map.blocked[idx] = false;
+                                pos.x = path[1] as i32 % map.width;
+                                pos.y = path[1] as i32 / map.width;
+                                entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert EntityMoved");
+                                idx = map.xy_idx(pos.x, pos.y);
+                                map.blocked[idx] = true;
+                                viewshed.dirty = true;
+                                if let Some(is_telepath) = telepaths.get_mut(entity) {
+                                    is_telepath.dirty = true;
+                                }
+                                path.remove(0);
+                            }
+                        } else {
+                            move_mode.mode = Movement::RandomWaypoint { path: None };
+                        }
+                    } else {
+                        let target_x = rng.roll_dice(1, map.width - 2);
+                        let target_y = rng.roll_dice(1, map.height - 2);
+                        let idx = map.xy_idx(target_x, target_y);
+                        if tile_walkable(map.tiles[idx]) {
+                            let path = rltk::a_star_search(
+                                map.xy_idx(pos.x, pos.y) as i32,
+                                map.xy_idx(target_x, target_y) as i32,
+                                &mut *map,
+                            );
+                            if path.success && path.steps.len() > 1 {
+                                move_mode.mode = Movement::RandomWaypoint { path: Some(path.steps) };
                             }
                         }
                     }

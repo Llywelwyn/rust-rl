@@ -55,6 +55,7 @@ pub struct Faction {
 pub enum Movement {
     Static,
     Random,
+    RandomWaypoint { path: Option<Vec<usize>> },
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
