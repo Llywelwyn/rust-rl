@@ -9,7 +9,7 @@ pub struct VisibleAI {}
 impl<'a> System<'a> for VisibleAI {
     #[allow(clippy::type_complexity)]
     type SystemData = (
-        WriteStorage<'a, TakingTurn>,
+        ReadStorage<'a, TakingTurn>,
         ReadStorage<'a, Faction>,
         ReadStorage<'a, Position>,
         ReadExpect<'a, Map>,
@@ -24,7 +24,7 @@ impl<'a> System<'a> for VisibleAI {
 
     fn run(&mut self, data: Self::SystemData) {
         let (
-            mut turns,
+            turns,
             factions,
             positions,
             map,
