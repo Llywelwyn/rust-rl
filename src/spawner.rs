@@ -1,6 +1,6 @@
 use super::{
     ai::NORMAL_SPEED, gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute, Attributes,
-    Clock, Energy, EquipmentChanged, HungerClock, HungerState, Map, Name, Player, Pool, Pools, Position, Rect,
+    Clock, Energy, EquipmentChanged, Faction, HungerClock, HungerState, Map, Name, Player, Pool, Pools, Position, Rect,
     Renderable, SerializeMe, Skill, Skills, TileType, Viewshed,
 };
 use rltk::{RandomNumberGenerator, RGB};
@@ -36,6 +36,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             render_order: 0,
         })
         .with(Player {})
+        .with(Faction { name: "player".to_string() })
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: "you".to_string(), plural: "you".to_string() })
         .with(HungerClock { state: HungerState::Satiated, duration: 200 })

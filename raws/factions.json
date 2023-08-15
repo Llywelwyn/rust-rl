@@ -1,0 +1,26 @@
+[
+    {
+        "id": "player",
+        "responses": {}
+    },
+    {
+        "id": "mindless",
+        "responses": { "default": "attack" }
+    },
+    {
+        "id": "neutral",
+        "responses": { "default": "ignore" }
+    },
+    {
+        "id": "hostile",
+        "responses": { "default": "attack", "hostile": "ignore" }
+    },
+    {
+        "id": "herbivore",
+        "responses": { "default": "flee", "herbivores": "ignore" }
+    },
+    {
+        "id": "carnivore",
+        "responses": { "default": "attack", "carnivores": "ignore" }
+    }
+]

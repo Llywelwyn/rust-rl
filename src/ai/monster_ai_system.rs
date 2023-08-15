@@ -1,4 +1,5 @@
-use super::{bystander_ai_system, EntityMoved, Map, Monster, Position, TakingTurn, Viewshed, WantsToMelee};
+use super::bystander_ai_system::try_move_randomly;
+use crate::{EntityMoved, Map, Monster, Position, TakingTurn, Viewshed, WantsToMelee};
 use rltk::Point;
 use specs::prelude::*;
 
@@ -60,7 +61,7 @@ impl<'a> System<'a> for MonsterAI {
                     entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
                 }
             } else {
-                if bystander_ai_system::try_move_randomly(&mut pos, &mut rng, &mut map, &mut viewshed) {
+                if try_move_randomly(&mut pos, &mut rng, &mut map, &mut viewshed) {
                     entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
                 }
             }

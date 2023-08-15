@@ -20,9 +20,6 @@ mod saveload_system;
 mod spawner;
 mod visibility_system;
 use visibility_system::VisibilitySystem;
-mod monster_ai_system;
-use monster_ai_system::MonsterAI;
-pub mod bystander_ai_system;
 mod map_indexing_system;
 use map_indexing_system::MapIndexingSystem;
 mod damage_system;
@@ -99,8 +96,8 @@ impl State {
         let mut encumbrance_system = ai::EncumbranceSystem {};
         let mut turn_status_system = ai::TurnStatusSystem {};
         let mut quip_system = ai::QuipSystem {};
-        let mut mob = MonsterAI {};
-        let mut bystanders = bystander_ai_system::BystanderAI {};
+        let mut mob = ai::MonsterAI {};
+        let mut bystanders = ai::BystanderAI {};
         let mut trigger_system = trigger_system::TriggerSystem {};
         let mut melee_system = MeleeCombatSystem {};
         let mut damage_system = DamageSystem {};
@@ -520,6 +517,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Burden>();
     gs.ecs.register::<Prop>();
     gs.ecs.register::<Player>();
+    gs.ecs.register::<Faction>();
     gs.ecs.register::<Clock>();
     gs.ecs.register::<Monster>();
     gs.ecs.register::<Bystander>();

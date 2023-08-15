@@ -1,4 +1,4 @@
-use super::Raws;
+use super::{Raws, Reaction};
 use crate::components::*;
 use crate::gamesystem::*;
 use crate::random_table::RandomTable;
@@ -22,6 +22,7 @@ pub struct RawMaster {
     prop_index: HashMap<String, usize>,
     table_index: HashMap<String, usize>,
     loot_index: HashMap<String, usize>,
+    faction_index: HashMap<String, HashMap<String, Reaction>>,
 }
 
 impl RawMaster {
@@ -33,12 +34,14 @@ impl RawMaster {
                 props: Vec::new(),
                 spawn_tables: Vec::new(),
                 loot_tables: Vec::new(),
+                factions: Vec::new(),
             },
             item_index: HashMap::new(),
             mob_index: HashMap::new(),
             prop_index: HashMap::new(),
             table_index: HashMap::new(),
             loot_index: HashMap::new(),
+            faction_index: HashMap::new(),
         }
     }
 
@@ -74,6 +77,20 @@ impl RawMaster {
             for entry in loot_table.table.iter() {
                 check_for_unspecified_entity(&used_names, &entry.id)
             }
+        }
+        for faction in self.raws.factions.iter() {
+            let mut reactions: HashMap<String, Reaction> = HashMap::new();
+            for other in faction.responses.iter() {
+                reactions.insert(
+                    other.0.clone(),
+                    match other.1.as_str() {
+                        "flee" => Reaction::Flee,
+                        "attack" => Reaction::Attack,
+                        _ => Reaction::Ignore,
+                    },
+                );
+            }
+            self.faction_index.insert(faction.id.clone(), reactions);
         }
     }
 }
@@ -279,7 +296,14 @@ pub fn spawn_named_mob(
                     "BLOCKS_TILE" => eb = eb.with(BlocksTile {}),
                     "BYSTANDER" => eb = eb.with(Bystander {}),
                     "MONSTER" => eb = eb.with(Monster {}),
-                    "MINDLESS" => has_mind = false,
+                    "MINDLESS" => {
+                        eb = eb.with(Faction { name: "mindless".to_string() });
+                        has_mind = false;
+                    }
+                    "NEUTRAL" => eb = eb.with(Faction { name: "neutral".to_string() }),
+                    "HOSTILE" => eb = eb.with(Faction { name: "hostile".to_string() }),
+                    "HERBIVORE" => eb = eb.with(Faction { name: "herbivore".to_string() }),
+                    "CARNIVORE" => eb = eb.with(Faction { name: "carnivore".to_string() }),
                     "SMALL_GROUP" => {} // These flags are for region spawning,
                     "LARGE_GROUP" => {} // and don't matter here (yet)?
                     "MULTIATTACK" => {
@@ -737,4 +761,17 @@ pub fn is_tag_magic(tag: &str) -> bool {
     } else {
         return false;
     }
+}
+
+/// Queries the faction index to obtain one faction's reaction to another faction.
+pub fn faction_reaction(this_faction: &str, other_faction: &str, raws: &RawMaster) -> Reaction {
+    if raws.faction_index.contains_key(this_faction) {
+        let mine = &raws.faction_index[this_faction];
+        if mine.contains_key(other_faction) {
+            return mine[other_faction];
+        } else if mine.contains_key("default") {
+            return mine["default"];
+        }
+    }
+    return Reaction::Ignore;
 }

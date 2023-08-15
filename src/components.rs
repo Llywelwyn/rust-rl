@@ -47,6 +47,11 @@ pub struct Renderable {
 pub struct Player {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Faction {
+    pub name: String,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Prop {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

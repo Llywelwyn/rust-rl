@@ -1,4 +1,4 @@
-use super::{Bystander, EntityMoved, Map, Position, TakingTurn, Viewshed};
+use crate::{Bystander, EntityMoved, Map, Position, TakingTurn, Viewshed};
 use specs::prelude::*;
 
 pub struct BystanderAI {}
