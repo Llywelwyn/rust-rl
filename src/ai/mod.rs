@@ -14,3 +14,5 @@ mod monster_ai_system;
 pub use monster_ai_system::MonsterAI;
 mod adjacent_ai_system;
 pub use adjacent_ai_system::AdjacentAI;
+mod visible_ai_system;
+pub use visible_ai_system::VisibleAI;

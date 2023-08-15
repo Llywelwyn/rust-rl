@@ -97,6 +97,7 @@ impl State {
         let mut turn_status_system = ai::TurnStatusSystem {};
         let mut quip_system = ai::QuipSystem {};
         let mut adjacent_ai = ai::AdjacentAI {};
+        let mut visible_ai = ai::VisibleAI {};
         let mut mob = ai::MonsterAI {};
         let mut bystanders = ai::BystanderAI {};
         let mut trigger_system = trigger_system::TriggerSystem {};
@@ -118,6 +119,7 @@ impl State {
         turn_status_system.run_now(&self.ecs);
         quip_system.run_now(&self.ecs);
         adjacent_ai.run_now(&self.ecs);
+        visible_ai.run_now(&self.ecs);
         mob.run_now(&self.ecs);
         bystanders.run_now(&self.ecs);
         trigger_system.run_now(&self.ecs);

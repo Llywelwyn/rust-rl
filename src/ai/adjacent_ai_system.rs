@@ -1,5 +1,4 @@
 use crate::{raws::Reaction, Faction, Map, Position, TakingTurn, WantsToMelee};
-use rltk::prelude::*;
 use specs::prelude::*;
 
 pub struct AdjacentAI {}
