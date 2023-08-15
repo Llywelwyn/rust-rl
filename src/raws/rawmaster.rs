@@ -290,6 +290,7 @@ pub fn spawn_named_mob(
             eb = eb.with(get_renderable_component(renderable));
         }
         let mut has_mind = true;
+        let mut has_faction = false;
         if let Some(flags) = &mob_template.flags {
             for flag in flags.iter() {
                 match flag.as_str() {
@@ -298,12 +299,21 @@ pub fn spawn_named_mob(
                     "MONSTER" => eb = eb.with(Monster {}),
                     "MINDLESS" => {
                         eb = eb.with(Faction { name: "mindless".to_string() });
+                        has_faction = true;
                         has_mind = false;
                     }
-                    "NEUTRAL" => eb = eb.with(Faction { name: "neutral".to_string() }),
-                    "HOSTILE" => eb = eb.with(Faction { name: "hostile".to_string() }),
-                    "HERBIVORE" => eb = eb.with(Faction { name: "herbivore".to_string() }),
-                    "CARNIVORE" => eb = eb.with(Faction { name: "carnivore".to_string() }),
+                    "NEUTRAL" => {
+                        eb = eb.with(Faction { name: "neutral".to_string() });
+                        has_faction = true;
+                    }
+                    "HERBIVORE" => {
+                        eb = eb.with(Faction { name: "herbivore".to_string() });
+                        has_faction = true;
+                    }
+                    "CARNIVORE" => {
+                        eb = eb.with(Faction { name: "carnivore".to_string() });
+                        has_faction = true;
+                    }
                     "SMALL_GROUP" => {} // These flags are for region spawning,
                     "LARGE_GROUP" => {} // and don't matter here (yet)?
                     "MULTIATTACK" => {
@@ -314,9 +324,15 @@ pub fn spawn_named_mob(
                 }
             }
         }
+        // If we're anything other than MINDLESS, add a mind.
         if has_mind {
             eb = eb.with(Mind {});
         }
+        // If we didn't add a faction flag, default to hostile (attacks everything except other hostiles).
+        if !has_faction {
+            eb = eb.with(Faction { name: "hostile".to_string() });
+        }
+        // Add quips, if we have some listed.
         if let Some(quips) = &mob_template.quips {
             eb = eb.with(Quips { available: quips.clone() });
         }

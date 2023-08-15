@@ -12,7 +12,8 @@ use spawn_table_structs::*;
 mod loot_table_structs;
 use loot_table_structs::*;
 mod faction_structs;
-use faction_structs::{FactionData, Reaction};
+use faction_structs::FactionData;
+pub use faction_structs::Reaction;
 use std::sync::Mutex;
 
 lazy_static! {
