@@ -104,3 +104,24 @@ i'll try to remember to update the web version on my page at the end of every we
   - busy week for me, so the only things i managed this week were finishing up some small things from the previous week. i started on combining logs that happen on the same tick (You hit the goblin. The goblin hits you.), and fixed up the _chance to spawn a guy each turn_ system to work with the groupsize flags, so there's a chance to spawn a pack of creatures each game turn rather than packs only spawning on map generation.
 
 </details>
+
+---
+
+<details>
+  <summary>week 6</summary>
+
+- backtracking (persistent maps)
+  - previously, when you descended you could never return, and every entity on the previous depth was deleted. now up stairs are made, and entities are frozen/thawed whenever leaving/returning to a map. there's nothing to stop stair-dancing right now, but overall i think it's nice. some issues with backtracking to smaller maps exist, but i'm 99% sure why that's happening and right now every map is the same size anyway, so i haven't looked into it yet.
+ 
+- visuals (contd.)
+  - i also put some time into messing around with colours. i decided having all the names in the sidebar coloured the same as their glyph made everything way too colourful, and the colours didn't even really help that much with identifying something on the screen anyway, because a lot of entities share colours. i nixed it entirely, and replaced it with showing the actual glyph, followed by a name coloured by (usually) the rarity of the item. nonmagical items are white, unidentified items appear in grey, and identified magical items appear in the usual green-blue-purple-gold rarity colourways.
+  
+  ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/af1c7821-d32d-4914-82f1-4422e1bef680)
+
+- tweaks and stuff that doesn't justify a whole header
+  - item identification! right now there's schemes for naming some of the big item categories (like "<adjective> <colour> potion", or "GIBBERISH scroll"), as well as an option to set a specific name for one-offs or special cases (just "unidentified gloves", for example)
+  - encumbrance! varying levels of being overweight (with the limit determined by strength), slowing entities down by ~25% per level over unencumbered. right now it's tuned to be pretty forgiving, because running around encumbered whilst testing doesn't seem very fun
+  - a cheat menu to make testing easier
+  - refactored pretty much everything that needs it to (finally) use a parsed dice string, d20-style
+
+</details>
