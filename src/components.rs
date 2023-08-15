@@ -51,6 +51,17 @@ pub struct Faction {
     pub name: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum Movement {
+    Static,
+    Random,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MoveMode {
+    pub mode: Movement,
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Prop {}
 

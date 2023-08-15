@@ -291,10 +291,16 @@ pub fn spawn_named_mob(
         }
         let mut has_mind = true;
         let mut has_faction = false;
+        let mut blocks_tile = true;
+        let mut has_move_mode = false;
         if let Some(flags) = &mob_template.flags {
             for flag in flags.iter() {
                 match flag.as_str() {
-                    "BLOCKS_TILE" => eb = eb.with(BlocksTile {}),
+                    "PASSABLE" => blocks_tile = false,
+                    "STATIC" => {
+                        eb = eb.with(MoveMode { mode: Movement::Static });
+                        has_move_mode = true;
+                    }
                     "MINDLESS" => {
                         eb = eb.with(Faction { name: "mindless".to_string() });
                         has_faction = true;
@@ -321,6 +327,13 @@ pub fn spawn_named_mob(
                     _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
                 }
             }
+        }
+        if blocks_tile {
+            eb = eb.with(BlocksTile {});
+        }
+        // If we didn't already add one, just move randomly.
+        if !has_move_mode {
+            eb = eb.with(MoveMode { mode: Movement::Random });
         }
         // If we're anything other than MINDLESS, add a mind.
         if has_mind {
