@@ -110,18 +110,18 @@ i'll try to remember to update the web version on my page at the end of every we
 <details>
   <summary>week 6</summary>
 
-- backtracking (persistent maps)
-  - previously, when you descended you could never return, and every entity on the previous depth was deleted. now up stairs are made, and entities are frozen/thawed whenever leaving/returning to a map. there's nothing to stop stair-dancing right now, but overall i think it's nice. some issues with backtracking to smaller maps exist, but i'm 99% sure why that's happening and right now every map is the same size anyway, so i haven't looked into it yet.
- 
 - visuals (contd.)
-  - i also put some time into messing around with colours. i decided having all the names in the sidebar coloured the same as their glyph made everything way too colourful, and the colours didn't even really help that much with identifying something on the screen anyway, because a lot of entities share colours. i nixed it entirely, and replaced it with showing the actual glyph, followed by a name coloured by (usually) the rarity of the item. nonmagical items are white, unidentified items appear in grey, and identified magical items appear in the usual green-blue-purple-gold rarity colourways.
+  - i'll start here, because it pretty much shows all the other things i did this week in the one image. the biggest change is nixing the rainbow colours i did in week 4 - having all the names on the sidebar and inventory be coloured by the colour of their glyph made for a difficult to parse ui. i swapped everything out for being coloured by their rarity (white for common and nonmagical items, grey for unidentified, and green-to-gold for uncommon-legendary rarities), and decided to add the glyph of the entity beside the name. overall, a big win i think. it provides more information more cleanly.
   
   ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/af1c7821-d32d-4914-82f1-4422e1bef680)
 
-- tweaks and stuff that doesn't justify a whole header
-  - item identification! right now there's schemes for naming some of the big item categories (like "<adjective> <colour> potion", or "GIBBERISH scroll"), as well as an option to set a specific name for one-offs or special cases (just "unidentified gloves", for example)
-  - encumbrance! varying levels of being overweight (with the limit determined by strength), slowing entities down by ~25% per level over unencumbered. right now it's tuned to be pretty forgiving, because running around encumbered whilst testing doesn't seem very fun
-  - a cheat menu to make testing easier
-  - refactored pretty much everything that needs it to (finally) use a parsed dice string, d20-style
+- backtracking
+  - short and sweet, maps are persistent now. entities don't get deleted when you descend, they just get frozen, and you can return anytime. stair-dancing is a thing now, and something i haven't decided how to handle yet.
+ 
+- item identification (no BUC yet!)
+  - unique schemes for unidentified items in the big categories (i.e. "effervescent green potions", "octagonal wands", and "GIB BERISH scrolls"), as well as the option of defining one-off obfuscated names for special cases
+
+- encumbrance
+  - varying levels of being overweight, with the limit determined by strength, slowing entities down by ~25% per level over unencumbered. right now it's pretty forgiving, and i'd probably like it to stay that way. my ideal balance here would be roughly how it ends up in 5e DnD: everyone can carry a good supply of consumables, but strength characters usually don't carry a much higher quantity of items than anyone else, because the strongest armour is extremely heavy. sort of like a soft strength requirement for the heaviest gear - rather than requiring specific stats or levels to equip it, it's heavy enough that you need to be strong to lug it around. but if someone weaker wanted to, they could, they'd just have to leave some other items behind to do so. or take the speed penalty for being encumbered
 
 </details>
