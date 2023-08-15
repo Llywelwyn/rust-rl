@@ -9,7 +9,7 @@
     },
     {
         "id": "neutral",
-        "responses": { "default": "ignore" }
+        "responses": { "default": "ignore", "hostile": "flee", "mindless": "flee", "carnivore": "flee" }
     },
     {
         "id": "hostile",
@@ -21,6 +21,6 @@
     },
     {
         "id": "carnivore",
-        "responses": { "default": "ignore", "herbivores": "attack", "player": "attack" }
+        "responses": { "default": "ignore", "herbivores": "attack", "player": "attack", "neutral": "attack" }
     }
 ]

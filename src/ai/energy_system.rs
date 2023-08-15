@@ -20,10 +20,23 @@ impl<'a> System<'a> for EnergySystem {
         WriteExpect<'a, RunState>,
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Name>,
+        ReadExpect<'a, Point>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (clock, mut energies, burdens, positions, mut turns, entities, mut rng, mut runstate, player, names) = data;
+        let (
+            clock,
+            mut energies,
+            burdens,
+            positions,
+            mut turns,
+            entities,
+            mut rng,
+            mut runstate,
+            player,
+            names,
+            player_pos,
+        ) = data;
         // If not ticking, do nothing.
         if *runstate != RunState::Ticking {
             return;
@@ -44,7 +57,7 @@ impl<'a> System<'a> for EnergySystem {
             }
         }
         // EVERYTHING ELSE
-        for (entity, energy, _pos) in (&entities, &mut energies, &positions).join() {
+        for (entity, energy, pos) in (&entities, &mut energies, &positions).join() {
             let burden_modifier = if let Some(burden) = burdens.get(entity) {
                 match burden.level {
                     BurdenLevel::Burdened => 0.75,
@@ -76,17 +89,25 @@ impl<'a> System<'a> for EnergySystem {
             // has enough energy, they take a turn and decrement their energy
             // by TURN_COST. If the current entity is the player, await input.
             if energy.current >= TURN_COST {
-                turns.insert(entity, TakingTurn {}).expect("Unable to insert turn.");
-                energy.current -= TURN_COST;
-                if LOG_TICKS {
-                    let name = if let Some(name) = names.get(entity) { &name.name } else { "Unknown entity" };
-                    console::log(format!(
-                        "ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].",
-                        name, energy.current
-                    ));
-                }
+                let mut my_turn = true;
                 if entity == *player {
                     *runstate = RunState::AwaitingInput;
+                } else {
+                    let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, Point::new(pos.x, pos.y));
+                    if distance > 20.0 {
+                        my_turn = false;
+                    }
+                }
+                if my_turn {
+                    turns.insert(entity, TakingTurn {}).expect("Unable to insert turn.");
+                    energy.current -= TURN_COST;
+                    if LOG_TICKS {
+                        let name = if let Some(name) = names.get(entity) { &name.name } else { "Unknown entity" };
+                        console::log(format!(
+                            "ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].",
+                            name, energy.current
+                        ));
+                    }
                 }
             }
         }

@@ -55,9 +55,6 @@ pub struct Faction {
 pub struct Prop {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Monster {}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct LootTable {
     pub table: String,
     pub chance: f32,
@@ -74,9 +71,6 @@ pub struct Clock {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct TakingTurn {}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Bystander {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Quips {
@@ -381,6 +375,11 @@ pub struct WantsToApproach {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct WantsToFlee {
     pub indices: Vec<usize>, // Dijkstra
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct Chasing {
+    pub target: Entity,
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

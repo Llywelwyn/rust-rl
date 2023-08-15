@@ -295,8 +295,6 @@ pub fn spawn_named_mob(
             for flag in flags.iter() {
                 match flag.as_str() {
                     "BLOCKS_TILE" => eb = eb.with(BlocksTile {}),
-                    "BYSTANDER" => eb = eb.with(Bystander {}),
-                    "MONSTER" => eb = eb.with(Monster {}),
                     "MINDLESS" => {
                         eb = eb.with(Faction { name: "mindless".to_string() });
                         has_faction = true;

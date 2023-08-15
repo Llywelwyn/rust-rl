@@ -96,11 +96,6 @@ impl State {
         let mut encumbrance_system = ai::EncumbranceSystem {};
         let mut turn_status_system = ai::TurnStatusSystem {};
         let mut quip_system = ai::QuipSystem {};
-        let mut adjacent_ai = ai::AdjacentAI {};
-        let mut visible_ai = ai::VisibleAI {};
-        let mut approach_ai = ai::ApproachAI {};
-        let mut mob = ai::MonsterAI {};
-        let mut bystanders = ai::BystanderAI {};
         let mut trigger_system = trigger_system::TriggerSystem {};
         let mut melee_system = MeleeCombatSystem {};
         let mut damage_system = DamageSystem {};
@@ -119,11 +114,7 @@ impl State {
         energy.run_now(&self.ecs);
         turn_status_system.run_now(&self.ecs);
         quip_system.run_now(&self.ecs);
-        adjacent_ai.run_now(&self.ecs);
-        visible_ai.run_now(&self.ecs);
-        approach_ai.run_now(&self.ecs);
-        mob.run_now(&self.ecs);
-        bystanders.run_now(&self.ecs);
+        self.run_ai();
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
         item_use_system.run_now(&self.ecs);
@@ -136,6 +127,19 @@ impl State {
         particle_system.run_now(&self.ecs);
 
         self.ecs.maintain();
+    }
+
+    fn run_ai(&mut self) {
+        let mut adjacent_ai = ai::AdjacentAI {};
+        let mut visible_ai = ai::VisibleAI {};
+        let mut approach_ai = ai::ApproachAI {};
+        let mut flee_ai = ai::FleeAI {};
+        let mut chase_ai = ai::ChaseAI {};
+        adjacent_ai.run_now(&self.ecs);
+        visible_ai.run_now(&self.ecs);
+        approach_ai.run_now(&self.ecs);
+        flee_ai.run_now(&self.ecs);
+        chase_ai.run_now(&self.ecs);
     }
 
     fn run_map_index(&mut self) {
@@ -523,10 +527,9 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Burden>();
     gs.ecs.register::<Prop>();
     gs.ecs.register::<Player>();
+    gs.ecs.register::<Chasing>();
     gs.ecs.register::<Faction>();
     gs.ecs.register::<Clock>();
-    gs.ecs.register::<Monster>();
-    gs.ecs.register::<Bystander>();
     gs.ecs.register::<Quips>();
     gs.ecs.register::<Mind>();
     gs.ecs.register::<Viewshed>();

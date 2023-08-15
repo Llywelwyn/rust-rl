@@ -1,6 +1,6 @@
 use super::{
-    gamelog, gui::get_item_display_name, Attributes, BlocksTile, BlocksVisibility, Bystander, Door, EntityMoved,
-    Hidden, HungerClock, HungerState, Item, Map, Monster, Name, ParticleBuilder, Player, Pools, Position, Renderable,
+    gamelog, gui::get_item_display_name, raws::Reaction, Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved,
+    Faction, Hidden, HungerClock, HungerState, Item, Map, Name, ParticleBuilder, Player, Pools, Position, Renderable,
     RunState, State, SufferDamage, Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
@@ -275,7 +275,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let mut telepaths = ecs.write_storage::<Telepath>();
     let mut entity_moved = ecs.write_storage::<EntityMoved>();
-    let friendlies = ecs.read_storage::<Bystander>();
+    let factions = ecs.read_storage::<Faction>();
     let pools = ecs.read_storage::<Pools>();
     let map = ecs.fetch::<Map>();
 
@@ -296,8 +296,17 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
         for potential_target in map.tile_content[destination_idx].iter() {
-            let friendly = friendlies.get(*potential_target);
-            if friendly.is_some() {
+            let mut hostile = true;
+            if pools.get(*potential_target).is_some() {
+                if let Some(faction) = factions.get(*potential_target) {
+                    let reaction =
+                        crate::raws::faction_reaction(&faction.name, "player", &crate::raws::RAWS.lock().unwrap());
+                    if reaction != Reaction::Attack {
+                        hostile = false;
+                    }
+                }
+            }
+            if !hostile {
                 swap_entities.push((*potential_target, pos.x, pos.y));
                 pos.x = min(map.width - 1, max(0, pos.x + delta_x));
                 pos.y = min(map.height - 1, max(0, pos.y + delta_y));
@@ -523,23 +532,27 @@ pub fn try_previous_level(ecs: &mut World) -> bool {
 fn skip_turn(ecs: &mut World) -> bool {
     let player_entity = ecs.fetch::<Entity>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
-    let monsters = ecs.read_storage::<Monster>();
     let worldmap_resource = ecs.fetch::<Map>();
     let hunger_clocks = ecs.read_storage::<HungerClock>();
 
     // Default to being able to heal by waiting.
     let mut can_heal = true;
+    let factions = ecs.read_storage::<Faction>();
 
     // Check viewshed for monsters nearby. If we can see a monster, we can't heal.
     let viewshed = viewsheds.get_mut(*player_entity).unwrap();
     for tile in viewshed.visible_tiles.iter() {
         let idx = worldmap_resource.xy_idx(tile.x, tile.y);
         for entity_id in worldmap_resource.tile_content[idx].iter() {
-            let mob = monsters.get(*entity_id);
-            match mob {
+            let faction = factions.get(*entity_id);
+            match faction {
                 None => {}
-                Some(_) => {
-                    can_heal = false;
+                Some(faction) => {
+                    let reaction =
+                        crate::raws::faction_reaction(&faction.name, "player", &crate::raws::RAWS.lock().unwrap());
+                    if reaction == Reaction::Attack {
+                        can_heal = false;
+                    }
                 }
             }
         }

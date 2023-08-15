@@ -1,5 +1,5 @@
 use crate::{
-    raws::Reaction, Faction, Map, Mind, Position, TakingTurn, Telepath, Viewshed, WantsToApproach, WantsToFlee,
+    raws::Reaction, Chasing, Faction, Map, Mind, Position, TakingTurn, Telepath, Viewshed, WantsToApproach, WantsToFlee,
 };
 use specs::prelude::*;
 use std::collections::HashSet;
@@ -20,6 +20,7 @@ impl<'a> System<'a> for VisibleAI {
         ReadStorage<'a, Viewshed>,
         ReadStorage<'a, Telepath>,
         ReadStorage<'a, Mind>,
+        WriteStorage<'a, Chasing>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -35,6 +36,7 @@ impl<'a> System<'a> for VisibleAI {
             viewsheds,
             telepaths,
             minds,
+            mut chasing,
         ) = data;
 
         for (entity, _turn, faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
@@ -42,7 +44,7 @@ impl<'a> System<'a> for VisibleAI {
                 continue;
             }
             let this_idx = map.xy_idx(pos.x, pos.y);
-            let mut reactions: Vec<(usize, Reaction)> = Vec::new();
+            let mut reactions: Vec<(usize, Reaction, Entity)> = Vec::new();
             let mut flee: Vec<usize> = Vec::new();
             let mut idxs: HashSet<usize> = HashSet::new();
             for visible_tile in viewshed.visible_tiles.iter() {
@@ -70,6 +72,7 @@ impl<'a> System<'a> for VisibleAI {
                         wants_to_approach
                             .insert(entity, WantsToApproach { idx: reaction.0 as i32 })
                             .expect("Error inserting WantsToApproach");
+                        chasing.insert(entity, Chasing { target: reaction.2 }).expect("Unable to insert Chasing");
                         done = true;
                     }
                     Reaction::Flee => {
@@ -90,7 +93,7 @@ fn evaluate(
     map: &Map,
     factions: &ReadStorage<Faction>,
     this_faction: &str,
-    reactions: &mut Vec<(usize, Reaction)>,
+    reactions: &mut Vec<(usize, Reaction, Entity)>,
     minds: Option<&ReadStorage<Mind>>,
 ) {
     for other_entity in map.tile_content[idx].iter() {
@@ -105,6 +108,7 @@ fn evaluate(
             reactions.push((
                 idx,
                 crate::raws::faction_reaction(this_faction, &faction.name, &crate::raws::RAWS.lock().unwrap()),
+                *other_entity,
             ));
         }
     }
