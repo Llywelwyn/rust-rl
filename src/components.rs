@@ -374,6 +374,16 @@ pub struct WantsToUseItem {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToApproach {
+    pub idx: i32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToFlee {
+    pub indices: Vec<usize>, // Dijkstra
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Consumable {}
 
 #[derive(Component, Debug, ConvertSaveload)]

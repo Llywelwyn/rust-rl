@@ -560,6 +560,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Confusion>();
     gs.ecs.register::<MagicMapper>();
     gs.ecs.register::<InBackpack>();
+    gs.ecs.register::<WantsToApproach>();
+    gs.ecs.register::<WantsToFlee>();
     gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<WantsToDropItem>();
     gs.ecs.register::<WantsToRemoveItem>();
