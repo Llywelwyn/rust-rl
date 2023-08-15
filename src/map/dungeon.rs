@@ -110,9 +110,10 @@ fn make_scroll_name(rng: &mut RandomNumberGenerator) -> String {
 
 const POTION_COLOURS: &[&str] = &[
     "red", "orange", "yellow", "green", "blue", "indigo", "violet", "black", "white", "silver", "gold", "rainbow",
-    "blood", "purple", "cyan", "brown", "grey",
+    "blood", "purple", "cyan", "brown", "grey", "octarine",
 ];
-const POTION_ADJECTIVES: &[&str] = &["swirling", "viscous", "effervescent", "slimy", "oily", "metallic"];
+const POTION_ADJECTIVES: &[&str] =
+    &["swirling", "viscous", "effervescent", "slimy", "oily", "metallic", "prismatic", "goopy"];
 
 fn make_potion_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
     loop {
@@ -130,17 +131,25 @@ fn make_potion_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<St
 }
 
 const WAND_TYPES: &[&str] = &[
+    // Shapes
+    "curved",
+    "squircle",
+    "hexagonal",
+    "octagonal",
+    "pointed",
+    "long",
+    // Metals
     "iron",
     "steel",
     "silver",
     "gold",
-    "octagonal",
-    "pointed",
-    "curved",
-    "jeweled",
-    "mahogany",
-    "crystalline",
     "lead",
+    "tungsten",
+    // Other
+    "mahogany",
+    "ebony",
+    "crystalline",
+    "jeweled",
 ];
 
 fn make_wand_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
