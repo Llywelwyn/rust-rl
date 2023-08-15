@@ -21,6 +21,6 @@
     },
     {
         "id": "carnivore",
-        "responses": { "default": "attack", "carnivores": "ignore" }
+        "responses": { "default": "ignore", "herbivores": "attack", "player": "attack" }
     }
 ]
