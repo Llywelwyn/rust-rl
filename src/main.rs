@@ -135,11 +135,13 @@ impl State {
         let mut approach_ai = ai::ApproachAI {};
         let mut flee_ai = ai::FleeAI {};
         let mut chase_ai = ai::ChaseAI {};
+        let mut default_move_ai = ai::DefaultAI {};
         adjacent_ai.run_now(&self.ecs);
         visible_ai.run_now(&self.ecs);
         approach_ai.run_now(&self.ecs);
         flee_ai.run_now(&self.ecs);
         chase_ai.run_now(&self.ecs);
+        default_move_ai.run_now(&self.ecs);
     }
 
     fn run_map_index(&mut self) {
