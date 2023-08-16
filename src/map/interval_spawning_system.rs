@@ -75,7 +75,7 @@ fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
 fn populate_unblocked_nonvisible(map: &Map) -> Vec<usize> {
     let mut tiles: Vec<usize> = Vec::new();
     for (i, _tile) in map.tiles.iter().enumerate() {
-        if !map.blocked[i] && !map.visible_tiles[i] {
+        if !crate::spatial::is_blocked(i) && !map.visible_tiles[i] {
             tiles.push(i);
         }
     }

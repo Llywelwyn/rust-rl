@@ -54,11 +54,11 @@ impl<'a> System<'a> for VisibilitySystem {
                         map.visible_tiles[idx] = true;
 
                         // Reveal hidden things
-                        for thing in map.tile_content[idx].iter() {
-                            let is_hidden = hidden.get(*thing);
+                        crate::spatial::for_each_tile_content(idx, |e| {
+                            let is_hidden = hidden.get(e);
                             if let Some(_is_hidden) = is_hidden {
                                 if rng.roll_dice(1, 12) == 1 {
-                                    let name = names.get(*thing);
+                                    let name = names.get(e);
                                     if let Some(name) = name {
                                         gamelog::Logger::new()
                                             .append("You spot a")
@@ -66,10 +66,10 @@ impl<'a> System<'a> for VisibilitySystem {
                                             .period()
                                             .log();
                                     }
-                                    hidden.remove(*thing);
+                                    hidden.remove(e);
                                 }
                             }
-                        }
+                        });
                     }
                 }
             }

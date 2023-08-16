@@ -36,31 +36,35 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
         {
             let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
-            if map.tile_content[destination_idx].len() == 0 {
+            if !crate::spatial::has_tile_content(destination_idx) {
                 gamelog::Logger::new().append("You see no door there.").log();
             }
-            for potential_target in map.tile_content[destination_idx].iter() {
-                let door = doors.get_mut(*potential_target);
+            let mut multiple_tile_content = false;
+            if crate::spatial::length(destination_idx) > 1 {
+                multiple_tile_content = true;
+            }
+            crate::spatial::for_each_tile_content(destination_idx, |potential_target| {
+                let door = doors.get_mut(potential_target);
                 if let Some(door) = door {
                     if door.open == true {
-                        if map.tile_content[destination_idx].len() > 1 {
-                            if let Some(name) = names.get(*potential_target) {
+                        if multiple_tile_content {
+                            if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("is blocked.").log();
                             }
                         } else if rng.roll_dice(1, 6) + attributes.strength.bonus < 2 {
-                            if let Some(name) = names.get(*potential_target) {
+                            if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
                             }
                         } else {
                             door.open = false;
                             blocks_visibility
-                                .insert(*potential_target, BlocksVisibility {})
+                                .insert(potential_target, BlocksVisibility {})
                                 .expect("Unable to insert BlocksVisibility.");
                             blocks_movement
-                                .insert(*potential_target, BlocksTile {})
+                                .insert(potential_target, BlocksTile {})
                                 .expect("Unable to insert BlocksTile.");
-                            let render_data = renderables.get_mut(*potential_target).unwrap();
-                            if let Some(name) = names.get(*potential_target) {
+                            let render_data = renderables.get_mut(potential_target).unwrap();
+                            if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger::new().append("You close the").item_name_n(&name.name).period().log();
                             }
                             render_data.glyph = rltk::to_cp437('+'); // Nethack open door, maybe just use '/' instead.
@@ -71,7 +75,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                         gamelog::Logger::new().append("It's already closed.").log();
                     }
                 }
-            }
+            });
         }
     }
 
@@ -117,23 +121,23 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
         {
             let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
-            if map.tile_content[destination_idx].len() == 0 {
+            if !crate::spatial::has_tile_content(destination_idx) {
                 gamelog::Logger::new().append("You see no door there.").log();
             }
-            for potential_target in map.tile_content[destination_idx].iter() {
-                let door = doors.get_mut(*potential_target);
+            crate::spatial::for_each_tile_content(destination_idx, |potential_target| {
+                let door = doors.get_mut(potential_target);
                 if let Some(door) = door {
                     if door.open == false {
                         if rng.roll_dice(1, 6) + attributes.strength.bonus < 2 {
-                            if let Some(name) = names.get(*potential_target) {
+                            if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
                             }
                         } else {
                             door.open = true;
-                            blocks_visibility.remove(*potential_target);
-                            blocks_movement.remove(*potential_target);
-                            let render_data = renderables.get_mut(*potential_target).unwrap();
-                            if let Some(name) = names.get(*potential_target) {
+                            blocks_visibility.remove(potential_target);
+                            blocks_movement.remove(potential_target);
+                            let render_data = renderables.get_mut(potential_target).unwrap();
+                            if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
                             }
                             render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
@@ -144,7 +148,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                         gamelog::Logger::new().append("It's already open.").log();
                     }
                 }
-            }
+            });
         }
     }
 
@@ -187,7 +191,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
             {
                 let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
-                if map.tile_content[destination_idx].len() == 0 {
+                if !crate::spatial::has_tile_content(destination_idx) {
                     if rng.roll_dice(1, 20) == 20 {
                         let mut suffer_damage = ecs.write_storage::<SufferDamage>();
                         SufferDamage::new_damage(&mut suffer_damage, entity, 1, false);
@@ -201,13 +205,13 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                 } else {
                     let mut last_non_door_target: Option<Entity> = None;
                     let mut target_name = "thing";
-                    for potential_target in map.tile_content[destination_idx].iter() {
-                        if let Some(name) = names.get(*potential_target) {
+                    crate::spatial::for_each_tile_content_with_bool(destination_idx, |potential_target| {
+                        if let Some(name) = names.get(potential_target) {
                             target_name = &name.name;
                         }
 
                         // If it's a door,
-                        let door = doors.get_mut(*potential_target);
+                        let door = doors.get_mut(potential_target);
                         if let Some(door) = door {
                             // If the door is closed,
                             if door.open == false {
@@ -220,10 +224,10 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         .item_name_n(target_name)
                                         .append(", it crashes open!")
                                         .log();
-                                    something_was_destroyed = Some(*potential_target);
+                                    something_was_destroyed = Some(potential_target);
                                     destroyed_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                                     gamelog::record_event("broken_doors", 1);
-                                    break;
+                                    return false;
                                 // 66% chance of just kicking it.
                                 } else {
                                     gamelog::Logger::new()
@@ -231,18 +235,19 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         .item_name_n(target_name)
                                         .period()
                                         .log();
-                                    break;
+                                    return false;
                                 }
                             // If the door is open and there's nothing else on the tile,
-                            } else if map.tile_content[destination_idx].len() == 1 {
+                            } else if crate::spatial::length(destination_idx) == 1 {
                                 // Just kick the air.
                                 gamelog::Logger::new().append("You kick the open air.").log();
-                                break;
+                                return false;
                             }
                         } else {
-                            last_non_door_target = Some(*potential_target);
+                            last_non_door_target = Some(potential_target);
                         }
-                    }
+                        return true;
+                    });
                     if let Some(_) = last_non_door_target {
                         gamelog::Logger::new().append("You kick the").item_name_n(target_name).period().log();
                         let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
@@ -269,7 +274,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
     return RunState::Ticking;
 }
 
-pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
+pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
@@ -278,12 +283,12 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
     let factions = ecs.read_storage::<Faction>();
     let pools = ecs.read_storage::<Pools>();
     let map = ecs.fetch::<Map>();
-
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
     let mut doors = ecs.write_storage::<Door>();
     let names = ecs.read_storage::<Name>();
     let mut swap_entities: Vec<(Entity, i32, i32)> = Vec::new();
+    let mut result = RunState::AwaitingInput;
 
     for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
         if pos.x + delta_x < 0
@@ -291,14 +296,14 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
             || pos.y + delta_y < 0
             || pos.y + delta_y > map.height - 1
         {
-            return false;
+            return result;
         }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
-        for potential_target in map.tile_content[destination_idx].iter() {
+        result = crate::spatial::for_each_tile_content_with_runstate(destination_idx, |potential_target| {
             let mut hostile = true;
-            if pools.get(*potential_target).is_some() {
-                if let Some(faction) = factions.get(*potential_target) {
+            if pools.get(potential_target).is_some() {
+                if let Some(faction) = factions.get(potential_target) {
                     let reaction =
                         crate::raws::faction_reaction(&faction.name, "player", &crate::raws::RAWS.lock().unwrap());
                     if reaction != Reaction::Attack {
@@ -307,7 +312,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
                 }
             }
             if !hostile {
-                swap_entities.push((*potential_target, pos.x, pos.y));
+                swap_entities.push((potential_target, pos.x, pos.y));
                 pos.x = min(map.width - 1, max(0, pos.x + delta_x));
                 pos.y = min(map.height - 1, max(0, pos.y + delta_y));
                 entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
@@ -316,90 +321,95 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> bool {
                 ppos.x = pos.x;
                 ppos.y = pos.y;
             } else {
-                let target = pools.get(*potential_target);
+                let target = pools.get(potential_target);
                 if let Some(_target) = target {
                     wants_to_melee
-                        .insert(entity, WantsToMelee { target: *potential_target })
+                        .insert(entity, WantsToMelee { target: potential_target })
                         .expect("Add target failed.");
-                    return true;
+                    return Some(RunState::Ticking);
                 }
             }
-            let door = doors.get_mut(*potential_target);
+            let door = doors.get_mut(potential_target);
             if let Some(door) = door {
                 if door.open == false {
-                    if let Some(name) = names.get(*potential_target) {
+                    if let Some(name) = names.get(potential_target) {
                         gamelog::Logger::new().append("The").item_name(&name.name).append("is in your way.").log();
                     }
-                    return false;
+                    return None;
                 }
             }
+            return None;
+        });
+
+        if result == RunState::Ticking {
+            return result;
         }
 
-        if swap_entities.len() > 0 {
-            for m in swap_entities.iter() {
-                let their_pos = positions.get_mut(m.0);
-                if let Some(name) = names.get(m.0) {
-                    gamelog::Logger::new().append("You swap places with the").npc_name_n(&name.name).period().log();
-                }
-                if let Some(their_pos) = their_pos {
-                    their_pos.x = m.1;
-                    their_pos.y = m.2;
-                }
+        if swap_entities.len() <= 0 {
+            if crate::spatial::is_blocked(destination_idx) {
+                gamelog::Logger::new().append("You can't move there.").log();
+                return RunState::AwaitingInput;
             }
-
-            return true;
-        }
-        if map.blocked[destination_idx] {
-            gamelog::Logger::new().append("You can't move there.").log();
-            return false;
-        }
-        let hidden = ecs.read_storage::<Hidden>();
-        // Push every entity name in the pile to a vector of strings
-        let mut item_names: Vec<String> = Vec::new();
-        let mut some = false;
-        for entity in map.tile_content[destination_idx].iter() {
-            if !hidden.get(*entity).is_some() && names.get(*entity).is_some() {
-                let item_name = get_item_display_name(ecs, *entity).0;
-                item_names.push(item_name);
-                some = true;
-            }
-        }
-        // If some names were found, append. Logger = logger is necessary
-        // makes logger called a mutable self. It's not the most efficient
-        // but it happens infrequently enough (once per player turn at most)
-        // that it shouldn't matter.
-        if some {
-            let mut logger = gamelog::Logger::new().append("You see a");
-            for i in 0..item_names.len() {
-                if i > 0 && i < item_names.len() {
-                    logger = logger.append(", a");
+            let hidden = ecs.read_storage::<Hidden>();
+            // Push every entity name in the pile to a vector of strings
+            let mut item_names: Vec<String> = Vec::new();
+            let mut some = false;
+            crate::spatial::for_each_tile_content(destination_idx, |entity| {
+                if !hidden.get(entity).is_some() && names.get(entity).is_some() {
+                    let item_name = get_item_display_name(ecs, entity).0;
+                    item_names.push(item_name);
+                    some = true;
                 }
-                logger = logger.item_name_n(&item_names[i]);
+            });
+            // If some names were found, append. Logger = logger is necessary
+            // makes logger called a mutable self. It's not the most efficient
+            // but it happens infrequently enough (once per player turn at most)
+            // that it shouldn't matter.
+            if some {
+                let mut logger = gamelog::Logger::new().append("You see a");
+                for i in 0..item_names.len() {
+                    if i > 0 && i < item_names.len() {
+                        logger = logger.append(", a");
+                    }
+                    logger = logger.item_name_n(&item_names[i]);
+                }
+                logger.period().log();
             }
-            logger.period().log();
+            let old_idx = map.xy_idx(pos.x, pos.y);
+            pos.x = min(map.width - 1, max(0, pos.x + delta_x));
+            pos.y = min(map.height - 1, max(0, pos.y + delta_y));
+            let new_idx = map.xy_idx(pos.x, pos.y);
+            entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
+            crate::spatial::move_entity(entity, old_idx, new_idx);
+            // Dirty viewsheds, and check only now if telepath viewshed exists
+            viewshed.dirty = true;
+            if let Some(telepathy) = telepaths.get_mut(entity) {
+                telepathy.dirty = true;
+            }
+            let mut ppos = ecs.write_resource::<Point>();
+            ppos.x = pos.x;
+            ppos.y = pos.y;
+            return RunState::Ticking;
         }
-        pos.x = min(map.width - 1, max(0, pos.x + delta_x));
-        pos.y = min(map.height - 1, max(0, pos.y + delta_y));
-
-        // Dirty viewsheds, and check only now if telepath viewshed exists
-        viewshed.dirty = true;
-
-        let is_telepath = telepaths.get_mut(entity);
-        if let Some(telepathy) = is_telepath {
-            telepathy.dirty = true;
-        }
-        let mut ppos = ecs.write_resource::<Point>();
-        ppos.x = pos.x;
-        ppos.y = pos.y;
-        entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
-
-        return true;
     }
 
-    return false;
+    for m in swap_entities.iter() {
+        if let Some(name) = names.get(m.0) {
+            gamelog::Logger::new().append("You swap places with the").npc_name_n(&name.name).period().log();
+        }
+        if let Some(their_pos) = positions.get_mut(m.0) {
+            let old_idx = map.xy_idx(their_pos.x, their_pos.y);
+            their_pos.x = m.1;
+            their_pos.y = m.2;
+            let new_idx = map.xy_idx(their_pos.x, their_pos.y);
+            crate::spatial::move_entity(m.0, old_idx, new_idx);
+            return RunState::Ticking;
+        }
+    }
+    return result;
 }
 
-fn get_item(ecs: &mut World) -> bool {
+fn get_item(ecs: &mut World) -> RunState {
     let player_pos = ecs.fetch::<Point>();
     let player_entity = ecs.fetch::<Entity>();
     let entities = ecs.entities();
@@ -416,42 +426,40 @@ fn get_item(ecs: &mut World) -> bool {
     match target_item {
         None => {
             gamelog::Logger::new().append("There is nothing to pick up.").log();
-            return false;
+            return RunState::AwaitingInput;
         }
         Some(item) => {
             let mut pickup = ecs.write_storage::<WantsToPickupItem>();
             pickup
                 .insert(*player_entity, WantsToPickupItem { collected_by: *player_entity, item })
                 .expect("Unable to insert want to pickup item.");
-            return true;
+            return RunState::Ticking;
         }
     }
 }
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
-    // Player movement
-    let mut result = false;
     match ctx.key {
         None => return RunState::AwaitingInput,
         Some(key) => match key {
             // Cardinals
             VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
-                result = try_move_player(-1, 0, &mut gs.ecs);
+                return try_move_player(-1, 0, &mut gs.ecs)
             }
             VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
-                result = try_move_player(1, 0, &mut gs.ecs);
+                return try_move_player(1, 0, &mut gs.ecs);
             }
             VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                result = try_move_player(0, -1, &mut gs.ecs);
+                return try_move_player(0, -1, &mut gs.ecs);
             }
             VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                result = try_move_player(0, 1, &mut gs.ecs);
+                return try_move_player(0, 1, &mut gs.ecs);
             }
             // Diagonals
-            VirtualKeyCode::Numpad9 | VirtualKeyCode::U => result = try_move_player(1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => result = try_move_player(-1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad3 | VirtualKeyCode::N => result = try_move_player(1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad1 | VirtualKeyCode::B => result = try_move_player(-1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad9 | VirtualKeyCode::U => return try_move_player(1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => return try_move_player(-1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad3 | VirtualKeyCode::N => return try_move_player(1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad1 | VirtualKeyCode::B => return try_move_player(-1, 1, &mut gs.ecs),
             // id
             VirtualKeyCode::Period => {
                 if ctx.shift {
@@ -460,7 +468,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                     }
                     return RunState::NextLevel; // > to descend
                 } else {
-                    result = skip_turn(&mut gs.ecs); // (Wait a turn)
+                    return skip_turn(&mut gs.ecs); // (Wait a turn)
                 }
             }
             VirtualKeyCode::Comma => {
@@ -477,7 +485,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                 }
             }
             VirtualKeyCode::NumpadDecimal => {
-                result = skip_turn(&mut gs.ecs);
+                return skip_turn(&mut gs.ecs);
             }
 
             // Items
@@ -485,7 +493,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::O => return RunState::ActionWithDirection { function: open },
             VirtualKeyCode::F => return RunState::ActionWithDirection { function: kick },
             VirtualKeyCode::G => {
-                result = get_item(&mut gs.ecs);
+                return get_item(&mut gs.ecs);
             }
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::D => return RunState::ShowDropItem,
@@ -498,11 +506,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             }
         },
     }
-    if result {
-        return RunState::Ticking;
-    } else {
-        return RunState::AwaitingInput;
-    }
+    return RunState::AwaitingInput;
 }
 
 pub fn try_next_level(ecs: &mut World) -> bool {
@@ -529,7 +533,7 @@ pub fn try_previous_level(ecs: &mut World) -> bool {
     }
 }
 
-fn skip_turn(ecs: &mut World) -> bool {
+fn skip_turn(ecs: &mut World) -> RunState {
     let player_entity = ecs.fetch::<Entity>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let worldmap_resource = ecs.fetch::<Map>();
@@ -543,8 +547,8 @@ fn skip_turn(ecs: &mut World) -> bool {
     let viewshed = viewsheds.get_mut(*player_entity).unwrap();
     for tile in viewshed.visible_tiles.iter() {
         let idx = worldmap_resource.xy_idx(tile.x, tile.y);
-        for entity_id in worldmap_resource.tile_content[idx].iter() {
-            let faction = factions.get(*entity_id);
+        crate::spatial::for_each_tile_content(idx, |entity_id| {
+            let faction = factions.get(entity_id);
             match faction {
                 None => {}
                 Some(faction) => {
@@ -555,7 +559,7 @@ fn skip_turn(ecs: &mut World) -> bool {
                     }
                 }
             }
-        }
+        });
     }
     // Dirty viewshed (so we search for hidden tiles whenever we wait)
     viewshed.dirty = true;
@@ -583,7 +587,7 @@ fn skip_turn(ecs: &mut World) -> bool {
 
     gamelog::Logger::new().append("You wait a turn.").log();
 
-    return true;
+    return RunState::Ticking;
 }
 
 /* Playing around with autoexplore, without having read how to do it.

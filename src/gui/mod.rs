@@ -200,36 +200,36 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         let mut seen_entities: Vec<(String, RGB, RGB, u16)> = Vec::new();
         for tile in viewshed.visible_tiles.iter() {
             let idx = map.xy_idx(tile.x, tile.y);
-            for entity in map.tile_content[idx].iter() {
+            crate::spatial::for_each_tile_content(idx, |entity| {
                 let mut draw = false;
-                if let Some(_) = names.get(*entity) {
+                if let Some(_) = names.get(entity) {
                     draw = true;
                 }
-                let prop = props.get(*entity);
+                let prop = props.get(entity);
                 if let Some(_) = prop {
                     draw = false;
                 }
-                let is_hidden = hidden.get(*entity);
+                let is_hidden = hidden.get(entity);
                 if let Some(_) = is_hidden {
                     draw = false;
                 }
-                if entity == &*player_entity {
+                if entity == *player_entity {
                     draw = false;
                 }
                 if draw {
-                    let (render_fg, glyph) = if let Some(renderable) = renderables.get(*entity) {
+                    let (render_fg, glyph) = if let Some(renderable) = renderables.get(entity) {
                         (renderable.fg, renderable.glyph)
                     } else {
                         (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
                     };
                     seen_entities.push((
-                        get_item_display_name(ecs, *entity).0,
-                        get_item_colour(ecs, *entity),
+                        get_item_display_name(ecs, entity).0,
+                        get_item_colour(ecs, entity),
                         render_fg,
                         glyph,
                     ));
                 }
-            }
+            });
         }
         seen_entities.sort_by(|a, b| b.0.cmp(&a.0));
 

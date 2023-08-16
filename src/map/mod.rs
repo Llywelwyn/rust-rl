@@ -28,16 +28,11 @@ pub struct Map {
     // Combine these offsets into one Vec<(u8, u8, u8)>
     pub colour_offset: Vec<(f32, f32, f32)>,
     pub additional_fg_offset: rltk::RGB,
-    pub blocked: Vec<bool>,
     pub id: i32,
     pub name: String,
     pub difficulty: i32,
     pub bloodstains: HashSet<usize>,
     pub view_blocked: HashSet<usize>,
-
-    #[serde(skip_serializing)]
-    #[serde(skip_deserializing)]
-    pub tile_content: Vec<Vec<Entity>>,
 }
 
 impl Map {
@@ -47,6 +42,7 @@ impl Map {
 
     pub fn new<S: ToString>(new_id: i32, width: i32, height: i32, difficulty: i32, name: S) -> Map {
         let map_tile_count = (width * height) as usize;
+        crate::spatial::set_size(map_tile_count);
         let mut map = Map {
             tiles: vec![TileType::Wall; map_tile_count],
             width: width,
@@ -57,13 +53,11 @@ impl Map {
             telepath_tiles: vec![false; map_tile_count],
             colour_offset: vec![(1.0, 1.0, 1.0); map_tile_count],
             additional_fg_offset: rltk::RGB::from_u8(OFFSET_PERCENT as u8, OFFSET_PERCENT as u8, OFFSET_PERCENT as u8),
-            blocked: vec![false; map_tile_count],
             id: new_id,
             name: name.to_string(),
             difficulty: difficulty,
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
-            tile_content: vec![Vec::new(); map_tile_count],
         };
 
         const OFFSET_PERCENT: i32 = 10;
@@ -86,19 +80,15 @@ impl Map {
             return false;
         }
         let idx = self.xy_idx(x, y);
-        !self.blocked[idx]
+        return !crate::spatial::is_blocked(idx);
     }
 
     pub fn populate_blocked(&mut self) {
-        for (i, tile) in self.tiles.iter_mut().enumerate() {
-            self.blocked[i] = !tile_walkable(*tile);
-        }
+        crate::spatial::populate_blocked_from_map(self);
     }
 
     pub fn clear_content_index(&mut self) {
-        for content in self.tile_content.iter_mut() {
-            content.clear();
-        }
+        crate::spatial::clear();
     }
 }
 

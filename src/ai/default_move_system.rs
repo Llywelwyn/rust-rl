@@ -69,13 +69,12 @@ impl<'a> System<'a> for DefaultAI {
 
                     if x > 0 && x < map.width - 1 && y > 0 && y < map.height - 1 {
                         let dest_idx = map.xy_idx(x, y);
-                        if !map.blocked[dest_idx] {
+                        if !crate::spatial::is_blocked(dest_idx) {
                             let idx = map.xy_idx(pos.x, pos.y);
-                            map.blocked[idx] = false;
                             pos.x = x;
                             pos.y = y;
                             entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert EntityMoved");
-                            map.blocked[dest_idx] = true;
+                            crate::spatial::move_entity(entity, idx, dest_idx);
                             viewshed.dirty = true;
                             if let Some(is_telepath) = telepaths.get_mut(entity) {
                                 is_telepath.dirty = true;
@@ -88,13 +87,12 @@ impl<'a> System<'a> for DefaultAI {
                         // We have a path - follow it
                         let mut idx = map.xy_idx(pos.x, pos.y);
                         if path.len() > 1 {
-                            if !map.blocked[path[1] as usize] {
-                                map.blocked[idx] = false;
+                            if !crate::spatial::is_blocked(path[1] as usize) {
                                 pos.x = path[1] as i32 % map.width;
                                 pos.y = path[1] as i32 / map.width;
                                 entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert EntityMoved");
-                                idx = map.xy_idx(pos.x, pos.y);
-                                map.blocked[idx] = true;
+                                let new_idx = map.xy_idx(pos.x, pos.y);
+                                crate::spatial::move_entity(entity, idx, new_idx);
                                 viewshed.dirty = true;
                                 if let Some(is_telepath) = telepaths.get_mut(entity) {
                                     is_telepath.dirty = true;

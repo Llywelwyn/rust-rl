@@ -36,6 +36,7 @@ mod ai;
 mod gamesystem;
 mod random_table;
 mod rex_assets;
+mod spatial;
 
 #[macro_use]
 extern crate lazy_static;

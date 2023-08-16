@@ -45,42 +45,42 @@ impl<'a> System<'a> for TriggerSystem {
         let mut remove_entities: Vec<Entity> = Vec::new();
         for (entity, mut _entity_moved, pos) in (&entities, &mut entity_moved, &position).join() {
             let idx = map.xy_idx(pos.x, pos.y);
-            for entity_id in map.tile_content[idx].iter() {
-                if entity != *entity_id {
-                    let maybe_trigger = entry_trigger.get(*entity_id);
+            crate::spatial::for_each_tile_content(idx, |entity_id| {
+                if entity != entity_id {
+                    let maybe_trigger = entry_trigger.get(entity_id);
                     match maybe_trigger {
                         None => {}
                         Some(_trigger) => {
                             // Something on this pos had a trigger
-                            let name = names.get(*entity_id);
-                            hidden.remove(*entity_id);
+                            let name = names.get(entity_id);
+                            hidden.remove(entity_id);
                             if let Some(name) = name {
                                 particle_builder.trap_triggered(pos.x, pos.y);
                                 gamelog::Logger::new().item_name(&name.name).append("triggers!").log();
                             }
 
-                            let damage = inflicts_damage.get(*entity_id);
+                            let damage = inflicts_damage.get(entity_id);
                             if let Some(damage) = damage {
                                 let damage_roll = rng.roll_dice(damage.n_dice, damage.sides) + damage.modifier;
                                 particle_builder.damage_taken(pos.x, pos.y);
                                 SufferDamage::new_damage(&mut inflict_damage, entity, damage_roll, false);
                             }
 
-                            let confuses = confusion.get(*entity_id);
+                            let confuses = confusion.get(entity_id);
                             if let Some(confuses) = confuses {
                                 confusion
                                     .insert(entity, Confusion { turns: confuses.turns })
                                     .expect("Unable to insert confusion");
                             }
 
-                            let sa = single_activation.get(*entity_id);
+                            let sa = single_activation.get(entity_id);
                             if let Some(_sa) = sa {
-                                remove_entities.push(*entity_id);
+                                remove_entities.push(entity_id);
                             }
                         }
                     }
                 }
-            }
+            });
         }
 
         for trap in remove_entities.iter() {

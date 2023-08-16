@@ -96,20 +96,27 @@ fn evaluate(
     reactions: &mut Vec<(usize, Reaction, Entity)>,
     minds: Option<&ReadStorage<Mind>>,
 ) {
-    for other_entity in map.tile_content[idx].iter() {
+    crate::spatial::for_each_tile_content(idx, |other_entity| {
         // If minds are passed, we assume we're using telepathy here,
         // so if the other entity is mindless, we skip it.
         if minds.is_some() {
-            if minds.unwrap().get(*other_entity).is_none() {
-                continue;
+            if minds.unwrap().get(other_entity).is_some() {
+                if let Some(faction) = factions.get(other_entity) {
+                    reactions.push((
+                        idx,
+                        crate::raws::faction_reaction(this_faction, &faction.name, &crate::raws::RAWS.lock().unwrap()),
+                        other_entity,
+                    ));
+                }
+            }
+        } else {
+            if let Some(faction) = factions.get(other_entity) {
+                reactions.push((
+                    idx,
+                    crate::raws::faction_reaction(this_faction, &faction.name, &crate::raws::RAWS.lock().unwrap()),
+                    other_entity,
+                ));
             }
         }
-        if let Some(faction) = factions.get(*other_entity) {
-            reactions.push((
-                idx,
-                crate::raws::faction_reaction(this_faction, &faction.name, &crate::raws::RAWS.lock().unwrap()),
-                *other_entity,
-            ));
-        }
-    }
+    });
 }

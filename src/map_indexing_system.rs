@@ -1,4 +1,4 @@
-use super::{BlocksTile, Map, Position};
+use super::{spatial, BlocksTile, Map, Position};
 use specs::prelude::*;
 
 pub struct MapIndexingSystem {}
@@ -9,18 +9,11 @@ impl<'a> System<'a> for MapIndexingSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (mut map, position, blockers, entities) = data;
 
-        map.populate_blocked();
-        map.clear_content_index();
+        spatial::clear();
+        spatial::populate_blocked_from_map(&*map);
         for (entity, position) in (&entities, &position).join() {
             let idx = map.xy_idx(position.x, position.y);
-
-            let _p: Option<&BlocksTile> = blockers.get(entity);
-            if let Some(_p) = _p {
-                map.blocked[idx] = true;
-            }
-
-            // Push the entity to the appropriate index slot.
-            map.tile_content[idx].push(entity);
+            spatial::index_entity(entity, idx, blockers.get(entity).is_some());
         }
     }
 }
