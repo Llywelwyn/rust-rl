@@ -78,13 +78,9 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     let mut xp_gain = 0;
     let mut pools = ecs.write_storage::<Pools>();
     let attributes = ecs.read_storage::<Attributes>();
-    console::log("HERE");
-
     // If the target has a position, remove it from the SpatialMap.
     if let Some(pos) = targeting::entity_position(ecs, target) {
-        console::log("HEREE");
         crate::spatial::remove_entity(target, pos as usize);
-        console::log("HEREEE");
     }
     // If the target was killed by a source, cont.
     if let Some(source) = effect.source {
@@ -98,7 +94,9 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             let source_attributes = attributes.get(source).unwrap();
             source_pools.xp += xp_gain;
             let mut next_level_requirement = -1;
-            if source_pools.level < 10 {
+            if source_pools.level == 0 {
+                next_level_requirement = 5
+            } else if source_pools.level < 10 {
                 next_level_requirement = 20 * 2_i32.pow(source_pools.level as u32 - 1);
             } else if source_pools.level < 20 {
                 next_level_requirement = 10000 * 2_i32.pow(source_pools.level as u32 - 10);
