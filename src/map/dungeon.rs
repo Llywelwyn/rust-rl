@@ -50,7 +50,7 @@ impl MasterDungeonMap {
     /// Gets a map by ID from the MasterDungeonMap
     pub fn get_map(&self, id: i32) -> Option<Map> {
         if self.maps.contains_key(&id) {
-            let mut result = self.maps[&id].clone();
+            let result = self.maps[&id].clone();
             return Some(result);
         } else {
             return None;

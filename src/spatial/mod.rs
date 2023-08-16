@@ -141,7 +141,7 @@ pub fn move_entity(entity: Entity, moving_from: usize, moving_to: usize) {
     });
     lock.tile_content[moving_to].iter().for_each(|(_, blocks)| {
         if *blocks {
-            from_blocked = true;
+            to_blocked = true;
         }
     });
     lock.blocked[moving_from].1 = from_blocked;

@@ -50,7 +50,7 @@ impl<'a> System<'a> for VisibleAI {
             for visible_tile in viewshed.visible_tiles.iter() {
                 let idx = map.xy_idx(visible_tile.x, visible_tile.y);
                 if this_idx != idx {
-                    evaluate(idx, &map, &factions, &faction.name, &mut reactions, None);
+                    evaluate(idx, &factions, &faction.name, &mut reactions, None);
                     idxs.insert(idx);
                 }
             }
@@ -61,7 +61,7 @@ impl<'a> System<'a> for VisibleAI {
                     // and it's not the idx we're standing on, then evaluate here w/ minds taken into
                     // account.
                     if this_idx != idx && idxs.contains(&idx) {
-                        evaluate(idx, &map, &factions, &faction.name, &mut reactions, Some(&minds));
+                        evaluate(idx, &factions, &faction.name, &mut reactions, Some(&minds));
                     }
                 }
             }
@@ -90,7 +90,6 @@ impl<'a> System<'a> for VisibleAI {
 
 fn evaluate(
     idx: usize,
-    map: &Map,
     factions: &ReadStorage<Faction>,
     this_faction: &str,
     reactions: &mut Vec<(usize, Reaction, Entity)>,

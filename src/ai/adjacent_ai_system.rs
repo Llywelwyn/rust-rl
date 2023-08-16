@@ -27,29 +27,33 @@ impl<'a> System<'a> for AdjacentAI {
             let idx = map.xy_idx(pos.x, pos.y);
             let (w, h) = (map.width, map.height);
             // Evaluate adjacent squares, add possible reactions
+            let mut eval_idx: usize = idx;
             if pos.x > 0 {
-                evaluate(idx - 1, &map, &factions, &faction.name, &mut reactions);
+                eval_idx = idx - 1;
             }
             if pos.x < w - 1 {
-                evaluate(idx + 1, &map, &factions, &faction.name, &mut reactions);
+                eval_idx = idx + 1;
             }
             if pos.y > 0 {
-                evaluate(idx - w as usize, &map, &factions, &faction.name, &mut reactions);
+                eval_idx = idx - w as usize;
             }
             if pos.y < h - 1 {
-                evaluate(idx + w as usize, &map, &factions, &faction.name, &mut reactions);
+                eval_idx = idx + w as usize;
             }
             if pos.y > 0 && pos.x > 0 {
-                evaluate((idx - w as usize) - 1, &map, &factions, &faction.name, &mut reactions);
+                eval_idx = (idx - w as usize) - 1;
             }
             if pos.y > 0 && pos.x < w - 1 {
-                evaluate((idx - w as usize) + 1, &map, &factions, &faction.name, &mut reactions);
+                eval_idx = (idx - w as usize) + 1;
             }
             if pos.y < h - 1 && pos.x > 0 {
-                evaluate((idx + w as usize) - 1, &map, &factions, &faction.name, &mut reactions);
+                eval_idx = (idx + w as usize) - 1;
             }
             if pos.y < h - 1 && pos.x < w - 1 {
-                evaluate((idx + w as usize) + 1, &map, &factions, &faction.name, &mut reactions);
+                eval_idx = (idx + w as usize) + 1;
+            }
+            if eval_idx != idx {
+                evaluate(eval_idx, &factions, &faction.name, &mut reactions);
             }
             let mut done = false;
             for reaction in reactions.iter() {
@@ -72,13 +76,7 @@ impl<'a> System<'a> for AdjacentAI {
 }
 
 /// Evaluates all possible reactions between this faction and all entities on a given tile idx.
-fn evaluate(
-    idx: usize,
-    map: &Map,
-    factions: &ReadStorage<Faction>,
-    this_faction: &str,
-    reactions: &mut Vec<(Entity, Reaction)>,
-) {
+fn evaluate(idx: usize, factions: &ReadStorage<Faction>, this_faction: &str, reactions: &mut Vec<(Entity, Reaction)>) {
     crate::spatial::for_each_tile_content(idx, |other_entity| {
         if let Some(faction) = factions.get(other_entity) {
             reactions.push((

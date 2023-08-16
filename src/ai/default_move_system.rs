@@ -85,7 +85,7 @@ impl<'a> System<'a> for DefaultAI {
                 Movement::RandomWaypoint { path } => {
                     if let Some(path) = path {
                         // We have a path - follow it
-                        let mut idx = map.xy_idx(pos.x, pos.y);
+                        let idx = map.xy_idx(pos.x, pos.y);
                         if path.len() > 1 {
                             if !crate::spatial::is_blocked(path[1] as usize) {
                                 pos.x = path[1] as i32 % map.width;

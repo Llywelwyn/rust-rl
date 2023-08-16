@@ -1,6 +1,5 @@
 use rltk::{Algorithm2D, BaseMap, Point};
 use serde::{Deserialize, Serialize};
-use specs::prelude::*;
 use std::collections::HashSet;
 pub mod colours;
 mod glyphs;
