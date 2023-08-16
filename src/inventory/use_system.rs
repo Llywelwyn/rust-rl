@@ -1,16 +1,14 @@
 use super::{
-    gamelog, Confusion, Consumable, Cursed, Destructible, Digger, EquipmentChanged, Equippable, Equipped, HungerClock,
-    HungerState, IdentifiedItem, InBackpack, InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Pools,
-    Position, ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed,
-    Wand, WantsToUseItem, AOE, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
+    gamelog, Confusion, Consumable, Cursed, Destructible, Digger, HungerClock, HungerState, IdentifiedItem,
+    InflictsDamage, MagicMapper, Map, Name, ParticleBuilder, Point, Pools, Position, ProvidesHealing,
+    ProvidesNutrition, RandomNumberGenerator, RunState, SufferDamage, TileType, Viewshed, Wand, WantsToUseItem, AOE,
+    DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
 };
 use specs::prelude::*;
 
 // Grouping together components because of type complexity issues - SystemData was too large.
 // This is a temporary solution that'll be fixed once inventory use is refactored into separate
 // systems.
-type EquipComponents<'a> =
-    (ReadStorage<'a, Equippable>, WriteStorage<'a, Equipped>, WriteStorage<'a, EquipmentChanged>);
 type NameComponents<'a> = (ReadStorage<'a, Name>, WriteStorage<'a, IdentifiedItem>);
 
 pub struct ItemUseSystem {}
@@ -40,8 +38,6 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, Confusion>,
         ReadStorage<'a, MagicMapper>,
         WriteExpect<'a, RunState>,
-        EquipComponents<'a>,
-        WriteStorage<'a, InBackpack>,
         WriteStorage<'a, Viewshed>,
     );
 
@@ -70,15 +66,10 @@ impl<'a> System<'a> for ItemUseSystem {
             mut confused,
             magic_mapper,
             mut runstate,
-            (equippable, mut equipped, mut equipment_changed),
-            mut backpack,
             mut viewsheds,
         ) = data;
 
         for (entity, wants_to_use) in (&entities, &wants_to_use).join() {
-            // Could probably limit this insert only to if something is consumed/equipped/etc., but this is
-            // safer and items aren't used nearly frequently enough for this to cause performance issues.
-            equipment_changed.insert(entity, EquipmentChanged {}).expect("Unable to insert EquipmentChanged.");
             let mut verb = "use";
             let mut used_item = true;
             let mut aoe_item = false;
@@ -106,10 +97,6 @@ impl<'a> System<'a> for ItemUseSystem {
             let is_edible = provides_nutrition.get(wants_to_use.item);
             if let Some(_) = is_edible {
                 verb = "eat";
-            }
-            let item_equippable = equippable.get(wants_to_use.item);
-            if let Some(_) = item_equippable {
-                verb = "equip"
             }
 
             logger =
@@ -184,38 +171,6 @@ impl<'a> System<'a> for ItemUseSystem {
                         hc.state = HungerState::Satiated;
                         hc.duration = 200;
                     }
-                }
-            }
-
-            // EQUIPMENT
-            match item_equippable {
-                None => {}
-                Some(can_equip) => {
-                    let target_slot = can_equip.slot;
-                    let target = targets[0];
-
-                    // Remove any items target has in item's slot
-                    let mut to_unequip: Vec<Entity> = Vec::new();
-                    for (item_entity, already_equipped, _name) in (&entities, &equipped, &names).join() {
-                        if already_equipped.owner == target && already_equipped.slot == target_slot {
-                            to_unequip.push(item_entity);
-                        }
-                    }
-                    for item in to_unequip.iter() {
-                        equipped.remove(*item);
-                        backpack.insert(*item, InBackpack { owner: target }).expect("Unable to insert backpack");
-                        if target == *player_entity {
-                            if let Some(name) = names.get(*item) {
-                                logger = logger.append("You remove your").item_name_n(&name.name).period();
-                            }
-                        }
-                    }
-
-                    // Wield the item
-                    equipped
-                        .insert(wants_to_use.item, Equipped { owner: target, slot: target_slot })
-                        .expect("Unable to insert equipped component");
-                    backpack.remove(wants_to_use.item);
                 }
             }
 

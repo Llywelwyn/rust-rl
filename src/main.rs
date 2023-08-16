@@ -99,6 +99,7 @@ impl State {
         let mut melee_system = MeleeCombatSystem {};
         let mut damage_system = DamageSystem {};
         let mut inventory_system = inventory::ItemCollectionSystem {};
+        let mut item_equip_system = inventory::ItemEquipSystem {};
         let mut item_use_system = inventory::ItemUseSystem {};
         let mut item_drop_system = inventory::ItemDropSystem {};
         let mut item_remove_system = inventory::ItemRemoveSystem {};
@@ -116,6 +117,7 @@ impl State {
         self.run_ai();
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
+        item_equip_system.run_now(&self.ecs);
         item_use_system.run_now(&self.ecs);
         item_drop_system.run_now(&self.ecs);
         item_remove_system.run_now(&self.ecs);

@@ -4,7 +4,7 @@ use super::{
     Name, ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
     Wand,
 };
-use rltk::{Rltk, VirtualKeyCode, RGB};
+use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
 mod cheat_menu;
@@ -470,6 +470,33 @@ pub fn get_item_colour(ecs: &World, item: Entity) -> RGB {
     }
     // If nonmagic, just use white
     return RGB::named(rltk::WHITE);
+}
+
+pub fn item_colour_u8(
+    item: Entity,
+    names: &ReadStorage<Name>,
+    magic_items: &ReadStorage<MagicItem>,
+    dm: &MasterDungeonMap,
+) -> (u8, u8, u8) {
+    if let Some(name) = names.get(item) {
+        if let Some(magic) = magic_items.get(item) {
+            if dm.identified_items.contains(&name.name) {
+                // If identified magic item, use rarity colour
+                match magic.class {
+                    MagicItemClass::Common => return WHITE,
+                    MagicItemClass::Uncommon => return GREEN,
+                    MagicItemClass::Rare => return BLUE,
+                    MagicItemClass::VeryRare => return PURPLE,
+                    MagicItemClass::Legendary => return GOLD,
+                }
+            } else {
+                // Unidentified magic item
+                return GREY;
+            }
+        }
+    }
+    // If nonmagic, just use white
+    return WHITE;
 }
 
 pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
