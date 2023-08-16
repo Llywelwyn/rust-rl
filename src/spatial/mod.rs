@@ -103,17 +103,17 @@ where
 
 /// Calls a function on every entity within a given tile idx, with the
 /// added ability to return a RunState mid-calc.
-pub fn for_each_tile_content_with_runstate<F>(idx: usize, mut f: F) -> RunState
+pub fn for_each_tile_content_with_runstate<F>(idx: usize, mut f: F) -> Option<RunState>
 where
     F: FnMut(Entity) -> Option<RunState>,
 {
     let lock = SPATIAL_MAP.lock().unwrap();
     for entity in lock.tile_content[idx].iter() {
         if let Some(rs) = f(entity.0) {
-            return rs;
+            return Some(rs);
         }
     }
-    return RunState::AwaitingInput;
+    return None;
 }
 
 /// Calls a function on every entity within a given tile idx, breaking if

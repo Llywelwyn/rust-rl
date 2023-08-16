@@ -288,7 +288,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     let mut doors = ecs.write_storage::<Door>();
     let names = ecs.read_storage::<Name>();
     let mut swap_entities: Vec<(Entity, i32, i32)> = Vec::new();
-    let mut result = RunState::AwaitingInput;
+    let mut result: Option<RunState>;
 
     for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
         if pos.x + delta_x < 0
@@ -296,7 +296,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             || pos.y + delta_y < 0
             || pos.y + delta_y > map.height - 1
         {
-            return result;
+            return RunState::AwaitingInput;
         }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
@@ -335,14 +335,14 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                     if let Some(name) = names.get(potential_target) {
                         gamelog::Logger::new().append("The").item_name(&name.name).append("is in your way.").log();
                     }
-                    return None;
+                    return Some(RunState::AwaitingInput);
                 }
             }
             return None;
         });
 
-        if result == RunState::Ticking {
-            return result;
+        if result.is_some() {
+            return result.unwrap();
         }
 
         if swap_entities.len() <= 0 {
@@ -406,7 +406,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             return RunState::Ticking;
         }
     }
-    return result;
+    return RunState::AwaitingInput;
 }
 
 fn get_item(ecs: &mut World) -> RunState {
