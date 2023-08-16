@@ -7,6 +7,7 @@ use std::sync::Mutex;
 mod damage;
 mod particles;
 mod targeting;
+mod triggers;
 
 lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
@@ -17,6 +18,7 @@ pub enum EffectType {
     Bloodstain,
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
     EntityDeath,
+    ItemUse { item: Entity },
 }
 
 #[derive(Clone)]
@@ -53,6 +55,13 @@ pub fn run_effects_queue(ecs: &mut World) {
 
 /// Applies an effect to the correct target(s).
 fn target_applicator(ecs: &mut World, effect: &EffectSpawner) {
+    // Item use is handled differently - it creates other effects with itself
+    // as the source, passing all effects attached to the item into the queue.
+    if let EffectType::ItemUse { item } = effect.effect_type {
+        triggers::item_trigger(effect.source, item, &effect.target, ecs);
+        return;
+    }
+    // Otherwise, just match the effect and enact it directly.
     match &effect.target {
         Targets::Tile { target } => affect_tile(ecs, effect, *target),
         Targets::TileList { targets } => targets.iter().for_each(|target| affect_tile(ecs, effect, *target)),
