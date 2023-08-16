@@ -56,6 +56,19 @@ pub fn index_entity(entity: Entity, idx: usize, blocks_tile: bool) {
     }
 }
 
+/// Removes an entity from SpatialMap tilecontent.
+pub fn remove_entity(entity: Entity, idx: usize) {
+    let mut lock = SPATIAL_MAP.lock().unwrap();
+    lock.tile_content[idx].retain(|(e, _)| *e != entity);
+    let mut from_blocked = false;
+    lock.tile_content[idx].iter().for_each(|(_, blocks)| {
+        if *blocks {
+            from_blocked = true;
+        }
+    });
+    lock.blocked[idx].1 = from_blocked;
+}
+
 /// Returns is_empty on a given tile content idx.
 pub fn has_tile_content(idx: usize) -> bool {
     let lock = SPATIAL_MAP.lock().unwrap();

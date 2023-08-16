@@ -56,6 +56,10 @@ impl<'a> System<'a> for DamageSystem {
                     if let Some(xp_value) = gives_xp {
                         xp_gain += xp_value.amount;
                     }
+                    if let Some(pos) = pos {
+                        let idx = map.xy_idx(pos.x, pos.y);
+                        crate::spatial::remove_entity(entity, idx);
+                    }
                 }
             }
         }
