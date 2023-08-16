@@ -367,7 +367,7 @@
     {
         "id": "goblin_chieftain",
         "name": "goblin chieftain",
-        "renderable": { "glyph": "G", "fg": "#00FF00", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "g", "fg": "#9331ac", "bg": "#000000", "order": 1 },
         "flags": [],
         "level": 2,
         "speed": 9,
