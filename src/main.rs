@@ -145,7 +145,7 @@ impl State {
     }
 
     fn run_map_index(&mut self) {
-        let mut mapindex = MapIndexingSystem {};
+        let mut mapindex = spatial::MapIndexingSystem {};
         mapindex.run_now(&self.ecs);
     }
 
