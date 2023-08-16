@@ -408,7 +408,7 @@ pub fn spawn_named_mob(
 
         // Should really use existing RNG here
         let mut rng = rltk::RandomNumberGenerator::new();
-        let mob_hp = npc_hp(&mut rng, mob_con, mob_level);
+        let mob_hp = npc_hp_at_level(&mut rng, mob_con, mob_level);
         let mob_mana = mana_at_level(&mut rng, mob_int, mob_level);
         let mob_bac = if mob_template.bac.is_some() { mob_template.bac.unwrap() } else { 10 };
 

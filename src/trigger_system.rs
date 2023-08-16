@@ -1,6 +1,7 @@
 use super::{
+    effects::{add_effect, EffectType, Targets},
     gamelog, Confusion, EntityMoved, EntryTrigger, Hidden, InflictsDamage, Map, Name, ParticleBuilder, Position,
-    SingleActivation, SufferDamage,
+    SingleActivation,
 };
 use specs::prelude::*;
 
@@ -15,7 +16,6 @@ impl<'a> System<'a> for TriggerSystem {
         ReadStorage<'a, EntryTrigger>,
         ReadStorage<'a, InflictsDamage>,
         WriteStorage<'a, Confusion>,
-        WriteStorage<'a, SufferDamage>,
         WriteStorage<'a, Hidden>,
         ReadStorage<'a, SingleActivation>,
         ReadStorage<'a, Name>,
@@ -32,7 +32,6 @@ impl<'a> System<'a> for TriggerSystem {
             entry_trigger,
             inflicts_damage,
             mut confusion,
-            mut inflict_damage,
             mut hidden,
             single_activation,
             names,
@@ -63,7 +62,11 @@ impl<'a> System<'a> for TriggerSystem {
                             if let Some(damage) = damage {
                                 let damage_roll = rng.roll_dice(damage.n_dice, damage.sides) + damage.modifier;
                                 particle_builder.damage_taken(pos.x, pos.y);
-                                SufferDamage::new_damage(&mut inflict_damage, entity, damage_roll, false);
+                                add_effect(
+                                    None,
+                                    EffectType::Damage { amount: damage_roll },
+                                    Targets::Entity { target: entity },
+                                );
                             }
 
                             let confuses = confusion.get(entity_id);

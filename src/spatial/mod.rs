@@ -2,6 +2,9 @@ use crate::{tile_walkable, Map, RunState};
 use specs::prelude::*;
 use std::sync::Mutex;
 
+mod map_indexing_system;
+pub use map_indexing_system::MapIndexingSystem;
+
 struct SpatialMap {
     blocked: Vec<(bool, bool)>,
     tile_content: Vec<Vec<(Entity, bool)>>,

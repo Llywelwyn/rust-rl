@@ -4,7 +4,7 @@ pub fn attr_bonus(value: i32) -> i32 {
     return (value - 10) / 2;
 }
 
-pub fn player_hp_per_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32) -> i32 {
+pub fn hp_per_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32) -> i32 {
     return rng.roll_dice(1, 8) + attr_bonus(constitution);
 }
 
@@ -12,12 +12,12 @@ pub fn player_hp_per_level(rng: &mut rltk::RandomNumberGenerator, constitution: 
 pub fn player_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
     let mut total = 10 + attr_bonus(constitution);
     for _i in 0..level {
-        total += player_hp_per_level(rng, constitution);
+        total += hp_per_level(rng, constitution);
     }
     return total;
 }
 
-pub fn npc_hp(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
+pub fn npc_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
     if level == 0 {
         return rng.roll_dice(1, 4);
     }

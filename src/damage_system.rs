@@ -2,7 +2,7 @@ use super::{
     gamelog, Attributes, Equipped, GrantsXP, InBackpack, Item, LootTable, Map, Name, ParticleBuilder, Player, Pools,
     Position, RunState, SufferDamage,
 };
-use crate::gamesystem::{mana_per_level, player_hp_per_level};
+use crate::gamesystem::{hp_per_level, mana_per_level};
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -98,7 +98,7 @@ impl<'a> System<'a> for DamageSystem {
                     }
                 }
                 // Roll for HP gain this level
-                let hp_gained = player_hp_per_level(
+                let hp_gained = hp_per_level(
                     &mut rng,
                     player_attributes.constitution.base + player_attributes.constitution.modifiers,
                 );

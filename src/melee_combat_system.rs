@@ -1,7 +1,7 @@
 use super::{
+    effects::{add_effect, EffectType, Targets},
     gamelog, gamesystem, ArmourClassBonus, Attributes, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon,
-    MultiAttack, Name, NaturalAttacks, ParticleBuilder, Pools, Position, Skill, Skills, SufferDamage, WantsToMelee,
-    WeaponAttribute,
+    MultiAttack, Name, NaturalAttacks, ParticleBuilder, Pools, Position, Skill, Skills, WantsToMelee, WeaponAttribute,
 };
 use specs::prelude::*;
 
@@ -16,7 +16,6 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, Attributes>,
         ReadStorage<'a, Skills>,
         ReadStorage<'a, Pools>,
-        WriteStorage<'a, SufferDamage>,
         WriteExpect<'a, ParticleBuilder>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Equipped>,
@@ -37,7 +36,6 @@ impl<'a> System<'a> for MeleeCombatSystem {
             attributes,
             skills,
             pools,
-            mut inflict_damage,
             mut particle_builder,
             positions,
             equipped,
@@ -223,7 +221,11 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     if let Some(pos) = pos {
                         particle_builder.damage_taken(pos.x, pos.y)
                     }
-                    SufferDamage::new_damage(&mut inflict_damage, wants_melee.target, damage, entity == *player_entity);
+                    add_effect(
+                        Some(entity),
+                        EffectType::Damage { amount: damage },
+                        Targets::Entity { target: wants_melee.target },
+                    );
                     if entity == *player_entity {
                         something_to_log = true;
                         logger = logger // You hit the <name>.

@@ -20,8 +20,6 @@ mod saveload_system;
 mod spawner;
 mod visibility_system;
 use visibility_system::VisibilitySystem;
-mod map_indexing_system;
-use map_indexing_system::MapIndexingSystem;
 mod damage_system;
 use damage_system::*;
 mod hunger_system;
@@ -32,6 +30,7 @@ mod inventory;
 mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
 mod ai;
+mod effects;
 mod gamesystem;
 mod random_table;
 mod rex_assets;
@@ -89,7 +88,7 @@ impl State {
     }
 
     fn run_systems(&mut self) {
-        let mut mapindex = MapIndexingSystem {};
+        let mut mapindex = spatial::MapIndexingSystem {};
         let mut vis = VisibilitySystem {};
         let mut regen_system = ai::RegenSystem {};
         let mut energy = ai::EnergySystem {};
@@ -123,6 +122,7 @@ impl State {
         item_id_system.run_now(&self.ecs);
         melee_system.run_now(&self.ecs);
         damage_system.run_now(&self.ecs);
+        effects::run_effects_queue(&mut self.ecs);
         hunger_clock.run_now(&self.ecs);
         particle_system.run_now(&self.ecs);
 

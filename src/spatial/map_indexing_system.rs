@@ -1,4 +1,4 @@
-use super::{spatial, BlocksTile, Map, Pools, Position};
+use crate::{spatial, BlocksTile, Map, Pools, Position};
 use specs::prelude::*;
 
 pub struct MapIndexingSystem {}
