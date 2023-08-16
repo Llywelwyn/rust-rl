@@ -28,8 +28,7 @@ mod hunger_system;
 mod melee_combat_system;
 mod trigger_system;
 use melee_combat_system::MeleeCombatSystem;
-mod inventory_system;
-use inventory_system::*;
+mod inventory;
 mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
 mod ai;
@@ -100,11 +99,11 @@ impl State {
         let mut trigger_system = trigger_system::TriggerSystem {};
         let mut melee_system = MeleeCombatSystem {};
         let mut damage_system = DamageSystem {};
-        let mut inventory_system = ItemCollectionSystem {};
-        let mut item_use_system = ItemUseSystem {};
-        let mut item_drop_system = ItemDropSystem {};
-        let mut item_remove_system = ItemRemoveSystem {};
-        let mut item_id_system = ItemIdentificationSystem {};
+        let mut inventory_system = inventory::ItemCollectionSystem {};
+        let mut item_use_system = inventory::ItemUseSystem {};
+        let mut item_drop_system = inventory::ItemDropSystem {};
+        let mut item_remove_system = inventory::ItemRemoveSystem {};
+        let mut item_id_system = inventory::ItemIdentificationSystem {};
         let mut hunger_clock = hunger_system::HungerSystem {};
         let mut particle_system = particle_system::ParticleSpawnSystem {};
 
