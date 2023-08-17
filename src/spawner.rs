@@ -94,7 +94,14 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     raws::spawn_named_entity(
         &raws::RAWS.lock().unwrap(),
         ecs,
-        "scroll_mass_confusion",
+        "scroll_mass_health",
+        raws::SpawnType::Carried { by: player },
+        0,
+    );
+    raws::spawn_named_entity(
+        &raws::RAWS.lock().unwrap(),
+        ecs,
+        "scroll_mass_health",
         raws::SpawnType::Carried { by: player },
         0,
     );

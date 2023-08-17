@@ -1,7 +1,8 @@
 use super::{add_effect, spatial, EffectType, Entity, Targets, World};
 use crate::{
-    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, Confusion, Consumable, Cursed, InflictsDamage, MagicMapper,
-    Prop, ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, Renderable, RunState,
+    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Confusion, Consumable, Cursed,
+    InflictsDamage, MagicMapper, Player, Prop, ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, Renderable,
+    RunState,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -85,8 +86,28 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let roll = rng.roll_dice(healing_item.n_dice, healing_item.sides) + healing_item.modifier;
         add_effect(event.source, EffectType::Healing { amount: roll }, event.target.clone());
-        logger = logger.append("You recover some vigour.").buc(event.buc, None, Some("You feel great!"));
-        event.log = true;
+        for target in get_entity_targets(&event.target) {
+            if ecs.read_storage::<Prop>().get(target).is_some() {
+                continue;
+            }
+            let renderables = ecs.read_storage::<Renderable>();
+            if ecs.read_storage::<Player>().get(target).is_some() {
+                logger = logger
+                    .colour(renderable_colour(&renderables, target))
+                    .append("You")
+                    .colour(WHITE)
+                    .append("recover some vigour.")
+                    .buc(event.buc, None, Some("You feel great!"));
+            } else {
+                logger = logger
+                    .append("The")
+                    .colour(renderable_colour(&renderables, target))
+                    .append(obfuscate_name_ecs(ecs, target).0)
+                    .colour(WHITE)
+                    .append("is rejuvenated!");
+            }
+            event.log = true;
+        }
     }
     return logger;
 }
@@ -100,17 +121,21 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
             if ecs.read_storage::<Prop>().get(target).is_some() {
                 continue;
             }
-            let fg = if let Some(renderable) = ecs.read_storage::<Renderable>().get(target) {
-                ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8)
+            let renderables = ecs.read_storage::<Renderable>();
+            if ecs.read_storage::<Player>().get(target).is_some() {
+                logger = logger
+                    .colour(renderable_colour(&renderables, target))
+                    .append(obfuscate_name_ecs(ecs, target).0)
+                    .colour(WHITE)
+                    .append("are hit!");
             } else {
-                WHITE
-            };
-            logger = logger
-                .append("The")
-                .colour(fg)
-                .append(obfuscate_name_ecs(ecs, target).0)
-                .colour(WHITE)
-                .append("is hit!");
+                logger = logger
+                    .append("The")
+                    .colour(renderable_colour(&renderables, target))
+                    .append(obfuscate_name_ecs(ecs, target).0)
+                    .colour(WHITE)
+                    .append("is hit!");
+            }
             event.log = true;
         }
     }

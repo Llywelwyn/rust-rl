@@ -28,78 +28,82 @@
     {
         "id": "potions",
         "table": [
-            { "id": "potion_health_weak",   "weight": 6,    "difficulty": 1},
-            { "id": "potion_health",        "weight": 3,    "difficulty": 1}
+            { "id": "potion_health_weak",       "weight": 6,    "difficulty": 1},
+            { "id": "potion_health",            "weight": 3,    "difficulty": 1}
         ]
     },
     {
         "id": "scrolls",
         "table": [
-            { "id": "scroll_confusion",     "weight": 2,    "difficulty": 1},
-            { "id": "scroll_magicmap_c",    "weight": 2,    "difficulty": 1},
-            { "id": "scroll_magicmap",      "weight": 2,    "difficulty": 1},
-            { "id": "scroll_fireball",      "weight": 2,    "difficulty": 2},
-            { "id": "scroll_fireball_c",    "weight": 2,    "difficulty": 2}
+            { "id": "scroll_confusion",         "weight": 2,    "difficulty": 1},
+            { "id": "scroll_magicmap_c",        "weight": 2,    "difficulty": 1},
+            { "id": "scroll_magicmap",          "weight": 2,    "difficulty": 1},
+            { "id": "scroll_embers",            "weight": 2,    "difficulty": 2},
+            { "id": "scroll_health",            "weight": 2,    "difficulty": 2},
+            { "id": "scroll_fireball",          "weight": 2,    "difficulty": 2},
+            { "id": "scroll_fireball_c",        "weight": 2,    "difficulty": 2},
+            { "id": "scroll_mass_health",       "weight": 1,    "difficulty": 2},
+            { "id": "scroll_mass_confusion",    "weight": 1,    "difficulty": 3}
         ]
     },
     {
         "id": "wands",
         "table": [
-            { "id": "wand_magicmissile",    "weight": 1,    "difficulty": 1},
-            { "id": "wand_confusion",       "weight": 1,    "difficulty": 1},
-            { "id": "wand_digging",         "weight": 1,    "difficulty": 1},
-            { "id": "wand_fireball",        "weight": 1,    "difficulty": 2}
+            { "id": "wand_magicmissile",        "weight": 1,    "difficulty": 1},
+            { "id": "wand_confusion",           "weight": 1,    "difficulty": 1},
+            { "id": "wand_digging",             "weight": 1,    "difficulty": 1},
+            { "id": "wand_fireball",            "weight": 1,    "difficulty": 2}
         ]
     },
     {
         "id": "food",
         "table": [
-            { "id": "food_rations",         "weight": 1,    "difficulty": 1},
-            { "id": "food_apple",           "weight": 1,    "difficulty": 1}
+            { "id": "food_rations",             "weight": 1,    "difficulty": 1},
+            { "id": "food_apple",               "weight": 1,    "difficulty": 1}
         ]
     },
     {
         "id": "mobs",
         "table": [
-            { "id": "sheep_little",         "weight": 1,    "difficulty": 0},
-            { "id": "chicken",              "weight": 1,    "difficulty": 1},
-            { "id": "rat",                  "weight": 1,    "difficulty": 1},
-            { "id": "goblin",               "weight": 3,    "difficulty": 1},
-            { "id": "kobold",               "weight": 1,    "difficulty": 1},
-            { "id": "fox",                  "weight": 1,    "difficulty": 1},
-            { "id": "jackal",               "weight": 4,    "difficulty": 1},
-            { "id": "deer_little",          "weight": 1,    "difficulty": 1},
-            { "id": "zombie_kobold",        "weight": 1,    "difficulty": 1}, 
-            { "id": "zombie_gnome",         "weight": 1,    "difficulty": 2}, 
-            { "id": "kobold_large",         "weight": 1,    "difficulty": 2}, 
-            { "id": "rat_giant",            "weight": 2,    "difficulty": 2}, 
-            { "id": "coyote",               "weight": 4,    "difficulty": 2},
-            { "id": "zombie_orc",           "weight": 1,    "difficulty": 3},
-            { "id": "zombie_dwarf",         "weight": 1,    "difficulty": 3},
-            { "id": "gnome",                "weight": 1,    "difficulty": 3},
-            { "id": "spider_cave",          "weight": 2,    "difficulty": 3},
-            { "id": "kobold_captain",       "weight": 1,    "difficulty": 3},
-            { "id": "dog_little",           "weight": 1,    "difficulty": 3},
-            { "id": "orc",                  "weight": 2,    "difficulty": 3},
-            { "id": "goblin_chieftain",     "weight": 1,    "difficulty": 3},
-            { "id": "dwarf",                "weight": 3,    "difficulty": 4},
-            { "id": "orc_hill",             "weight": 1,    "difficulty": 4},
-            { "id": "horse_little",         "weight": 2,    "difficulty": 4},
-            { "id": "dog",                  "weight": 1,    "difficulty": 5}, 
-            { "id": "wolf",                 "weight": 2,    "difficulty": 6},
-            { "id": "orc_captain",          "weight": 1,    "difficulty": 7},
-            { "id": "dog_large",            "weight": 1,    "difficulty": 7},
-            { "id": "horse",                "weight": 2,    "difficulty": 7},
-            { "id": "ogre",                 "weight": 1,    "difficulty": 7},
-            { "id": "horse_large",          "weight": 2,    "difficulty": 9}
+            { "id": "sheep_little",             "weight": 1,    "difficulty": 0},
+            { "id": "chicken",                  "weight": 1,    "difficulty": 1},
+            { "id": "rat",                      "weight": 1,    "difficulty": 1},
+            { "id": "goblin",                   "weight": 3,    "difficulty": 1},
+            { "id": "kobold",                   "weight": 1,    "difficulty": 1},
+            { "id": "fox",                      "weight": 1,    "difficulty": 1},
+            { "id": "jackal",                   "weight": 4,    "difficulty": 1},
+            { "id": "deer_little",              "weight": 1,    "difficulty": 1},
+            { "id": "zombie_kobold",            "weight": 1,    "difficulty": 1}, 
+            { "id": "zombie_gnome",             "weight": 1,    "difficulty": 2}, 
+            { "id": "kobold_large",             "weight": 1,    "difficulty": 2}, 
+            { "id": "rat_giant",                "weight": 2,    "difficulty": 2}, 
+            { "id": "coyote",                   "weight": 4,    "difficulty": 2},
+            { "id": "zombie_orc",               "weight": 1,    "difficulty": 3},
+            { "id": "zombie_dwarf",             "weight": 1,    "difficulty": 3},
+            { "id": "gnome",                    "weight": 1,    "difficulty": 3},
+            { "id": "spider_cave",              "weight": 2,    "difficulty": 3},
+            { "id": "kobold_captain",           "weight": 1,    "difficulty": 3},
+            { "id": "dog_little",               "weight": 1,    "difficulty": 3},
+            { "id": "orc",                      "weight": 2,    "difficulty": 3},
+            { "id": "goblin_chieftain",         "weight": 1,    "difficulty": 3},
+            { "id": "dwarf",                    "weight": 3,    "difficulty": 4},
+            { "id": "orc_hill",                 "weight": 1,    "difficulty": 4},
+            { "id": "horse_little",             "weight": 2,    "difficulty": 4},
+            { "id": "dog",                      "weight": 1,    "difficulty": 5}, 
+            { "id": "wolf",                     "weight": 2,    "difficulty": 6},
+            { "id": "orc_captain",              "weight": 1,    "difficulty": 7},
+            { "id": "dog_large",                "weight": 1,    "difficulty": 7},
+            { "id": "horse",                    "weight": 2,    "difficulty": 7},
+            { "id": "ogre",                     "weight": 1,    "difficulty": 7},
+            { "id": "horse_large",              "weight": 2,    "difficulty": 9}
         ]
     },
     {
         "id": "traps",
         "table": [
-            { "id": "trap_bear",            "weight": 2,    "difficulty": 1},
-            { "id": "trap_confusion",       "weight": 1,    "difficulty": 1},
-            { "id": "trap_stonefall",       "weight": 1,    "difficulty": 5}
+            { "id": "trap_bear",                "weight": 2,    "difficulty": 1},
+            { "id": "trap_confusion",           "weight": 1,    "difficulty": 1},
+            { "id": "trap_stonefall",           "weight": 1,    "difficulty": 5}
         ]
     }
 ]

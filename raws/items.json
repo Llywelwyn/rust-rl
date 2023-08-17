@@ -7,7 +7,7 @@
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "provides_healing": "2d4+2" },
-        "magic": { "class": "common", "naming": "potion" }
+        "magic": { "class": "uncommon", "naming": "potion" }
     },
     {
         "id": "potion_health_weak",
@@ -17,7 +17,27 @@
         "value": 25,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "provides_healing": "1d4+2" },
-        "magic": { "class": "common", "naming": "potion" }
+        "magic": { "class": "uncommon", "naming": "potion" }
+    },
+    {
+        "id": "scroll_health",
+        "name": { "name": "scroll of healing word", "plural": "scrolls of healing word" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 50,
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "ranged": "12", "provides_healing": "1d4+2" },
+        "magic": { "class": "uncommon", "naming": "scroll" }
+    },
+    {
+        "id": "scroll_mass_health",
+        "name": { "name": "scroll of mass healing word", "plural": "scrolls of mass healing word" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 200,
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "ranged": "12", "aoe": "3", "provides_healing": "1d4+2" },
+        "magic": { "class": "rare", "naming": "scroll" }
     },
     {
         "id": "scroll_magicmissile",
@@ -27,7 +47,17 @@
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "ranged": "12", "damage": "3d4+3" },
-        "magic": { "class": "common", "naming": "scroll" }
+        "magic": { "class": "uncommon", "naming": "scroll" }
+    },
+    {
+        "id": "scroll_embers",
+        "name": { "name": "scroll of embers", "plural": "scrolls of embers" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 100,
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "ranged": "10", "damage": "4d6", "aoe": "2" },
+        "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {
         "id": "scroll_fireball",
@@ -66,7 +96,7 @@
         "weight": 0.5,
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "ranged": "10", "aoe": "4", "confusion": "3" },
+        "effects": { "ranged": "10", "aoe": "3", "confusion": "3" },
         "magic": { "class": "veryrare", "naming": "scroll" }
     },
     {
