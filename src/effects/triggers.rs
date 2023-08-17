@@ -1,7 +1,7 @@
-use super::{add_effect, EffectType, Entity, Targets, World};
+use super::{add_effect, spatial, EffectType, Entity, Targets, World};
 use crate::{
-    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, Consumable, Cursed, InflictsDamage, MagicMapper,
-    ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, RunState,
+    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, Consumable, Cursed, InflictsDamage, MagicMapper, Prop,
+    ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, Renderable, RunState,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -95,10 +95,19 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
         let roll = rng.roll_dice(damage_item.n_dice, damage_item.sides) + damage_item.modifier;
         add_effect(event.source, EffectType::Damage { amount: roll }, event.target.clone());
         for target in get_entity_targets(&event.target) {
+            if ecs.read_storage::<Prop>().get(target).is_some() {
+                continue;
+            }
+            let fg = if let Some(renderable) = ecs.read_storage::<Renderable>().get(target) {
+                ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8)
+            } else {
+                WHITE
+            };
             logger = logger
                 .append("The")
-                .colour(item_colour_ecs(ecs, target))
+                .colour(fg)
                 .append(obfuscate_name_ecs(ecs, target).0)
+                .colour(WHITE)
                 .append("is hit!");
             event.log = true;
         }
@@ -107,11 +116,23 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
 }
 
 fn get_entity_targets(target: &Targets) -> Vec<Entity> {
+    rltk::console::log("ayo");
     let mut entities: Vec<Entity> = Vec::new();
     match target {
         Targets::Entity { target } => entities.push(*target),
         Targets::EntityList { targets } => targets.iter().for_each(|target| entities.push(*target)),
-        _ => {}
+        Targets::Tile { target } => {
+            spatial::for_each_tile_content(*target, |entity| {
+                entities.push(entity);
+            });
+        }
+        Targets::TileList { targets } => {
+            targets.iter().for_each(|target| {
+                spatial::for_each_tile_content(*target, |entity| {
+                    entities.push(entity);
+                });
+            });
+        }
     }
     return entities;
 }
