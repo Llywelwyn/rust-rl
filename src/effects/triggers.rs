@@ -13,6 +13,7 @@ pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs:
 
 fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: &mut World) {
     let mut logger = gamelog::Logger::new();
+    let mut log = false;
     // Providing nutrition
     if ecs.read_storage::<ProvidesNutrition>().get(entity).is_some() {
         add_effect(source, EffectType::RestoreNutrition, target.clone());
@@ -21,6 +22,9 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
             .append_n(obfuscate_name(ecs, entity).0)
             .colour(item_colour_ecs(ecs, entity))
             .period();
+        log = true;
     }
-    logger.log();
+    if log {
+        logger.log();
+    }
 }
