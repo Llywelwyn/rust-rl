@@ -1,5 +1,5 @@
 use super::{
-    triggers::{BLESSED, CURSED, UNCURSED},
+    triggers::{BLESSED, UNCURSED},
     EffectSpawner, EffectType,
 };
 use crate::{HungerClock, HungerState};

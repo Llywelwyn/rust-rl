@@ -1,5 +1,4 @@
-use super::{IdentifiedItem, MasterDungeonMap, Name, ObfuscatedName};
-use crate::{Item, Player};
+use crate::{IdentifiedItem, Item, MasterDungeonMap, Name, ObfuscatedName, Player};
 use specs::prelude::*;
 
 pub struct ItemIdentificationSystem {}

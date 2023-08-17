@@ -117,6 +117,7 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
     return logger;
 }
 
+#[allow(unused_mut)]
 fn handle_confusion(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
     if let Some(confusion) = ecs.read_storage::<Confusion>().get(event.entity) {
         add_effect(event.source, EffectType::Confusion { turns: confusion.turns }, event.target.clone());

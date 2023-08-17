@@ -1,8 +1,7 @@
-use super::{
-    gamelog, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName, Position, Wand,
-    WantsToDropItem,
+use crate::{
+    gamelog, gui::obfuscate_name, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
+    Position, Wand, WantsToDropItem,
 };
-use crate::gui::obfuscate_name;
 use specs::prelude::*;
 
 pub struct ItemDropSystem {}

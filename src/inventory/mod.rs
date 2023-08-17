@@ -1,11 +1,3 @@
-use super::{
-    gamelog, Confusion, Consumable, Cursed, Destructible, Digger, EquipmentChanged, Equippable, Equipped, HungerClock,
-    HungerState, IdentifiedItem, InBackpack, InflictsDamage, MagicItem, MagicMapper, Map, MasterDungeonMap, Name,
-    ObfuscatedName, ParticleBuilder, Point, Pools, Position, ProvidesHealing, ProvidesNutrition, RandomNumberGenerator,
-    RunState, TileType, Viewshed, Wand, WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem, AOE,
-    DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
-};
-
 mod collection_system;
 mod drop_system;
 mod equip_system;

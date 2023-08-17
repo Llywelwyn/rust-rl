@@ -150,17 +150,6 @@ impl ParticleBuilder {
         );
     }
 
-    pub fn heal(&mut self, x: i32, y: i32) {
-        self.request(
-            x,
-            y,
-            rltk::RGB::named(rltk::GREEN),
-            rltk::RGB::named(rltk::BLACK),
-            rltk::to_cp437('♥'),
-            DEFAULT_PARTICLE_LIFETIME,
-        );
-    }
-
     pub fn kick(&mut self, x: i32, y: i32) {
         self.request(
             x,
@@ -194,6 +183,7 @@ impl ParticleBuilder {
     }
 
     // Makes a rainbow particle request in the shape of an 'x'. Sort of.
+    #[allow(dead_code)]
     pub fn request_rainbow_star(&mut self, x: i32, y: i32, glyph: rltk::FontCharType, lifetime: f32) {
         let bg = RGB::named(rltk::BLACK);
         let eighth_l = lifetime / 8.0;

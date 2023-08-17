@@ -1,5 +1,7 @@
-use super::{EquipmentChanged, IdentifiedItem, Map, Name, WantsToUseItem, AOE};
-use crate::effects::*;
+use crate::{
+    effects::{add_effect, aoe_tiles, EffectType, Targets},
+    EquipmentChanged, IdentifiedItem, Map, Name, WantsToUseItem, AOE,
+};
 use specs::prelude::*;
 
 pub struct ItemUseSystem {}

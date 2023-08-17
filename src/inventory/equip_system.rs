@@ -1,8 +1,9 @@
-use super::{
-    gamelog, EquipmentChanged, Equippable, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
+use crate::{
+    gamelog,
+    gui::{item_colour, obfuscate_name},
+    EquipmentChanged, Equippable, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
     WantsToUseItem,
 };
-use crate::gui::{item_colour, obfuscate_name};
 use specs::prelude::*;
 
 pub struct ItemEquipSystem {}

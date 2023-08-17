@@ -1,5 +1,8 @@
-use super::{gamelog, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName, WantsToRemoveItem};
-use crate::gui::{item_colour, obfuscate_name};
+use crate::{
+    gamelog,
+    gui::{item_colour, obfuscate_name},
+    Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName, WantsToRemoveItem,
+};
 use specs::prelude::*;
 
 pub struct ItemRemoveSystem {}
