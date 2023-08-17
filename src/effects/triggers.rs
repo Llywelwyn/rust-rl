@@ -149,7 +149,7 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
             if ecs.read_storage::<Player>().get(target).is_some() {
                 logger = logger
                     .colour(renderable_colour(&renderables, target))
-                    .append(obfuscate_name_ecs(ecs, target).0)
+                    .append("You")
                     .colour(WHITE)
                     .append("are hit!");
             } else if ecs.read_storage::<Item>().get(target).is_some() {

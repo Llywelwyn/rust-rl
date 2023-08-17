@@ -103,6 +103,7 @@
         "table": [
             { "id": "trap_bear",                "weight": 2,    "difficulty": 1},
             { "id": "trap_confusion",           "weight": 1,    "difficulty": 1},
+            { "id": "trap_mini_mine",           "weight": 1,    "difficulty": 3},
             { "id": "trap_stonefall",           "weight": 1,    "difficulty": 5}
         ]
     }

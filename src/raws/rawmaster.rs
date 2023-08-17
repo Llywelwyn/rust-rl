@@ -521,6 +521,7 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
             eb = eb.with(get_renderable_component(renderable));
         }
         eb = eb.with(Name { name: prop_template.name.clone(), plural: prop_template.name.clone() });
+        eb = eb.with(Prop {});
 
         if let Some(flags) = &prop_template.flags {
             for flag in flags.iter() {
@@ -530,8 +531,15 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                     "BLOCKS_VISIBILITY" => eb = eb.with(BlocksVisibility {}),
                     "ENTRY_TRIGGER" => eb = eb.with(EntryTrigger {}),
                     "SINGLE_ACTIVATION" => eb = eb.with(SingleActivation {}),
-                    "DOOR" => eb = eb.with(Door { open: false }),
-                    "PROP" => eb = eb.with(Prop {}),
+                    "DOOR" => {
+                        // TODO: Spawn some doors open?
+                        let open = false;
+                        eb = eb.with(Door { open: open });
+                        if !open {
+                            eb = eb.with(BlocksTile {});
+                            eb = eb.with(BlocksVisibility {});
+                        }
+                    }
                     _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
                 }
             }
@@ -545,6 +553,7 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                         let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
                         eb = eb.with(InflictsDamage { n_dice, sides, modifier })
                     }
+                    "aoe" => eb = eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
                     "healing" => {
                         let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
                         eb = eb.with(ProvidesHealing { n_dice, sides, modifier })

@@ -3,55 +3,55 @@
         "id": "door",
         "name": "door",
         "renderable": { "glyph": "+", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
-        "flags": ["BLOCKS_TILE", "BLOCKS_VISIBILITY", "DOOR", "PROP"]
+        "flags": ["DOOR"]
     },
     {
         "id": "prop_altar",
         "name": "altar",
         "renderable": { "glyph": "_", "fg": "#FFFFFF", "bg": "#000000", "order": 2 },
-        "flags": ["PROP"]
+        "flags": []
     },
     {
         "id": "prop_keg",
         "name": "keg",
         "renderable": { "glyph": "φ", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
-        "flags": ["PROP"]
+        "flags": []
     },
     {
         "id": "prop_table",
         "name": "table",
         "renderable": { "glyph": "-", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
-        "flags": ["PROP"]
+        "flags": []
     },
     {
         "id": "prop_hay",
         "name": "hay",
         "renderable": { "glyph": "%", "fg": "#c7ad39", "bg": "#000000", "order": 2 },
-        "flags": ["PROP"]
+        "flags": []
     },
     {
         "id": "prop_statue",
         "name": "statue",
         "renderable": { "glyph": "@", "fg": "#ffffff", "bg": "#000000", "order": 2 },
-        "flags": ["PROP"]
+        "flags": []
     },
     {
         "id": "prop_bed",
         "name": "bed",
         "renderable": { "glyph": "=", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
-        "flags": ["PROP"]
+        "flags": []
     },
     {
         "id": "prop_chair",
         "name": "chair",
         "renderable": { "glyph": "└", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
-        "flags": ["PROP"]
+        "flags": []
     },
     {
         "id": "prop_candle",
         "name": "candle",
         "renderable": { "glyph": "Ä", "fg": "#FFA500", "bg": "#000000", "order": 2 },
-        "flags": ["PROP"]
+        "flags": []
     },
     {
         "id": "trap_bear",
@@ -61,11 +61,11 @@
         "effects": { "damage": "2d4" }
     },
     {
-        "id": "trap_mine",
-        "name": "mine",
+        "id": "trap_mini_mine",
+        "name": "mini-mine",
         "renderable": { "glyph": "^", "fg": "#ff1e00", "bg": "#000000", "order": 2 },
-        "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
-        "effects": { "damage": "2d8", "aoe": "3" }
+        "flags": ["ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
+        "effects": { "damage": "2d4", "aoe": "3" }
     },
     {
         "id": "trap_stonefall",

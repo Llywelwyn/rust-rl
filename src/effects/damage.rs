@@ -122,6 +122,9 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
         }
         // If there was XP, run through XP-gain and level-up.
         if xp_gain != 0 {
+            if let None = pools.get(source) {
+                return;
+            }
             let mut source_pools = pools.get_mut(source).unwrap();
             let source_attributes = attributes.get(source).unwrap();
             source_pools.xp += xp_gain;

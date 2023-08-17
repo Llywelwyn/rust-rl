@@ -44,7 +44,7 @@ impl<'a> System<'a> for TriggerSystem {
                                 }
                             }
                             add_effect(
-                                Some(entity),
+                                Some(entity_id),
                                 EffectType::TriggerFire { trigger: entity_id },
                                 if let Some(aoe) = aoes.get(entity_id) {
                                     Targets::TileList {
