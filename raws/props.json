@@ -56,21 +56,28 @@
     {
         "id": "trap_bear",
         "name": "bear trap",
-        "renderable": { "glyph": "^", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "^", "fg": "#e6e6e6", "bg": "#000000", "order": 2 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "damage": "2d4" }
     },
     {
+        "id": "trap_mine",
+        "name": "mine",
+        "renderable": { "glyph": "^", "fg": "#ff1e00", "bg": "#000000", "order": 2 },
+        "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
+        "effects": { "damage": "2d8", "aoe": "3" }
+    },
+    {
         "id": "trap_stonefall",
         "name": "stonefall trap",
-        "renderable": { "glyph": "^", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "^", "fg": "#beb5a7", "bg": "#000000", "order": 2 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "damage": "2d10" }
     },
     {
         "id": "trap_confusion",
         "name": "magic trap",
-        "renderable": { "glyph": "^", "fg": "#800080", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "^", "fg": "#df07df", "bg": "#000000", "order": 2 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "confusion": "3" }
     }
