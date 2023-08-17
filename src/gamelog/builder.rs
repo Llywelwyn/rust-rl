@@ -39,6 +39,15 @@ impl Logger {
         return self;
     }
 
+    pub fn buc<T: ToString>(mut self, buc: i32, cursed: Option<T>, blessed: Option<T>) -> Self {
+        if buc == crate::effects::CURSED && cursed.is_some() {
+            self.fragments.push(LogFragment { colour: RGB::named(RED), text: cursed.unwrap().to_string() });
+        } else if buc == crate::effects::BLESSED && blessed.is_some() {
+            self.fragments.push(LogFragment { colour: RGB::named(GOLD), text: blessed.unwrap().to_string() });
+        }
+        return self;
+    }
+
     /// Pushes the finished log entry.
     pub fn log(self) {
         return append_entry(self.fragments);

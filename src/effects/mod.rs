@@ -11,6 +11,7 @@ mod targeting;
 mod triggers;
 
 pub use targeting::aoe_tiles;
+pub use triggers::{BLESSED, CURSED, UNCURSED};
 
 lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
@@ -22,7 +23,7 @@ pub enum EffectType {
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
     EntityDeath,
     ItemUse { item: Entity },
-    RestoreNutrition,
+    RestoreNutrition { buc: i32 },
 }
 
 #[derive(Clone)]
@@ -94,7 +95,7 @@ fn affect_tile(ecs: &mut World, effect: &EffectSpawner, target: usize) {
 fn tile_effect_hits_entities(effect: &EffectType) -> bool {
     match effect {
         EffectType::Damage { .. } => true,
-        EffectType::RestoreNutrition => true,
+        EffectType::RestoreNutrition { .. } => true,
         _ => false,
     }
 }
@@ -114,7 +115,7 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             }
         }
         EffectType::EntityDeath => damage::entity_death(ecs, effect, target),
-        EffectType::RestoreNutrition => hunger::restore_food(ecs, effect, target),
+        EffectType::RestoreNutrition { .. } => hunger::restore_food(ecs, effect, target),
         _ => {}
     }
 }
