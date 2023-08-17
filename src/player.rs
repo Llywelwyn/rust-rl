@@ -1,7 +1,11 @@
 use super::{
-    gamelog, gui::obfuscate_name_ecs, raws::Reaction, Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved,
-    Faction, Hidden, HungerClock, HungerState, Item, Map, Name, ParticleBuilder, Player, Pools, Position, Renderable,
-    RunState, State, SufferDamage, Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem,
+    effects::{add_effect, EffectType, Targets},
+    gamelog,
+    gui::obfuscate_name_ecs,
+    raws::Reaction,
+    Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved, Faction, Hidden, HungerClock, HungerState, Item, Map,
+    Name, ParticleBuilder, Player, Pools, Position, Renderable, RunState, State, Telepath, TileType, Viewshed,
+    WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -193,8 +197,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
 
                 if !crate::spatial::has_tile_content(destination_idx) {
                     if rng.roll_dice(1, 20) == 20 {
-                        let mut suffer_damage = ecs.write_storage::<SufferDamage>();
-                        SufferDamage::new_damage(&mut suffer_damage, entity, 1, false);
+                        add_effect(None, EffectType::Damage { amount: 1 }, Targets::Entity { target: entity });
                         gamelog::Logger::new().append("Ouch! You kick the open air, and pull something.").log();
                         break;
                     } else {

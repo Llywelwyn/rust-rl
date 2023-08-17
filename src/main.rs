@@ -21,7 +21,6 @@ mod spawner;
 mod visibility_system;
 use visibility_system::VisibilitySystem;
 mod damage_system;
-use damage_system::*;
 mod hunger_system;
 mod melee_combat_system;
 mod trigger_system;
@@ -546,7 +545,6 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Skills>();
     gs.ecs.register::<HungerClock>();
     gs.ecs.register::<WantsToMelee>();
-    gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
     gs.ecs.register::<IdentifiedItem>();
     gs.ecs.register::<MagicItem>();

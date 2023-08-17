@@ -1,8 +1,4 @@
-use super::{
-    gamelog, Attributes, Equipped, GrantsXP, InBackpack, Item, LootTable, Map, Name, ParticleBuilder, Player, Pools,
-    Position, RunState, SufferDamage,
-};
-use crate::gamesystem::{hp_per_level, mana_per_level};
+use super::{gamelog, Equipped, InBackpack, Item, LootTable, Name, Player, Pools, Position, RunState};
 use rltk::prelude::*;
 use specs::prelude::*;
 
