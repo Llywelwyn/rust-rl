@@ -90,11 +90,6 @@ impl State {
     fn run_systems(&mut self) {
         let mut mapindex = spatial::MapIndexingSystem {};
         let mut vis = VisibilitySystem {};
-        let mut regen_system = ai::RegenSystem {};
-        let mut energy = ai::EnergySystem {};
-        let mut encumbrance_system = ai::EncumbranceSystem {};
-        let mut turn_status_system = ai::TurnStatusSystem {};
-        let mut quip_system = ai::QuipSystem {};
         let mut trigger_system = trigger_system::TriggerSystem {};
         let mut melee_system = MeleeCombatSystem {};
         let mut damage_system = DamageSystem {};
@@ -109,11 +104,6 @@ impl State {
 
         mapindex.run_now(&self.ecs);
         vis.run_now(&self.ecs);
-        regen_system.run_now(&self.ecs);
-        encumbrance_system.run_now(&self.ecs);
-        energy.run_now(&self.ecs);
-        quip_system.run_now(&self.ecs);
-        turn_status_system.run_now(&self.ecs);
         self.run_ai();
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
@@ -132,12 +122,22 @@ impl State {
     }
 
     fn run_ai(&mut self) {
-        let mut adjacent_ai = ai::AdjacentAI {};
+        let mut encumbrance_system = ai::EncumbranceSystem {}; // Must run first, as it affects energy regen.
+        let mut energy = ai::EnergySystem {}; // Figures out who deserves a turn.
+        let mut regen_system = ai::RegenSystem {}; // Restores HP on appropriate clock ticks.
+        let mut turn_status_system = ai::TurnStatusSystem {}; // Ticks stasuses. Should anyone now lose their turn? i.e. confusion
+        let mut quip_system = ai::QuipSystem {}; // Quipping is "free". It doesn't use up a turn.
+        let mut adjacent_ai = ai::AdjacentAI {}; // AdjacentAI -> DefaultAI are all exclusive. If one acts, the entity's turn is over.
         let mut visible_ai = ai::VisibleAI {};
         let mut approach_ai = ai::ApproachAI {};
         let mut flee_ai = ai::FleeAI {};
         let mut chase_ai = ai::ChaseAI {};
         let mut default_move_ai = ai::DefaultAI {};
+        encumbrance_system.run_now(&self.ecs);
+        energy.run_now(&self.ecs);
+        regen_system.run_now(&self.ecs);
+        turn_status_system.run_now(&self.ecs);
+        quip_system.run_now(&self.ecs);
         adjacent_ai.run_now(&self.ecs);
         visible_ai.run_now(&self.ecs);
         approach_ai.run_now(&self.ecs);

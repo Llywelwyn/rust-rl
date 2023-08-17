@@ -1,4 +1,9 @@
-use crate::{gamelog, Confusion, Name, ParticleBuilder, Position, RunState, TakingTurn};
+use crate::{
+    effects::{add_effect, EffectType, Targets},
+    gamelog,
+    gui::renderable_colour,
+    Clock, Confusion, Name, Renderable, TakingTurn,
+};
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -8,37 +13,93 @@ impl<'a> System<'a> for TurnStatusSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         WriteStorage<'a, TakingTurn>,
+        ReadStorage<'a, Clock>,
         WriteStorage<'a, Confusion>,
         Entities<'a>,
-        ReadExpect<'a, RunState>,
         ReadStorage<'a, Name>,
-        ReadStorage<'a, Position>,
-        WriteExpect<'a, ParticleBuilder>,
+        ReadExpect<'a, Entity>,
+        ReadStorage<'a, Renderable>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut turns, mut confusion, entities, runstate, names, positions, mut particle_builder) = data;
-        if *runstate != RunState::Ticking {
+        let (mut turns, clock, mut confusion, entities, names, player_entity, renderables) = data;
+        let mut clock_tick = false;
+        for (_e, _c, _t) in (&entities, &clock, &turns).join() {
+            clock_tick = true;
+        }
+        if !clock_tick {
             return;
         }
-        let mut remove_turn: Vec<Entity> = Vec::new();
-        let mut remove_confusion: Vec<Entity> = Vec::new();
-        for (entity, _turn, confused, name, pos) in (&entities, &mut turns, &mut confusion, &names, &positions).join() {
+        let mut logger = gamelog::Logger::new();
+        let mut log = false;
+        let mut not_my_turn: Vec<Entity> = Vec::new();
+        let mut not_confused: Vec<Entity> = Vec::new();
+        for (entity, _turn, confused, name) in (&entities, &mut turns, &mut confusion, &names).join() {
+            log = true;
             confused.turns -= 1;
             if confused.turns < 1 {
-                remove_confusion.push(entity);
-                gamelog::Logger::new().npc_name(&name.name).colour(WHITE).append("snaps out of it.").log();
-                particle_builder.request(pos.x, pos.y, RGB::named(LIGHT_BLUE), RGB::named(BLACK), to_cp437('!'), 200.0);
+                not_confused.push(entity);
+                if entity == *player_entity {
+                    logger = logger
+                        .colour(renderable_colour(&renderables, entity))
+                        .append(&name.name)
+                        .colour(WHITE)
+                        .append("snap out of it.");
+                } else {
+                    logger = logger
+                        .append("The")
+                        .colour(renderable_colour(&renderables, entity))
+                        .append(&name.name)
+                        .colour(WHITE)
+                        .append("snaps out of it.");
+                }
+                add_effect(
+                    None,
+                    EffectType::Particle {
+                        glyph: to_cp437('!'),
+                        fg: RGB::named(LIGHT_BLUE),
+                        bg: RGB::named(BLACK),
+                        lifespan: 200.0,
+                        delay: 0.0,
+                    },
+                    Targets::Entity { target: entity },
+                );
             } else {
-                remove_turn.push(entity);
-                gamelog::Logger::new().npc_name(&name.name).colour(WHITE).append("is confused.").log();
-                particle_builder.request(pos.x, pos.y, RGB::named(MAGENTA), RGB::named(BLACK), to_cp437('?'), 200.0);
+                not_my_turn.push(entity);
+                if entity == *player_entity {
+                    logger = logger
+                        .colour(renderable_colour(&renderables, entity))
+                        .append(&name.name)
+                        .colour(WHITE)
+                        .append("are confused!");
+                } else {
+                    logger = logger
+                        .append("The")
+                        .colour(renderable_colour(&renderables, entity))
+                        .append(&name.name)
+                        .colour(WHITE)
+                        .append("is confused!");
+                }
+                add_effect(
+                    None,
+                    EffectType::Particle {
+                        glyph: to_cp437('?'),
+                        fg: RGB::named(MAGENTA),
+                        bg: RGB::named(BLACK),
+                        lifespan: 200.0,
+                        delay: 0.0,
+                    },
+                    Targets::Entity { target: entity },
+                );
             }
         }
-        for e in remove_turn {
+        if log {
+            logger.log();
+        }
+        for e in not_my_turn {
             turns.remove(e);
         }
-        for e in remove_confusion {
+        for e in not_confused {
             confusion.remove(e);
         }
     }

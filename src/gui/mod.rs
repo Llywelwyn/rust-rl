@@ -449,6 +449,15 @@ pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
     return (singular, plural);
 }
 
+/// Gets renderable colour as tuple of u8
+pub fn renderable_colour(renderables: &ReadStorage<Renderable>, entity: Entity) -> (u8, u8, u8) {
+    return if let Some(renderable) = renderables.get(entity) {
+        ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8)
+    } else {
+        WHITE
+    };
+}
+
 pub fn item_colour_ecs(ecs: &World, item: Entity) -> (u8, u8, u8) {
     let dm = ecs.fetch::<MasterDungeonMap>();
     if let Some(name) = ecs.read_storage::<Name>().get(item) {

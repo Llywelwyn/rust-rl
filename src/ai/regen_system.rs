@@ -1,4 +1,4 @@
-use crate::{gamelog, Clock, Player, Pools, Position, RunState, TakingTurn};
+use crate::{gamelog, Clock, Player, Pools, Position, TakingTurn};
 use specs::prelude::*;
 
 pub struct RegenSystem {}
@@ -11,7 +11,6 @@ impl<'a> System<'a> for RegenSystem {
     type SystemData = (
         ReadStorage<'a, Clock>,
         Entities<'a>,
-        ReadExpect<'a, RunState>,
         ReadStorage<'a, Position>,
         WriteStorage<'a, Pools>,
         ReadStorage<'a, TakingTurn>,
@@ -19,22 +18,24 @@ impl<'a> System<'a> for RegenSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (clock, entities, runstate, positions, mut pools, turns, player) = data;
-        if *runstate != RunState::Ticking {
+        let (clock, entities, positions, mut pools, turns, player) = data;
+        let mut clock_turn = false;
+        for (_e, _c, _t) in (&entities, &clock, &turns).join() {
+            clock_turn = true;
+        }
+        if !clock_turn {
             return;
         }
-        for (_e, _c, _t) in (&entities, &clock, &turns).join() {
-            let current_turn = gamelog::get_event_count("turns") + 1;
-            if current_turn % MONSTER_HP_REGEN_TURN == 0 {
-                for (_e, _p, pool, _player) in (&entities, &positions, &mut pools, !&player).join() {
-                    try_hp_regen_tick(pool, MONSTER_HP_REGEN_PER_TICK);
-                }
+        let current_turn = gamelog::get_event_count("turns");
+        if current_turn % MONSTER_HP_REGEN_TURN == 0 {
+            for (_e, _p, pool, _player) in (&entities, &positions, &mut pools, !&player).join() {
+                try_hp_regen_tick(pool, MONSTER_HP_REGEN_PER_TICK);
             }
-            let level = gamelog::get_event_count("player_level");
-            if current_turn % get_player_hp_regen_turn(level) == 0 {
-                for (_e, _p, pool, _player) in (&entities, &positions, &mut pools, &player).join() {
-                    try_hp_regen_tick(pool, get_player_hp_regen_per_tick(level));
-                }
+        }
+        let level = gamelog::get_event_count("player_level");
+        if current_turn % get_player_hp_regen_turn(level) == 0 {
+            for (_e, _p, pool, _player) in (&entities, &positions, &mut pools, &player).join() {
+                try_hp_regen_tick(pool, get_player_hp_regen_per_tick(level));
             }
         }
     }

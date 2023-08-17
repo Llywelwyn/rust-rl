@@ -20,6 +20,7 @@ lazy_static! {
 pub enum EffectType {
     Damage { amount: i32 },
     Healing { amount: i32 },
+    Confusion { turns: i32 },
     Bloodstain,
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
     EntityDeath,
@@ -98,6 +99,7 @@ fn tile_effect_hits_entities(effect: &EffectType) -> bool {
         EffectType::Damage { .. } => true,
         EffectType::Healing { .. } => true,
         EffectType::RestoreNutrition { .. } => true,
+        EffectType::Confusion { .. } => true,
         _ => false,
     }
 }
@@ -107,6 +109,7 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     match &effect.effect_type {
         EffectType::Damage { .. } => damage::inflict_damage(ecs, effect, target),
         EffectType::Healing { .. } => damage::heal_damage(ecs, effect, target),
+        EffectType::Confusion { .. } => damage::add_confusion(ecs, effect, target),
         EffectType::Bloodstain { .. } => {
             if let Some(pos) = targeting::entity_position(ecs, target) {
                 damage::bloodstain(ecs, pos)

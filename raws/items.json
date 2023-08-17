@@ -34,7 +34,7 @@
         "name": { "name": "scroll of fireball", "plural": "scrolls of fireball" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "weight": 0.5,
-        "value": 150,
+        "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "ranged": "10", "damage": "8d6", "aoe": "3" },
         "magic": { "class": "rare", "naming": "scroll" }
@@ -44,7 +44,7 @@
         "name": { "name": "cursed scroll of fireball", "plural": "cursed scrolls of fireball" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "weight": 0.5,
-        "value": 150,
+        "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "CURSED"],
         "effects": { "ranged": "10", "damage": "8d6", "aoe": "3" },
         "magic": { "class": "rare", "naming": "scroll" }
@@ -58,6 +58,16 @@
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": { "ranged": "10", "confusion": "4" },
         "magic": { "class": "uncommon", "naming": "scroll" }
+    },
+    {
+        "id": "scroll_mass_confusion",
+        "name": { "name": "scroll of mass confusion", "plural": "scrolls of mass confusion" },
+        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 200,
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
+        "effects": { "ranged": "10", "aoe": "4", "confusion": "3" },
+        "magic": { "class": "veryrare", "naming": "scroll" }
     },
     {
         "id": "scroll_magicmap",

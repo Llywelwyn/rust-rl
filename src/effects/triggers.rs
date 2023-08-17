@@ -1,7 +1,7 @@
 use super::{add_effect, spatial, EffectType, Entity, Targets, World};
 use crate::{
-    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, Consumable, Cursed, InflictsDamage, MagicMapper, Prop,
-    ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, Renderable, RunState,
+    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, Confusion, Consumable, Cursed, InflictsDamage, MagicMapper,
+    Prop, ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, Renderable, RunState,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -43,6 +43,8 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
     logger = handle_healing(ecs, &mut event, logger);
     // DOES DAMAGE
     logger = handle_damage(ecs, &mut event, logger);
+    // APPLIES CONFUSION
+    logger = handle_confusion(ecs, &mut event, logger);
     if event.log {
         logger.log();
     }
@@ -83,7 +85,7 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let roll = rng.roll_dice(healing_item.n_dice, healing_item.sides) + healing_item.modifier;
         add_effect(event.source, EffectType::Healing { amount: roll }, event.target.clone());
-        logger = logger.append("You recover some vigour.");
+        logger = logger.append("You recover some vigour.").buc(event.buc, None, Some("You feel great!"));
         event.log = true;
     }
     return logger;
@@ -115,8 +117,14 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
     return logger;
 }
 
+fn handle_confusion(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
+    if let Some(confusion) = ecs.read_storage::<Confusion>().get(event.entity) {
+        add_effect(event.source, EffectType::Confusion { turns: confusion.turns }, event.target.clone());
+    }
+    return logger;
+}
+
 fn get_entity_targets(target: &Targets) -> Vec<Entity> {
-    rltk::console::log("ayo");
     let mut entities: Vec<Entity> = Vec::new();
     match target {
         Targets::Entity { target } => entities.push(*target),
