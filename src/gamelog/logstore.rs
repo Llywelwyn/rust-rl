@@ -20,63 +20,53 @@ pub fn clear_log() {
 }
 
 pub fn print_log(console: &mut Box<dyn Console>, pos: Point, _descending: bool, len: usize, maximum_len: i32) {
-    // Start at x, y
     let mut y = pos.y;
     let mut x = pos.x;
     // Reverse the log, take the number we want to show, and iterate through them
     LOG.lock().unwrap().iter().rev().take(len).for_each(|log| {
-        let mut len_so_far: i32 = 0;
-        let mut entry_len = 0;
+        let mut entry_len = -2;
         // Iterate through each message fragment, and get the total length
         // in lines, by adding the length of every fragment and dividing it
-        // by the maximum length we desire.
+        // by the maximum length we desire. Then shuffle our start-y by that much.
         log.iter().for_each(|frag| {
             entry_len += frag.text.len() as i32;
         });
-        // I don't know why the +1 is required, or why there were issues on what seemed to be
-        // specified a value of 68. I'm pretty sure it's a ""rounding error"" between this method
-        // of determining max lines and how the iterator actually counts the characters. Regardless,
-        // this seems to work. -- NOTE IN CASE THIS ISSUE COMES BACK? HARD TO REPRODUCE!
-        let lines = entry_len / (maximum_len + 1);
-        // If the fragment is more than one line long, move our y-value up
-        // by this much.
+        let lines = entry_len / maximum_len;
         y -= lines;
-        // Iterate through each fragment now, for the draw loop
+        let mut i = 0;
         log.iter().for_each(|frag| {
-            // Split every fragment up into single characters
+            // Split every fragment up into single characters.
             let parts = frag.text.split("");
-            // For every character, check if the length will exceed
-            // the maximum length we're looking for. If it will, go
-            // down 1 in the y-axis, return us to the start of the line,
-            // and reset our length counter to 0.
             for part in parts {
-                if len_so_far + part.len() as i32 > maximum_len {
+                // This is an extremely hacky solution to a problem I don't understand yet.
+                // It is essentially just a filter to ignore every character which wont be
+                // drawn to the screen. The -2 is to exclude the always-present space, and
+                // blank character at the end of every fragment.
+                if part == "" || part == "\\" {
+                    continue;
+                }
+                if i > entry_len {
+                    break;
+                }
+                i += 1;
+                if x + part.len() as i32 > pos.x + maximum_len {
                     if y > pos.y - len as i32 {
                         console.print(x, y, "-");
                     }
                     y += 1;
                     x = pos.x;
-                    len_so_far = 0;
                 }
-                // If we're still within our "range" (we haven't gone up
-                // further in the y-axis than our desired amount), then
-                // print the next character. Otherwise, just skip it.
-                // -- this makes sure we don't continue drawing outside of
-                // the bounds of our message box.
+                // Stay within bounds
                 if y > pos.y - len as i32 {
                     console.print_color(x, y, frag.colour.into(), RGB::named(rltk::BLACK).into(), part);
                 }
-                // Move across by 1 in the x-axis, and add the length to our counter.
                 x += part.len() as i32;
-                len_so_far += part.len() as i32;
             }
         });
-        // Descending is deprecated for now, so we always ascending upwards.
         // Take away one from the y-axis, because we want to start each entry
         // on a new line, and go up an additional amount depending on how many
         // lines our *previous* entry took.
         y -= 1 + lines;
-        // Go back to the start of the new line.
         x = pos.x;
     });
 }
