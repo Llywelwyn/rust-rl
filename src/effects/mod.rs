@@ -17,6 +17,10 @@ lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
 }
 
+lazy_static! {
+    pub static ref DEAD_ENTITIES: Mutex<VecDeque<Entity>> = Mutex::new(VecDeque::new());
+}
+
 pub enum EffectType {
     Damage { amount: i32 },
     Healing { amount: i32 },
@@ -51,6 +55,16 @@ pub fn add_effect(source: Option<Entity>, effect_type: EffectType, target: Targe
 
 /// Iterates through the effects queue, applying each effect to their target.
 pub fn run_effects_queue(ecs: &mut World) {
+    // First removes any effect in the EFFECT_QUEUE with a dead entity as its source.
+    loop {
+        let dead_entity: Option<Entity> = DEAD_ENTITIES.lock().unwrap().pop_front();
+        if let Some(dead_entity) = dead_entity {
+            EFFECT_QUEUE.lock().unwrap().retain(|x| x.source != Some(dead_entity));
+        } else {
+            break;
+        }
+    }
+    // Then runs every effect that remains in the queue.
     loop {
         let effect: Option<EffectSpawner> = EFFECT_QUEUE.lock().unwrap().pop_front();
         if let Some(effect) = effect {

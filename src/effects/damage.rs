@@ -106,6 +106,7 @@ pub fn bloodstain(ecs: &mut World, target: usize) {
 }
 
 pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
+    super::DEAD_ENTITIES.lock().unwrap().push_back(target);
     let mut xp_gain = 0;
     let mut pools = ecs.write_storage::<Pools>();
     let attributes = ecs.read_storage::<Attributes>();
