@@ -5,9 +5,12 @@ use std::collections::VecDeque;
 use std::sync::Mutex;
 
 mod damage;
+mod hunger;
 mod particles;
 mod targeting;
 mod triggers;
+
+pub use targeting::aoe_tiles;
 
 lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
@@ -19,6 +22,7 @@ pub enum EffectType {
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
     EntityDeath,
     ItemUse { item: Entity },
+    RestoreNutrition,
 }
 
 #[derive(Clone)]
@@ -70,14 +74,6 @@ fn target_applicator(ecs: &mut World, effect: &EffectSpawner) {
     }
 }
 
-/// Checks if a given effect affects entities or not.
-fn tile_effect_hits_entities(effect: &EffectType) -> bool {
-    match effect {
-        EffectType::Damage { .. } => true,
-        _ => false,
-    }
-}
-
 /// Runs an effect on a given tile index
 fn affect_tile(ecs: &mut World, effect: &EffectSpawner, target: usize) {
     if tile_effect_hits_entities(&effect.effect_type) {
@@ -92,6 +88,15 @@ fn affect_tile(ecs: &mut World, effect: &EffectSpawner, target: usize) {
         _ => {}
     }
     // Run the effect
+}
+
+/// Checks if a given effect affects entities or not.
+fn tile_effect_hits_entities(effect: &EffectType) -> bool {
+    match effect {
+        EffectType::Damage { .. } => true,
+        EffectType::RestoreNutrition => true,
+        _ => false,
+    }
 }
 
 /// Runs an effect on a given entity
@@ -109,6 +114,7 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             }
         }
         EffectType::EntityDeath => damage::entity_death(ecs, effect, target),
+        EffectType::RestoreNutrition => hunger::restore_food(ecs, effect, target),
         _ => {}
     }
 }

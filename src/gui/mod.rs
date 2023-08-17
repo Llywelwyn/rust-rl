@@ -151,8 +151,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             (&entities, &equipped, &renderables).join().filter(|item| item.1.owner == *player_entity)
         {
             equipment.push((
-                get_item_display_name(ecs, entity).0,
-                get_item_colour(ecs, entity),
+                obfuscate_name(ecs, entity).0,
+                RGB::named(item_colour_ecs(ecs, entity)),
                 renderable.fg,
                 renderable.glyph,
             ));
@@ -223,8 +223,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                         (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
                     };
                     seen_entities.push((
-                        get_item_display_name(ecs, entity).0,
-                        get_item_colour(ecs, entity),
+                        obfuscate_name(ecs, entity).0,
+                        RGB::named(item_colour_ecs(ecs, entity)),
                         render_fg,
                         glyph,
                     ));
@@ -387,7 +387,7 @@ pub fn get_max_inventory_width(inventory: &BTreeMap<UniqueInventoryItem, i32>) -
 }
 
 // Inside the ECS
-pub fn obfuscate_name(
+pub fn obfuscate_name_ecs(
     item: Entity,
     names: &ReadStorage<Name>,
     magic_items: &ReadStorage<MagicItem>,
@@ -423,7 +423,7 @@ pub fn obfuscate_name(
 }
 
 // Outside the ECS
-pub fn get_item_display_name(ecs: &World, item: Entity) -> (String, String) {
+pub fn obfuscate_name(ecs: &World, item: Entity) -> (String, String) {
     let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
     if let Some(name) = ecs.read_storage::<Name>().get(item) {
         if ecs.read_storage::<MagicItem>().get(item).is_some() {
@@ -449,30 +449,30 @@ pub fn get_item_display_name(ecs: &World, item: Entity) -> (String, String) {
     return (singular, plural);
 }
 
-pub fn get_item_colour(ecs: &World, item: Entity) -> RGB {
+pub fn item_colour_ecs(ecs: &World, item: Entity) -> (u8, u8, u8) {
     let dm = ecs.fetch::<MasterDungeonMap>();
     if let Some(name) = ecs.read_storage::<Name>().get(item) {
         if let Some(magic) = ecs.read_storage::<MagicItem>().get(item) {
             if dm.identified_items.contains(&name.name) {
                 // If identified magic item, use rarity colour
                 match magic.class {
-                    MagicItemClass::Common => return RGB::named(rltk::WHITE),
-                    MagicItemClass::Uncommon => return RGB::named(rltk::GREEN),
-                    MagicItemClass::Rare => return RGB::named(rltk::BLUE),
-                    MagicItemClass::VeryRare => return RGB::named(rltk::PURPLE),
-                    MagicItemClass::Legendary => return RGB::named(rltk::GOLD),
+                    MagicItemClass::Common => return WHITE,
+                    MagicItemClass::Uncommon => return GREEN,
+                    MagicItemClass::Rare => return BLUE,
+                    MagicItemClass::VeryRare => return PURPLE,
+                    MagicItemClass::Legendary => return GOLD,
                 }
             } else {
                 // Unidentified magic item
-                return RGB::named(rltk::GREY);
+                return GREY;
             }
         }
     }
     // If nonmagic, just use white
-    return RGB::named(rltk::WHITE);
+    return WHITE;
 }
 
-pub fn item_colour_u8(
+pub fn item_colour(
     item: Entity,
     names: &ReadStorage<Name>,
     magic_items: &ReadStorage<MagicItem>,
@@ -574,16 +574,14 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<UniqueInventoryItem, i32>,
         (&entities, &backpack, &names, &renderables).join().filter(|item| item.1.owner == *player_entity)
     {
         // RGB can't be used as a key. This is converting the RGB (tuple of f32) into a tuple of u8s.
-        let item_colour = get_item_colour(ecs, entity);
+        let item_colour = item_colour_ecs(ecs, entity);
         let renderables =
             ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8);
-        let (r, g, b): (u8, u8, u8) =
-            ((item_colour.r * 255.0) as u8, (item_colour.g * 255.0) as u8, (item_colour.b * 255.0) as u8);
-        let (singular, plural) = get_item_display_name(ecs, entity);
+        let (singular, plural) = obfuscate_name(ecs, entity);
         player_inventory
             .entry(UniqueInventoryItem {
                 display_name: DisplayName { singular: singular.clone(), plural: plural },
-                rgb: (r, g, b),
+                rgb: item_colour,
                 renderables: renderables,
                 glyph: renderable.glyph,
                 name: name.name.clone(),
@@ -686,7 +684,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     let mut equippable: Vec<(Entity, String)> = Vec::new();
     let mut width = 2;
     for (entity, _pack) in (&entities, &backpack).join().filter(|item| item.1.owner == *player_entity) {
-        let this_name = &get_item_display_name(&gs.ecs, entity).0;
+        let this_name = &obfuscate_name(&gs.ecs, entity).0;
         let this_width = 5 + this_name.len();
         width = if width > this_width { width } else { this_width };
         equippable.push((entity, this_name.to_string()));
@@ -708,7 +706,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
         };
         ctx.set(x + 1, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
         ctx.set(x + 3, y, fg, RGB::named(rltk::BLACK), glyph);
-        fg = get_item_colour(&gs.ecs, *e);
+        fg = RGB::named(item_colour_ecs(&gs.ecs, *e));
         ctx.print_color(x + 5, y, fg, RGB::named(rltk::BLACK), name);
         y += 1;
         j += 1;

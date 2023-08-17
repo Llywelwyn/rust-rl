@@ -1,5 +1,5 @@
 use super::{gamelog, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName, WantsToRemoveItem};
-use crate::gui::{item_colour_u8, obfuscate_name};
+use crate::gui::{item_colour, obfuscate_name_ecs};
 use specs::prelude::*;
 
 pub struct ItemRemoveSystem {}
@@ -37,8 +37,10 @@ impl<'a> System<'a> for ItemRemoveSystem {
                 if entity == *player_entity {
                     gamelog::Logger::new()
                         .append("You unequip the")
-                        .append_n(obfuscate_name(to_remove.item, &names, &magic_items, &obfuscated_names, &dm, None).0)
-                        .colour(item_colour_u8(to_remove.item, &names, &magic_items, &dm))
+                        .append_n(
+                            obfuscate_name_ecs(to_remove.item, &names, &magic_items, &obfuscated_names, &dm, None).0,
+                        )
+                        .colour(item_colour(to_remove.item, &names, &magic_items, &dm))
                         .period()
                         .log();
                 }
