@@ -92,7 +92,6 @@ impl State {
         let mut vis = VisibilitySystem {};
         let mut trigger_system = trigger_system::TriggerSystem {};
         let mut melee_system = MeleeCombatSystem {};
-        let mut damage_system = DamageSystem {};
         let mut inventory_system = inventory::ItemCollectionSystem {};
         let mut item_equip_system = inventory::ItemEquipSystem {};
         let mut item_use_system = inventory::ItemUseSystem {};
@@ -113,7 +112,6 @@ impl State {
         item_remove_system.run_now(&self.ecs);
         item_id_system.run_now(&self.ecs);
         melee_system.run_now(&self.ecs);
-        damage_system.run_now(&self.ecs);
         effects::run_effects_queue(&mut self.ecs);
         hunger_clock.run_now(&self.ecs);
         particle_system.run_now(&self.ecs);

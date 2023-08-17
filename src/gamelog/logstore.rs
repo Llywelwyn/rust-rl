@@ -33,7 +33,11 @@ pub fn print_log(console: &mut Box<dyn Console>, pos: Point, _descending: bool, 
         log.iter().for_each(|frag| {
             entry_len += frag.text.len() as i32;
         });
-        let lines = entry_len / maximum_len;
+        // I don't know why the +1 is required, or why there were issues on what seemed to be
+        // specified a value of 68. I'm pretty sure it's a ""rounding error"" between this method
+        // of determining max lines and how the iterator actually counts the characters. Regardless,
+        // this seems to work. -- NOTE IN CASE THIS ISSUE COMES BACK? HARD TO REPRODUCE!
+        let lines = entry_len / (maximum_len + 1);
         // If the fragment is more than one line long, move our y-value up
         // by this much.
         y -= lines;
@@ -47,6 +51,9 @@ pub fn print_log(console: &mut Box<dyn Console>, pos: Point, _descending: bool, 
             // and reset our length counter to 0.
             for part in parts {
                 if len_so_far + part.len() as i32 > maximum_len {
+                    if y > pos.y - len as i32 {
+                        console.print(x, y, "-");
+                    }
                     y += 1;
                     x = pos.x;
                     len_so_far = 0;

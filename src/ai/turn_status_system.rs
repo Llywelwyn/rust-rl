@@ -35,7 +35,6 @@ impl<'a> System<'a> for TurnStatusSystem {
         let mut not_my_turn: Vec<Entity> = Vec::new();
         let mut not_confused: Vec<Entity> = Vec::new();
         for (entity, _turn, confused, name) in (&entities, &mut turns, &mut confusion, &names).join() {
-            log = true;
             confused.turns -= 1;
             if confused.turns < 1 {
                 not_confused.push(entity);
@@ -45,6 +44,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                         .append(&name.name)
                         .colour(WHITE)
                         .append("snap out of it.");
+                    log = true;
                 } else {
                     logger = logger
                         .append("The")
@@ -52,6 +52,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                         .append(&name.name)
                         .colour(WHITE)
                         .append("snaps out of it.");
+                    log = true;
                 }
                 add_effect(
                     None,
@@ -72,6 +73,8 @@ impl<'a> System<'a> for TurnStatusSystem {
                         .append(&name.name)
                         .colour(WHITE)
                         .append("are confused!");
+                    log = true;
+                    gamelog::record_event("player_confused", 1);
                 } else {
                     logger = logger
                         .append("The")
@@ -79,6 +82,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                         .append(&name.name)
                         .colour(WHITE)
                         .append("is confused!");
+                    log = true;
                 }
                 add_effect(
                     None,
