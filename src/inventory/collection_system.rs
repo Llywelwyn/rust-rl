@@ -1,6 +1,6 @@
 use crate::{
-    gamelog, gui::obfuscate_name, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
-    Position, Wand, WantsToPickupItem,
+    gamelog, gui::obfuscate_name, Charges, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name,
+    ObfuscatedName, Position, WantsToPickupItem,
 };
 use specs::prelude::*;
 
@@ -18,7 +18,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
         ReadStorage<'a, MagicItem>,
         ReadStorage<'a, ObfuscatedName>,
         ReadExpect<'a, MasterDungeonMap>,
-        ReadStorage<'a, Wand>,
+        ReadStorage<'a, Charges>,
     );
 
     fn run(&mut self, data: Self::SystemData) {

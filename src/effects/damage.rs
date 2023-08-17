@@ -2,7 +2,8 @@ use super::{add_effect, targeting, EffectSpawner, EffectType, Entity, Targets, W
 use crate::{
     gamelog,
     gamesystem::{hp_per_level, mana_per_level},
-    Attributes, Confusion, GrantsXP, Map, Player, Pools, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME,
+    Attributes, Confusion, Destructible, GrantsXP, Map, Player, Pools, DEFAULT_PARTICLE_LIFETIME,
+    LONG_PARTICLE_LIFETIME,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -30,6 +31,8 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
                 }
             }
         }
+    } else if let Some(_destructible) = ecs.read_storage::<Destructible>().get(target) {
+        add_effect(damage.source, EffectType::EntityDeath, Targets::Entity { target });
     }
 }
 

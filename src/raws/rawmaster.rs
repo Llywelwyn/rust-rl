@@ -160,7 +160,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                     "EQUIP_HANDS" => eb = eb.with(Equippable { slot: EquipmentSlot::Hands }),
                     "EQUIP_NECK" => eb = eb.with(Equippable { slot: EquipmentSlot::Neck }),
                     "EQUIP_BACK" => eb = eb.with(Equippable { slot: EquipmentSlot::Back }),
-                    "WAND" => eb = eb.with(Wand { uses: 3, max_uses: 3 }),
+                    "CHARGES" => eb = eb.with(Charges { uses: 3, max_uses: 3 }),
                     "FOOD" => eb = eb.with(ProvidesNutrition {}),
                     "STRENGTH" => weapon_type = 0,
                     "DEXTERITY" => weapon_type = 2,

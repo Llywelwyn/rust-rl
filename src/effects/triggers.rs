@@ -1,18 +1,42 @@
 use super::{add_effect, spatial, EffectType, Entity, Targets, World};
 use crate::{
-    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Confusion, Consumable, Cursed,
-    InflictsDamage, MagicMapper, Player, Prop, ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, Renderable,
-    RunState,
+    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Charges, Confusion, Consumable,
+    Cursed, Destructible, Hidden, InflictsDamage, Item, MagicMapper, Player, Prop, ProvidesHealing, ProvidesNutrition,
+    RandomNumberGenerator, Renderable, RunState, SingleActivation,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
 
 pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs: &mut World) {
+    // Check if the item has charges, etc.
+    if let Some(has_charges) = ecs.write_storage::<Charges>().get_mut(item) {
+        if has_charges.uses <= 0 {
+            let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+            if rng.roll_dice(1, 121) != 1 {
+                gamelog::Logger::new().append("The wand does nothing.").log();
+                return;
+            }
+            gamelog::Logger::new().colour(rltk::YELLOW).append("You wrest one last charge from the worn-out wand.");
+            ecs.write_storage::<Consumable>().insert(item, Consumable {}).expect("Could not insert consumable");
+        }
+        has_charges.uses -= 1;
+    }
     // Use the item via the generic system
     event_trigger(source, item, target, ecs);
     // If it's a consumable, delete it
     if ecs.read_storage::<Consumable>().get(item).is_some() {
         ecs.entities().delete(item).expect("Failed to delete item");
+    }
+}
+
+pub fn trigger(source: Option<Entity>, trigger: Entity, target: &Targets, ecs: &mut World) {
+    // Remove hidden from the trigger
+    ecs.write_storage::<Hidden>().remove(trigger);
+    // Use the trigger via the generic system
+    event_trigger(source, trigger, target, ecs);
+    // If it was single-activation, delete it
+    if ecs.read_storage::<SingleActivation>().get(trigger).is_some() {
+        ecs.entities().delete(trigger).expect("Failed to delete entity with a SingleActivation");
     }
 }
 
@@ -87,7 +111,7 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
         let roll = rng.roll_dice(healing_item.n_dice, healing_item.sides) + healing_item.modifier;
         add_effect(event.source, EffectType::Healing { amount: roll }, event.target.clone());
         for target in get_entity_targets(&event.target) {
-            if ecs.read_storage::<Prop>().get(target).is_some() {
+            if ecs.read_storage::<Prop>().get(target).is_some() || ecs.read_storage::<Item>().get(target).is_some() {
                 continue;
             }
             let renderables = ecs.read_storage::<Renderable>();
@@ -128,6 +152,15 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
                     .append(obfuscate_name_ecs(ecs, target).0)
                     .colour(WHITE)
                     .append("are hit!");
+            } else if ecs.read_storage::<Item>().get(target).is_some() {
+                if ecs.read_storage::<Destructible>().get(target).is_some() {
+                    logger = logger
+                        .append("The")
+                        .colour(renderable_colour(&renderables, target))
+                        .append(obfuscate_name_ecs(ecs, target).0)
+                        .colour(WHITE)
+                        .append("is ruined!");
+                }
             } else {
                 logger = logger
                     .append("The")

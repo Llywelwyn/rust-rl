@@ -1,8 +1,8 @@
 use super::{
     ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes,
-    Burden, Equipped, Hidden, HungerClock, HungerState, InBackpack, MagicItem, MagicItemClass, Map, MasterDungeonMap,
-    Name, ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
-    Wand,
+    Burden, Charges, Equipped, Hidden, HungerClock, HungerState, InBackpack, MagicItem, MagicItemClass, Map,
+    MasterDungeonMap, Name, ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills,
+    State, Viewshed,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -393,7 +393,7 @@ pub fn obfuscate_name(
     magic_items: &ReadStorage<MagicItem>,
     obfuscated_names: &ReadStorage<ObfuscatedName>,
     dm: &MasterDungeonMap,
-    wand: Option<&ReadStorage<Wand>>,
+    wand: Option<&ReadStorage<Charges>>,
 ) -> (String, String) {
     let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
     if let Some(name) = names.get(item) {
@@ -439,7 +439,7 @@ pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
             (singular, plural) = (name.name.clone(), name.plural.clone());
         }
     }
-    if let Some(wand) = ecs.read_storage::<Wand>().get(item) {
+    if let Some(wand) = ecs.read_storage::<Charges>().get(item) {
         let used = wand.max_uses - wand.uses;
         for _i in 0..used {
             singular.push_str("*");

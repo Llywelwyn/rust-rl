@@ -26,6 +26,7 @@ pub enum EffectType {
     EntityDeath,
     ItemUse { item: Entity },
     RestoreNutrition { buc: i32 },
+    TriggerFire { trigger: Entity },
 }
 
 #[derive(Clone)]
@@ -66,6 +67,9 @@ fn target_applicator(ecs: &mut World, effect: &EffectSpawner) {
     // as the source, passing all effects attached to the item into the queue.
     if let EffectType::ItemUse { item } = effect.effect_type {
         triggers::item_trigger(effect.source, item, &effect.target, ecs);
+        return;
+    } else if let EffectType::TriggerFire { trigger } = effect.effect_type {
+        triggers::trigger(effect.source, trigger, &effect.target, ecs);
         return;
     }
     // Otherwise, just match the effect and enact it directly.

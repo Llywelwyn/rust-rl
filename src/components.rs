@@ -382,7 +382,7 @@ pub struct Chasing {
 pub struct Consumable {}
 
 #[derive(Component, Debug, ConvertSaveload)]
-pub struct Wand {
+pub struct Charges {
     pub uses: i32,
     pub max_uses: i32,
 }

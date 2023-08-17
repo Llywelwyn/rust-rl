@@ -576,7 +576,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<Consumable>();
     gs.ecs.register::<SingleActivation>();
-    gs.ecs.register::<Wand>();
+    gs.ecs.register::<Charges>();
     gs.ecs.register::<ProvidesNutrition>();
     gs.ecs.register::<Destructible>();
     gs.ecs.register::<Hidden>();

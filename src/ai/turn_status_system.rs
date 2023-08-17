@@ -41,7 +41,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                 if entity == *player_entity {
                     logger = logger
                         .colour(renderable_colour(&renderables, entity))
-                        .append(&name.name)
+                        .append("You")
                         .colour(WHITE)
                         .append("snap out of it.");
                     log = true;
@@ -70,7 +70,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                 if entity == *player_entity {
                     logger = logger
                         .colour(renderable_colour(&renderables, entity))
-                        .append(&name.name)
+                        .append("You")
                         .colour(WHITE)
                         .append("are confused!");
                     log = true;
