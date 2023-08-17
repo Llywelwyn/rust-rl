@@ -39,9 +39,7 @@ pub fn print_log(console: &mut Box<dyn Console>, pos: Point, _descending: bool, 
             let parts = frag.text.split("");
             for part in parts {
                 // This is an extremely hacky solution to a problem I don't understand yet.
-                // It is essentially just a filter to ignore every character which wont be
-                // drawn to the screen. The -2 is to exclude the always-present space, and
-                // blank character at the end of every fragment.
+                // -- without this, the lines *here* and the line count *above* wont match.
                 if part == "" || part == "\\" {
                     continue;
                 }
