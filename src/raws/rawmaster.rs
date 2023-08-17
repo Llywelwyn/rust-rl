@@ -697,6 +697,8 @@ pub enum SpawnsAs {
     LargeGroup,
 }
 
+/// Looks up a key in the mob index, and if a corresponding mob is found, searches the
+/// entry for a group spawn flag. i.e. SMALL_GROUP/LARGE_GROUP.
 pub fn get_mob_spawn_type(raws: &RawMaster, key: &str) -> SpawnsAs {
     if raws.mob_index.contains_key(key) {
         let mob_template = &raws.raws.mobs[raws.mob_index[key]];

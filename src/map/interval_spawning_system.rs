@@ -43,12 +43,9 @@ fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
     }
     let mut spawn_locations: Vec<(i32, i32)> = Vec::new();
     let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-    // Get mob type
     let key = spawner::mob_table(difficulty).roll(&mut rng);
-    // Check if it spawns in a group, and roll for how many to spawn accordingly.
     let spawn_type = raws::get_mob_spawn_type(&raws::RAWS.lock().unwrap(), &key);
     let roll = raws::get_mob_spawn_amount(&mut rng, &spawn_type, player_level);
-    // Get that many idxs, and push them to the spawn list.
     for _i in 0..roll {
         let idx = get_random_idx_from_tiles(&mut rng, &mut available_tiles);
         spawn_locations.push((idx as i32 % map.width, idx as i32 / map.width));

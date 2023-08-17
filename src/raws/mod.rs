@@ -68,8 +68,8 @@ macro_rules! impl_ParseJson {
         $(impl ParseJson for $t {
             fn parse_raws_into_vector(path: String) -> $t {
                 let raw_data = rltk::embedding::EMBED.lock().get_resource(path).unwrap();
-                let raw_string = std::str::from_utf8(&raw_data).expect("Unable to convert to a valid UTF-8 string.");
-                return serde_json::from_str(&raw_string).expect("Unable to parse items.json");
+                let raw_string = std::str::from_utf8(&raw_data).expect("Failed to convert UTF-8 to &str.");
+                return serde_json::from_str(&raw_string).expect("Failed to convert &str to json");
             }
         })*
     }

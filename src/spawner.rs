@@ -101,7 +101,21 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     raws::spawn_named_entity(
         &raws::RAWS.lock().unwrap(),
         ecs,
-        "scroll_mass_health",
+        "wand_fireball",
+        raws::SpawnType::Carried { by: player },
+        0,
+    );
+    raws::spawn_named_entity(
+        &raws::RAWS.lock().unwrap(),
+        ecs,
+        "wand_fireball",
+        raws::SpawnType::Carried { by: player },
+        0,
+    );
+    raws::spawn_named_entity(
+        &raws::RAWS.lock().unwrap(),
+        ecs,
+        "wand_confusion",
         raws::SpawnType::Carried { by: player },
         0,
     );
@@ -266,6 +280,7 @@ pub fn food_table(difficulty: i32) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "food", difficulty)
 }
 
+/// Locks RAWS, and provides access to master list of all mobs.
 pub fn mob_table(difficulty: i32) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "mobs", difficulty)
 }

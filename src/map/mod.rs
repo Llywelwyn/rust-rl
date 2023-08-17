@@ -59,7 +59,7 @@ impl Map {
             view_blocked: HashSet::new(),
         };
 
-        const OFFSET_PERCENT: i32 = 10;
+        const OFFSET_PERCENT: i32 = 20;
         const TWICE_OFFSET: i32 = OFFSET_PERCENT * 2;
         let mut rng = rltk::RandomNumberGenerator::new();
 
