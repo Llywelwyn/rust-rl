@@ -151,7 +151,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             (&entities, &equipped, &renderables).join().filter(|item| item.1.owner == *player_entity)
         {
             equipment.push((
-                obfuscate_name(ecs, entity).0,
+                obfuscate_name_ecs(ecs, entity).0,
                 RGB::named(item_colour_ecs(ecs, entity)),
                 renderable.fg,
                 renderable.glyph,
@@ -223,7 +223,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                         (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
                     };
                     seen_entities.push((
-                        obfuscate_name(ecs, entity).0,
+                        obfuscate_name_ecs(ecs, entity).0,
                         RGB::named(item_colour_ecs(ecs, entity)),
                         render_fg,
                         glyph,
@@ -387,7 +387,7 @@ pub fn get_max_inventory_width(inventory: &BTreeMap<UniqueInventoryItem, i32>) -
 }
 
 // Inside the ECS
-pub fn obfuscate_name_ecs(
+pub fn obfuscate_name(
     item: Entity,
     names: &ReadStorage<Name>,
     magic_items: &ReadStorage<MagicItem>,
@@ -423,7 +423,7 @@ pub fn obfuscate_name_ecs(
 }
 
 // Outside the ECS
-pub fn obfuscate_name(ecs: &World, item: Entity) -> (String, String) {
+pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
     let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
     if let Some(name) = ecs.read_storage::<Name>().get(item) {
         if ecs.read_storage::<MagicItem>().get(item).is_some() {
@@ -577,7 +577,7 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<UniqueInventoryItem, i32>,
         let item_colour = item_colour_ecs(ecs, entity);
         let renderables =
             ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8);
-        let (singular, plural) = obfuscate_name(ecs, entity);
+        let (singular, plural) = obfuscate_name_ecs(ecs, entity);
         player_inventory
             .entry(UniqueInventoryItem {
                 display_name: DisplayName { singular: singular.clone(), plural: plural },
@@ -684,7 +684,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     let mut equippable: Vec<(Entity, String)> = Vec::new();
     let mut width = 2;
     for (entity, _pack) in (&entities, &backpack).join().filter(|item| item.1.owner == *player_entity) {
-        let this_name = &obfuscate_name(&gs.ecs, entity).0;
+        let this_name = &obfuscate_name_ecs(&gs.ecs, entity).0;
         let this_width = 5 + this_name.len();
         width = if width > this_width { width } else { this_width };
         equippable.push((entity, this_name.to_string()));

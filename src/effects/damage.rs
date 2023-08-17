@@ -33,6 +33,26 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     }
 }
 
+pub fn heal_damage(ecs: &mut World, heal: &EffectSpawner, target: Entity) {
+    let mut pools = ecs.write_storage::<Pools>();
+    if let Some(pool) = pools.get_mut(target) {
+        if let EffectType::Healing { amount } = heal.effect_type {
+            pool.hit_points.current = i32::min(pool.hit_points.max, pool.hit_points.current + amount);
+            add_effect(
+                None,
+                EffectType::Particle {
+                    glyph: to_cp437('♥'),
+                    fg: RGB::named(BLUE),
+                    bg: RGB::named(BLACK),
+                    lifespan: DEFAULT_PARTICLE_LIFETIME,
+                    delay: 0.0,
+                },
+                Targets::Entity { target },
+            );
+        }
+    }
+}
+
 pub fn bloodstain(ecs: &mut World, target: usize) {
     let mut map = ecs.fetch_mut::<Map>();
     // If the current tile isn't bloody, bloody it.

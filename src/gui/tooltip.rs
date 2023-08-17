@@ -72,7 +72,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     for (entity, position, renderable, _hidden) in (&entities, &positions, &renderables, !&hidden).join() {
         if position.x == mouse_pos_adjusted.0 && position.y == mouse_pos_adjusted.1 {
             let mut tip = Tooltip::new();
-            tip.add(crate::gui::obfuscate_name(ecs, entity).0, renderable.fg);
+            tip.add(crate::gui::obfuscate_name_ecs(ecs, entity).0, renderable.fg);
             // Attributes
             let attr = attributes.get(entity);
             if let Some(a) = attr {

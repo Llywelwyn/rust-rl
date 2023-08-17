@@ -1,7 +1,7 @@
 use super::{
-    gamelog, gui::obfuscate_name, raws::Reaction, Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved, Faction,
-    Hidden, HungerClock, HungerState, Item, Map, Name, ParticleBuilder, Player, Pools, Position, Renderable, RunState,
-    State, SufferDamage, Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem,
+    gamelog, gui::obfuscate_name_ecs, raws::Reaction, Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved,
+    Faction, Hidden, HungerClock, HungerState, Item, Map, Name, ParticleBuilder, Player, Pools, Position, Renderable,
+    RunState, State, SufferDamage, Telepath, TileType, Viewshed, WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -356,7 +356,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             let mut some = false;
             crate::spatial::for_each_tile_content(destination_idx, |entity| {
                 if !hidden.get(entity).is_some() && names.get(entity).is_some() {
-                    let item_name = obfuscate_name(ecs, entity).0;
+                    let item_name = obfuscate_name_ecs(ecs, entity).0;
                     item_names.push(item_name);
                     some = true;
                 }

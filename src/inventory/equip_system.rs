@@ -2,7 +2,7 @@ use super::{
     gamelog, EquipmentChanged, Equippable, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
     WantsToUseItem,
 };
-use crate::gui::{item_colour, obfuscate_name_ecs};
+use crate::gui::{item_colour, obfuscate_name};
 use specs::prelude::*;
 
 pub struct ItemEquipSystem {}
@@ -58,7 +58,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                     if target == *player_entity {
                         logger = logger
                             .append("You remove your")
-                            .append_n(obfuscate_name_ecs(*item, &names, &magic_items, &obfuscated_names, &dm, None).0)
+                            .append_n(obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &dm, None).0)
                             .colour(item_colour(*item, &names, &magic_items, &dm))
                             .period();
                     }
@@ -73,15 +73,8 @@ impl<'a> System<'a> for ItemEquipSystem {
                     logger = logger
                         .append("You equip the")
                         .append_n(
-                            obfuscate_name_ecs(
-                                wants_to_use_item.item,
-                                &names,
-                                &magic_items,
-                                &obfuscated_names,
-                                &dm,
-                                None,
-                            )
-                            .0,
+                            obfuscate_name(wants_to_use_item.item, &names, &magic_items, &obfuscated_names, &dm, None)
+                                .0,
                         )
                         .colour(item_colour(wants_to_use_item.item, &names, &magic_items, &dm))
                         .period();

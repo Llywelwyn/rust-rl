@@ -112,8 +112,8 @@ impl State {
         regen_system.run_now(&self.ecs);
         encumbrance_system.run_now(&self.ecs);
         energy.run_now(&self.ecs);
-        turn_status_system.run_now(&self.ecs);
         quip_system.run_now(&self.ecs);
+        turn_status_system.run_now(&self.ecs);
         self.run_ai();
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);

@@ -2,7 +2,7 @@ use super::{
     gamelog, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName, Position, Wand,
     WantsToDropItem,
 };
-use crate::gui::obfuscate_name_ecs;
+use crate::gui::obfuscate_name;
 use specs::prelude::*;
 
 pub struct ItemDropSystem {}
@@ -56,7 +56,7 @@ impl<'a> System<'a> for ItemDropSystem {
                     .append("You drop the")
                     .item_name_n(format!(
                         "{}",
-                        obfuscate_name_ecs(to_drop.item, &names, &magic_items, &obfuscated_names, &dm, Some(&wands)).0
+                        obfuscate_name(to_drop.item, &names, &magic_items, &obfuscated_names, &dm, Some(&wands)).0
                     ))
                     .period()
                     .log();
