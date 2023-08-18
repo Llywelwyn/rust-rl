@@ -215,7 +215,7 @@
     {
         "id": "zombie_gnome",
         "name": "gnome zombie",
-        "renderable": { "glyph": "G", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "z", "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["MINDLESS"],
         "level": 1,
         "speed": 6,

@@ -314,7 +314,7 @@
         "weight": 2,
         "value": 100,
         "flags": ["CHARGES"],
-        "effects": { "ranged": "12", "damage": "10" },
+        "effects": { "ranged": "12", "damage": "3d4+3" },
         "magic": { "class": "uncommon", "naming": "wand" }
     },
     {
@@ -324,7 +324,7 @@
         "weight": 2,
         "value": 300,
         "flags": ["CHARGES"],
-        "effects": { "ranged": "10", "damage": "15", "aoe": "3" },
+        "effects": { "ranged": "10", "damage": "8d6", "aoe": "3" },
         "magic": { "class": "rare", "naming": "wand" }
     },
     {
