@@ -1,0 +1,35 @@
+a -             A -
+b -             B -
+c - chickens    C -
+d - canines     D -
+e -             E -
+f - felines     F -
+g - goblins     G - gnomes
+h - humanoids   H -
+i -             I -
+j -             J -
+k - kobolds     K -
+l -             L -
+m -             M -
+n -             N -
+o - orcs        O - ogres
+p -             P -
+q - quadrupeds  Q -
+r - rats        R -
+s - spiders     S -
+t -             T -
+u - horses      U -
+v -             V -
+w -             W -
+x -             X -
+y -             Y -
+z - zombies     Z -
+@ - humans
+
+notes
+1. zombie takes priority over the creature's original glyph
+2. @ is for human-sized creatures - i.e. humans, changelings
+   h is used for everything else - i.e. dwarfs, halflings
+3. purple is reserved for captain/leader entiites - i.e. orc captain
+4. similar creatures use similar colours - i.e. little dog, dog, large dog
+

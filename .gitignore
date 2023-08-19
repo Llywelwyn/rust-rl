@@ -1,6 +1,6 @@
 # Build files, documentation, benchmarks
 target
-docs/*
+docs/gifs/*
 
 # VSCode/IDE config files
 .vscode/*
