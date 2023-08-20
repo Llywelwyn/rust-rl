@@ -1,14 +1,18 @@
 use super::{Skill, Skills};
 
+/// Returns the attribute bonus for a given attribute score, where every 2 points above
+/// or below 10 is an additional +1 or -1.
 pub fn attr_bonus(value: i32) -> i32 {
     return (value - 10) / 2;
 }
 
+/// Returns the number of HP gained per level for a given constitution score.
 pub fn hp_per_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32) -> i32 {
     return rng.roll_dice(1, 8) + attr_bonus(constitution);
 }
 
 #[allow(dead_code)]
+/// Returns a total HP roll for a player, based on a given constitution score and level.
 pub fn player_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
     let mut total = 10 + attr_bonus(constitution);
     for _i in 0..level {
@@ -17,6 +21,7 @@ pub fn player_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i
     return total;
 }
 
+/// Returns a total HP roll for an NPC, based on a given constitution score and level.
 pub fn npc_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
     if level == 0 {
         return rng.roll_dice(1, 4);
@@ -28,10 +33,12 @@ pub fn npc_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32,
     return total;
 }
 
+/// Returns the number of mana gained per level for a given intelligence score.
 pub fn mana_per_level(rng: &mut rltk::RandomNumberGenerator, intelligence: i32) -> i32 {
     return rng.roll_dice(1, 4) + attr_bonus(intelligence);
 }
 
+/// Returns the number of mana gained per level for a given intelligence score.
 pub fn mana_at_level(rng: &mut rltk::RandomNumberGenerator, intelligence: i32, level: i32) -> i32 {
     let mut total = 0;
     for _i in 0..level {
@@ -40,6 +47,7 @@ pub fn mana_at_level(rng: &mut rltk::RandomNumberGenerator, intelligence: i32, l
     return total;
 }
 
+/// Returns the skill bonus for a given skill, or -4 if the skill is not present.
 pub fn skill_bonus(skill: Skill, skills: &Skills) -> i32 {
     if skills.skills.contains_key(&skill) {
         return skills.skills[&skill];
