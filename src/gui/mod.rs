@@ -102,7 +102,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                 armour_ac_bonus += ac.amount;
             }
         }
-        let armour_class = stats.bac - attributes.dexterity.bonus - skill_ac_bonus - armour_ac_bonus;
+        let armour_class = stats.bac - (attributes.dexterity.bonus / 2) - skill_ac_bonus - armour_ac_bonus;
         ctx.print_color(26, 53, RGB::named(rltk::PINK), RGB::named(rltk::BLACK), "AC");
         ctx.print_color(28, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), armour_class);
         // Draw level

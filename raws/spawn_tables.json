@@ -2,8 +2,12 @@
     {
         "id": "equipment",
         "table": [
+            { "id": "equip_pitchfork",          "weight": 1,     "difficulty": 1},
+            { "id": "equip_sickle",             "weight": 1,     "difficulty": 1},
+            { "id": "equip_handaxe",            "weight": 1,     "difficulty": 1},
             { "id": "equip_dagger",             "weight": 3,     "difficulty": 1},
             { "id": "equip_shortsword",         "weight": 3,     "difficulty": 1},
+            { "id": "equip_rapier",             "weight": 2,     "difficulty": 1},
             { "id": "equip_smallshield",        "weight": 3,     "difficulty": 1},
             { "id": "equip_mediumshield",       "weight": 2,     "difficulty": 1},
             { "id": "equip_body_weakleather",   "weight": 4,     "difficulty": 1},

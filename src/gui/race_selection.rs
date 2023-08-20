@@ -228,7 +228,7 @@ fn get_starting_inventory(class: Classes, rng: &mut RandomNumberGenerator) -> (V
             carried = vec!["food_rations".to_string()];
         }
         Classes::Rogue => {
-            equipped = vec!["equip_rapier".to_string(), "equip_body_leather".to_string()];
+            equipped = vec!["equip_rapier".to_string(), "equip_body_weakleather".to_string()];
             carried = vec![
                 "equip_dagger".to_string(),
                 "equip_dagger".to_string(),

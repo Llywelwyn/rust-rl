@@ -141,7 +141,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
                 // Get armour class
                 let bac = target_pools.bac;
-                let attribute_ac_bonus = target_attributes.dexterity.bonus;
+                let attribute_ac_bonus = target_attributes.dexterity.bonus / 2;
                 let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*target_skills);
                 let mut armour_ac_bonus = 0;
                 for (wielded, ac) in (&equipped, &ac).join() {
