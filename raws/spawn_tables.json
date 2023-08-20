@@ -26,6 +26,14 @@
         ]
     },
     {
+        "id": "villager_equipment",
+        "table": [
+            { "id": "equip_pitchfork",          "weight": 1,     "difficulty": 1},
+            { "id": "equip_sickle",          "weight": 1,     "difficulty": 1},
+            { "id": "equip_handaxe",          "weight": 1,     "difficulty": 1}
+        ]
+    },
+    {
         "id": "potions",
         "table": [
             { "id": "potion_health_weak",       "weight": 6,    "difficulty": 1},

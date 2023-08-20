@@ -138,6 +138,33 @@
         "effects": { "base_damage": "1d6" }
     },
     {
+        "id": "equip_pitchfork",
+        "name": { "name": "pitchfork", "plural": "pitchforks" },
+        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 5,
+        "flags": ["EQUIP_MELEE", "FINESSE"],
+        "effects": { "base_damage": "1d6" }
+    },
+    {
+        "id": "equip_sickle",
+        "name": { "name": "sickle", "plural": "sickles" },
+        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 5,
+        "flags": ["EQUIP_MELEE", "FINESSE"],
+        "effects": { "base_damage": "1d6" }
+    },
+    {
+        "id": "equip_handaxe",
+        "name": { "name": "handaxe", "plural": "handaxes" },
+        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 5,
+        "flags": ["EQUIP_MELEE", "FINESSE"],
+        "effects": { "base_damage": "1d6" }
+    },
+    {
         "id": "equip_longsword",
         "name": { "name": "longsword", "plural": "longswords" },
         "renderable": { "glyph": ")", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },

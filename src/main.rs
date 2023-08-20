@@ -41,7 +41,7 @@ extern crate lazy_static;
 //Consts
 pub const SHOW_MAPGEN: bool = false;
 pub const LOG_SPAWNING: bool = true;
-pub const LOG_TICKS: bool = false;
+pub const LOG_TICKS: bool = true;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -55,6 +55,7 @@ pub enum RunState {
     ShowTargeting { range: i32, item: Entity, aoe: i32 },
     ActionWithDirection { function: fn(i: i32, j: i32, ecs: &mut World) -> RunState },
     MainMenu { menu_selection: gui::MainMenuSelection },
+    CharacterCreation { race: gui::Races, class: gui::Classes },
     SaveGame,
     GameOver,
     NextLevel,
@@ -209,6 +210,7 @@ impl GameState for State {
 
         match new_runstate {
             RunState::MainMenu { .. } => {}
+            RunState::CharacterCreation { .. } => {}
             _ => {
                 // Draw map and ui
                 camera::render_camera(&self.ecs, ctx);
@@ -380,7 +382,10 @@ impl GameState for State {
                         new_runstate = RunState::MainMenu { menu_selection: selected }
                     }
                     gui::MainMenuResult::Selected { selected } => match selected {
-                        gui::MainMenuSelection::NewGame => new_runstate = RunState::PreRun,
+                        gui::MainMenuSelection::NewGame => {
+                            new_runstate =
+                                RunState::CharacterCreation { race: gui::Races::Human, class: gui::Classes::Fighter }
+                        }
                         gui::MainMenuSelection::LoadGame => {
                             saveload_system::load_game(&mut self.ecs);
                             new_runstate = RunState::AwaitingInput;
@@ -390,6 +395,23 @@ impl GameState for State {
                             ::std::process::exit(0);
                         }
                     },
+                }
+            }
+            RunState::CharacterCreation { .. } => {
+                let result = gui::character_creation(self, ctx);
+                match result {
+                    gui::CharCreateResult::NoSelection { race, class } => {
+                        new_runstate = RunState::CharacterCreation { race, class }
+                    }
+                    gui::CharCreateResult::Selected { race, class } => {
+                        if race == gui::Races::NULL {
+                            new_runstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
+                        } else {
+                            gui::setup_player_race(&mut self.ecs, race);
+                            gui::setup_player_class(&mut self.ecs, class);
+                            new_runstate = RunState::PreRun;
+                        }
+                    }
                 }
             }
             RunState::SaveGame => {
@@ -596,6 +618,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(map::MasterDungeonMap::new()); // Master map list
     gs.ecs.insert(Map::new(1, 64, 64, 0, "New Map")); // Map
     gs.ecs.insert(Point::new(0, 0)); // Player pos
+    gs.ecs.insert(gui::Races::Dwarf); // Race
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity); // Player entity
     gs.ecs.insert(RunState::MapGeneration {}); // RunState

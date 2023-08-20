@@ -1,16 +1,33 @@
 use super::{
     ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, hunger_system::get_hunger_colour,
-    hunger_system::get_hunger_state, rex_assets::RexAssets, ArmourClassBonus, Attributes, Burden, Charges, Equipped,
-    Hidden, HungerClock, HungerState, InBackpack, MagicItem, MagicItemClass, Map, MasterDungeonMap, Name,
-    ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
+    rex_assets::RexAssets, ArmourClassBonus, Attributes, Burden, Charges, Equipped, Hidden, HungerClock, HungerState,
+    InBackpack, MagicItem, MagicItemClass, Map, MasterDungeonMap, Name, ObfuscatedName, Player, Point, Pools, Position,
+    Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
 mod cheat_menu;
 mod letter_to_option;
+mod race_selection;
+pub use race_selection::*;
 mod tooltip;
 pub use cheat_menu::*;
+
+/// Gives a popup box with a message and a title, and waits for a keypress.
+#[allow(unused)]
+pub fn yes_no(ctx: &mut Rltk, question: String) -> Option<bool> {
+    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), question);
+    ctx.print_color_centered(17, RGB::named(rltk::CYAN), RGB::named(rltk::BLACK), "(y)es or (n)o");
+    match ctx.key {
+        None => None,
+        Some(key) => match key {
+            VirtualKeyCode::Y => Some(true),
+            VirtualKeyCode::N => Some(false),
+            _ => None,
+        },
+    }
+}
 
 pub fn draw_lerping_bar(
     ctx: &mut Rltk,

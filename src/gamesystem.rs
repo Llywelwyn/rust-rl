@@ -1,4 +1,6 @@
 use super::{Skill, Skills};
+use crate::gui::Classes;
+use rltk::prelude::*;
 
 /// Returns the attribute bonus for a given attribute score, where every 2 points above
 /// or below 10 is an additional +1 or -1.
@@ -70,4 +72,39 @@ pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
     }
 
     return roll;
+}
+
+/// Handles stat distribution for a player character.
+pub fn get_attribute_rolls(rng: &mut RandomNumberGenerator, class: Classes) -> (i32, i32, i32, i32, i32, i32) {
+    let (mut str, mut dex, mut con, mut int, mut wis, mut cha) = match class {
+        Classes::Fighter => (10, 10, 10, 10, 10, 10),
+        Classes::Wizard => (10, 10, 10, 10, 10, 10),
+        Classes::Villager => (10, 10, 10, 10, 10, 10),
+    };
+    let remaining_points = 75 - (str + dex + con + int + wis + cha);
+    let improve_chance: [i32; 6] = match class {
+        Classes::Fighter => [30, 20, 30, 6, 7, 7],
+        Classes::Wizard => [10, 20, 20, 30, 10, 10],
+        Classes::Villager => [15, 15, 40, 10, 10, 10],
+    };
+    let improve_table = crate::random_table::RandomTable::new()
+        .add("Strength", improve_chance[0])
+        .add("Dexterity", improve_chance[1])
+        .add("Constitution", improve_chance[2])
+        .add("Intelligence", improve_chance[3])
+        .add("Wisdom", improve_chance[4])
+        .add("Charisma", improve_chance[5]);
+    for _i in 0..remaining_points {
+        let roll = improve_table.roll(rng);
+        match roll.as_str() {
+            "Strength" => str += 1,
+            "Dexterity" => dex += 1,
+            "Constitution" => con += 1,
+            "Intelligence" => int += 1,
+            "Wisdom" => wis += 1,
+            "Charisma" => cha += 1,
+            _ => {}
+        }
+    }
+    return (str, dex, con, int, wis, cha);
 }

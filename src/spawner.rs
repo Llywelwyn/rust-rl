@@ -1,7 +1,6 @@
 use super::{
-    ai::NORMAL_SPEED, gamesystem, gamesystem::attr_bonus, random_table::RandomTable, raws, Attribute, Attributes,
-    Clock, Energy, EquipmentChanged, Faction, HungerClock, HungerState, Map, Name, Player, Pool, Pools, Position, Rect,
-    Renderable, SerializeMe, Skill, Skills, TileType, Viewshed,
+    ai::NORMAL_SPEED, random_table::RandomTable, raws, Clock, Energy, EquipmentChanged, Faction, HungerClock,
+    HungerState, Map, Name, Player, Position, Rect, Renderable, SerializeMe, Skill, Skills, TileType, Viewshed,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
@@ -14,15 +13,6 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     skills.skills.insert(Skill::Melee, 0);
     skills.skills.insert(Skill::Defence, 0);
     skills.skills.insert(Skill::Magic, 0);
-
-    let mut rng = ecs.write_resource::<rltk::RandomNumberGenerator>();
-    let str = gamesystem::roll_4d6(&mut rng);
-    let dex = gamesystem::roll_4d6(&mut rng);
-    let con = gamesystem::roll_4d6(&mut rng);
-    let int = gamesystem::roll_4d6(&mut rng);
-    let wis = gamesystem::roll_4d6(&mut rng);
-    let cha = gamesystem::roll_4d6(&mut rng);
-    std::mem::drop(rng);
 
     // We only create the player once, so create the Clock here for counting turns too.
     ecs.create_entity().with(Clock {}).with(Energy { current: 0, speed: NORMAL_SPEED }).build();
@@ -40,13 +30,13 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: "you".to_string(), plural: "you".to_string() })
         .with(HungerClock { state: HungerState::Satiated, duration: 1200 })
-        .with(Attributes {
-            strength: Attribute { base: str, modifiers: 0, bonus: attr_bonus(str) },
-            dexterity: Attribute { base: dex, modifiers: 0, bonus: attr_bonus(dex) },
-            constitution: Attribute { base: con, modifiers: 0, bonus: attr_bonus(con) },
-            intelligence: Attribute { base: int, modifiers: 0, bonus: attr_bonus(int) },
-            wisdom: Attribute { base: wis, modifiers: 0, bonus: attr_bonus(wis) },
-            charisma: Attribute { base: cha, modifiers: 0, bonus: attr_bonus(cha) },
+        /*.with(Attributes {
+            strength: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            dexterity: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            constitution: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            intelligence: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            wisdom: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            charisma: Attribute { base: 10, modifiers: 0, bonus: 0 },
         })
         .with(Pools {
             hit_points: Pool { current: 10 + attr_bonus(con), max: 10 + attr_bonus(con) },
@@ -56,7 +46,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             bac: 10,
             weight: 0.0,
             god: false,
-        })
+        })*/
         .with(EquipmentChanged {})
         .with(skills)
         .with(Energy { current: 0, speed: NORMAL_SPEED })
@@ -66,49 +56,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     raws::spawn_named_entity(
         &raws::RAWS.lock().unwrap(),
         ecs,
-        "equip_dagger",
-        raws::SpawnType::Equipped { by: player },
-        0,
-    );
-    raws::spawn_named_entity(
-        &raws::RAWS.lock().unwrap(),
-        ecs,
         "food_rations",
-        raws::SpawnType::Carried { by: player },
-        0,
-    );
-    raws::spawn_named_entity(
-        &raws::RAWS.lock().unwrap(),
-        ecs,
-        "food_apple",
-        raws::SpawnType::Carried { by: player },
-        0,
-    );
-    raws::spawn_named_entity(
-        &raws::RAWS.lock().unwrap(),
-        ecs,
-        "food_apple",
-        raws::SpawnType::Carried { by: player },
-        0,
-    );
-    raws::spawn_named_entity(
-        &raws::RAWS.lock().unwrap(),
-        ecs,
-        "scroll_mass_health",
-        raws::SpawnType::Carried { by: player },
-        0,
-    );
-    raws::spawn_named_entity(
-        &raws::RAWS.lock().unwrap(),
-        ecs,
-        "wand_fireball",
-        raws::SpawnType::Carried { by: player },
-        0,
-    );
-    raws::spawn_named_entity(
-        &raws::RAWS.lock().unwrap(),
-        ecs,
-        "wand_fireball",
         raws::SpawnType::Carried { by: player },
         0,
     );
