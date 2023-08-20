@@ -1,8 +1,8 @@
 use super::{
-    ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, rex_assets::RexAssets, ArmourClassBonus, Attributes,
-    Burden, Charges, Equipped, Hidden, HungerClock, HungerState, InBackpack, MagicItem, MagicItemClass, Map,
-    MasterDungeonMap, Name, ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills,
-    State, Viewshed,
+    ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, hunger_system::get_hunger_colour,
+    hunger_system::get_hunger_state, rex_assets::RexAssets, ArmourClassBonus, Attributes, Burden, Charges, Equipped,
+    Hidden, HungerClock, HungerState, InBackpack, MagicItem, MagicItemClass, Map, MasterDungeonMap, Name,
+    ObfuscatedName, Player, Point, Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -113,17 +113,20 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         // Draw hunger
         match hunger.state {
             HungerState::Satiated => {
-                ctx.print_color_right(70, 53, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Satiated")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Satiated")
             }
             HungerState::Normal => {}
             HungerState::Hungry => {
-                ctx.print_color_right(70, 53, RGB::named(rltk::BROWN1), RGB::named(rltk::BLACK), "Hungry")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Hungry")
             }
             HungerState::Weak => {
-                ctx.print_color_right(70, 53, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Weak")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Weak")
             }
             HungerState::Fainting => {
-                ctx.print_color_right(70, 53, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Fainting")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Fainting")
+            }
+            HungerState::Starving => {
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Starving")
             }
         }
         // Burden

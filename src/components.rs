@@ -130,6 +130,7 @@ pub enum HungerState {
     Hungry,
     Weak,
     Fainting,
+    Starving,
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
