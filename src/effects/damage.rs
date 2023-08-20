@@ -106,6 +106,21 @@ pub fn bloodstain(ecs: &mut World, target: usize) {
     }
 }
 
+/// Takes a level, and returns the total XP required to reach the next level.
+fn get_next_level_requirement(level: i32) -> i32 {
+    if level == 0 {
+        return 5;
+    } else if level < 10 {
+        return 20 * 2_i32.pow(level as u32 - 1);
+    } else if level < 20 {
+        return 10000 * 2_i32.pow(level as u32 - 10);
+    } else if level < 30 {
+        return 10000000 * (level - 19);
+    }
+    return -1;
+}
+
+/// Handles EntityDeath effects.
 pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     let mut xp_gain = 0;
     let mut pools = ecs.write_storage::<Pools>();
@@ -128,16 +143,7 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             let mut source_pools = pools.get_mut(source).unwrap();
             let source_attributes = attributes.get(source).unwrap();
             source_pools.xp += xp_gain;
-            let mut next_level_requirement = -1;
-            if source_pools.level == 0 {
-                next_level_requirement = 5
-            } else if source_pools.level < 10 {
-                next_level_requirement = 20 * 2_i32.pow(source_pools.level as u32 - 1);
-            } else if source_pools.level < 20 {
-                next_level_requirement = 10000 * 2_i32.pow(source_pools.level as u32 - 10);
-            } else if source_pools.level < 30 {
-                next_level_requirement = 10000000 * (source_pools.level - 19);
-            }
+            let next_level_requirement = get_next_level_requirement(source_pools.level);
             if next_level_requirement != -1 && source_pools.xp >= next_level_requirement {
                 source_pools.level += 1;
                 // If it was the PLAYER that levelled up:
