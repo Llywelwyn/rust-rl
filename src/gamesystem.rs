@@ -77,15 +77,17 @@ pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
 /// Handles stat distribution for a player character.
 pub fn get_attribute_rolls(rng: &mut RandomNumberGenerator, class: Classes) -> (i32, i32, i32, i32, i32, i32) {
     let (mut str, mut dex, mut con, mut int, mut wis, mut cha) = match class {
-        Classes::Fighter => (10, 10, 10, 10, 10, 10),
-        Classes::Wizard => (10, 10, 10, 10, 10, 10),
-        Classes::Villager => (10, 10, 10, 10, 10, 10),
+        Classes::Fighter => (10, 8, 10, 6, 6, 8),
+        Classes::Rogue => (8, 12, 8, 6, 8, 10),
+        Classes::Wizard => (6, 8, 6, 12, 10, 8),
+        Classes::Villager => (6, 6, 6, 6, 6, 6),
     };
     let remaining_points = 75 - (str + dex + con + int + wis + cha);
     let improve_chance: [i32; 6] = match class {
         Classes::Fighter => [30, 20, 30, 6, 7, 7],
+        Classes::Rogue => [18, 30, 20, 9, 8, 15],
         Classes::Wizard => [10, 20, 20, 30, 10, 10],
-        Classes::Villager => [15, 15, 40, 10, 10, 10],
+        Classes::Villager => [15, 15, 25, 15, 15, 15],
     };
     let improve_table = crate::random_table::RandomTable::new()
         .add("Strength", improve_chance[0])

@@ -90,7 +90,7 @@ impl<'a> System<'a> for HungerSystem {
                 HungerState::Satiated => gamelog::Logger::new()
                     .append("You feel")
                     .colour(get_hunger_colour(hunger_clock.state))
-                    .append("satiated")
+                    .append_n("satiated")
                     .colour(WHITE)
                     .period()
                     .log(),
@@ -98,27 +98,27 @@ impl<'a> System<'a> for HungerSystem {
                 HungerState::Hungry => gamelog::Logger::new()
                     .append("You feel")
                     .colour(get_hunger_colour(hunger_clock.state))
-                    .append("hungry")
+                    .append_n("hungry")
                     .colour(WHITE)
                     .period()
                     .log(),
                 HungerState::Weak => gamelog::Logger::new()
                     .append("You feel")
                     .colour(get_hunger_colour(hunger_clock.state))
-                    .append("weak with hunger")
+                    .append_n("weak with hunger")
                     .colour(WHITE)
                     .period()
                     .log(),
                 HungerState::Fainting => gamelog::Logger::new()
                     .append("You feel")
                     .colour(get_hunger_colour(hunger_clock.state))
-                    .append("hungry enough to faint")
+                    .append_n("hungry enough to faint")
                     .colour(WHITE)
                     .period()
                     .log(),
                 _ => gamelog::Logger::new()
                     .colour(get_hunger_colour(hunger_clock.state))
-                    .append("You can't go on without food!")
+                    .append_n("You can't go on without food!")
                     .log(),
             }
         }

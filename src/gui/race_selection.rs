@@ -1,5 +1,8 @@
 use super::{gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State};
-use crate::{ai::NORMAL_SPEED, raws, Attribute, Energy, Pool, Skill, Skills, Telepath};
+use crate::{
+    ai::NORMAL_SPEED, raws, spawner::potion_table, spawner::scroll_table, Attribute, Energy, Pool, Skill, Skills,
+    Telepath,
+};
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::HashMap;
@@ -15,6 +18,7 @@ pub enum Races {
 #[derive(PartialEq, Copy, Clone)]
 pub enum Classes {
     Fighter,
+    Rogue,
     Wizard,
     Villager,
 }
@@ -69,18 +73,24 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
             fg = unselected_fg;
         }
         ctx.print_color(x, y, fg, bg, "f. Fighter");
+        if class == Classes::Rogue {
+            fg = selected_fg;
+        } else {
+            fg = unselected_fg;
+        }
+        ctx.print_color(x, y + 1, fg, bg, "r. Rogue");
         if class == Classes::Wizard {
             fg = selected_fg;
         } else {
             fg = unselected_fg;
         }
-        ctx.print_color(x, y + 1, fg, bg, "w. Wizard");
+        ctx.print_color(x, y + 2, fg, bg, "w. Wizard");
         if class == Classes::Villager {
             fg = selected_fg;
         } else {
             fg = unselected_fg;
         }
-        ctx.print_color(x, y + 2, fg, bg, "v. Villager");
+        ctx.print_color(x, y + 3, fg, bg, "v. Villager");
 
         match ctx.key {
             None => return CharCreateResult::NoSelection { race, class },
@@ -91,6 +101,7 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
                 VirtualKeyCode::E => return CharCreateResult::NoSelection { race: Races::Elf, class },
                 VirtualKeyCode::D => return CharCreateResult::NoSelection { race: Races::Dwarf, class },
                 VirtualKeyCode::F => return CharCreateResult::NoSelection { race, class: Classes::Fighter },
+                VirtualKeyCode::R => return CharCreateResult::NoSelection { race, class: Classes::Rogue },
                 VirtualKeyCode::W => return CharCreateResult::NoSelection { race, class: Classes::Wizard },
                 VirtualKeyCode::V => return CharCreateResult::NoSelection { race, class: Classes::Villager },
                 _ => return CharCreateResult::NoSelection { race, class },
@@ -216,8 +227,24 @@ fn get_starting_inventory(class: Classes, rng: &mut RandomNumberGenerator) -> (V
             ];
             carried = vec!["food_rations".to_string()];
         }
+        Classes::Rogue => {
+            equipped = vec!["equip_rapier".to_string(), "equip_body_leather".to_string()];
+            carried = vec![
+                "equip_dagger".to_string(),
+                "equip_dagger".to_string(),
+                "food_rations".to_string(),
+                "food_apple".to_string(),
+            ];
+        }
         Classes::Wizard => {
             equipped = vec!["equip_dagger".to_string(), "equip_back_protection".to_string()];
+            carried = vec!["food_rations".to_string()];
+            for _i in 0..rng.roll_dice(1, 3) {
+                carried.push(scroll_table(3).roll(rng));
+            }
+            for _i in 0..rng.roll_dice(1, 2) - 1 {
+                carried.push(potion_table(3).roll(rng));
+            }
         }
         Classes::Villager => {
             let rolled_weapon = raws::table_by_name(&raws::RAWS.lock().unwrap(), "villager_equipment", 1).roll(rng);

@@ -138,6 +138,15 @@
         "effects": { "base_damage": "1d6" }
     },
     {
+        "id": "equip_rapier",
+        "name": { "name": "rapier", "plural": "rapiers" },
+        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
+        "weight": 2,
+        "value": 10,
+        "flags": ["EQUIP_MELEE", "FINESSE"],
+        "effects": { "base_damage": "1d8" }
+    },
+    {
         "id": "equip_pitchfork",
         "name": { "name": "pitchfork", "plural": "pitchforks" },
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
