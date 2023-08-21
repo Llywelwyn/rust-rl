@@ -1,8 +1,5 @@
 use super::{gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State};
-use crate::{
-    ai::NORMAL_SPEED, raws, spawner::potion_table, spawner::scroll_table, Attribute, Energy, Pool, Skill, Skills,
-    Telepath,
-};
+use crate::{ai::NORMAL_SPEED, raws, Attribute, Energy, Pool, Skill, Skills, Telepath};
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::HashMap;
@@ -36,25 +33,25 @@ lazy_static! {
         m.insert(
             "fighter".to_string(),
             vec![
-                "a longsword and ring mail".to_string(),
+                "a longsword, ring mail, and 1d2+1 food".to_string(),
                 "10 str, 8 dex, 10 con, 6 int, 6 wis, 8 cha".to_string(),
                 "and 27 random stat points".to_string()]);
         m.insert(
             "rogue".to_string(),
             vec![
-                "a rapier and leather armour".to_string(),
+                "a rapier, leather armour, and 1d2+2 food".to_string(),
                 "8 str, 10 dex, 8 con, 6 int, 8 wis, 10 cha".to_string(),
                 "and 35 random stat points".to_string()]);
         m.insert(
             "wizard".to_string(),
             vec![
-                "a random assortment of scrolls and/or potions".to_string(),
+                "a dagger, random scrolls/potions, and 1d2+1 food".to_string(),
                 "6 str, 8 dex, 6 con, 10 int, 10 wis, 8 cha".to_string(),
-                "and 17 random stat points".to_string()]);;
+                "and 17 random stat points".to_string()]);
         m.insert(
             "villager".to_string(),
             vec![
-                "a random beginning".to_string(),
+                "the first weapon you could find, and 1d3+2 food".to_string(),
                 "6 str, 6 dex, 6 con, 6 int, 6 wis, 6 cha".to_string(),
                 "and 39 random stat points".to_string()]);
         return m;
@@ -287,7 +284,7 @@ pub fn setup_player_class(ecs: &mut World, class: Classes) {
 fn get_starting_inventory(class: Classes, rng: &mut RandomNumberGenerator) -> (Vec<String>, Vec<String>) {
     let mut equipped: Vec<String> = Vec::new();
     let mut carried: Vec<String> = Vec::new();
-    let mut starting_food: &str = "1";
+    let starting_food: &str;
     match class {
         Classes::Fighter => {
             starting_food = "1d2+1";

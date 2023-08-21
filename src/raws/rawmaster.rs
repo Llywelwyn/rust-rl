@@ -601,6 +601,8 @@ pub fn table_by_name(raws: &RawMaster, key: &str, optional_difficulty: Option<i3
         lower_bound = if key != "mobs" { 0 } else { difficulty / 6 };
     } else {
         difficulty = -1;
+        upper_bound = 100;
+        lower_bound = 0;
     }
     if raws.table_index.contains_key(key) {
         let spawn_table = &raws.raws.spawn_tables[raws.table_index[key]];
