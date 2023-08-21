@@ -1,22 +1,22 @@
 [
     {
         "id": "human",
-        "allied": []
+        "allies": []
     },
     {
         "id": "elf",
-        "allied": []
+        "allies": []
     },
     {
         "id": "dwarf",
-        "allied": ["gnome"]
+        "allies": ["gnome"]
     },
     {
         "id": "gnome",
-        "allied": ["dwarf"]
+        "allies": ["dwarf"]
     },
     {
         "id": "catfolk",
-        "allied": []
+        "allies": []
     }
 ]

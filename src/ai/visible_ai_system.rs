@@ -42,7 +42,7 @@ impl<'a> System<'a> for VisibleAI {
             mut chasing,
         ) = data;
 
-        for (entity, _turn, faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
+        for (entity, _turn, pos, viewshed) in (&entities, &turns, &positions, &viewsheds).join() {
             if entity == *player {
                 continue;
             }
@@ -53,7 +53,7 @@ impl<'a> System<'a> for VisibleAI {
             for visible_tile in viewshed.visible_tiles.iter() {
                 let idx = map.xy_idx(visible_tile.x, visible_tile.y);
                 if this_idx != idx {
-                    evaluate(entity, idx, &ancestries, &factions, &faction.name, &mut reactions, None);
+                    evaluate(entity, idx, &ancestries, &factions, &mut reactions, None);
                     idxs.insert(idx);
                 }
             }
@@ -64,7 +64,7 @@ impl<'a> System<'a> for VisibleAI {
                     // and it's not the idx we're standing on, then evaluate here w/ minds taken into
                     // account.
                     if this_idx != idx && idxs.contains(&idx) {
-                        evaluate(entity, idx, &ancestries, &factions, &faction.name, &mut reactions, Some(&minds));
+                        evaluate(entity, idx, &ancestries, &factions, &mut reactions, Some(&minds));
                     }
                 }
             }
@@ -96,46 +96,28 @@ fn evaluate(
     idx: usize,
     ancestries: &ReadStorage<HasAncestry>,
     factions: &ReadStorage<Faction>,
-    this_faction: &str,
     reactions: &mut Vec<(usize, Reaction, Entity)>,
     minds: Option<&ReadStorage<Mind>>,
 ) {
     crate::spatial::for_each_tile_content(idx, |other_entity| {
-        let mut shared_ancestry = false;
-        if let Some(this_ancestry) = ancestries.get(entity) {
-            if let Some(other_ancestry) = ancestries.get(other_entity) {
-                if this_ancestry.name == other_ancestry.name {
-                    reactions.push((idx, Reaction::Ignore, other_entity));
-                    shared_ancestry = true;
-                }
+        let mut check = true;
+        if minds.is_some() {
+            if minds.unwrap().get(other_entity).is_none() {
+                check = false;
             }
         }
-        if !shared_ancestry {
-            // If minds are passed, we assume we're using telepathy here,
-            // so if the other entity is mindless, we skip it.
-            if minds.is_some() {
-                if minds.unwrap().get(other_entity).is_some() {
-                    if let Some(faction) = factions.get(other_entity) {
-                        reactions.push((
-                            idx,
-                            crate::raws::faction_reaction(
-                                this_faction,
-                                &faction.name,
-                                &crate::raws::RAWS.lock().unwrap(),
-                            ),
-                            other_entity,
-                        ));
-                    }
-                }
-            } else {
-                if let Some(faction) = factions.get(other_entity) {
-                    reactions.push((
-                        idx,
-                        crate::raws::faction_reaction(this_faction, &faction.name, &crate::raws::RAWS.lock().unwrap()),
-                        other_entity,
-                    ));
-                }
-            }
+        if check {
+            reactions.push((
+                idx,
+                crate::raws::get_reactions(
+                    entity,
+                    other_entity,
+                    &factions,
+                    &ancestries,
+                    &crate::raws::RAWS.lock().unwrap(),
+                ),
+                other_entity,
+            ));
         }
     });
 }

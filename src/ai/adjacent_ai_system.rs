@@ -20,7 +20,7 @@ impl<'a> System<'a> for AdjacentAI {
         let (mut turns, factions, ancestries, positions, map, mut want_melee, entities, player) = data;
 
         let mut turn_done: Vec<Entity> = Vec::new();
-        for (entity, _turn, my_faction, pos) in (&entities, &turns, &factions, &positions).join() {
+        for (entity, _turn, pos) in (&entities, &turns, &positions).join() {
             if entity != *player {
                 let mut reactions: Vec<(Entity, Reaction)> = Vec::new();
                 let idx = map.xy_idx(pos.x, pos.y);
