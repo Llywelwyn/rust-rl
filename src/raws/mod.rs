@@ -11,9 +11,9 @@ mod spawn_table_structs;
 use spawn_table_structs::*;
 mod loot_table_structs;
 use loot_table_structs::*;
-mod faction_structs;
-use faction_structs::FactionData;
-pub use faction_structs::Reaction;
+mod reaction_structs;
+pub use reaction_structs::Reaction;
+use reaction_structs::{AncestryData, FactionData};
 use std::sync::Mutex;
 
 lazy_static! {
@@ -28,6 +28,7 @@ pub struct Raws {
     pub spawn_tables: Vec<SpawnTable>,
     pub loot_tables: Vec<LootTable>,
     pub factions: Vec<FactionData>,
+    pub ancestries: Vec<AncestryData>,
 }
 
 rltk::embedded_resource!(RAW_ITEMS, "../../raws/items.json");
@@ -36,6 +37,7 @@ rltk::embedded_resource!(RAW_PROPS, "../../raws/props.json");
 rltk::embedded_resource!(RAW_SPAWN_TABLES, "../../raws/spawn_tables.json");
 rltk::embedded_resource!(RAW_LOOT_TABLES, "../../raws/loot_tables.json");
 rltk::embedded_resource!(RAW_FACTIONS, "../../raws/factions.json");
+rltk::embedded_resource!(RAW_ANCESTRIES, "../../raws/ancestries.json");
 
 pub fn load_raws() {
     rltk::link_resource!(RAW_ITEMS, "../../raws/items.json");
@@ -44,6 +46,7 @@ pub fn load_raws() {
     rltk::link_resource!(RAW_SPAWN_TABLES, "../../raws/spawn_tables.json");
     rltk::link_resource!(RAW_LOOT_TABLES, "../../raws/loot_tables.json");
     rltk::link_resource!(RAW_FACTIONS, "../../raws/factions.json");
+    rltk::link_resource!(RAW_ANCESTRIES, "../../raws/ancestries.json");
 
     let decoded_raws = get_decoded_raws();
     RAWS.lock().unwrap().load(decoded_raws);
@@ -56,8 +59,9 @@ pub fn get_decoded_raws() -> Raws {
     let spawn_tables: Vec<SpawnTable> = ParseJson::parse_raws_into_vector("../../raws/spawn_tables.json".to_string());
     let loot_tables: Vec<LootTable> = ParseJson::parse_raws_into_vector("../../raws/loot_tables.json".to_string());
     let factions: Vec<FactionData> = ParseJson::parse_raws_into_vector("../../raws/factions.json".to_string());
+    let ancestries: Vec<AncestryData> = ParseJson::parse_raws_into_vector("../../raws/ancestries.json".to_string());
 
-    return Raws { items, mobs, props, spawn_tables, loot_tables, factions };
+    return Raws { items, mobs, props, spawn_tables, loot_tables, factions, ancestries };
 }
 
 trait ParseJson {
@@ -74,4 +78,4 @@ macro_rules! impl_ParseJson {
         })*
     }
 }
-impl_ParseJson!(for Vec<Item>, Vec<Mob>, Vec<Prop>, Vec<SpawnTable>, Vec<LootTable>, Vec<FactionData>);
+impl_ParseJson!(for Vec<Item>, Vec<Mob>, Vec<Prop>, Vec<SpawnTable>, Vec<LootTable>, Vec<FactionData>, Vec<AncestryData>);

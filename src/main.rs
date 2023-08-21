@@ -55,7 +55,7 @@ pub enum RunState {
     ShowTargeting { range: i32, item: Entity, aoe: i32 },
     ActionWithDirection { function: fn(i: i32, j: i32, ecs: &mut World) -> RunState },
     MainMenu { menu_selection: gui::MainMenuSelection },
-    CharacterCreation { race: gui::Races, class: gui::Classes },
+    CharacterCreation { ancestry: gui::Ancestry, class: gui::Class },
     SaveGame,
     GameOver,
     NextLevel,
@@ -383,8 +383,10 @@ impl GameState for State {
                     }
                     gui::MainMenuResult::Selected { selected } => match selected {
                         gui::MainMenuSelection::NewGame => {
-                            new_runstate =
-                                RunState::CharacterCreation { race: gui::Races::Human, class: gui::Classes::Fighter }
+                            new_runstate = RunState::CharacterCreation {
+                                ancestry: gui::Ancestry::Human,
+                                class: gui::Class::Fighter,
+                            }
                         }
                         gui::MainMenuSelection::LoadGame => {
                             saveload_system::load_game(&mut self.ecs);
@@ -400,14 +402,14 @@ impl GameState for State {
             RunState::CharacterCreation { .. } => {
                 let result = gui::character_creation(self, ctx);
                 match result {
-                    gui::CharCreateResult::NoSelection { race, class } => {
-                        new_runstate = RunState::CharacterCreation { race, class }
+                    gui::CharCreateResult::NoSelection { ancestry, class } => {
+                        new_runstate = RunState::CharacterCreation { ancestry, class }
                     }
-                    gui::CharCreateResult::Selected { race, class } => {
-                        if race == gui::Races::NULL {
+                    gui::CharCreateResult::Selected { ancestry, class } => {
+                        if ancestry == gui::Ancestry::NULL {
                             new_runstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
                         } else {
-                            gui::setup_player_race(&mut self.ecs, race);
+                            gui::setup_player_ancestry(&mut self.ecs, ancestry);
                             gui::setup_player_class(&mut self.ecs, class);
                             new_runstate = RunState::PreRun;
                         }
@@ -550,6 +552,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Burden>();
     gs.ecs.register::<Prop>();
     gs.ecs.register::<Player>();
+    gs.ecs.register::<HasAncestry>();
+    gs.ecs.register::<HasClass>();
     gs.ecs.register::<Chasing>();
     gs.ecs.register::<Faction>();
     gs.ecs.register::<Clock>();
@@ -618,7 +622,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(map::MasterDungeonMap::new()); // Master map list
     gs.ecs.insert(Map::new(1, 64, 64, 0, "New Map")); // Map
     gs.ecs.insert(Point::new(0, 0)); // Player pos
-    gs.ecs.insert(gui::Races::Dwarf); // Race
+    gs.ecs.insert(gui::Ancestry::Dwarf); // ancestry
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity); // Player entity
     gs.ecs.insert(RunState::MapGeneration {}); // RunState

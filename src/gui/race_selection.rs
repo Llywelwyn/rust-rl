@@ -1,25 +1,36 @@
 use super::{gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State};
-use crate::{ai::NORMAL_SPEED, raws, Attribute, Energy, Pool, Skill, Skills, Telepath};
+use crate::{ai::NORMAL_SPEED, raws, Attribute, Energy, HasAncestry, HasClass, Pool, Skill, Skills, Telepath};
 use rltk::prelude::*;
+use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use std::collections::HashMap;
 
-#[derive(PartialEq, Copy, Clone)]
-pub enum Races {
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+pub enum Ancestry {
     NULL,
     Human,
     Dwarf,
+    Gnome,
     Elf,
+    Catfolk,
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+pub enum Class {
+    Fighter,
+    Rogue,
+    Wizard,
+    Villager,
 }
 
 lazy_static! {
-    static ref RACE_CLASS_DATA: HashMap<String, Vec<String>> = {
+    static ref ANCESTRY_CLASS_DATA: HashMap<String, Vec<String>> = {
         let mut m = HashMap::new();
-        // Races
+        // Ancestry
         m.insert(
             "human".to_string(),
             vec![
-                "+nothing".to_string()]);
+                "nothing".to_string()]);
         m.insert(
             "dwarf".to_string(),
             vec![
@@ -29,7 +40,12 @@ lazy_static! {
             vec![
                 "minor telepathy".to_string(),
                 "a slightly increased speed".to_string()]);
-        // Classes
+        m.insert(
+            "catfolk".to_string(),
+            vec![
+                "increased speed".to_string(),
+                "increased unarmed damage".to_string()]);
+        // Class
         m.insert(
             "fighter".to_string(),
             vec![
@@ -59,17 +75,9 @@ lazy_static! {
 }
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum Classes {
-    Fighter,
-    Rogue,
-    Wizard,
-    Villager,
-}
-
-#[derive(PartialEq, Copy, Clone)]
 pub enum CharCreateResult {
-    NoSelection { race: Races, class: Classes },
-    Selected { race: Races, class: Classes },
+    NoSelection { ancestry: Ancestry, class: Class },
+    Selected { ancestry: Ancestry, class: Class },
 }
 
 /// Handles the player character creation screen.
@@ -83,102 +91,110 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
     ctx.print_color(x, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Who are you? [Aa-Zz]");
     y += 2;
 
-    if let RunState::CharacterCreation { race, class } = *runstate {
+    if let RunState::CharacterCreation { ancestry, class } = *runstate {
         let selected_fg = RGB::named(GREEN);
         let unselected_fg = RGB::named(WHITE);
         let mut fg;
         let bg = RGB::named(BLACK);
 
-        // Races
+        // Ancestry
         ctx.print_color(x, y, bg, unselected_fg, "Ancestry");
         ctx.print_color(x + column_width, y, bg, unselected_fg, "Class");
         y += 1;
         let mut race_str = "human";
-        if race == Races::Human {
+        if ancestry == Ancestry::Human {
             fg = selected_fg;
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y, fg, bg, "h. Human");
-        if race == Races::Elf {
+        if ancestry == Ancestry::Elf {
             fg = selected_fg;
             race_str = "elf";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 1, fg, bg, "e. Elf");
-        if race == Races::Dwarf {
+        if ancestry == Ancestry::Dwarf {
             fg = selected_fg;
             race_str = "dwarf";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 2, fg, bg, "d. Dwarf");
-        // Classes
+        if ancestry == Ancestry::Catfolk {
+            fg = selected_fg;
+            race_str = "catfolk";
+        } else {
+            fg = unselected_fg;
+        }
+        ctx.print_color(x, y + 3, fg, bg, "c. Catfolk");
+        // Class
         let mut class_str = "fighter";
         x += column_width;
-        if class == Classes::Fighter {
+        if class == Class::Fighter {
             fg = selected_fg;
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y, fg, bg, "f. Fighter");
-        if class == Classes::Rogue {
+        if class == Class::Rogue {
             fg = selected_fg;
             class_str = "rogue";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 1, fg, bg, "r. Rogue");
-        if class == Classes::Wizard {
+        if class == Class::Wizard {
             fg = selected_fg;
             class_str = "wizard";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 2, fg, bg, "w. Wizard");
-        if class == Classes::Villager {
+        if class == Class::Villager {
             fg = selected_fg;
             class_str = "villager";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 3, fg, bg, "v. Villager");
-        // Selected race/class benefits
+        // Selected ancestry/class benefits
         x += column_width;
         ctx.print_color(x, y, selected_fg, bg, "Your ancestry grants...");
-        for line in RACE_CLASS_DATA.get(race_str).unwrap().iter() {
+        for line in ANCESTRY_CLASS_DATA.get(race_str).unwrap().iter() {
             y += 1;
             ctx.print_color(x + 1, y, unselected_fg, bg, line);
         }
         y += 2;
         ctx.print_color(x, y, selected_fg, bg, "Your class grants...");
-        for line in RACE_CLASS_DATA.get(class_str).unwrap().iter() {
+        for line in ANCESTRY_CLASS_DATA.get(class_str).unwrap().iter() {
             y += 1;
             ctx.print_color(x + 1, y, unselected_fg, bg, line);
         }
 
         match ctx.key {
-            None => return CharCreateResult::NoSelection { race, class },
+            None => return CharCreateResult::NoSelection { ancestry, class },
             Some(key) => match key {
-                VirtualKeyCode::Escape => return CharCreateResult::Selected { race: Races::NULL, class },
-                VirtualKeyCode::Return => return CharCreateResult::Selected { race, class },
-                VirtualKeyCode::H => return CharCreateResult::NoSelection { race: Races::Human, class },
-                VirtualKeyCode::E => return CharCreateResult::NoSelection { race: Races::Elf, class },
-                VirtualKeyCode::D => return CharCreateResult::NoSelection { race: Races::Dwarf, class },
-                VirtualKeyCode::F => return CharCreateResult::NoSelection { race, class: Classes::Fighter },
-                VirtualKeyCode::R => return CharCreateResult::NoSelection { race, class: Classes::Rogue },
-                VirtualKeyCode::W => return CharCreateResult::NoSelection { race, class: Classes::Wizard },
-                VirtualKeyCode::V => return CharCreateResult::NoSelection { race, class: Classes::Villager },
-                _ => return CharCreateResult::NoSelection { race, class },
+                VirtualKeyCode::Escape => return CharCreateResult::Selected { ancestry: Ancestry::NULL, class },
+                VirtualKeyCode::Return => return CharCreateResult::Selected { ancestry, class },
+                VirtualKeyCode::H => return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class },
+                VirtualKeyCode::E => return CharCreateResult::NoSelection { ancestry: Ancestry::Elf, class },
+                VirtualKeyCode::D => return CharCreateResult::NoSelection { ancestry: Ancestry::Dwarf, class },
+                VirtualKeyCode::C => return CharCreateResult::NoSelection { ancestry: Ancestry::Catfolk, class },
+                VirtualKeyCode::F => return CharCreateResult::NoSelection { ancestry, class: Class::Fighter },
+                VirtualKeyCode::R => return CharCreateResult::NoSelection { ancestry, class: Class::Rogue },
+                VirtualKeyCode::W => return CharCreateResult::NoSelection { ancestry, class: Class::Wizard },
+                VirtualKeyCode::V => return CharCreateResult::NoSelection { ancestry, class: Class::Villager },
+                _ => return CharCreateResult::NoSelection { ancestry, class },
             },
         }
     }
-    return CharCreateResult::NoSelection { race: Races::Human, class: Classes::Fighter };
+    return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class: Class::Fighter };
 }
 
-/// Handles player race setup.
-pub fn setup_player_race(ecs: &mut World, race: Races) {
+/// Handles player ancestry setup.
+pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
     let player = ecs.fetch::<Entity>();
     let mut renderables = ecs.write_storage::<Renderable>();
     // SKILLS
@@ -189,9 +205,11 @@ pub fn setup_player_race(ecs: &mut World, race: Races) {
         skills.insert(*player, Skills { skills: HashMap::new() }).expect("Unable to insert skills component");
         skills.get_mut(*player).unwrap()
     };
-    match race {
-        Races::Human => {}
-        Races::Dwarf => {
+    let mut ancestries = ecs.write_storage::<HasAncestry>();
+    ancestries.insert(*player, HasAncestry { name: ancestry }).expect("Unable to insert ancestry");
+    match ancestry {
+        Ancestry::Human => {}
+        Ancestry::Dwarf => {
             renderables
                 .insert(
                     *player,
@@ -205,7 +223,7 @@ pub fn setup_player_race(ecs: &mut World, race: Races) {
                 .expect("Unable to insert renderable component");
             *player_skills.skills.entry(Skill::Defence).or_insert(0) += 1;
         }
-        Races::Elf => {
+        Ancestry::Elf => {
             renderables
                 .insert(
                     *player,
@@ -226,15 +244,23 @@ pub fn setup_player_race(ecs: &mut World, race: Races) {
                 .insert(*player, Energy { current: 0, speed: NORMAL_SPEED + 1 })
                 .expect("Unable to insert energy component");
         }
+        Ancestry::Catfolk => {
+            let mut speeds = ecs.write_storage::<Energy>();
+            speeds
+                .insert(*player, Energy { current: 0, speed: NORMAL_SPEED + 2 })
+                .expect("Unable to insert energy component");
+        }
         _ => {}
     }
 }
 
 /// Handles player class setup
-pub fn setup_player_class(ecs: &mut World, class: Classes) {
+pub fn setup_player_class(ecs: &mut World, class: Class) {
     let player = *ecs.fetch::<Entity>();
     // ATTRIBUTES
     {
+        let mut classes = ecs.write_storage::<HasClass>();
+        classes.insert(player, HasClass { name: class }).expect("Unable to insert class component");
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let mut attributes = ecs.write_storage::<Attributes>();
 
@@ -281,12 +307,12 @@ pub fn setup_player_class(ecs: &mut World, class: Classes) {
     }
 }
 
-fn get_starting_inventory(class: Classes, rng: &mut RandomNumberGenerator) -> (Vec<String>, Vec<String>) {
+fn get_starting_inventory(class: Class, rng: &mut RandomNumberGenerator) -> (Vec<String>, Vec<String>) {
     let mut equipped: Vec<String> = Vec::new();
     let mut carried: Vec<String> = Vec::new();
     let starting_food: &str;
     match class {
-        Classes::Fighter => {
+        Class::Fighter => {
             starting_food = "1d2+1";
             equipped = vec![
                 "equip_shortsword".to_string(),
@@ -294,18 +320,18 @@ fn get_starting_inventory(class: Classes, rng: &mut RandomNumberGenerator) -> (V
                 "equip_mediumshield".to_string(),
             ];
         }
-        Classes::Rogue => {
+        Class::Rogue => {
             starting_food = "1d2+2";
             equipped = vec!["equip_rapier".to_string(), "equip_body_weakleather".to_string()];
             carried = vec!["equip_dagger".to_string(), "equip_dagger".to_string()];
         }
-        Classes::Wizard => {
+        Class::Wizard => {
             starting_food = "1d2+1";
             equipped = vec!["equip_dagger".to_string(), "equip_back_protection".to_string()];
             pick_random_table_item(rng, &mut carried, "scrolls", "1d3", Some(3));
             pick_random_table_item(rng, &mut carried, "potions", "1d3-1", Some(3));
         }
-        Classes::Villager => {
+        Class::Villager => {
             starting_food = "1d3+2";
             pick_random_table_item(rng, &mut equipped, "villager_equipment", "1", None);
         }

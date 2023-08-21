@@ -1,5 +1,6 @@
 use crate::{
-    raws::Reaction, Chasing, Faction, Map, Mind, Position, TakingTurn, Telepath, Viewshed, WantsToApproach, WantsToFlee,
+    raws::Reaction, Chasing, Faction, HasAncestry, Map, Mind, Position, TakingTurn, Telepath, Viewshed,
+    WantsToApproach, WantsToFlee,
 };
 use specs::prelude::*;
 use std::collections::HashSet;
@@ -11,6 +12,7 @@ impl<'a> System<'a> for VisibleAI {
     type SystemData = (
         ReadStorage<'a, TakingTurn>,
         ReadStorage<'a, Faction>,
+        ReadStorage<'a, HasAncestry>,
         ReadStorage<'a, Position>,
         ReadExpect<'a, Map>,
         WriteStorage<'a, WantsToApproach>,
@@ -27,6 +29,7 @@ impl<'a> System<'a> for VisibleAI {
         let (
             turns,
             factions,
+            ancestries,
             positions,
             map,
             mut wants_to_approach,
@@ -50,7 +53,7 @@ impl<'a> System<'a> for VisibleAI {
             for visible_tile in viewshed.visible_tiles.iter() {
                 let idx = map.xy_idx(visible_tile.x, visible_tile.y);
                 if this_idx != idx {
-                    evaluate(idx, &factions, &faction.name, &mut reactions, None);
+                    evaluate(entity, idx, &ancestries, &factions, &faction.name, &mut reactions, None);
                     idxs.insert(idx);
                 }
             }
@@ -61,7 +64,7 @@ impl<'a> System<'a> for VisibleAI {
                     // and it's not the idx we're standing on, then evaluate here w/ minds taken into
                     // account.
                     if this_idx != idx && idxs.contains(&idx) {
-                        evaluate(idx, &factions, &faction.name, &mut reactions, Some(&minds));
+                        evaluate(entity, idx, &ancestries, &factions, &faction.name, &mut reactions, Some(&minds));
                     }
                 }
             }
@@ -89,17 +92,42 @@ impl<'a> System<'a> for VisibleAI {
 }
 
 fn evaluate(
+    entity: Entity,
     idx: usize,
+    ancestries: &ReadStorage<HasAncestry>,
     factions: &ReadStorage<Faction>,
     this_faction: &str,
     reactions: &mut Vec<(usize, Reaction, Entity)>,
     minds: Option<&ReadStorage<Mind>>,
 ) {
     crate::spatial::for_each_tile_content(idx, |other_entity| {
-        // If minds are passed, we assume we're using telepathy here,
-        // so if the other entity is mindless, we skip it.
-        if minds.is_some() {
-            if minds.unwrap().get(other_entity).is_some() {
+        let mut shared_ancestry = false;
+        if let Some(this_ancestry) = ancestries.get(entity) {
+            if let Some(other_ancestry) = ancestries.get(other_entity) {
+                if this_ancestry.name == other_ancestry.name {
+                    reactions.push((idx, Reaction::Ignore, other_entity));
+                    shared_ancestry = true;
+                }
+            }
+        }
+        if !shared_ancestry {
+            // If minds are passed, we assume we're using telepathy here,
+            // so if the other entity is mindless, we skip it.
+            if minds.is_some() {
+                if minds.unwrap().get(other_entity).is_some() {
+                    if let Some(faction) = factions.get(other_entity) {
+                        reactions.push((
+                            idx,
+                            crate::raws::faction_reaction(
+                                this_faction,
+                                &faction.name,
+                                &crate::raws::RAWS.lock().unwrap(),
+                            ),
+                            other_entity,
+                        ));
+                    }
+                }
+            } else {
                 if let Some(faction) = factions.get(other_entity) {
                     reactions.push((
                         idx,
@@ -107,14 +135,6 @@ fn evaluate(
                         other_entity,
                     ));
                 }
-            }
-        } else {
-            if let Some(faction) = factions.get(other_entity) {
-                reactions.push((
-                    idx,
-                    crate::raws::faction_reaction(this_faction, &faction.name, &crate::raws::RAWS.lock().unwrap()),
-                    other_entity,
-                ));
             }
         }
     });

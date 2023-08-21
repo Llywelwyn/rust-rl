@@ -1,0 +1,22 @@
+[
+    {
+        "id": "human",
+        "allied": []
+    },
+    {
+        "id": "elf",
+        "allied": []
+    },
+    {
+        "id": "dwarf",
+        "allied": ["gnome"]
+    },
+    {
+        "id": "gnome",
+        "allied": ["dwarf"]
+    },
+    {
+        "id": "catfolk",
+        "allied": []
+    }
+]

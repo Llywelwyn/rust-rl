@@ -1,3 +1,5 @@
+use crate::gui::Ancestry;
+use crate::gui::Class;
 use rltk::RGB;
 use serde::{Deserialize, Serialize};
 use specs::error::NoError;
@@ -141,6 +143,16 @@ pub struct HungerClock {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct ProvidesNutrition {}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct HasAncestry {
+    pub name: Ancestry,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct HasClass {
+    pub name: Class,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Pool {

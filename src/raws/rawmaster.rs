@@ -1,6 +1,7 @@
 use super::{Raws, Reaction};
 use crate::components::*;
 use crate::gamesystem::*;
+use crate::gui::Ancestry;
 use crate::random_table::RandomTable;
 use crate::LOG_SPAWNING;
 use regex::Regex;
@@ -23,6 +24,7 @@ pub struct RawMaster {
     table_index: HashMap<String, usize>,
     loot_index: HashMap<String, usize>,
     faction_index: HashMap<String, HashMap<String, Reaction>>,
+    ancestry_index: HashMap<String, HashSet<String>>,
 }
 
 impl RawMaster {
@@ -35,6 +37,7 @@ impl RawMaster {
                 spawn_tables: Vec::new(),
                 loot_tables: Vec::new(),
                 factions: Vec::new(),
+                ancestries: Vec::new(),
             },
             item_index: HashMap::new(),
             mob_index: HashMap::new(),
@@ -42,6 +45,7 @@ impl RawMaster {
             table_index: HashMap::new(),
             loot_index: HashMap::new(),
             faction_index: HashMap::new(),
+            ancestry_index: HashMap::new(),
         }
     }
 
@@ -321,6 +325,21 @@ pub fn spawn_named_mob(
                     "CARNIVORE" => {
                         eb = eb.with(Faction { name: "carnivore".to_string() });
                         has_faction = true;
+                    }
+                    "IS_GNOME" => {
+                        eb = eb.with(HasAncestry { name: Ancestry::Gnome });
+                    }
+                    "IS_DWARF" => {
+                        eb = eb.with(HasAncestry { name: Ancestry::Dwarf });
+                    }
+                    "IS_HUMAN" => {
+                        eb = eb.with(HasAncestry { name: Ancestry::Human });
+                    }
+                    "IS_CATFOLK" => {
+                        eb = eb.with(HasAncestry { name: Ancestry::Catfolk });
+                    }
+                    "IS_Elf" => {
+                        eb = eb.with(HasAncestry { name: Ancestry::Elf });
                     }
                     "SMALL_GROUP" => {} // These flags are for region spawning,
                     "LARGE_GROUP" => {} // and don't matter here (yet)?
@@ -824,4 +843,32 @@ pub fn faction_reaction(this_faction: &str, other_faction: &str, raws: &RawMaste
         }
     }
     return Reaction::Ignore;
+}
+
+pub fn ancestry_reaction(this_ancestry: Ancestry, other_ancestry: Ancestry, raws: &RawMaster) -> Option<Reaction> {
+    if this_ancestry == other_ancestry {
+        return Some(Reaction::Ignore);
+    } else {
+        let this_ancestry = get_ancestry_string(this_ancestry);
+        let other_ancestry = get_ancestry_string(other_ancestry);
+        if raws.ancestry_index.contains_key(this_ancestry) {
+            let mine = &raws.ancestry_index[this_ancestry];
+            if mine.contains(other_ancestry) {
+                return Some(Reaction::Ignore);
+            }
+        }
+    }
+
+    return None;
+}
+
+fn get_ancestry_string(ancestry: Ancestry) -> &'static str {
+    match ancestry {
+        Ancestry::Human => return "human",
+        Ancestry::Elf => return "elf",
+        Ancestry::Dwarf => return "dwarf",
+        Ancestry::Catfolk => return "catfolk",
+        Ancestry::Gnome => return "gnome",
+        Ancestry::NULL => return "NULL",
+    }
 }
