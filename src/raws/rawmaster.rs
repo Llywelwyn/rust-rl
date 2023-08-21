@@ -862,6 +862,29 @@ pub fn ancestry_reaction(this_ancestry: Ancestry, other_ancestry: Ancestry, raws
     return None;
 }
 
+pub fn get_reactions(
+    this_entity: Entity,
+    other_entity: Entity,
+    factions: &ReadStorage<Faction>,
+    ancestries: &ReadStorage<HasAncestry>,
+    raws: &RawMaster,
+) -> Reaction {
+    if let Some(this_ancestry) = ancestries.get(this_entity) {
+        if let Some(other_ancestry) = ancestries.get(other_entity) {
+            let result = ancestry_reaction(this_ancestry.name, other_ancestry.name, raws);
+            if result.is_some() {
+                return result.unwrap();
+            }
+        }
+    }
+    if let Some(this_faction) = factions.get(this_entity) {
+        if let Some(other_faction) = factions.get(other_entity) {
+            return faction_reaction(&this_faction.name, &other_faction.name, raws);
+        }
+    }
+    return Reaction::Ignore;
+}
+
 fn get_ancestry_string(ancestry: Ancestry) -> &'static str {
     match ancestry {
         Ancestry::Human => return "human",

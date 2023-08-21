@@ -28,28 +28,28 @@ impl<'a> System<'a> for AdjacentAI {
                 let h = map.height;
                 // Add possible reactions to adjacents for each direction
                 if pos.x > 0 {
-                    evaluate(entity, idx - 1, &ancestries, &factions, &my_faction.name, &mut reactions);
+                    evaluate(entity, idx - 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.x < w - 1 {
-                    evaluate(entity, idx + 1, &ancestries, &factions, &my_faction.name, &mut reactions);
+                    evaluate(entity, idx + 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y > 0 {
-                    evaluate(entity, idx - w as usize, &ancestries, &factions, &my_faction.name, &mut reactions);
+                    evaluate(entity, idx - w as usize, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y < h - 1 {
-                    evaluate(entity, idx + w as usize, &ancestries, &factions, &my_faction.name, &mut reactions);
+                    evaluate(entity, idx + w as usize, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y > 0 && pos.x > 0 {
-                    evaluate(entity, (idx - w as usize) - 1, &ancestries, &factions, &my_faction.name, &mut reactions);
+                    evaluate(entity, (idx - w as usize) - 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y > 0 && pos.x < w - 1 {
-                    evaluate(entity, (idx - w as usize) + 1, &ancestries, &factions, &my_faction.name, &mut reactions);
+                    evaluate(entity, (idx - w as usize) + 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y < h - 1 && pos.x > 0 {
-                    evaluate(entity, (idx + w as usize) - 1, &ancestries, &factions, &my_faction.name, &mut reactions);
+                    evaluate(entity, (idx + w as usize) - 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y < h - 1 && pos.x < w - 1 {
-                    evaluate(entity, (idx + w as usize) + 1, &ancestries, &factions, &my_faction.name, &mut reactions);
+                    evaluate(entity, (idx + w as usize) + 1, &ancestries, &factions, &mut reactions);
                 }
 
                 let mut done = false;
@@ -79,26 +79,16 @@ fn evaluate(
     idx: usize,
     ancestries: &ReadStorage<HasAncestry>,
     factions: &ReadStorage<Faction>,
-    this_faction: &str,
     reactions: &mut Vec<(Entity, Reaction)>,
 ) {
     crate::spatial::for_each_tile_content(idx, |other_entity| {
-        let mut shared_ancestry = false;
-        if let Some(this_ancestry) = ancestries.get(entity) {
-            if let Some(other_ancestry) = ancestries.get(other_entity) {
-                if this_ancestry.name == other_ancestry.name {
-                    reactions.push((other_entity, Reaction::Ignore));
-                    shared_ancestry = true;
-                }
-            }
-        }
-        if !shared_ancestry {
-            if let Some(faction) = factions.get(other_entity) {
-                reactions.push((
-                    other_entity,
-                    crate::raws::faction_reaction(this_faction, &faction.name, &crate::raws::RAWS.lock().unwrap()),
-                ));
-            }
-        }
+        let result = crate::raws::get_reactions(
+            entity,
+            other_entity,
+            &factions,
+            &ancestries,
+            &crate::raws::RAWS.lock().unwrap(),
+        );
+        reactions.push((other_entity, result));
     });
 }

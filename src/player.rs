@@ -3,9 +3,9 @@ use super::{
     gamelog,
     gui::obfuscate_name_ecs,
     raws::Reaction,
-    Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved, Faction, Hidden, HungerClock, HungerState, Item, Map,
-    Name, ParticleBuilder, Player, Pools, Position, Renderable, RunState, State, Telepath, TileType, Viewshed,
-    WantsToMelee, WantsToPickupItem,
+    Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved, Faction, HasAncestry, Hidden, HungerClock,
+    HungerState, Item, Map, Name, ParticleBuilder, Player, Pools, Position, Renderable, RunState, State, Telepath,
+    TileType, Viewshed, WantsToMelee, WantsToPickupItem,
 };
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
@@ -284,6 +284,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     let mut telepaths = ecs.write_storage::<Telepath>();
     let mut entity_moved = ecs.write_storage::<EntityMoved>();
     let factions = ecs.read_storage::<Faction>();
+    let ancestries = ecs.read_storage::<HasAncestry>();
     let pools = ecs.read_storage::<Pools>();
     let map = ecs.fetch::<Map>();
     let entities = ecs.entities();
@@ -306,12 +307,15 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
         result = crate::spatial::for_each_tile_content_with_runstate(destination_idx, |potential_target| {
             let mut hostile = true;
             if pools.get(potential_target).is_some() {
-                if let Some(faction) = factions.get(potential_target) {
-                    let reaction =
-                        crate::raws::faction_reaction(&faction.name, "player", &crate::raws::RAWS.lock().unwrap());
-                    if reaction != Reaction::Attack {
-                        hostile = false;
-                    }
+                let result = crate::raws::get_reactions(
+                    entity,
+                    potential_target,
+                    &factions,
+                    &ancestries,
+                    &crate::raws::RAWS.lock().unwrap(),
+                );
+                if result != Reaction::Attack {
+                    hostile = false;
                 }
             }
             if !hostile {
@@ -545,22 +549,22 @@ fn skip_turn(ecs: &mut World) -> RunState {
     // Default to being able to heal by waiting.
     let mut can_heal = true;
     let factions = ecs.read_storage::<Faction>();
+    let ancestries = ecs.read_storage::<HasAncestry>();
 
     // Check viewshed for monsters nearby. If we can see a monster, we can't heal.
     let viewshed = viewsheds.get_mut(*player_entity).unwrap();
     for tile in viewshed.visible_tiles.iter() {
         let idx = worldmap_resource.xy_idx(tile.x, tile.y);
         crate::spatial::for_each_tile_content(idx, |entity_id| {
-            let faction = factions.get(entity_id);
-            match faction {
-                None => {}
-                Some(faction) => {
-                    let reaction =
-                        crate::raws::faction_reaction(&faction.name, "player", &crate::raws::RAWS.lock().unwrap());
-                    if reaction == Reaction::Attack {
-                        can_heal = false;
-                    }
-                }
+            let result = crate::raws::get_reactions(
+                *player_entity,
+                entity_id,
+                &factions,
+                &ancestries,
+                &crate::raws::RAWS.lock().unwrap(),
+            );
+            if result == Reaction::Attack {
+                can_heal = false;
             }
         });
     }
