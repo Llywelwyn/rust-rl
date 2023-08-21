@@ -57,11 +57,6 @@ pub fn draw_lerping_bar(
 }
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
-    ctx.draw_hollow_box(0, 0, 70, 8, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Log box
-    ctx.draw_hollow_box(0, 9, 70, 42, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Camera box
-    ctx.draw_hollow_box(0, 52, 70, 3, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Stats box
-    ctx.draw_hollow_box(71, 0, 33, 55, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Side box
-
     // Render stats
     let pools = ecs.read_storage::<Pools>();
     let attributes = ecs.read_storage::<Attributes>();
@@ -281,6 +276,11 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         &format!("T{}", crate::gamelog::get_event_count("turns")),
     );
 
+    // Boxes and tooltips last, so they draw over everything else.
+    ctx.draw_hollow_box(0, 0, 70, 8, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Log box
+    ctx.draw_hollow_box(0, 9, 70, 42, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Camera box
+    ctx.draw_hollow_box(0, 52, 70, 3, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Stats box
+    ctx.draw_hollow_box(71, 0, 33, 55, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Side box
     tooltip::draw_tooltips(ecs, ctx);
 }
 
@@ -506,49 +506,33 @@ pub fn renderable_colour(renderables: &ReadStorage<Renderable>, entity: Entity) 
 }
 
 pub fn item_colour_ecs(ecs: &World, item: Entity) -> (u8, u8, u8) {
-    let dm = ecs.fetch::<MasterDungeonMap>();
-    if let Some(name) = ecs.read_storage::<Name>().get(item) {
-        if let Some(magic) = ecs.read_storage::<MagicItem>().get(item) {
-            if dm.identified_items.contains(&name.name) {
-                // If identified magic item, use rarity colour
-                match magic.class {
-                    MagicItemClass::Common => return WHITE,
-                    MagicItemClass::Uncommon => return GREEN,
-                    MagicItemClass::Rare => return BLUE,
-                    MagicItemClass::VeryRare => return PURPLE,
-                    MagicItemClass::Legendary => return GOLD,
-                }
-            } else {
-                // Unidentified magic item
-                return GREY;
+    if let Some(beatitude) = ecs.read_storage::<Beatitude>().get(item) {
+        if beatitude.known {
+            match beatitude.buc {
+                BUC::Blessed => return GREEN,
+                BUC::Uncursed => return WHITE,
+                BUC::Cursed => return RED,
             }
+        } else {
+            // Unidentified magic item
+            return GREY;
         }
     }
     // If nonmagic, just use white
     return WHITE;
 }
 
-pub fn item_colour(
-    item: Entity,
-    names: &ReadStorage<Name>,
-    magic_items: &ReadStorage<MagicItem>,
-    dm: &MasterDungeonMap,
-) -> (u8, u8, u8) {
-    if let Some(name) = names.get(item) {
-        if let Some(magic) = magic_items.get(item) {
-            if dm.identified_items.contains(&name.name) {
-                // If identified magic item, use rarity colour
-                match magic.class {
-                    MagicItemClass::Common => return WHITE,
-                    MagicItemClass::Uncommon => return GREEN,
-                    MagicItemClass::Rare => return BLUE,
-                    MagicItemClass::VeryRare => return PURPLE,
-                    MagicItemClass::Legendary => return GOLD,
-                }
-            } else {
-                // Unidentified magic item
-                return GREY;
+pub fn item_colour(item: Entity, beatitudes: &ReadStorage<Beatitude>, dm: &MasterDungeonMap) -> (u8, u8, u8) {
+    if let Some(beatitude) = beatitudes.get(item) {
+        if beatitude.known {
+            match beatitude.buc {
+                BUC::Blessed => return GREEN,
+                BUC::Uncursed => return WHITE,
+                BUC::Cursed => return RED,
             }
+        } else {
+            // Unidentified magic item
+            return GREY;
         }
     }
     // If nonmagic, just use white

@@ -140,6 +140,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         let potion_names = dm.potion_map.clone();
         let wand_names = dm.wand_map.clone();
         let identified_items = dm.identified_items.clone();
+        let roll = ecs.write_resource::<RandomNumberGenerator>().roll_dice(1, 3);
         std::mem::drop(dm);
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
@@ -177,7 +178,14 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                 }
             }
         }
-        eb = eb.with(Beatitude { buc, known: false });
+        if buc == BUC::Uncursed {
+            match roll {
+                1 => buc = BUC::Cursed,
+                2 => buc = BUC::Blessed,
+                _ => {}
+            }
+        }
+        eb = eb.with(Beatitude { buc, known: true });
 
         let mut base_damage = "1d4";
         let mut hit_bonus = 0;

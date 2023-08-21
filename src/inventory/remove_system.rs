@@ -54,7 +54,7 @@ impl<'a> System<'a> for ItemRemoveSystem {
                             )
                             .0,
                         )
-                        .colour(item_colour(to_remove.item, &names, &magic_items, &dm))
+                        .colour(item_colour(to_remove.item, &beatitudes, &dm))
                         .period()
                         .log();
                 }

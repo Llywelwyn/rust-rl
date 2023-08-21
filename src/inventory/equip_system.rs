@@ -65,7 +65,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                                 obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &beatitudes, &dm, None)
                                     .0,
                             )
-                            .colour(item_colour(*item, &names, &magic_items, &dm))
+                            .colour(item_colour(*item, &beatitudes, &dm))
                             .period();
                     }
                 }
@@ -90,7 +90,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                             )
                             .0,
                         )
-                        .colour(item_colour(wants_to_use_item.item, &names, &magic_items, &dm))
+                        .colour(item_colour(wants_to_use_item.item, &beatitudes, &dm))
                         .period();
                     logger.log();
                 }
