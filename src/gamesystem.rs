@@ -1,6 +1,7 @@
 use super::{Skill, Skills};
 use crate::gui::Classes;
 use rltk::prelude::*;
+use std::cmp::max;
 
 /// Returns the attribute bonus for a given attribute score, where every 2 points above
 /// or below 10 is an additional +1 or -1.
@@ -10,7 +11,7 @@ pub fn attr_bonus(value: i32) -> i32 {
 
 /// Returns the number of HP gained per level for a given constitution score.
 pub fn hp_per_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32) -> i32 {
-    return rng.roll_dice(1, 8) + attr_bonus(constitution);
+    return max(rng.roll_dice(1, 8) + attr_bonus(constitution), 1);
 }
 
 #[allow(dead_code)]
@@ -37,7 +38,7 @@ pub fn npc_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32,
 
 /// Returns the number of mana gained per level for a given intelligence score.
 pub fn mana_per_level(rng: &mut rltk::RandomNumberGenerator, intelligence: i32) -> i32 {
-    return rng.roll_dice(1, 4) + attr_bonus(intelligence);
+    return max(rng.roll_dice(1, 4) + attr_bonus(intelligence), 1);
 }
 
 /// Returns the number of mana gained per level for a given intelligence score.
@@ -78,15 +79,15 @@ pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
 pub fn get_attribute_rolls(rng: &mut RandomNumberGenerator, class: Classes) -> (i32, i32, i32, i32, i32, i32) {
     let (mut str, mut dex, mut con, mut int, mut wis, mut cha) = match class {
         Classes::Fighter => (10, 8, 10, 6, 6, 8),
-        Classes::Rogue => (8, 12, 8, 6, 8, 10),
-        Classes::Wizard => (6, 8, 6, 12, 10, 8),
+        Classes::Rogue => (8, 10, 8, 6, 8, 10),
+        Classes::Wizard => (6, 8, 6, 10, 10, 8),
         Classes::Villager => (6, 6, 6, 6, 6, 6),
     };
     let remaining_points = 75 - (str + dex + con + int + wis + cha);
     let improve_chance: [i32; 6] = match class {
         Classes::Fighter => [30, 20, 30, 6, 7, 7],
         Classes::Rogue => [18, 30, 20, 9, 8, 15],
-        Classes::Wizard => [10, 20, 20, 30, 10, 10],
+        Classes::Wizard => [10, 15, 20, 30, 15, 10],
         Classes::Villager => [15, 15, 25, 15, 15, 15],
     };
     let improve_table = crate::random_table::RandomTable::new()

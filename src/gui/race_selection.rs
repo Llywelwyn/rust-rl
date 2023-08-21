@@ -15,6 +15,52 @@ pub enum Races {
     Elf,
 }
 
+lazy_static! {
+    static ref RACE_CLASS_DATA: HashMap<String, Vec<String>> = {
+        let mut m = HashMap::new();
+        // Races
+        m.insert(
+            "human".to_string(),
+            vec![
+                "+nothing".to_string()]);
+        m.insert(
+            "dwarf".to_string(),
+            vec![
+                "a natural bonus to defence".to_string()]);
+        m.insert(
+            "elf".to_string(),
+            vec![
+                "minor telepathy".to_string(),
+                "a slightly increased speed".to_string()]);
+        // Classes
+        m.insert(
+            "fighter".to_string(),
+            vec![
+                "a longsword and ring mail".to_string(),
+                "10 str, 8 dex, 10 con, 6 int, 6 wis, 8 cha".to_string(),
+                "and 27 random stat points".to_string()]);
+        m.insert(
+            "rogue".to_string(),
+            vec![
+                "a rapier and leather armour".to_string(),
+                "8 str, 10 dex, 8 con, 6 int, 8 wis, 10 cha".to_string(),
+                "and 35 random stat points".to_string()]);
+        m.insert(
+            "wizard".to_string(),
+            vec![
+                "a random assortment of scrolls and/or potions".to_string(),
+                "6 str, 8 dex, 6 con, 10 int, 10 wis, 8 cha".to_string(),
+                "and 17 random stat points".to_string()]);;
+        m.insert(
+            "villager".to_string(),
+            vec![
+                "a random beginning".to_string(),
+                "6 str, 6 dex, 6 con, 6 int, 6 wis, 6 cha".to_string(),
+                "and 39 random stat points".to_string()]);
+        return m;
+    };
+}
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum Classes {
     Fighter,
@@ -47,6 +93,10 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
         let bg = RGB::named(BLACK);
 
         // Races
+        ctx.print_color(x, y, bg, unselected_fg, "Ancestry");
+        ctx.print_color(x + column_width, y, bg, unselected_fg, "Class");
+        y += 1;
+        let mut race_str = "human";
         if race == Races::Human {
             fg = selected_fg;
         } else {
@@ -55,17 +105,20 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
         ctx.print_color(x, y, fg, bg, "h. Human");
         if race == Races::Elf {
             fg = selected_fg;
+            race_str = "elf";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 1, fg, bg, "e. Elf");
         if race == Races::Dwarf {
             fg = selected_fg;
+            race_str = "dwarf";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 2, fg, bg, "d. Dwarf");
         // Classes
+        let mut class_str = "fighter";
         x += column_width;
         if class == Classes::Fighter {
             fg = selected_fg;
@@ -75,22 +128,38 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
         ctx.print_color(x, y, fg, bg, "f. Fighter");
         if class == Classes::Rogue {
             fg = selected_fg;
+            class_str = "rogue";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 1, fg, bg, "r. Rogue");
         if class == Classes::Wizard {
             fg = selected_fg;
+            class_str = "wizard";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 2, fg, bg, "w. Wizard");
         if class == Classes::Villager {
             fg = selected_fg;
+            class_str = "villager";
         } else {
             fg = unselected_fg;
         }
         ctx.print_color(x, y + 3, fg, bg, "v. Villager");
+        // Selected race/class benefits
+        x += column_width;
+        ctx.print_color(x, y, selected_fg, bg, "Your ancestry grants...");
+        for line in RACE_CLASS_DATA.get(race_str).unwrap().iter() {
+            y += 1;
+            ctx.print_color(x + 1, y, unselected_fg, bg, line);
+        }
+        y += 2;
+        ctx.print_color(x, y, selected_fg, bg, "Your class grants...");
+        for line in RACE_CLASS_DATA.get(class_str).unwrap().iter() {
+            y += 1;
+            ctx.print_color(x + 1, y, unselected_fg, bg, line);
+        }
 
         match ctx.key {
             None => return CharCreateResult::NoSelection { race, class },
