@@ -152,13 +152,14 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         }
 
         let mut weapon_type = -1;
-
+        let mut buc = BUC::Uncursed;
         if let Some(flags) = &item_template.flags {
             for flag in flags.iter() {
                 match flag.as_str() {
                     "CONSUMABLE" => eb = eb.with(Consumable {}),
                     "DESTRUCTIBLE" => eb = eb.with(Destructible {}),
-                    "CURSED" => eb = eb.with(Cursed {}),
+                    "CURSED" => buc = BUC::Cursed,
+                    "BLESSED" => buc = BUC::Blessed,
                     "EQUIP_MELEE" => eb = eb.with(Equippable { slot: EquipmentSlot::Melee }),
                     "EQUIP_SHIELD" => eb = eb.with(Equippable { slot: EquipmentSlot::Shield }),
                     "EQUIP_HEAD" => eb = eb.with(Equippable { slot: EquipmentSlot::Head }),
@@ -176,6 +177,8 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                 }
             }
         }
+        eb = eb.with(Beatitude { buc, known: false });
+
         let mut base_damage = "1d4";
         let mut hit_bonus = 0;
 

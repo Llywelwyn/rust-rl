@@ -1,3 +1,4 @@
+use super::BUC;
 use crate::spatial;
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -11,7 +12,6 @@ mod targeting;
 mod triggers;
 
 pub use targeting::aoe_tiles;
-pub use triggers::{BLESSED, CURSED, UNCURSED};
 
 lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
@@ -29,7 +29,7 @@ pub enum EffectType {
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
     EntityDeath,
     ItemUse { item: Entity },
-    RestoreNutrition { buc: i32 },
+    RestoreNutrition { buc: BUC },
     TriggerFire { trigger: Entity },
 }
 

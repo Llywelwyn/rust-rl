@@ -1,7 +1,7 @@
 use crate::{
     gamelog,
     gui::{item_colour, obfuscate_name},
-    EquipmentChanged, Equippable, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
+    Beatitude, EquipmentChanged, Equippable, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
     WantsToUseItem,
 };
 use specs::prelude::*;
@@ -21,6 +21,7 @@ impl<'a> System<'a> for ItemEquipSystem {
         WriteStorage<'a, EquipmentChanged>,
         ReadStorage<'a, MagicItem>,
         ReadStorage<'a, ObfuscatedName>,
+        ReadStorage<'a, Beatitude>,
         ReadExpect<'a, MasterDungeonMap>,
     );
 
@@ -37,6 +38,7 @@ impl<'a> System<'a> for ItemEquipSystem {
             mut dirty,
             magic_items,
             obfuscated_names,
+            beatitudes,
             dm,
         ) = data;
         let mut remove: Vec<Entity> = Vec::new();
@@ -59,7 +61,10 @@ impl<'a> System<'a> for ItemEquipSystem {
                     if target == *player_entity {
                         logger = logger
                             .append("You remove your")
-                            .append_n(obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &dm, None).0)
+                            .append_n(
+                                obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &beatitudes, &dm, None)
+                                    .0,
+                            )
                             .colour(item_colour(*item, &names, &magic_items, &dm))
                             .period();
                     }
@@ -74,8 +79,16 @@ impl<'a> System<'a> for ItemEquipSystem {
                     logger = logger
                         .append("You equip the")
                         .append_n(
-                            obfuscate_name(wants_to_use_item.item, &names, &magic_items, &obfuscated_names, &dm, None)
-                                .0,
+                            obfuscate_name(
+                                wants_to_use_item.item,
+                                &names,
+                                &magic_items,
+                                &obfuscated_names,
+                                &beatitudes,
+                                &dm,
+                                None,
+                            )
+                            .0,
                         )
                         .colour(item_colour(wants_to_use_item.item, &names, &magic_items, &dm))
                         .period();

@@ -1,5 +1,5 @@
 use crate::{
-    gamelog, gui::obfuscate_name, Charges, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name,
+    gamelog, gui::obfuscate_name, Beatitude, Charges, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name,
     ObfuscatedName, Position, WantsToPickupItem,
 };
 use specs::prelude::*;
@@ -17,6 +17,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
         WriteStorage<'a, EquipmentChanged>,
         ReadStorage<'a, MagicItem>,
         ReadStorage<'a, ObfuscatedName>,
+        ReadStorage<'a, Beatitude>,
         ReadExpect<'a, MasterDungeonMap>,
         ReadStorage<'a, Charges>,
     );
@@ -31,6 +32,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
             mut equipment_changed,
             magic_items,
             obfuscated_names,
+            beatitudes,
             dm,
             wands,
         ) = data;
@@ -47,7 +49,16 @@ impl<'a> System<'a> for ItemCollectionSystem {
                     .append("You pick up the")
                     .item_name_n(format!(
                         "{}",
-                        obfuscate_name(pickup.item, &names, &magic_items, &obfuscated_names, &dm, Some(&wands)).0
+                        obfuscate_name(
+                            pickup.item,
+                            &names,
+                            &magic_items,
+                            &obfuscated_names,
+                            &beatitudes,
+                            &dm,
+                            Some(&wands)
+                        )
+                        .0
                     ))
                     .period()
                     .log();

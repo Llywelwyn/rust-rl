@@ -210,6 +210,19 @@ pub struct GrantsXP {
     pub amount: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum BUC {
+    Cursed,
+    Uncursed,
+    Blessed,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Beatitude {
+    pub buc: BUC,
+    pub known: bool,
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Item {
     pub weight: f32, // in lbs
@@ -313,9 +326,6 @@ pub struct Equipped {
     pub owner: Entity,
     pub slot: EquipmentSlot,
 }
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Cursed {}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct ProvidesHealing {

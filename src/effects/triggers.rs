@@ -1,8 +1,8 @@
 use super::{add_effect, spatial, EffectType, Entity, Targets, World};
 use crate::{
-    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Charges, Confusion, Consumable,
-    Cursed, Destructible, Hidden, InflictsDamage, Item, MagicMapper, Player, Prop, ProvidesHealing, ProvidesNutrition,
-    RandomNumberGenerator, Renderable, RunState, SingleActivation,
+    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Beatitude, Charges, Confusion,
+    Consumable, Destructible, Hidden, InflictsDamage, Item, MagicMapper, Player, Prop, ProvidesHealing,
+    ProvidesNutrition, RandomNumberGenerator, Renderable, RunState, SingleActivation, BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -40,15 +40,11 @@ pub fn trigger(source: Option<Entity>, trigger: Entity, target: &Targets, ecs: &
     }
 }
 
-pub const BLESSED: i32 = 2;
-pub const UNCURSED: i32 = 1;
-pub const CURSED: i32 = 0;
-
 struct EventInfo {
     source: Option<Entity>,
     entity: Entity,
     target: Targets,
-    buc: i32,
+    buc: BUC,
     log: bool,
 }
 
@@ -57,7 +53,11 @@ struct EventInfo {
 //       place on the player -- once monsters can use an item, their item usage will make logs for
 //       the player saying they were the one who used the item. This will need refactoring then.
 fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: &mut World) {
-    let buc = if ecs.read_storage::<Cursed>().get(entity).is_some() { CURSED } else { UNCURSED };
+    let buc = if let Some(beatitude) = ecs.read_storage::<Beatitude>().get(entity) {
+        beatitude.buc.clone()
+    } else {
+        BUC::Uncursed
+    };
     let mut event = EventInfo { source, entity, target: target.clone(), buc, log: false };
     let mut logger = gamelog::Logger::new();
     // PROVIDES NUTRITION
@@ -77,14 +77,14 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
 
 fn handle_restore_nutrition(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
     if ecs.read_storage::<ProvidesNutrition>().get(event.entity).is_some() {
-        add_effect(event.source, EffectType::RestoreNutrition { buc: event.buc }, event.target.clone());
+        add_effect(event.source, EffectType::RestoreNutrition { buc: event.buc.clone() }, event.target.clone());
         logger = logger
             .append("You eat the")
             .colour(item_colour_ecs(ecs, event.entity))
             .append_n(obfuscate_name_ecs(ecs, event.entity).0)
             .colour(WHITE)
             .period()
-            .buc(event.buc, Some("Blech! Rotten."), Some("Delicious."));
+            .buc(event.buc.clone(), Some("Blech! Rotten."), Some("Delicious."));
         event.log = true;
     }
     return logger;
@@ -93,10 +93,10 @@ fn handle_restore_nutrition(ecs: &mut World, event: &mut EventInfo, mut logger: 
 fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
     if ecs.read_storage::<MagicMapper>().get(event.entity).is_some() {
         let mut runstate = ecs.fetch_mut::<RunState>();
-        let cursed = if event.buc == CURSED { true } else { false };
+        let cursed = if event.buc == BUC::Cursed { true } else { false };
         *runstate = RunState::MagicMapReveal { row: 0, cursed: cursed };
         logger = logger.append("You recall your surroundings!").buc(
-            event.buc,
+            event.buc.clone(),
             Some("... but forget where you last were."),
             None,
         );
@@ -121,7 +121,7 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
                     .append("You")
                     .colour(WHITE)
                     .append("recover some vigour.")
-                    .buc(event.buc, None, Some("You feel great!"));
+                    .buc(event.buc.clone(), None, Some("You feel great!"));
             } else {
                 logger = logger
                     .append("The")

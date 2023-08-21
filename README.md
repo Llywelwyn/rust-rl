@@ -125,3 +125,26 @@ i'll try to remember to update the web version on my page at the end of every we
   - varying levels of being overweight, with the limit determined by strength, slowing entities down by ~25% per level over unencumbered. right now it's pretty forgiving, and i'd probably like it to stay that way. my ideal balance here would be roughly how it ends up in 5e DnD: everyone can carry a good supply of consumables, but strength characters usually don't carry a much higher quantity of items than anyone else, because the strongest armour is extremely heavy. sort of like a soft strength requirement for the heaviest gear - rather than requiring specific stats or levels to equip it, it's heavy enough that you need to be strong to lug it around. but if someone weaker wanted to, they could, they'd just have to leave some other items behind to do so. or take the speed penalty for being encumbered
 
 </details>
+
+---
+
+<details>
+  <summary>week 7</summary>
+
+- character creation!
+  - it doesn't look too pretty yet, but i managed to get it done in time. classes and ancestries are selectable, with ancestries determining some intrinsic bonuses (dwarves are hardy, catfolk are fast and have claws, etc.) and attribute maximums, and classes determining starting equipment and the actual attribute rolls. along with this, i expanded entity reactions - now a shared ancestry is taken into account first of all, and it checks faction if it doesn't manage to find anything. this means humans wont attack other humans, dwarves wont be attacked by gnomes and other dwarves, etc.
+  
+  [image here]
+
+- better AI
+   - straight from thebracket, with a handful of tweaks of my own, i've finally atomised AI into adjacent, visible, chase, flee, and default systems. most notably,rather than hostile mobs attacking everything and passive mobs doing nothing, every mob has a faction, and most mobs have an ancestry. like mentioned above, mobs will take all this into account when determining how they want to react to any other entity. i see a lot of places to expand on this in the future, like going into alignments and other increasingly-specific reasons why any entity might want to murder another. or make friends with them. taming comes to mind here.
+ 
+- an effects system
+  - instead of randomly doing things all around the codebase, everything is in the process of being moved over to an effects system. to put it very simply, there's a big list of every effect that needs to take place on the next tick, and each tick the queue is iterated through, the next effect is checked against a list of every entity that died this turn to make sure that it should still take place (no dead mobs still getting their attacks off), and then it makes the event happen if appropriate. if not, it just gets tossed out. it's all super modular, so effects can pretty much be applied to everything. the same damage and targeting effects work for item use and traps going off, or an entity swinging their sword, for example. i made use of this new system by adding in some aoe scrolls, like mass function and mass healing.
+
+- better logging
+  - it's still in process, but i'm making every entity name in chat use the proper colour now, and working with the effects system to combine relevant logs all into one line, and make them more specific. generally i'm trying not to include too many numbers in the log; it's just personal preference, but i don't like seeing exactly how much damage every hit has done - i'd rather just see my health bar go up or down, or tell by seeing how fast a mob dies. this took *too much* fumbling with the function that renders my log to the screen, but now it's fixed and works a lot better than before, so it was definitely worth it.
+
+  [image here]
+
+</details>

@@ -1,8 +1,8 @@
 use super::{
     ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, hunger_system::get_hunger_colour,
-    rex_assets::RexAssets, ArmourClassBonus, Attributes, Burden, Charges, Equipped, Hidden, HungerClock, HungerState,
-    InBackpack, MagicItem, MagicItemClass, Map, MasterDungeonMap, Name, ObfuscatedName, Player, Point, Pools, Position,
-    Prop, Renderable, RunState, Skill, Skills, State, Viewshed,
+    rex_assets::RexAssets, ArmourClassBonus, Attributes, Beatitude, Burden, Charges, Equipped, Hidden, HungerClock,
+    HungerState, InBackpack, MagicItem, MagicItemClass, Map, MasterDungeonMap, Name, ObfuscatedName, Player, Point,
+    Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed, BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -412,6 +412,7 @@ pub fn obfuscate_name(
     names: &ReadStorage<Name>,
     magic_items: &ReadStorage<MagicItem>,
     obfuscated_names: &ReadStorage<ObfuscatedName>,
+    beatitudes: &ReadStorage<Beatitude>,
     dm: &MasterDungeonMap,
     wand: Option<&ReadStorage<Charges>>,
 ) -> (String, String) {
@@ -420,6 +421,16 @@ pub fn obfuscate_name(
         if magic_items.get(item).is_some() {
             if dm.identified_items.contains(&name.name) {
                 (singular, plural) = (name.name.clone(), name.plural.clone());
+                if wand.is_some() {
+                    let wands = wand.unwrap();
+                    if let Some(wand) = wands.get(item) {
+                        let used = wand.max_uses - wand.uses;
+                        for _i in 0..used {
+                            singular.push_str("*");
+                            plural.push_str("*");
+                        }
+                    }
+                }
             } else if let Some(obfuscated) = obfuscated_names.get(item) {
                 (singular, plural) = (obfuscated.name.clone(), obfuscated.plural.clone());
             } else {
@@ -429,13 +440,16 @@ pub fn obfuscate_name(
             (singular, plural) = (name.name.clone(), name.plural.clone());
         }
     }
-    if wand.is_some() {
-        let wands = wand.unwrap();
-        if let Some(wand) = wands.get(item) {
-            let used = wand.max_uses - wand.uses;
-            for _i in 0..used {
-                singular.push_str("*");
-                plural.push_str("*");
+    if let Some(has_beatitude) = beatitudes.get(item) {
+        if has_beatitude.known {
+            let prefix = match has_beatitude.buc {
+                BUC::Cursed => Some("cursed "),
+                BUC::Uncursed => None,
+                BUC::Blessed => Some("blessed "),
+            };
+            if prefix.is_some() {
+                singular.insert_str(0, prefix.unwrap());
+                plural.insert_str(0, prefix.unwrap());
             }
         }
     }
@@ -450,6 +464,13 @@ pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
             let dm = ecs.fetch::<MasterDungeonMap>();
             if dm.identified_items.contains(&name.name) {
                 (singular, plural) = (name.name.clone(), name.plural.clone());
+                if let Some(wand) = ecs.read_storage::<Charges>().get(item) {
+                    let used = wand.max_uses - wand.uses;
+                    for _i in 0..used {
+                        singular.push_str("*");
+                        plural.push_str("*");
+                    }
+                }
             } else if let Some(obfuscated) = ecs.read_storage::<ObfuscatedName>().get(item) {
                 (singular, plural) = (obfuscated.name.clone(), obfuscated.plural.clone());
             } else {
@@ -459,11 +480,17 @@ pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
             (singular, plural) = (name.name.clone(), name.plural.clone());
         }
     }
-    if let Some(wand) = ecs.read_storage::<Charges>().get(item) {
-        let used = wand.max_uses - wand.uses;
-        for _i in 0..used {
-            singular.push_str("*");
-            plural.push_str("*");
+    if let Some(has_beatitude) = ecs.read_storage::<Beatitude>().get(item) {
+        if has_beatitude.known {
+            let prefix = match has_beatitude.buc {
+                BUC::Cursed => Some("cursed "),
+                BUC::Uncursed => None,
+                BUC::Blessed => Some("blessed "),
+            };
+            if prefix.is_some() {
+                singular.insert_str(0, prefix.unwrap());
+                plural.insert_str(0, prefix.unwrap());
+            }
         }
     }
     return (singular, plural);

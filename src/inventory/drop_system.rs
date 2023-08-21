@@ -1,5 +1,5 @@
 use crate::{
-    gamelog, gui::obfuscate_name, Charges, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name,
+    gamelog, gui::obfuscate_name, Beatitude, Charges, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name,
     ObfuscatedName, Position, WantsToDropItem,
 };
 use specs::prelude::*;
@@ -17,6 +17,7 @@ impl<'a> System<'a> for ItemDropSystem {
         WriteStorage<'a, InBackpack>,
         WriteStorage<'a, EquipmentChanged>,
         ReadStorage<'a, MagicItem>,
+        ReadStorage<'a, Beatitude>,
         ReadStorage<'a, ObfuscatedName>,
         ReadExpect<'a, MasterDungeonMap>,
         ReadStorage<'a, Charges>,
@@ -32,6 +33,7 @@ impl<'a> System<'a> for ItemDropSystem {
             mut backpack,
             mut equipment_changed,
             magic_items,
+            beatitudes,
             obfuscated_names,
             dm,
             wands,
@@ -55,7 +57,16 @@ impl<'a> System<'a> for ItemDropSystem {
                     .append("You drop the")
                     .item_name_n(format!(
                         "{}",
-                        obfuscate_name(to_drop.item, &names, &magic_items, &obfuscated_names, &dm, Some(&wands)).0
+                        obfuscate_name(
+                            to_drop.item,
+                            &names,
+                            &magic_items,
+                            &obfuscated_names,
+                            &beatitudes,
+                            &dm,
+                            Some(&wands)
+                        )
+                        .0
                     ))
                     .period()
                     .log();

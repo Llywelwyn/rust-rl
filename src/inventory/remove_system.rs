@@ -1,7 +1,7 @@
 use crate::{
     gamelog,
     gui::{item_colour, obfuscate_name},
-    Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName, WantsToRemoveItem,
+    Beatitude, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName, WantsToRemoveItem,
 };
 use specs::prelude::*;
 
@@ -18,6 +18,7 @@ impl<'a> System<'a> for ItemRemoveSystem {
         WriteStorage<'a, InBackpack>,
         ReadStorage<'a, MagicItem>,
         ReadStorage<'a, ObfuscatedName>,
+        ReadStorage<'a, Beatitude>,
         ReadExpect<'a, MasterDungeonMap>,
     );
 
@@ -31,6 +32,7 @@ impl<'a> System<'a> for ItemRemoveSystem {
             mut backpack,
             magic_items,
             obfuscated_names,
+            beatitudes,
             dm,
         ) = data;
 
@@ -40,7 +42,18 @@ impl<'a> System<'a> for ItemRemoveSystem {
                 if entity == *player_entity {
                     gamelog::Logger::new()
                         .append("You unequip the")
-                        .append_n(obfuscate_name(to_remove.item, &names, &magic_items, &obfuscated_names, &dm, None).0)
+                        .append_n(
+                            obfuscate_name(
+                                to_remove.item,
+                                &names,
+                                &magic_items,
+                                &obfuscated_names,
+                                &beatitudes,
+                                &dm,
+                                None,
+                            )
+                            .0,
+                        )
                         .colour(item_colour(to_remove.item, &names, &magic_items, &dm))
                         .period()
                         .log();
