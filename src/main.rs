@@ -225,7 +225,11 @@ impl GameState for State {
                 new_runstate = RunState::AwaitingInput;
             }
             RunState::AwaitingInput => {
+                // We refresh the index, and run anything that might
+                // still be in the queue, just to make 100% sure that
+                // there are no lingering effects from the last tick.
                 self.run_map_index();
+                effects::run_effects_queue(&mut self.ecs);
                 // Sanity-checking that the player actually *should*
                 // be taking a turn before giving them one. If they
                 // don't have a turn component, go back to ticking.
@@ -242,6 +246,10 @@ impl GameState for State {
                 } else {
                     new_runstate = RunState::Ticking;
                 }
+                // Fire the events queue immediately after the player
+                // turn, just to make 100% sure that everything happens
+                // as the player was expecting it to.
+                effects::run_effects_queue(&mut self.ecs);
             }
             RunState::Ticking => {
                 while new_runstate == RunState::Ticking {
