@@ -17,7 +17,7 @@ const HUNGER_BREAKPOINTS: [(i32, HungerState); 5] = [
     (200, HungerState::Weak),
     (0, HungerState::Fainting),
 ];
-const BASE_CLOCK_DECREMENT_PER_TURN: i32 = 4;
+const BASE_CLOCK_DECREMENT_PER_TURN: i32 = 1;
 
 pub fn get_hunger_state(duration: i32) -> HungerState {
     for (threshold, state) in HUNGER_BREAKPOINTS.iter() {

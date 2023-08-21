@@ -1,5 +1,5 @@
 use super::{Skill, Skills};
-use crate::gui::Class;
+use crate::gui::{Ancestry, Class};
 use rltk::prelude::*;
 use std::cmp::max;
 
@@ -77,19 +77,31 @@ pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
 }
 
 /// Handles stat distribution for a player character.
-pub fn get_attribute_rolls(rng: &mut RandomNumberGenerator, class: Class) -> (i32, i32, i32, i32, i32, i32) {
+pub fn get_attribute_rolls(
+    rng: &mut RandomNumberGenerator,
+    class: Class,
+    ancestry: Ancestry,
+) -> (i32, i32, i32, i32, i32, i32) {
     let (mut str, mut dex, mut con, mut int, mut wis, mut cha) = match class {
         Class::Fighter => (10, 8, 10, 6, 6, 8),
         Class::Rogue => (8, 10, 8, 6, 8, 10),
         Class::Wizard => (6, 8, 6, 10, 10, 8),
         Class::Villager => (6, 6, 6, 6, 6, 6),
     };
-    let remaining_points = 75 - (str + dex + con + int + wis + cha);
+    let mut remaining_points = 75 - (str + dex + con + int + wis + cha);
     let improve_chance: [i32; 6] = match class {
         Class::Fighter => [30, 20, 30, 6, 7, 7],
         Class::Rogue => [18, 30, 20, 9, 8, 15],
         Class::Wizard => [10, 15, 20, 30, 15, 10],
         Class::Villager => [15, 15, 25, 15, 15, 15],
+    };
+    let ancestry_maximums: [i32; 6] = match ancestry {
+        Ancestry::Human => [19, 19, 19, 19, 19, 19],   // 114
+        Ancestry::Elf => [15, 18, 15, 20, 20, 18],     // 106
+        Ancestry::Dwarf => [19, 17, 20, 16, 16, 16],   // 106
+        Ancestry::Gnome => [16, 18, 16, 20, 18, 18],   // 106
+        Ancestry::Catfolk => [16, 20, 16, 16, 18, 20], // 106
+        _ => [18, 18, 18, 18, 18, 18],
     };
     let improve_table = crate::random_table::RandomTable::new()
         .add("Strength", improve_chance[0])
@@ -98,17 +110,61 @@ pub fn get_attribute_rolls(rng: &mut RandomNumberGenerator, class: Class) -> (i3
         .add("Intelligence", improve_chance[3])
         .add("Wisdom", improve_chance[4])
         .add("Charisma", improve_chance[5]);
-    for _i in 0..remaining_points {
+    let mut failed_attempts = 0;
+    while remaining_points > 0 && failed_attempts < 100 {
         let roll = improve_table.roll(rng);
         match roll.as_str() {
-            "Strength" => str += 1,
-            "Dexterity" => dex += 1,
-            "Constitution" => con += 1,
-            "Intelligence" => int += 1,
-            "Wisdom" => wis += 1,
-            "Charisma" => cha += 1,
+            "Strength" => {
+                if str < ancestry_maximums[0] {
+                    str += 1;
+                    remaining_points -= 1;
+                } else {
+                    failed_attempts += 1;
+                }
+            }
+            "Dexterity" => {
+                if dex < ancestry_maximums[1] {
+                    dex += 1;
+                    remaining_points -= 1;
+                } else {
+                    failed_attempts += 1;
+                }
+            }
+            "Constitution" => {
+                if con < ancestry_maximums[2] {
+                    con += 1;
+                    remaining_points -= 1;
+                } else {
+                    failed_attempts += 1;
+                }
+            }
+            "Intelligence" => {
+                if int < ancestry_maximums[3] {
+                    int += 1;
+                    remaining_points -= 1;
+                } else {
+                    failed_attempts += 1;
+                }
+            }
+            "Wisdom" => {
+                if wis < ancestry_maximums[4] {
+                    wis += 1;
+                    remaining_points -= 1;
+                } else {
+                    failed_attempts += 1;
+                }
+            }
+            "Charisma" => {
+                if cha < ancestry_maximums[5] {
+                    cha += 1;
+                    remaining_points -= 1;
+                } else {
+                    failed_attempts += 1;
+                }
+            }
             _ => {}
         }
     }
+    console::log(format!("{}, {}", failed_attempts, remaining_points));
     return (str, dex, con, int, wis, cha);
 }

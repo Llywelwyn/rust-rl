@@ -255,7 +255,7 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
 }
 
 /// Handles player class setup
-pub fn setup_player_class(ecs: &mut World, class: Class) {
+pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
     let player = *ecs.fetch::<Entity>();
     // ATTRIBUTES
     {
@@ -264,7 +264,7 @@ pub fn setup_player_class(ecs: &mut World, class: Class) {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let mut attributes = ecs.write_storage::<Attributes>();
 
-        let (str, dex, con, int, wis, cha) = get_attribute_rolls(&mut rng, class);
+        let (str, dex, con, int, wis, cha) = get_attribute_rolls(&mut rng, class, ancestry);
         attributes
             .insert(
                 player,

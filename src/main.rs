@@ -41,7 +41,7 @@ extern crate lazy_static;
 //Consts
 pub const SHOW_MAPGEN: bool = false;
 pub const LOG_SPAWNING: bool = true;
-pub const LOG_TICKS: bool = true;
+pub const LOG_TICKS: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -410,7 +410,7 @@ impl GameState for State {
                             new_runstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
                         } else {
                             gui::setup_player_ancestry(&mut self.ecs, ancestry);
-                            gui::setup_player_class(&mut self.ecs, class);
+                            gui::setup_player_class(&mut self.ecs, class, ancestry);
                             new_runstate = RunState::PreRun;
                         }
                     }

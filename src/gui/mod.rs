@@ -7,10 +7,10 @@ use super::{
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
+mod character_creation;
 mod cheat_menu;
 mod letter_to_option;
-mod race_selection;
-pub use race_selection::*;
+pub use character_creation::*;
 mod tooltip;
 pub use cheat_menu::*;
 
