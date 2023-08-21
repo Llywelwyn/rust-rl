@@ -45,7 +45,11 @@ macro_rules! apply_flags {
                 "BLOCKS_VISIBILITY" => $eb = $eb.with(BlocksVisibility {}),
                 "ENTRY_TRIGGER" => $eb = $eb.with(EntryTrigger {}),
                 "SINGLE_ACTIVATION" => $eb = $eb.with(SingleActivation {}),
-                "DOOR" => $eb = $eb.with(Door { open: false }),
+                "DOOR" => {
+                    $eb = $eb.with(Door { open: false });
+                    $eb = $eb.with(BlocksVisibility {});
+                    $eb = $eb.with(BlocksTile {});
+                }
                 // RESTORES NUTRITION
                 "FOOD" => $eb = $eb.with(ProvidesNutrition {}),
                 // IS DELETED ON USE

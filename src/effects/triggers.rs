@@ -87,7 +87,7 @@ fn handle_restore_nutrition(
             BUC::Uncursed => 400,
             BUC::Cursed => 200,
         };
-        add_effect(event.source, EffectType::RestoreNutrition { amount }, event.target.clone());
+        add_effect(event.source, EffectType::ModifyNutrition { amount }, event.target.clone());
         logger = logger
             .append("You eat the")
             .colour(item_colour_ecs(ecs, event.entity))

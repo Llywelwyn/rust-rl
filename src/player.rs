@@ -309,9 +309,12 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
         result = crate::spatial::for_each_tile_content_with_runstate(destination_idx, |potential_target| {
             let mut hostile = true;
             if pools.get(potential_target).is_some() {
+                // We get the reaction of the target to this entity --
+                // i.e. in reverse to usual. We want to know if the target
+                //      is hostile to us. If it isn't, we can swap places.
                 let result = crate::raws::get_reactions(
-                    entity,
                     potential_target,
+                    entity,
                     &factions,
                     &ancestries,
                     &crate::raws::RAWS.lock().unwrap(),

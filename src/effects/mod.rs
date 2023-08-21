@@ -29,7 +29,7 @@ pub enum EffectType {
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
     EntityDeath,
     ItemUse { item: Entity },
-    RestoreNutrition { amount: i32 },
+    ModifyNutrition { amount: i32 },
     TriggerFire { trigger: Entity },
 }
 
@@ -116,7 +116,7 @@ fn tile_effect_hits_entities(effect: &EffectType) -> bool {
     match effect {
         EffectType::Damage { .. } => true,
         EffectType::Healing { .. } => true,
-        EffectType::RestoreNutrition { .. } => true,
+        EffectType::ModifyNutrition { .. } => true,
         EffectType::Confusion { .. } => true,
         _ => false,
     }
@@ -139,7 +139,7 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             }
         }
         EffectType::EntityDeath => damage::entity_death(ecs, effect, target),
-        EffectType::RestoreNutrition { .. } => hunger::restore_food(ecs, effect, target),
+        EffectType::ModifyNutrition { .. } => hunger::modify_nutrition(ecs, effect, target),
         _ => {}
     }
 }

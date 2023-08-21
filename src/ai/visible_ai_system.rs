@@ -2,6 +2,7 @@ use crate::{
     raws::Reaction, Chasing, Faction, HasAncestry, Map, Mind, Position, TakingTurn, Telepath, Viewshed,
     WantsToApproach, WantsToFlee,
 };
+use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::HashSet;
 

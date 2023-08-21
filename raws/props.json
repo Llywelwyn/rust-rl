@@ -9,7 +9,8 @@
         "id": "prop_altar",
         "name": "altar",
         "renderable": { "glyph": "_", "fg": "#FFFFFF", "bg": "#000000", "order": 2 },
-        "flags": []
+        "flags": ["ENTRY_TRIGGER"],
+        "effects": { "heal": "8d8" }
     },
     {
         "id": "prop_keg",
