@@ -26,7 +26,7 @@
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "particle_line": "*;#53f06d;75.0;#f9ff9f;100.0", "ranged": "12", "healing": "1d4+2" },
+        "effects": { "particle_line": "*;-;#53f06d;75.0;#f9ff9f;100.0", "ranged": "12", "healing": "1d4+2" },
         "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {
@@ -46,7 +46,7 @@
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "particle_line": "*;#00b7ff;75.0;#f4fc83;100.0", "ranged": "12", "damage": "3d4+3" },
+        "effects": { "particle_line": "*;-;#00b7ff;75.0;#f4fc83;100.0", "ranged": "12", "damage": "3d4+3" },
         "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {
@@ -67,7 +67,7 @@
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
         "effects": {
-            "particle_burst": "*;#FFA500;#000000;600.0;#ff9595;75.0",
+            "particle_burst": "▓;*;~;#FFA500;#000000;500.0;#ffd381;60.0",
             "ranged": "10",
             "damage": "8d6",
             "aoe": "3"
@@ -81,7 +81,7 @@
         "weight": 0.5,
         "value": 100,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "particle_line": "*;#ad56a6;75.0;#cacaca;100.0", "ranged": "10", "confusion": "4" },
+        "effects": { "particle_line": "*;-;#ad56a6;75.0;#cacaca;100.0", "ranged": "10", "confusion": "4" },
         "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {

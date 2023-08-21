@@ -413,6 +413,7 @@ pub struct Charges {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleLine {
     pub glyph: rltk::FontCharType,
+    pub tail_glyph: rltk::FontCharType,
     pub colour: RGB,
     pub lifetime_ms: f32,
     pub trail_colour: RGB,
@@ -429,6 +430,8 @@ pub struct SpawnParticleSimple {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleBurst {
     pub glyph: rltk::FontCharType,
+    pub head_glyph: rltk::FontCharType,
+    pub tail_glyph: rltk::FontCharType,
     pub colour: RGB,
     pub lerp: RGB,
     pub lifetime_ms: f32,

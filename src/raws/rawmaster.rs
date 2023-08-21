@@ -883,10 +883,11 @@ fn parse_particle_line(n: &str) -> SpawnParticleLine {
     let tokens: Vec<_> = n.split(';').collect();
     SpawnParticleLine {
         glyph: to_cp437(tokens[0].chars().next().unwrap()),
-        colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
-        lifetime_ms: tokens[2].parse::<f32>().unwrap(),
-        trail_colour: RGB::from_hex(tokens[3]).expect("Invalid trail RGB"),
-        trail_lifetime_ms: tokens[4].parse::<f32>().unwrap(),
+        tail_glyph: to_cp437(tokens[1].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[2]).expect("Invalid RGB"),
+        lifetime_ms: tokens[3].parse::<f32>().unwrap(),
+        trail_colour: RGB::from_hex(tokens[4]).expect("Invalid trail RGB"),
+        trail_lifetime_ms: tokens[5].parse::<f32>().unwrap(),
     }
 }
 
@@ -903,10 +904,12 @@ fn parse_particle_burst(n: &str) -> SpawnParticleBurst {
     let tokens: Vec<_> = n.split(';').collect();
     SpawnParticleBurst {
         glyph: to_cp437(tokens[0].chars().next().unwrap()),
-        colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
-        lerp: RGB::from_hex(tokens[2]).expect("Invalid LERP RGB"),
-        lifetime_ms: tokens[3].parse::<f32>().unwrap(),
-        trail_colour: RGB::from_hex(tokens[4]).expect("Invalid trail RGB"),
-        trail_lifetime_ms: tokens[5].parse::<f32>().unwrap(),
+        head_glyph: to_cp437(tokens[1].chars().next().unwrap()),
+        tail_glyph: to_cp437(tokens[2].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[3]).expect("Invalid RGB"),
+        lerp: RGB::from_hex(tokens[4]).expect("Invalid LERP RGB"),
+        lifetime_ms: tokens[5].parse::<f32>().unwrap(),
+        trail_colour: RGB::from_hex(tokens[6]).expect("Invalid trail RGB"),
+        trail_lifetime_ms: tokens[7].parse::<f32>().unwrap(),
     }
 }

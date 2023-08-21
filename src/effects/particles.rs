@@ -40,11 +40,12 @@ pub fn handle_burst_particles(ecs: &World, entity: Entity, target: &Targets) {
                 start_pos,
                 end_pos,
                 &SpawnParticleLine {
-                    glyph: part.glyph,
+                    glyph: part.head_glyph,
+                    tail_glyph: part.tail_glyph,
                     colour: part.colour,
-                    trail_colour: part.colour,
+                    trail_colour: part.trail_colour,
                     lifetime_ms: part.trail_lifetime_ms, // 75.0 is good here.
-                    trail_lifetime_ms: part.trail_lifetime_ms + 25.0,
+                    trail_lifetime_ms: part.trail_lifetime_ms,
                 },
             );
             let map = ecs.fetch::<Map>();
@@ -53,7 +54,7 @@ pub fn handle_burst_particles(ecs: &World, entity: Entity, target: &Targets) {
                 Point::new(start_pos % map.width, start_pos / map.width),
                 Point::new(end_pos % map.width, end_pos / map.width),
             );
-            let burst_delay = line.len() as f32 * 75.0;
+            let burst_delay = line.len() as f32 * part.trail_lifetime_ms;
             for i in 0..10 {
                 add_effect(
                     None,
@@ -62,7 +63,7 @@ pub fn handle_burst_particles(ecs: &World, entity: Entity, target: &Targets) {
                         fg: part.colour.lerp(part.lerp, i as f32 * 0.1),
                         bg: RGB::named(BLACK),
                         lifespan: part.lifetime_ms / 10.0, // ~50-80 is good here.
-                        delay: burst_delay + (i as f32 * part.lifetime_ms / 10.0),
+                        delay: burst_delay + (i as f32 * part.lifetime_ms / 10.0), // above + burst_delay
                     },
                     target.clone(),
                 );
@@ -148,7 +149,7 @@ fn spawn_line_particles(ecs: &World, start: i32, end: i32, part: &SpawnParticleL
             add_effect(
                 None,
                 EffectType::Particle {
-                    glyph: to_cp437('-'),
+                    glyph: part.tail_glyph,
                     fg: part.trail_colour,
                     bg: RGB::named(BLACK),
                     lifespan: part.trail_lifetime_ms,
