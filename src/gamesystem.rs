@@ -165,6 +165,5 @@ pub fn get_attribute_rolls(
             _ => {}
         }
     }
-    console::log(format!("{}, {}", failed_attempts, remaining_points));
     return (str, dex, con, int, wis, cha);
 }

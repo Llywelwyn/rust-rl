@@ -854,10 +854,8 @@ pub fn ancestry_reaction(this_ancestry: Ancestry, other_ancestry: Ancestry, raws
     } else {
         let this_ancestry = get_ancestry_string(this_ancestry);
         let other_ancestry = get_ancestry_string(other_ancestry);
-        console::log(format!("{:?}", this_ancestry));
         if raws.ancestry_index.contains_key(this_ancestry) {
             let mine = &raws.ancestry_index[this_ancestry];
-            console::log(format!("{:?}", mine));
             if mine.contains(other_ancestry) {
                 return Some(Reaction::Ignore);
             }
