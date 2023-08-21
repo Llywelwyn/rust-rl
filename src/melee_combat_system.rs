@@ -1,8 +1,11 @@
 use super::{
     effects::{add_effect, EffectType, Targets},
-    gamelog, gamesystem, ArmourClassBonus, Attributes, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon,
-    MultiAttack, Name, NaturalAttacks, ParticleBuilder, Pools, Position, Skill, Skills, WantsToMelee, WeaponAttribute,
+    gamelog, gamesystem,
+    gui::renderable_colour,
+    ArmourClassBonus, Attributes, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon, MultiAttack, Name,
+    NaturalAttacks, ParticleBuilder, Pools, Position, Renderable, Skill, Skills, WantsToMelee, WeaponAttribute,
 };
+use rltk::prelude::*;
 use specs::prelude::*;
 
 pub struct MeleeCombatSystem {}
@@ -11,6 +14,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
     type SystemData = (
         Entities<'a>,
         ReadExpect<'a, Entity>,
+        ReadStorage<'a, Renderable>,
         WriteStorage<'a, WantsToMelee>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Attributes>,
@@ -31,6 +35,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         let (
             entities,
             player_entity,
+            renderables,
             mut wants_melee,
             names,
             attributes,
@@ -230,22 +235,30 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         something_to_log = true;
                         logger = logger // You hit the <name>.
                             .append("You hit the")
-                            .npc_name_n(&target_name.name)
+                            .colour(renderable_colour(&renderables, wants_melee.target))
+                            .append_n(&target_name.name)
+                            .colour(WHITE)
                             .period();
                     } else if wants_melee.target == *player_entity {
                         something_to_log = true;
                         logger = logger // <name> hits you!
                             .append("The")
-                            .npc_name(&name.name)
+                            .colour(renderable_colour(&renderables, entity))
+                            .append(&name.name)
+                            .colour(WHITE)
                             .append(attack_verb)
                             .append("you!");
                     } else {
                         gamelog::Logger::new() // <name> misses the <target>.
                             .append("The")
-                            .npc_name(&name.name)
+                            .colour(renderable_colour(&renderables, entity))
+                            .append(&name.name)
+                            .colour(WHITE)
                             .append(attack_verb)
                             .append("the")
-                            .npc_name_n(&target_name.name)
+                            .colour(renderable_colour(&renderables, wants_melee.target))
+                            .append_n(&target_name.name)
+                            .colour(WHITE)
                             .period()
                             .log();
                     }
@@ -266,16 +279,20 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         something_to_log = true;
                         logger = logger // <name> misses!
                             .append("The")
-                            .npc_name(&name.name)
-                            .colour(rltk::WHITE)
+                            .colour(renderable_colour(&renderables, entity))
+                            .append(&name.name)
+                            .colour(WHITE)
                             .append("misses!");
                     } else {
                         gamelog::Logger::new() // <name> misses the <target>.
                             .append("The")
-                            .npc_name(&name.name)
-                            .colour(rltk::WHITE)
+                            .colour(renderable_colour(&renderables, entity))
+                            .append(&name.name)
+                            .colour(WHITE)
                             .append("misses the")
-                            .npc_name_n(&target_name.name)
+                            .colour(renderable_colour(&renderables, wants_melee.target))
+                            .append_n(&target_name.name)
+                            .colour(WHITE)
                             .period()
                             .log();
                     }

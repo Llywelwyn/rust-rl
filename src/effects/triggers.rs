@@ -84,7 +84,7 @@ fn handle_restore_nutrition(ecs: &mut World, event: &mut EventInfo, mut logger: 
             .append_n(obfuscate_name_ecs(ecs, event.entity).0)
             .colour(WHITE)
             .period()
-            .buc(event.buc.clone(), Some("Blech! Rotten."), Some("Delicious."));
+            .buc(event.buc.clone(), Some("Blech! Rotten"), Some("Delicious"));
         event.log = true;
     }
     return logger;
@@ -108,8 +108,13 @@ fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
 fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
     if let Some(healing_item) = ecs.read_storage::<ProvidesHealing>().get(event.entity) {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        let roll = rng.roll_dice(healing_item.n_dice, healing_item.sides) + healing_item.modifier;
-        add_effect(event.source, EffectType::Healing { amount: roll }, event.target.clone());
+        let buc_mod = match event.buc {
+            BUC::Blessed => 2,
+            BUC::Cursed => -1,
+            _ => 0,
+        };
+        let roll = rng.roll_dice(healing_item.n_dice + buc_mod, healing_item.sides) + healing_item.modifier;
+        add_effect(event.source, EffectType::Healing { amount: roll, buc: event.buc.clone() }, event.target.clone());
         for target in get_entity_targets(&event.target) {
             if ecs.read_storage::<Prop>().get(target).is_some() || ecs.read_storage::<Item>().get(target).is_some() {
                 continue;

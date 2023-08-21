@@ -2,11 +2,13 @@ use super::{
     effects::{add_effect, EffectType, Targets},
     gamelog,
     gui::obfuscate_name_ecs,
+    gui::renderable_colour,
     raws::Reaction,
     Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved, Faction, HasAncestry, Hidden, HungerClock,
     HungerState, Item, Map, Name, ParticleBuilder, Player, Pools, Position, Renderable, RunState, State, Telepath,
     TileType, Viewshed, WantsToMelee, WantsToPickupItem,
 };
+use rltk::prelude::*;
 use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
@@ -402,7 +404,14 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
 
     for m in swap_entities.iter() {
         if let Some(name) = names.get(m.0) {
-            gamelog::Logger::new().append("You swap places with the").npc_name_n(&name.name).period().log();
+            let renderables = ecs.read_storage::<Renderable>();
+            gamelog::Logger::new()
+                .append("You swap places with the")
+                .colour(renderable_colour(&renderables, m.0))
+                .append_n(&name.name)
+                .colour(WHITE)
+                .period()
+                .log();
         }
         if let Some(their_pos) = positions.get_mut(m.0) {
             let old_idx = map.xy_idx(their_pos.x, their_pos.y);

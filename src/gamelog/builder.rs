@@ -42,9 +42,11 @@ impl Logger {
 
     pub fn buc<T: ToString>(mut self, buc: BUC, cursed: Option<T>, blessed: Option<T>) -> Self {
         if buc == BUC::Cursed && cursed.is_some() {
-            self.fragments.push(LogFragment { colour: RGB::named(RED), text: cursed.unwrap().to_string() });
+            self.fragments.push(LogFragment { colour: RGB::named(SALMON), text: cursed.unwrap().to_string() });
+            self.fragments.push(LogFragment { colour: self.current_colour, text: ". ".to_string() });
         } else if buc == BUC::Blessed && blessed.is_some() {
-            self.fragments.push(LogFragment { colour: RGB::named(GOLD), text: blessed.unwrap().to_string() });
+            self.fragments.push(LogFragment { colour: RGB::named(CYAN), text: blessed.unwrap().to_string() });
+            self.fragments.push(LogFragment { colour: self.current_colour, text: ". ".to_string() });
         }
         return self;
     }

@@ -23,7 +23,7 @@ lazy_static! {
 
 pub enum EffectType {
     Damage { amount: i32 },
-    Healing { amount: i32 },
+    Healing { amount: i32, buc: BUC },
     Confusion { turns: i32 },
     Bloodstain,
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
@@ -141,5 +141,13 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
         EffectType::EntityDeath => damage::entity_death(ecs, effect, target),
         EffectType::RestoreNutrition { .. } => hunger::restore_food(ecs, effect, target),
         _ => {}
+    }
+}
+
+pub fn get_noncursed(buc: &BUC) -> bool {
+    if buc == &BUC::Cursed {
+        false
+    } else {
+        true
     }
 }

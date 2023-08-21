@@ -62,6 +62,7 @@ fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
             &raws::RAWS.lock().unwrap(),
             ecs,
             &key,
+            None,
             raws::SpawnType::AtPosition { x: idx.0, y: idx.1 },
             difficulty,
         );

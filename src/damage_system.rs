@@ -1,4 +1,7 @@
-use super::{gamelog, Equipped, InBackpack, Item, LootTable, Name, Player, Pools, Position, RunState};
+use super::{
+    gamelog, gui::renderable_colour, Equipped, InBackpack, Item, LootTable, Name, Player, Pools, Position, Renderable,
+    RunState,
+};
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -11,6 +14,7 @@ pub fn delete_the_dead(ecs: &mut World) {
         let names = ecs.read_storage::<Name>();
         let items = ecs.read_storage::<Item>();
         let entities = ecs.entities();
+        let renderables = ecs.read_storage::<Renderable>();
         for (entity, stats) in (&entities, &combat_stats).join() {
             if stats.hit_points.current < 1 {
                 let player = players.get(entity);
@@ -22,14 +26,16 @@ pub fn delete_the_dead(ecs: &mut World) {
                             if let Some(_item) = item {
                                 gamelog::Logger::new()
                                     .append("The")
-                                    .npc_name(&victim_name.name)
+                                    .colour(renderable_colour(&renderables, entity))
+                                    .append(&victim_name.name)
                                     .colour(rltk::WHITE)
                                     .append("is destroyed!")
                                     .log();
                             } else {
                                 gamelog::Logger::new()
                                     .append("The")
-                                    .npc_name(&victim_name.name)
+                                    .colour(renderable_colour(&renderables, entity))
+                                    .append(&victim_name.name)
                                     .colour(rltk::WHITE)
                                     .append("dies!")
                                     .log();
@@ -52,6 +58,7 @@ pub fn delete_the_dead(ecs: &mut World) {
             &crate::raws::RAWS.lock().unwrap(),
             ecs,
             &loot.0,
+            None,
             crate::raws::SpawnType::AtPosition { x: loot.1.x, y: loot.1.y },
             0,
         );

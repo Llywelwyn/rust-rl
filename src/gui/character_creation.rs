@@ -1,5 +1,5 @@
 use super::{gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State};
-use crate::{ai::NORMAL_SPEED, raws, Attribute, Energy, HasAncestry, HasClass, Pool, Skill, Skills, Telepath};
+use crate::{ai::NORMAL_SPEED, raws, Attribute, Energy, HasAncestry, HasClass, Pool, Skill, Skills, Telepath, BUC};
 use rltk::prelude::*;
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
@@ -300,10 +300,25 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
     let mut rng = RandomNumberGenerator::new();
     let starts_with = get_starting_inventory(class, &mut rng);
     for item in starts_with.0.iter() {
-        raws::spawn_named_entity(&raws::RAWS.lock().unwrap(), ecs, item, raws::SpawnType::Equipped { by: player }, 0);
+        let buc = if rng.roll_dice(1, 3) == 1 { Some(BUC::Blessed) } else { Some(BUC::Uncursed) };
+        raws::spawn_named_entity(
+            &raws::RAWS.lock().unwrap(),
+            ecs,
+            item,
+            buc,
+            raws::SpawnType::Equipped { by: player },
+            0,
+        );
     }
     for item in starts_with.1.iter() {
-        raws::spawn_named_entity(&raws::RAWS.lock().unwrap(), ecs, item, raws::SpawnType::Carried { by: player }, 0);
+        raws::spawn_named_entity(
+            &raws::RAWS.lock().unwrap(),
+            ecs,
+            item,
+            None,
+            raws::SpawnType::Carried { by: player },
+            0,
+        );
     }
 }
 

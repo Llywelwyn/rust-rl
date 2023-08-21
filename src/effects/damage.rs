@@ -1,4 +1,4 @@
-use super::{add_effect, targeting, EffectSpawner, EffectType, Entity, Targets, World};
+use super::{add_effect, get_noncursed, targeting, EffectSpawner, EffectType, Entity, Targets, World};
 use crate::{
     gamelog,
     gamesystem::{hp_per_level, mana_per_level},
@@ -40,8 +40,14 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
 pub fn heal_damage(ecs: &mut World, heal: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
     if let Some(pool) = pools.get_mut(target) {
-        if let EffectType::Healing { amount } = heal.effect_type {
+        if let EffectType::Healing { amount, buc } = &heal.effect_type {
+            let before = pool.hit_points.current;
             pool.hit_points.current = i32::min(pool.hit_points.max, pool.hit_points.current + amount);
+            if pool.hit_points.current - before < *amount && get_noncursed(buc) {
+                // If the heal was not fully effective, and healing source was noncursed, increase max HP by 1.
+                pool.hit_points.max += 1;
+                pool.hit_points.current += 1;
+            }
             add_effect(
                 None,
                 EffectType::Particle {

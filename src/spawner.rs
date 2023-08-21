@@ -162,6 +162,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         &raws::RAWS.lock().unwrap(),
         ecs,
         &spawn.1,
+        None,
         raws::SpawnType::AtPosition { x, y },
         map_difficulty,
     );

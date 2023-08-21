@@ -78,6 +78,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                 if target == *player_entity {
                     logger = logger
                         .append("You equip the")
+                        .colour(item_colour(wants_to_use_item.item, &beatitudes, &dm))
                         .append_n(
                             obfuscate_name(
                                 wants_to_use_item.item,
@@ -90,7 +91,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                             )
                             .0,
                         )
-                        .colour(item_colour(wants_to_use_item.item, &beatitudes, &dm))
+                        .colour(rltk::WHITE)
                         .period();
                     logger.log();
                 }

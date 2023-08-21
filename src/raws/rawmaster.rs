@@ -119,11 +119,12 @@ pub fn spawn_named_entity(
     raws: &RawMaster,
     ecs: &mut World,
     key: &str,
+    buc: Option<BUC>,
     pos: SpawnType,
     map_difficulty: i32,
 ) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
-        return spawn_named_item(raws, ecs, key, pos);
+        return spawn_named_item(raws, ecs, key, buc, pos);
     } else if raws.mob_index.contains_key(key) {
         return spawn_named_mob(raws, ecs, key, pos, map_difficulty);
     } else if raws.prop_index.contains_key(key) {
@@ -132,7 +133,13 @@ pub fn spawn_named_entity(
     None
 }
 
-pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_item(
+    raws: &RawMaster,
+    ecs: &mut World,
+    key: &str,
+    buc: Option<BUC>,
+    pos: SpawnType,
+) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         let item_template = &raws.raws.items[raws.item_index[key]];
         let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
@@ -140,7 +147,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         let potion_names = dm.potion_map.clone();
         let wand_names = dm.wand_map.clone();
         let identified_items = dm.identified_items.clone();
-        let roll = ecs.write_resource::<RandomNumberGenerator>().roll_dice(1, 3);
+        let roll = ecs.write_resource::<RandomNumberGenerator>().roll_dice(1, 6);
         std::mem::drop(dm);
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
@@ -151,9 +158,17 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         if let Some(renderable) = &item_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
         }
-
+        // BEATITUDE
+        let mut buc = if let Some(buc_status) = buc {
+            buc_status
+        } else {
+            match roll {
+                1 => BUC::Cursed,
+                2 => BUC::Blessed,
+                _ => BUC::Uncursed,
+            }
+        };
         let mut weapon_type = -1;
-        let mut buc = BUC::Uncursed;
         if let Some(flags) = &item_template.flags {
             for flag in flags.iter() {
                 match flag.as_str() {
@@ -176,13 +191,6 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                     "FINESSE" => weapon_type = 3,
                     _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
                 }
-            }
-        }
-        if buc == BUC::Uncursed {
-            match roll {
-                1 => buc = BUC::Cursed,
-                2 => buc = BUC::Blessed,
-                _ => {}
             }
         }
         eb = eb.with(Beatitude { buc, known: true });
@@ -535,7 +543,7 @@ pub fn spawn_named_mob(
         // Build entity, then check for anything they're wearing
         if let Some(wielding) = &mob_template.equipped {
             for tag in wielding.iter() {
-                spawn_named_entity(raws, ecs, tag, SpawnType::Equipped { by: new_mob }, map_difficulty);
+                spawn_named_entity(raws, ecs, tag, None, SpawnType::Equipped { by: new_mob }, map_difficulty);
             }
         }
 
@@ -669,7 +677,7 @@ pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
         static ref DICE_RE: Regex = Regex::new(r"(\d+)d(\d+)([\+\-]\d+)?").unwrap();
     }
     let mut n_dice = 1;
-    let mut die_type = 4;
+    let mut die_type = 1;
     let mut die_bonus = 0;
     for cap in DICE_RE.captures_iter(dice) {
         if let Some(group) = cap.get(1) {
