@@ -10,6 +10,85 @@ use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::{HashMap, HashSet};
 
+macro_rules! apply_effects {
+    ($effects:expr, $eb:expr) => {
+        for effect in $effects.iter() {
+            let effect_name = effect.0.as_str();
+            match effect_name {
+                "healing" => {
+                    let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
+                    $eb = $eb.with(ProvidesHealing { n_dice, sides, modifier })
+                }
+                "ranged" => $eb = $eb.with(Ranged { range: effect.1.parse::<i32>().unwrap() }),
+                "damage" => {
+                    let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
+                    $eb = $eb.with(InflictsDamage { n_dice, sides, modifier })
+                }
+                "aoe" => $eb = $eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
+                "confusion" => $eb = $eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
+                "ac" => $eb = $eb.with(ArmourClassBonus { amount: effect.1.parse::<i32>().unwrap() }),
+                "magicmapper" => $eb = $eb.with(MagicMapper {}),
+                "digger" => $eb = $eb.with(Digger {}),
+                _ => console::log(format!("Warning: effect {} not implemented.", effect_name)),
+            }
+        }
+    };
+}
+
+macro_rules! apply_flags {
+    ($flags:expr, $eb:expr) => {
+        for flag in $flags.iter() {
+            match flag.as_str() {
+                // --- PROP/ITEM FLAGS BEGIN HERE ---
+                "HIDDEN" => $eb = $eb.with(Hidden {}),
+                "BLOCKS_TILE" => $eb = $eb.with(BlocksTile {}),
+                "BLOCKS_VISIBILITY" => $eb = $eb.with(BlocksVisibility {}),
+                "ENTRY_TRIGGER" => $eb = $eb.with(EntryTrigger {}),
+                "SINGLE_ACTIVATION" => $eb = $eb.with(SingleActivation {}),
+                "DOOR" => $eb = $eb.with(Door { open: false }),
+                // RESTORES NUTRITION
+                "FOOD" => $eb = $eb.with(ProvidesNutrition {}),
+                // IS DELETED ON USE
+                "CONSUMABLE" => $eb = $eb.with(Consumable {}),
+                // HAS CHARGES
+                "CHARGES" => $eb = $eb.with(Charges { uses: 3, max_uses: 3 }),
+                // CAN BE DESTROYED BY DAMAGE
+                "DESTRUCTIBLE" => $eb = $eb.with(Destructible {}),
+                // EQUIP SLOTS
+                "EQUIP_MELEE" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Melee }),
+                "EQUIP_SHIELD" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Shield }),
+                "EQUIP_HEAD" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Head }),
+                "EQUIP_BODY" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Body }),
+                "EQUIP_FEET" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Feet }),
+                "EQUIP_HANDS" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Hands }),
+                "EQUIP_NECK" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Neck }),
+                "EQUIP_BACK" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Back }),
+                // --- MOB FLAGS BEGIN HERE ---
+                // RACES
+                "IS_PLAYER" => $eb = $eb.with(Player {}),
+                "IS_HUMAN" => $eb = $eb.with(HasAncestry { name: Ancestry::Human }),
+                "IS_DWARF" => $eb = $eb.with(HasAncestry { name: Ancestry::Dwarf }),
+                "IS_ELF" => $eb = $eb.with(HasAncestry { name: Ancestry::Elf }),
+                "IS_CATFOLK" => $eb = $eb.with(HasAncestry { name: Ancestry::Catfolk }),
+                "IS_GNOME" => $eb = $eb.with(HasAncestry { name: Ancestry::Gnome }),
+                // FACTIONS
+                "MINDLESS" => $eb = $eb.with(Faction { name: "mindless".to_string() }),
+                "NEUTRAL" => $eb = $eb.with(Faction { name: "neutral".to_string() }),
+                "HERBIVORE" => $eb = $eb.with(Faction { name: "herbivore".to_string() }),
+                "CARNIVORE" => $eb = $eb.with(Faction { name: "carnivore".to_string() }),
+                // MOVEMENT FLAGS (DEFAULTS TO WANDERING)
+                "STATIC" => $eb = $eb.with(MoveMode { mode: Movement::Static }),
+                "RANDOM_PATH" => $eb = $eb.with(MoveMode { mode: Movement::RandomWaypoint { path: None } }),
+                // ATTRIBUTES/MISC
+                "SMALL_GROUP" => {} // These flags are for region spawning,
+                "LARGE_GROUP" => {} // and don't need to apply a component.
+                "MULTIATTACK" => $eb = $eb.with(MultiAttack {}),
+                _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
+            }
+        }
+    };
+}
+
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },
     Equipped { by: Entity },
@@ -159,7 +238,7 @@ pub fn spawn_named_item(
             eb = eb.with(get_renderable_component(renderable));
         }
         // BEATITUDE
-        let mut buc = if let Some(buc_status) = buc {
+        let buc = if let Some(buc_status) = buc {
             buc_status
         } else {
             match roll {
@@ -168,60 +247,15 @@ pub fn spawn_named_item(
                 _ => BUC::Uncursed,
             }
         };
-        let mut weapon_type = -1;
-        if let Some(flags) = &item_template.flags {
-            for flag in flags.iter() {
-                match flag.as_str() {
-                    "CONSUMABLE" => eb = eb.with(Consumable {}),
-                    "DESTRUCTIBLE" => eb = eb.with(Destructible {}),
-                    "CURSED" => buc = BUC::Cursed,
-                    "BLESSED" => buc = BUC::Blessed,
-                    "EQUIP_MELEE" => eb = eb.with(Equippable { slot: EquipmentSlot::Melee }),
-                    "EQUIP_SHIELD" => eb = eb.with(Equippable { slot: EquipmentSlot::Shield }),
-                    "EQUIP_HEAD" => eb = eb.with(Equippable { slot: EquipmentSlot::Head }),
-                    "EQUIP_BODY" => eb = eb.with(Equippable { slot: EquipmentSlot::Body }),
-                    "EQUIP_FEET" => eb = eb.with(Equippable { slot: EquipmentSlot::Feet }),
-                    "EQUIP_HANDS" => eb = eb.with(Equippable { slot: EquipmentSlot::Hands }),
-                    "EQUIP_NECK" => eb = eb.with(Equippable { slot: EquipmentSlot::Neck }),
-                    "EQUIP_BACK" => eb = eb.with(Equippable { slot: EquipmentSlot::Back }),
-                    "CHARGES" => eb = eb.with(Charges { uses: 3, max_uses: 3 }),
-                    "FOOD" => eb = eb.with(ProvidesNutrition {}),
-                    "STRENGTH" => weapon_type = 0,
-                    "DEXTERITY" => weapon_type = 2,
-                    "FINESSE" => weapon_type = 3,
-                    _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
-                }
-            }
-        }
         eb = eb.with(Beatitude { buc, known: true });
 
-        let mut base_damage = "1d4";
-        let mut hit_bonus = 0;
-
-        if let Some(effects_list) = &item_template.effects {
-            for effect in effects_list.iter() {
-                let effect_name = effect.0.as_str();
-                match effect_name {
-                    "provides_healing" => {
-                        let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
-                        eb = eb.with(ProvidesHealing { n_dice, sides, modifier })
-                    }
-                    "ranged" => eb = eb.with(Ranged { range: effect.1.parse::<i32>().unwrap() }),
-                    "damage" => {
-                        let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
-                        eb = eb.with(InflictsDamage { n_dice, sides, modifier })
-                    }
-                    "aoe" => eb = eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
-                    "confusion" => eb = eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
-                    "base_damage" => base_damage = effect.1,
-                    "hit_bonus" => hit_bonus = effect.1.parse::<i32>().unwrap(),
-                    "ac" => eb = eb.with(ArmourClassBonus { amount: effect.1.parse::<i32>().unwrap() }),
-                    "magicmapper" => eb = eb.with(MagicMapper {}),
-                    "digger" => eb = eb.with(Digger {}),
-                    _ => rltk::console::log(format!("Warning: effect {} not implemented.", effect_name)),
-                }
-            }
+        if let Some(flags) = &item_template.flags {
+            apply_flags!(flags, eb);
         }
+        if let Some(effects_list) = &item_template.effects {
+            apply_effects!(effects_list, eb);
+        }
+
         if let Some(magic_item) = &item_template.magic {
             let item_class = match magic_item.class.as_str() {
                 "common" => MagicItemClass::Common,
@@ -231,7 +265,6 @@ pub fn spawn_named_item(
                 _ => MagicItemClass::Legendary,
             };
             eb = eb.with(MagicItem { class: item_class });
-
             if !identified_items.contains(&item_template.name.name) {
                 #[allow(clippy::single_match)]
                 match magic_item.naming.as_str() {
@@ -263,20 +296,20 @@ pub fn spawn_named_item(
             }
         }
 
-        if weapon_type != -1 {
-            let (n_dice, die_type, bonus) = parse_dice_string(base_damage);
-            let mut wpn = MeleeWeapon {
-                attribute: WeaponAttribute::Strength,
+        if let Some(weapon) = &item_template.equip {
+            let (n_dice, die_type, bonus) = parse_dice_string(weapon.damage.as_str());
+            let weapon_attribute = match weapon.flag.as_str() {
+                "DEXTERITY" => WeaponAttribute::Dexterity,
+                "FINESSE" => WeaponAttribute::Finesse,
+                _ => WeaponAttribute::Strength,
+            };
+            let wpn = MeleeWeapon {
+                attribute: weapon_attribute,
                 damage_n_dice: n_dice,
                 damage_die_type: die_type,
                 damage_bonus: bonus,
-                hit_bonus: hit_bonus,
+                hit_bonus: weapon.to_hit.unwrap_or(0),
             };
-            match weapon_type {
-                0 => wpn.attribute = WeaponAttribute::Strength,
-                1 => wpn.attribute = WeaponAttribute::Dexterity,
-                _ => wpn.attribute = WeaponAttribute::Finesse,
-            }
             eb = eb.with(wpn);
         }
 
@@ -306,7 +339,6 @@ pub fn spawn_named_mob(
         }
 
         let mut eb;
-        let mut xp_value = 1;
         // New entity with a position, name, combatstats, and viewshed
         eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
         eb = spawn_position(pos, eb, key, raws);
@@ -315,78 +347,22 @@ pub fn spawn_named_mob(
         if let Some(renderable) = &mob_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
         }
+        eb = eb.with(BlocksTile {});
+        eb = eb.with(Faction { name: "hostile".to_string() });
+        eb = eb.with(MoveMode { mode: Movement::Random });
+        let mut xp_value = 1;
         let mut has_mind = true;
-        let mut has_faction = false;
-        let mut blocks_tile = true;
-        let mut has_move_mode = false;
         if let Some(flags) = &mob_template.flags {
-            for flag in flags.iter() {
-                match flag.as_str() {
-                    "PASSABLE" => blocks_tile = false,
-                    "STATIC" => {
-                        eb = eb.with(MoveMode { mode: Movement::Static });
-                        has_move_mode = true;
-                    }
-                    "RANDOM_PATH" => {
-                        eb = eb.with(MoveMode { mode: Movement::RandomWaypoint { path: None } });
-                        has_move_mode = true;
-                    }
-                    "MINDLESS" => {
-                        eb = eb.with(Faction { name: "mindless".to_string() });
-                        has_faction = true;
-                        has_mind = false;
-                    }
-                    "NEUTRAL" => {
-                        eb = eb.with(Faction { name: "neutral".to_string() });
-                        has_faction = true;
-                    }
-                    "HERBIVORE" => {
-                        eb = eb.with(Faction { name: "herbivore".to_string() });
-                        has_faction = true;
-                    }
-                    "CARNIVORE" => {
-                        eb = eb.with(Faction { name: "carnivore".to_string() });
-                        has_faction = true;
-                    }
-                    "IS_GNOME" => {
-                        eb = eb.with(HasAncestry { name: Ancestry::Gnome });
-                    }
-                    "IS_DWARF" => {
-                        eb = eb.with(HasAncestry { name: Ancestry::Dwarf });
-                    }
-                    "IS_HUMAN" => {
-                        eb = eb.with(HasAncestry { name: Ancestry::Human });
-                    }
-                    "IS_CATFOLK" => {
-                        eb = eb.with(HasAncestry { name: Ancestry::Catfolk });
-                    }
-                    "IS_Elf" => {
-                        eb = eb.with(HasAncestry { name: Ancestry::Elf });
-                    }
-                    "SMALL_GROUP" => {} // These flags are for region spawning,
-                    "LARGE_GROUP" => {} // and don't matter here (yet)?
-                    "MULTIATTACK" => {
-                        eb = eb.with(MultiAttack {});
-                        xp_value += 3;
-                    }
-                    _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
-                }
+            apply_flags!(flags, eb);
+            if flags.contains(&"MULTIATTACK".to_string()) {
+                xp_value += 3;
+            }
+            if flags.contains(&"MINDLESS".to_string()) {
+                has_mind = false;
             }
         }
-        if blocks_tile {
-            eb = eb.with(BlocksTile {});
-        }
-        // If we didn't already add one, just move randomly.
-        if !has_move_mode {
-            eb = eb.with(MoveMode { mode: Movement::Random });
-        }
-        // If we're anything other than MINDLESS, add a mind.
         if has_mind {
             eb = eb.with(Mind {});
-        }
-        // If we didn't add a faction flag, default to hostile (attacks everything except other hostiles).
-        if !has_faction {
-            eb = eb.with(Faction { name: "hostile".to_string() });
         }
         // Add quips, if we have some listed.
         if let Some(quips) = &mob_template.quips {
@@ -554,57 +530,31 @@ pub fn spawn_named_mob(
 
 pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     if raws.prop_index.contains_key(key) {
+        // ENTITY BUILDER PREP
         let prop_template = &raws.raws.props[raws.prop_index[key]];
-
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
         eb = spawn_position(pos, eb, key, raws);
+        // APPLY MANDATORY COMPONENTS FOR A PROP:
+        //  - Name
+        //  - Prop {}
+        eb = eb.with(Name { name: prop_template.name.clone(), plural: prop_template.name.clone() });
+        eb = eb.with(Prop {});
+        // APPLY OPTIONAL COMPONENTS FOR A PROP:
+        // - Renderable
+        // - Flags
+        // - Effects
         if let Some(renderable) = &prop_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
         }
-        eb = eb.with(Name { name: prop_template.name.clone(), plural: prop_template.name.clone() });
-        eb = eb.with(Prop {});
 
         if let Some(flags) = &prop_template.flags {
-            for flag in flags.iter() {
-                match flag.as_str() {
-                    "HIDDEN" => eb = eb.with(Hidden {}),
-                    "BLOCKS_TILE" => eb = eb.with(BlocksTile {}),
-                    "BLOCKS_VISIBILITY" => eb = eb.with(BlocksVisibility {}),
-                    "ENTRY_TRIGGER" => eb = eb.with(EntryTrigger {}),
-                    "SINGLE_ACTIVATION" => eb = eb.with(SingleActivation {}),
-                    "DOOR" => {
-                        // TODO: Spawn some doors open?
-                        let open = false;
-                        eb = eb.with(Door { open: open });
-                        if !open {
-                            eb = eb.with(BlocksTile {});
-                            eb = eb.with(BlocksVisibility {});
-                        }
-                    }
-                    _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
-                }
-            }
+            apply_flags!(flags, eb);
         }
 
         if let Some(effects_list) = &prop_template.effects {
-            for effect in effects_list.iter() {
-                let effect_name = effect.0.as_str();
-                match effect_name {
-                    "damage" => {
-                        let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
-                        eb = eb.with(InflictsDamage { n_dice, sides, modifier })
-                    }
-                    "aoe" => eb = eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
-                    "healing" => {
-                        let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
-                        eb = eb.with(ProvidesHealing { n_dice, sides, modifier })
-                    }
-                    "confusion" => eb = eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
-                    _ => rltk::console::log(format!("Warning: effect {} not implemented.", effect_name)),
-                }
-            }
+            apply_effects!(effects_list, eb);
         }
-
+        // BUILD THE ENTITY
         return Some(eb.build());
     }
     None
@@ -702,7 +652,6 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
     if let Some(flags) = &item.flags {
         for flag in flags {
             match flag.as_str() {
-                "EQUIP_MELEE" => return EquipmentSlot::Melee,
                 "EQUIP_SHIELD" => return EquipmentSlot::Shield,
                 "EQUIP_BODY" => return EquipmentSlot::Body,
                 "EQUIP_HEAD" => return EquipmentSlot::Head,
@@ -712,6 +661,12 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
                 "EQUIP_HANDS" => return EquipmentSlot::Hands,
                 _ => {}
             }
+        }
+    }
+    if let Some(equip) = &item.equip {
+        match equip.slot.as_str() {
+            "EQUIP_MELEE" => return EquipmentSlot::Melee,
+            _ => {}
         }
     }
     panic!("Trying to equip {}, but it has no slot tag.", tag);

@@ -6,7 +6,7 @@
         "weight": 1,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "provides_healing": "4d4+2" },
+        "effects": { "healing": "4d4+2" },
         "magic": { "class": "uncommon", "naming": "potion" }
     },
     {
@@ -16,7 +16,7 @@
         "weight": 1,
         "value": 25,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "provides_healing": "2d4+2" },
+        "effects": { "healing": "2d4+2" },
         "magic": { "class": "uncommon", "naming": "potion" }
     },
     {
@@ -26,7 +26,7 @@
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "ranged": "12", "provides_healing": "1d4+2" },
+        "effects": { "ranged": "12", "healing": "1d4+2" },
         "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {
@@ -36,7 +36,7 @@
         "weight": 0.5,
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "ranged": "12", "aoe": "3", "provides_healing": "1d4+2" },
+        "effects": { "ranged": "12", "aoe": "3", "healing": "1d4+2" },
         "magic": { "class": "rare", "naming": "scroll" }
     },
     {
@@ -125,8 +125,7 @@
         "renderable": { "glyph": ")", "fg": "#808080", "bg": "#000000", "order": 2 },
         "weight": 1,
         "value": 2,
-        "flags": ["EQUIP_MELEE", "FINESSE"],
-        "effects": { "base_damage": "1d4" }
+        "equip": { "slot": "EQUIP_MELEE", "flag": "FINESSE", "damage": "1d4", "to_hit": 0 }
     },
     {
         "id": "equip_shortsword",
@@ -134,8 +133,7 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 10,
-        "flags": ["EQUIP_MELEE", "STRENGTH"],
-        "effects": { "base_damage": "1d6" }
+        "equip": { "slot": "EQUIP_MELEE", "flag": "STRENGTH", "damage": "1d6", "to_hit": 0 }
     },
     {
         "id": "equip_rapier",
@@ -143,8 +141,7 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 10,
-        "flags": ["EQUIP_MELEE", "FINESSE"],
-        "effects": { "base_damage": "1d8" }
+        "equip": { "slot": "EQUIP_MELEE", "flag": "FINESSE", "damage": "1d8", "to_hit": 0 }
     },
     {
         "id": "equip_pitchfork",
@@ -152,8 +149,7 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 5,
-        "flags": ["EQUIP_MELEE", "FINESSE"],
-        "effects": { "base_damage": "1d6" }
+        "equip": { "slot": "EQUIP_MELEE", "flag": "FINESSE", "damage": "1d6", "to_hit": 0 }
     },
     {
         "id": "equip_sickle",
@@ -161,8 +157,7 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 5,
-        "flags": ["EQUIP_MELEE", "FINESSE"],
-        "effects": { "base_damage": "1d6" }
+        "equip": { "slot": "EQUIP_MELEE", "flag": "FINESSE", "damage": "1d6", "to_hit": 0 }
     },
     {
         "id": "equip_handaxe",
@@ -170,8 +165,7 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 5,
-        "flags": ["EQUIP_MELEE", "FINESSE"],
-        "effects": { "base_damage": "1d6" }
+        "equip": { "slot": "EQUIP_MELEE", "flag": "STRENGTH", "damage": "1d6", "to_hit": 0 }
     },
     {
         "id": "equip_longsword",
@@ -179,8 +173,7 @@
         "renderable": { "glyph": ")", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },
         "weight": 3,
         "value": 15,
-        "flags": ["EQUIP_MELEE", "STRENGTH"],
-        "effects": { "base_damage": "1d8" }
+        "equip": { "slot": "EQUIP_MELEE", "flag": "STRENGTH", "damage": "1d8", "to_hit": 0 }
     },
     {
         "id": "equip_smallshield",
@@ -198,7 +191,7 @@
         "weight": 6,
         "value": 10,
         "flags": ["EQUIP_SHIELD"],
-        "effects": { "ac": "2", "melee_power_bonus": "-1" }
+        "effects": { "ac": "2" }
     },
     {
         "id": "equip_largeshield",
@@ -207,7 +200,7 @@
         "weight": 12,
         "value": 35,
         "flags": ["EQUIP_SHIELD"],
-        "effects": { "ac": "4", "melee_power_bonus": "-2" }
+        "effects": { "ac": "3" }
     },
     {
         "id": "equip_body_weakleather",
