@@ -23,13 +23,13 @@ lazy_static! {
 
 pub enum EffectType {
     Damage { amount: i32 },
-    Healing { amount: i32, buc: BUC },
+    Healing { amount: i32, increment_max: bool },
     Confusion { turns: i32 },
     Bloodstain,
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
     EntityDeath,
     ItemUse { item: Entity },
-    RestoreNutrition { buc: BUC },
+    RestoreNutrition { amount: i32 },
     TriggerFire { trigger: Entity },
 }
 

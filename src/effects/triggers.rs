@@ -1,4 +1,4 @@
-use super::{add_effect, spatial, EffectType, Entity, Targets, World};
+use super::{add_effect, get_noncursed, spatial, EffectType, Entity, Targets, World};
 use crate::{
     gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Beatitude, Charges, Confusion,
     Consumable, Destructible, Hidden, InflictsDamage, Item, MagicMapper, Player, Prop, ProvidesHealing,
@@ -77,7 +77,12 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
 
 fn handle_restore_nutrition(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
     if ecs.read_storage::<ProvidesNutrition>().get(event.entity).is_some() {
-        add_effect(event.source, EffectType::RestoreNutrition { buc: event.buc.clone() }, event.target.clone());
+        let amount = match event.buc {
+            BUC::Blessed => 600,
+            BUC::Uncursed => 400,
+            BUC::Cursed => 200,
+        };
+        add_effect(event.source, EffectType::RestoreNutrition { amount }, event.target.clone());
         logger = logger
             .append("You eat the")
             .colour(item_colour_ecs(ecs, event.entity))
@@ -114,7 +119,11 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
             _ => 0,
         };
         let roll = rng.roll_dice(healing_item.n_dice + buc_mod, healing_item.sides) + healing_item.modifier;
-        add_effect(event.source, EffectType::Healing { amount: roll, buc: event.buc.clone() }, event.target.clone());
+        add_effect(
+            event.source,
+            EffectType::Healing { amount: roll, increment_max: get_noncursed(&event.buc) },
+            event.target.clone(),
+        );
         for target in get_entity_targets(&event.target) {
             if ecs.read_storage::<Prop>().get(target).is_some() || ecs.read_storage::<Item>().get(target).is_some() {
                 continue;
