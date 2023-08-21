@@ -53,14 +53,6 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 
-    raws::spawn_named_entity(
-        &raws::RAWS.lock().unwrap(),
-        ecs,
-        "food_rations",
-        raws::SpawnType::Carried { by: player },
-        0,
-    );
-
     return player;
 }
 
@@ -118,7 +110,7 @@ pub fn spawn_region(
     };
     // Roll on each table, getting an entity + spawn point
     if spawn_mob {
-        let key = mob_table(difficulty).roll(rng);
+        let key = mob_table(Some(difficulty)).roll(rng);
         let spawn_type = raws::get_mob_spawn_type(&raws::RAWS.lock().unwrap(), &key);
         let roll = raws::get_mob_spawn_amount(rng, &spawn_type, player_level);
         for _i in 0..roll {
@@ -126,13 +118,13 @@ pub fn spawn_region(
         }
     }
     for _i in 0..num_traps {
-        let key = trap_table(difficulty).roll(rng);
+        let key = trap_table(Some(difficulty)).roll(rng);
         entity_to_spawn_list(rng, &mut areas, key, &mut spawn_points);
     }
     for _i in 0..num_items {
         // Player level isn't taken into account for item spawning, to encourage
         // delving deeper to gear up more quickly.
-        let key = get_random_item_category(rng, map.difficulty).roll(rng);
+        let key = get_random_item_category(rng, Some(map.difficulty)).roll(rng);
         entity_to_spawn_list(rng, &mut areas, key, &mut spawn_points);
     }
     // Push entities and their spawn points to map's spawn list
@@ -189,7 +181,7 @@ fn debug_table() -> RandomTable {
     return RandomTable::new().add("debug", 1);
 }
 
-fn get_random_item_category(rng: &mut RandomNumberGenerator, difficulty: i32) -> RandomTable {
+fn get_random_item_category(rng: &mut RandomNumberGenerator, difficulty: Option<i32>) -> RandomTable {
     let item_category = item_category_table().roll(rng);
     match item_category.as_ref() {
         "equipment" => return equipment_table(difficulty),
@@ -201,31 +193,31 @@ fn get_random_item_category(rng: &mut RandomNumberGenerator, difficulty: i32) ->
     };
 }
 
-pub fn equipment_table(difficulty: i32) -> RandomTable {
+pub fn equipment_table(difficulty: Option<i32>) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "equipment", difficulty)
 }
 
-pub fn potion_table(difficulty: i32) -> RandomTable {
+pub fn potion_table(difficulty: Option<i32>) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "potions", difficulty)
 }
 
-pub fn scroll_table(difficulty: i32) -> RandomTable {
+pub fn scroll_table(difficulty: Option<i32>) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "scrolls", difficulty)
 }
 
-pub fn wand_table(difficulty: i32) -> RandomTable {
+pub fn wand_table(difficulty: Option<i32>) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "wands", difficulty)
 }
 
-pub fn food_table(difficulty: i32) -> RandomTable {
+pub fn food_table(difficulty: Option<i32>) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "food", difficulty)
 }
 
 /// Locks RAWS, and provides access to master list of all mobs.
-pub fn mob_table(difficulty: i32) -> RandomTable {
+pub fn mob_table(difficulty: Option<i32>) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "mobs", difficulty)
 }
 
-pub fn trap_table(difficulty: i32) -> RandomTable {
+pub fn trap_table(difficulty: Option<i32>) -> RandomTable {
     raws::table_by_name(&raws::RAWS.lock().unwrap(), "traps", difficulty)
 }

@@ -593,9 +593,15 @@ fn get_renderable_component(renderable: &super::item_structs::Renderable) -> cra
     }
 }
 
-pub fn table_by_name(raws: &RawMaster, key: &str, difficulty: i32) -> RandomTable {
-    let upper_bound = difficulty;
-    let lower_bound = if key != "mobs" { 0 } else { difficulty / 6 };
+pub fn table_by_name(raws: &RawMaster, key: &str, optional_difficulty: Option<i32>) -> RandomTable {
+    let (difficulty, upper_bound, lower_bound);
+    if optional_difficulty.is_some() {
+        difficulty = optional_difficulty.unwrap();
+        upper_bound = difficulty;
+        lower_bound = if key != "mobs" { 0 } else { difficulty / 6 };
+    } else {
+        difficulty = -1;
+    }
     if raws.table_index.contains_key(key) {
         let spawn_table = &raws.raws.spawn_tables[raws.table_index[key]];
 

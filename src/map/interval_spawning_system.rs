@@ -43,7 +43,7 @@ fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
     }
     let mut spawn_locations: Vec<(i32, i32)> = Vec::new();
     let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-    let key = spawner::mob_table(difficulty).roll(&mut rng);
+    let key = spawner::mob_table(Some(difficulty)).roll(&mut rng);
     let spawn_type = raws::get_mob_spawn_type(&raws::RAWS.lock().unwrap(), &key);
     let roll = raws::get_mob_spawn_amount(&mut rng, &spawn_type, player_level);
     for _i in 0..roll {

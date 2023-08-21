@@ -287,39 +287,45 @@ pub fn setup_player_class(ecs: &mut World, class: Classes) {
 fn get_starting_inventory(class: Classes, rng: &mut RandomNumberGenerator) -> (Vec<String>, Vec<String>) {
     let mut equipped: Vec<String> = Vec::new();
     let mut carried: Vec<String> = Vec::new();
+    let mut starting_food: &str = "1";
     match class {
         Classes::Fighter => {
+            starting_food = "1d2+1";
             equipped = vec![
                 "equip_shortsword".to_string(),
                 "equip_body_ringmail".to_string(),
                 "equip_mediumshield".to_string(),
             ];
-            carried = vec!["food_rations".to_string()];
         }
         Classes::Rogue => {
+            starting_food = "1d2+2";
             equipped = vec!["equip_rapier".to_string(), "equip_body_weakleather".to_string()];
-            carried = vec![
-                "equip_dagger".to_string(),
-                "equip_dagger".to_string(),
-                "food_rations".to_string(),
-                "food_apple".to_string(),
-            ];
+            carried = vec!["equip_dagger".to_string(), "equip_dagger".to_string()];
         }
         Classes::Wizard => {
+            starting_food = "1d2+1";
             equipped = vec!["equip_dagger".to_string(), "equip_back_protection".to_string()];
-            carried = vec!["food_rations".to_string()];
-            for _i in 0..rng.roll_dice(1, 3) {
-                carried.push(scroll_table(3).roll(rng));
-            }
-            for _i in 0..rng.roll_dice(1, 2) - 1 {
-                carried.push(potion_table(3).roll(rng));
-            }
+            pick_random_table_item(rng, &mut carried, "scrolls", "1d3", Some(3));
+            pick_random_table_item(rng, &mut carried, "potions", "1d3-1", Some(3));
         }
         Classes::Villager => {
-            let rolled_weapon = raws::table_by_name(&raws::RAWS.lock().unwrap(), "villager_equipment", 1).roll(rng);
-            equipped.push(rolled_weapon);
-            carried = vec!["food_rations".to_string(), "food_apple".to_string(), "food_apple".to_string()];
+            starting_food = "1d3+2";
+            pick_random_table_item(rng, &mut equipped, "villager_equipment", "1", None);
         }
     }
+    pick_random_table_item(rng, &mut carried, "food", starting_food, None);
     return (equipped, carried);
+}
+
+fn pick_random_table_item(
+    rng: &mut RandomNumberGenerator,
+    push_to: &mut Vec<String>,
+    table: &'static str,
+    dice: &'static str,
+    difficulty: Option<i32>,
+) {
+    let (n, d, m) = raws::parse_dice_string(dice);
+    for _i in 0..rng.roll_dice(n, d) + m {
+        push_to.push(raws::table_by_name(&raws::RAWS.lock().unwrap(), table, difficulty).roll(rng));
+    }
 }

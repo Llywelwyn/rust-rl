@@ -103,23 +103,23 @@ impl PrefabBuilder {
             }
             '%' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::food_table(difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::food_table(Some(difficulty)).roll(rng)));
             }
             '!' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::potion_table(difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::potion_table(Some(difficulty)).roll(rng)));
             }
             '/' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::wand_table(difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::wand_table(Some(difficulty)).roll(rng)));
             }
             '?' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::scroll_table(difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::scroll_table(Some(difficulty)).roll(rng)));
             }
             ')' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::equipment_table(difficulty).roll(rng)));
+                build_data.spawn_list.push((idx, spawner::equipment_table(Some(difficulty)).roll(rng)));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph '{}' when loading prefab", (ch as u8) as char));

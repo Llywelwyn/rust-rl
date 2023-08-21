@@ -60,6 +60,7 @@ pub fn skill_bonus(skill: Skill, skills: &Skills) -> i32 {
 }
 
 /// Roll 4d6 and drop the lowest, for rolling d20-style stats
+#[allow(unused)]
 pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
     let mut rolls: Vec<i32> = Vec::new();
     for _i in 0..4 {

@@ -139,17 +139,6 @@ impl ParticleBuilder {
         );
     }
 
-    pub fn trap_triggered(&mut self, x: i32, y: i32) {
-        self.request(
-            x,
-            y,
-            rltk::RGB::named(rltk::RED),
-            rltk::RGB::named(rltk::RED),
-            rltk::to_cp437('‼'),
-            DEFAULT_PARTICLE_LIFETIME,
-        );
-    }
-
     pub fn kick(&mut self, x: i32, y: i32) {
         self.request(
             x,
