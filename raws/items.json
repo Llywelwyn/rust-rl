@@ -66,7 +66,12 @@
         "weight": 0.5,
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "particle": "*;#FFA500;200.0", "ranged": "10", "damage": "8d6", "aoe": "3" },
+        "effects": {
+            "particle_burst": "*;#FFA500;#000000;600.0;#ff9595;75.0",
+            "ranged": "10",
+            "damage": "8d6",
+            "aoe": "3"
+        },
         "magic": { "class": "rare", "naming": "scroll" }
     },
     {

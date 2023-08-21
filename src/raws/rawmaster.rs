@@ -30,6 +30,7 @@ macro_rules! apply_effects {
                 "magicmapper" => $eb = $eb.with(MagicMapper {}),
                 "digger" => $eb = $eb.with(Digger {}),
                 "particle_line" => $eb = $eb.with(parse_particle_line(&effect.1)),
+                "particle_burst" => $eb = $eb.with(parse_particle_burst(&effect.1)),
                 "particle" => $eb = $eb.with(parse_particle(&effect.1)),
                 _ => console::log(format!("Warning: effect {} not implemented.", effect_name)),
             }
@@ -889,11 +890,23 @@ fn parse_particle_line(n: &str) -> SpawnParticleLine {
     }
 }
 
-fn parse_particle(n: &str) -> SpawnParticleBurst {
+fn parse_particle(n: &str) -> SpawnParticleSimple {
+    let tokens: Vec<_> = n.split(';').collect();
+    SpawnParticleSimple {
+        glyph: to_cp437(tokens[0].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
+        lifetime_ms: tokens[2].parse::<f32>().unwrap(),
+    }
+}
+
+fn parse_particle_burst(n: &str) -> SpawnParticleBurst {
     let tokens: Vec<_> = n.split(';').collect();
     SpawnParticleBurst {
         glyph: to_cp437(tokens[0].chars().next().unwrap()),
         colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
-        lifetime_ms: tokens[2].parse::<f32>().unwrap(),
+        lerp: RGB::from_hex(tokens[2]).expect("Invalid LERP RGB"),
+        lifetime_ms: tokens[3].parse::<f32>().unwrap(),
+        trail_colour: RGB::from_hex(tokens[4]).expect("Invalid trail RGB"),
+        trail_lifetime_ms: tokens[5].parse::<f32>().unwrap(),
     }
 }

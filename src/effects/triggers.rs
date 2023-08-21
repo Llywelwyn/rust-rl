@@ -1,9 +1,8 @@
-use super::{add_effect, get_noncursed, spatial, targeting, EffectType, Entity, Targets, World};
+use super::{add_effect, get_noncursed, particles, spatial, targeting, EffectType, Entity, Targets, World};
 use crate::{
     gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Beatitude, Charges, Confusion,
-    Consumable, Destructible, Hidden, InflictsDamage, Item, MagicMapper, Map, Player, Prop, ProvidesHealing,
-    ProvidesNutrition, RandomNumberGenerator, Renderable, RunState, SingleActivation, SpawnParticleBurst,
-    SpawnParticleLine, BUC,
+    Consumable, Destructible, Hidden, InflictsDamage, Item, MagicMapper, Player, Prop, ProvidesHealing,
+    ProvidesNutrition, RandomNumberGenerator, Renderable, RunState, SingleActivation, BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -62,41 +61,8 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
     let logger = gamelog::Logger::new();
 
     let mut did_something = false;
-    // Simple particle spawn
-    if let Some(part) = ecs.read_storage::<SpawnParticleBurst>().get(entity) {
-        add_effect(
-            event.source,
-            EffectType::Particle {
-                glyph: part.glyph,
-                fg: part.colour,
-                bg: RGB::named(BLACK),
-                lifespan: part.lifetime_ms,
-                delay: 0.0,
-            },
-            event.target.clone(),
-        );
-    }
-    // Line particle spawn
-    if let Some(part) = ecs.read_storage::<SpawnParticleLine>().get(entity) {
-        if let Some(start_pos) = targeting::find_item_position(ecs, entity) {
-            match target {
-                Targets::Tile { target } => spawn_line_particles(ecs, start_pos, *target as i32, part),
-                Targets::TileList { targets } => {
-                    targets.iter().for_each(|target| spawn_line_particles(ecs, start_pos, *target as i32, part))
-                }
-                Targets::Entity { target } => {
-                    if let Some(end_pos) = targeting::entity_position(ecs, *target) {
-                        spawn_line_particles(ecs, start_pos, end_pos as i32, part);
-                    }
-                }
-                Targets::EntityList { targets } => targets.iter().for_each(|target| {
-                    if let Some(end_pos) = targeting::entity_position(ecs, *target) {
-                        spawn_line_particles(ecs, start_pos, end_pos as i32, part);
-                    }
-                }),
-            }
-        }
-    }
+    particles::handle_burst_particles(ecs, entity, &target);
+    particles::handle_line_particles(ecs, entity, &target);
     let (logger, restored_nutrition) = handle_restore_nutrition(ecs, &mut event, logger);
     let (logger, magic_mapped) = handle_magic_mapper(ecs, &mut event, logger);
     let (logger, healed) = handle_healing(ecs, &mut event, logger);
@@ -261,37 +227,4 @@ fn get_entity_targets(target: &Targets) -> Vec<Entity> {
         }
     }
     return entities;
-}
-
-fn spawn_line_particles(ecs: &World, start: i32, end: i32, part: &SpawnParticleLine) {
-    let map = ecs.fetch::<Map>();
-    let start_pt = Point::new(start % map.width, start / map.width);
-    let end_pt = Point::new(end % map.width, end / map.width);
-    let line = line2d(LineAlg::Bresenham, start_pt, end_pt);
-    for (i, pt) in line.iter().enumerate() {
-        add_effect(
-            None,
-            EffectType::Particle {
-                glyph: part.glyph,
-                fg: part.colour,
-                bg: RGB::named(BLACK),
-                lifespan: part.lifetime_ms,
-                delay: i as f32 * part.lifetime_ms,
-            },
-            Targets::Tile { target: map.xy_idx(pt.x, pt.y) },
-        );
-        if i > 0 {
-            add_effect(
-                None,
-                EffectType::Particle {
-                    glyph: to_cp437('-'),
-                    fg: part.trail_colour,
-                    bg: RGB::named(BLACK),
-                    lifespan: part.trail_lifetime_ms,
-                    delay: i as f32 * part.lifetime_ms,
-                },
-                Targets::Tile { target: map.xy_idx(line[i - 1].x, line[i - 1].y) },
-            );
-        }
-    }
 }
