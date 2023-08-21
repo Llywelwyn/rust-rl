@@ -410,6 +410,22 @@ pub struct Charges {
     pub max_uses: i32,
 }
 
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct SpawnParticleLine {
+    pub glyph: rltk::FontCharType,
+    pub colour: RGB,
+    pub lifetime_ms: f32,
+    pub trail_colour: RGB,
+    pub trail_lifetime_ms: f32,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct SpawnParticleBurst {
+    pub glyph: rltk::FontCharType,
+    pub colour: RGB,
+    pub lifetime_ms: f32,
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Destructible {}
 

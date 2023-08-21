@@ -29,6 +29,8 @@ macro_rules! apply_effects {
                 "ac" => $eb = $eb.with(ArmourClassBonus { amount: effect.1.parse::<i32>().unwrap() }),
                 "magicmapper" => $eb = $eb.with(MagicMapper {}),
                 "digger" => $eb = $eb.with(Digger {}),
+                "particle_line" => $eb = $eb.with(parse_particle_line(&effect.1)),
+                "particle" => $eb = $eb.with(parse_particle(&effect.1)),
                 _ => console::log(format!("Warning: effect {} not implemented.", effect_name)),
             }
         }
@@ -873,5 +875,25 @@ fn get_ancestry_string(ancestry: Ancestry) -> &'static str {
         Ancestry::Catfolk => return "catfolk",
         Ancestry::Gnome => return "gnome",
         Ancestry::NULL => return "NULL",
+    }
+}
+
+fn parse_particle_line(n: &str) -> SpawnParticleLine {
+    let tokens: Vec<_> = n.split(';').collect();
+    SpawnParticleLine {
+        glyph: to_cp437(tokens[0].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
+        lifetime_ms: tokens[2].parse::<f32>().unwrap(),
+        trail_colour: RGB::from_hex(tokens[3]).expect("Invalid trail RGB"),
+        trail_lifetime_ms: tokens[4].parse::<f32>().unwrap(),
+    }
+}
+
+fn parse_particle(n: &str) -> SpawnParticleBurst {
+    let tokens: Vec<_> = n.split(';').collect();
+    SpawnParticleBurst {
+        glyph: to_cp437(tokens[0].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
+        lifetime_ms: tokens[2].parse::<f32>().unwrap(),
     }
 }

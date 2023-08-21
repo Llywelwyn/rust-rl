@@ -610,6 +610,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<EntityMoved>();
     gs.ecs.register::<MultiAttack>();
     gs.ecs.register::<ParticleLifetime>();
+    gs.ecs.register::<SpawnParticleBurst>();
+    gs.ecs.register::<SpawnParticleLine>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<DMSerializationHelper>();
