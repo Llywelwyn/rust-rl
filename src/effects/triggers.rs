@@ -22,9 +22,9 @@ pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs:
         has_charges.uses -= 1;
     }
     // Use the item via the generic system
-    event_trigger(source, item, target, ecs);
+    let did_something = event_trigger(source, item, target, ecs);
     // If it's a consumable, delete it
-    if ecs.read_storage::<Consumable>().get(item).is_some() {
+    if did_something && ecs.read_storage::<Consumable>().get(item).is_some() {
         ecs.entities().delete(item).expect("Failed to delete item");
     }
 }
@@ -33,9 +33,9 @@ pub fn trigger(source: Option<Entity>, trigger: Entity, target: &Targets, ecs: &
     // Remove hidden from the trigger
     ecs.write_storage::<Hidden>().remove(trigger);
     // Use the trigger via the generic system
-    event_trigger(source, trigger, target, ecs);
+    let did_something = event_trigger(source, trigger, target, ecs);
     // If it was single-activation, delete it
-    if ecs.read_storage::<SingleActivation>().get(trigger).is_some() {
+    if did_something && ecs.read_storage::<SingleActivation>().get(trigger).is_some() {
         ecs.entities().delete(trigger).expect("Failed to delete entity with a SingleActivation");
     }
 }
@@ -52,30 +52,35 @@ struct EventInfo {
 //       It does almost no sanity-checking to make sure the logs only appear if the effect is taking
 //       place on the player -- once monsters can use an item, their item usage will make logs for
 //       the player saying they were the one who used the item. This will need refactoring then.
-fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: &mut World) {
+fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: &mut World) -> bool {
     let buc = if let Some(beatitude) = ecs.read_storage::<Beatitude>().get(entity) {
         beatitude.buc.clone()
     } else {
         BUC::Uncursed
     };
     let mut event = EventInfo { source, entity, target: target.clone(), buc, log: false };
-    let mut logger = gamelog::Logger::new();
-    // PROVIDES NUTRITION
-    logger = handle_restore_nutrition(ecs, &mut event, logger);
-    // MAGIC MAPPER
-    logger = handle_magic_mapper(ecs, &mut event, logger);
-    // DOES HEALING
-    logger = handle_healing(ecs, &mut event, logger);
-    // DOES DAMAGE
-    logger = handle_damage(ecs, &mut event, logger);
-    // APPLIES CONFUSION
-    logger = handle_confusion(ecs, &mut event, logger);
+    let logger = gamelog::Logger::new();
+
+    let mut did_something = false;
+    let (logger, restored_nutrition) = handle_restore_nutrition(ecs, &mut event, logger);
+    let (logger, magic_mapped) = handle_magic_mapper(ecs, &mut event, logger);
+    let (logger, healed) = handle_healing(ecs, &mut event, logger);
+    let (logger, damaged) = handle_damage(ecs, &mut event, logger);
+    let (logger, confused) = handle_confusion(ecs, &mut event, logger);
+    did_something |= restored_nutrition || magic_mapped || healed || damaged || confused;
+
     if event.log {
         logger.log();
     }
+
+    return did_something;
 }
 
-fn handle_restore_nutrition(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
+fn handle_restore_nutrition(
+    ecs: &mut World,
+    event: &mut EventInfo,
+    mut logger: gamelog::Logger,
+) -> (gamelog::Logger, bool) {
     if ecs.read_storage::<ProvidesNutrition>().get(event.entity).is_some() {
         let amount = match event.buc {
             BUC::Blessed => 600,
@@ -91,11 +96,12 @@ fn handle_restore_nutrition(ecs: &mut World, event: &mut EventInfo, mut logger: 
             .period()
             .buc(event.buc.clone(), Some("Blech! Rotten"), Some("Delicious"));
         event.log = true;
+        return (logger, true);
     }
-    return logger;
+    return (logger, false);
 }
 
-fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
+fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
     if ecs.read_storage::<MagicMapper>().get(event.entity).is_some() {
         let mut runstate = ecs.fetch_mut::<RunState>();
         let cursed = if event.buc == BUC::Cursed { true } else { false };
@@ -106,11 +112,12 @@ fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
             None,
         );
         event.log = true;
+        return (logger, true);
     }
-    return logger;
+    return (logger, false);
 }
 
-fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
+fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
     if let Some(healing_item) = ecs.read_storage::<ProvidesHealing>().get(event.entity) {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let buc_mod = match event.buc {
@@ -146,11 +153,12 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
             }
             event.log = true;
         }
+        return (logger, true);
     }
-    return logger;
+    return (logger, false);
 }
 
-fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
+fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
     if let Some(damage_item) = ecs.read_storage::<InflictsDamage>().get(event.entity) {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let roll = rng.roll_dice(damage_item.n_dice, damage_item.sides) + damage_item.modifier;
@@ -185,16 +193,18 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
             }
             event.log = true;
         }
+        return (logger, true);
     }
-    return logger;
+    return (logger, false);
 }
 
 #[allow(unused_mut)]
-fn handle_confusion(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> gamelog::Logger {
+fn handle_confusion(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
     if let Some(confusion) = ecs.read_storage::<Confusion>().get(event.entity) {
         add_effect(event.source, EffectType::Confusion { turns: confusion.turns }, event.target.clone());
+        return (logger, true);
     }
-    return logger;
+    return (logger, false);
 }
 
 fn get_entity_targets(target: &Targets) -> Vec<Entity> {
