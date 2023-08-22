@@ -4,7 +4,6 @@ use super::{
 };
 use crate::{
     gamelog, Beatitude, Entity, Equipped, InBackpack, Item, MasterDungeonMap, Name, ObfuscatedName, Renderable, State,
-    BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;

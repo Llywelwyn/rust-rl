@@ -1,8 +1,10 @@
-use super::{colours::*, glyphs::*, Map, TileType};
-use rltk::RGB;
+use super::{colours::*, glyphs::*, Map, Point, TileType};
+use rltk::prelude::*;
 use std::ops::{Add, Mul};
 
-pub fn get_tile_renderables_for_id(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
+const DARKEN_TILES_BY_DISTANCE: bool = true;
+
+pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (rltk::FontCharType, RGB, RGB) {
     let (glyph, mut fg, mut bg) = match map.id {
         2 => get_forest_theme_renderables(idx, map),
         _ => get_default_theme_renderables(idx, map),
@@ -19,6 +21,11 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map) -> (rltk::FontCharType
     (fg, bg) = apply_colour_offset(fg, bg, map, idx);
     bg = apply_bloodstain_if_necessary(bg, map, idx);
     (fg, bg) = darken_if_not_visible(fg, bg, map, idx);
+    if other_pos.is_some() && DARKEN_TILES_BY_DISTANCE {
+        let distance =
+            darken_by_distance(Point::new(idx as i32 % map.width, idx as i32 / map.width), other_pos.unwrap());
+        (fg, bg) = (fg.mul(distance), bg.mul(distance));
+    }
 
     return (glyph, fg, bg);
 }
@@ -240,4 +247,12 @@ pub fn multiply_by_float(rgb: rltk::RGB, offsets: (f32, f32, f32)) -> RGB {
     let b = rgb.b * offsets.2;
 
     return rltk::RGB::from_f32(r, g, b);
+}
+
+fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
+    let distance = DistanceAlg::Pythagoras.distance2d(pos, other_pos) as f32; // Get distance in tiles.
+    let interp_factor = (distance - START_DARKEN_AT_N_TILES)
+        / (MAX_DARKEN_AT_N_TILES * crate::spawner::VIEWSHED_MOD - START_DARKEN_AT_N_TILES);
+    let interp_factor = interp_factor.max(0.0).min(1.0); // Clamp [0-1]
+    return 1.0 - interp_factor * (1.0 - MAX_DARKENING);
 }

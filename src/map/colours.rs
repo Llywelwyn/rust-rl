@@ -1,4 +1,8 @@
-pub const NON_VISIBLE_MULTIPLIER: f32 = 0.7;
+pub const NON_VISIBLE_MULTIPLIER: f32 = 0.3;
+pub const MAX_DARKENING: f32 = 0.3;
+pub const START_DARKEN_AT_N_TILES: f32 = 9.0;
+pub const MAX_DARKEN_AT_N_TILES: f32 = 12.0;
+
 pub const BLOODSTAIN_COLOUR: (u8, u8, u8) = (153, 0, 0);
 
 // DEFAULT THEME
@@ -14,7 +18,7 @@ pub const GRAVEL_COLOUR: (u8, u8, u8) = (26, 26, 53);
 pub const ROAD_COLOUR: (u8, u8, u8) = (8, 38, 40);
 pub const GRASS_COLOUR: (u8, u8, u8) = (9, 65, 6);
 pub const FOLIAGE_COLOUR: (u8, u8, u8) = (5, 60, 5);
-pub const HEAVY_FOLIAGE_COLOUR: (u8, u8, u8) = (5, 55, 5);
+pub const HEAVY_FOLIAGE_COLOUR: (u8, u8, u8) = (5, 60, 5);
 pub const SAND_COLOUR: (u8, u8, u8) = (70, 70, 21);
 pub const SHALLOW_WATER_COLOUR: (u8, u8, u8) = (24, 47, 99);
 pub const DEEP_WATER_COLOUR: (u8, u8, u8) = (18, 33, 63);

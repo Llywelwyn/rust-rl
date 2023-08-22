@@ -3,6 +3,7 @@ use crate::components::*;
 use crate::gamesystem::*;
 use crate::gui::Ancestry;
 use crate::random_table::RandomTable;
+use crate::spawner;
 use crate::LOG_SPAWNING;
 use regex::Regex;
 use rltk::prelude::*;
@@ -380,7 +381,11 @@ pub fn spawn_named_mob(
         eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
         eb = spawn_position(pos, eb, key, raws);
         eb = eb.with(Name { name: mob_template.name.clone(), plural: mob_template.name.clone() });
-        eb = eb.with(Viewshed { visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
+        eb = eb.with(Viewshed {
+            visible_tiles: Vec::new(),
+            range: (mob_template.vision_range as f32 * spawner::VIEWSHED_MOD) as i32,
+            dirty: true,
+        });
         if let Some(telepath) = &mob_template.telepathy_range {
             eb = eb.with(Telepath { telepath_tiles: Vec::new(), range: *telepath, dirty: true });
         }

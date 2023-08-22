@@ -9,6 +9,8 @@ use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
 
+pub const VIEWSHED_MOD: f32 = 1.25;
+
 /// Spawns the player and returns his/her entity object.
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     let mut skills = Skills { skills: HashMap::new() };
@@ -30,7 +32,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Player {})
         .with(Mind {})
         .with(Faction { name: "player".to_string() })
-        .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
+        .with(Viewshed { visible_tiles: Vec::new(), range: (12 as f32 * VIEWSHED_MOD) as i32, dirty: true })
         .with(Name { name: "you".to_string(), plural: "you".to_string() })
         .with(HungerClock { state: HungerState::Satiated, duration: 1200 })
         .with(Attributes {

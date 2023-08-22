@@ -10,6 +10,7 @@ pub use interval_spawning_system::try_spawn_interval;
 pub mod dungeon;
 pub use dungeon::{level_transition, MasterDungeonMap};
 pub mod themes;
+pub use colours::NON_VISIBLE_MULTIPLIER;
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.
