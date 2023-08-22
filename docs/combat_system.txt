@@ -1,0 +1,50 @@
+DETERMINING IF AN ATTACK HITS OR NOT:
+
+1. Whenever someone makes an attack, a flat 1d20 attack roll is made.
+2. A target number is generated, depending on the mode of attack, made
+   up of some combination of the following:
+        - ATTACKER'S HIT BONUSES:
+            - level
+            - any relevant str/dex attribute bonuses
+            - any relevant skill modifiers
+            - any to-hit modifiers from equipment
+            - any to-hit modifiers from status effects
+        - DEFENDER'S ARMOUR CLASS*:
+            - base armour class
+            - any relevant skill modifiers
+            - any ac modifiers from equipment
+            - any ac modifiers from status effects
+        - MISCELLANEOUS MODIFIERS:
+            - melee attacks always have a +1 bonus
+            - monsters gain a +10 bonus to-hit players
+3. The attack roll is compared against the target number.
+4. If the attack roll is less than the target, the attack hits.**
+5. If an attack hits, it deals:
+        - a roll of the weapon's damage die
+        - plus any relevant attribute bonuses
+        - plus any relevant skill modifiers
+        - MINUS a roll of the defender's AC, if the AC is negative.
+
+notes
+    * when AC is less than 0, it is treated as a random number from -1 to the value. e.g. -10 AC could be anywhere from -1 to -10.
+    ** functionally identical to rolling 1d20 + to-hit, and needing to roll higher than the defender's AC. this system just ends up
+       being easier to work with when involving additional modifiers, as you don't need to decide if they're a to-hit bonus or an
+       AC modifier -- they just always get added/subtracted from the target number that must be rolled against.
+
+Simple example, with positive AC:
+- You have an AC of 4, and the monster has a +1 to-hit, with a 1d8 damage weapon. 
+- The monster must roll less than 10 (monster v. player) + 1 (to-hit) + 4 (ac) = 15 to hit you. 
+- The monster has a 70% hit chance.
+- It rolls a 12, which is lower than 15, so it hits.
+- It rolls 1d8 for damage, and gets a 6.
+- You take 6 points of damage.
+
+Complex example, with negative AC:
+- You have an AC of -14, and the monster has a +3 to-hit, with a 1d8 damage weapon.
+- The monster must roll less than 10 (monster v. player) + 3 (to-hit) - 1d14 (ac) to hit you.
+- At best (AC rolls a 1), the monster must roll less than 12 to hit you. 55% hit chance.
+- At worst (AC rolls a 14), the monster must roll less than -1 to hit you. Impossible.
+- It rolls a 9, and your AC rolls a 2. 9 is less than 11 (10 + 3 - 2), so it hits.
+- It rolls 1d8 for damage, and gets a 6.
+- You have negative AC, so you roll 1d14 for damage reduction, and get an 8.
+- The total damage is 6 - 8 = -2, but damage can't be negative, so you take 1 point of damage.
