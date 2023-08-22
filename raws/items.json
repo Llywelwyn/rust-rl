@@ -110,7 +110,8 @@
         "renderable": { "glyph": ")", "fg": "#808080", "bg": "#000000", "order": 2 },
         "weight": 1,
         "value": 2,
-        "equip": { "slot": "EQUIP_MELEE", "flag": "FINESSE", "damage": "1d4", "to_hit": 0 }
+        "flags": ["EQUIP_MELEE"],
+        "equip": { "flag": "FINESSE", "damage": "1d4", "to_hit": 0 }
     },
     {
         "id": "equip_shortsword",
@@ -118,7 +119,8 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 10,
-        "equip": { "slot": "EQUIP_MELEE", "flag": "STRENGTH", "damage": "1d6", "to_hit": 0 }
+        "flags": ["EQUIP_MELEE"],
+        "equip": { "flag": "STRENGTH", "damage": "1d6", "to_hit": 0 }
     },
     {
         "id": "equip_rapier",
@@ -126,7 +128,8 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 10,
-        "equip": { "slot": "EQUIP_MELEE", "flag": "FINESSE", "damage": "1d8", "to_hit": 0 }
+        "flags": ["EQUIP_MELEE"],
+        "equip": { "flag": "FINESSE", "damage": "1d8", "to_hit": 0 }
     },
     {
         "id": "equip_pitchfork",
@@ -134,7 +137,8 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 5,
-        "equip": { "slot": "EQUIP_MELEE", "flag": "FINESSE", "damage": "1d6", "to_hit": 0 }
+        "flags": ["EQUIP_MELEE"],
+        "equip": { "flag": "FINESSE", "damage": "1d6", "to_hit": 0 }
     },
     {
         "id": "equip_sickle",
@@ -142,7 +146,8 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 5,
-        "equip": { "slot": "EQUIP_MELEE", "flag": "FINESSE", "damage": "1d6", "to_hit": 0 }
+        "flags": ["EQUIP_MELEE"],
+        "equip": { "flag": "FINESSE", "damage": "1d6", "to_hit": 0 }
     },
     {
         "id": "equip_handaxe",
@@ -150,7 +155,8 @@
         "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 5,
-        "equip": { "slot": "EQUIP_MELEE", "flag": "STRENGTH", "damage": "1d6", "to_hit": 0 }
+        "flags": ["EQUIP_MELEE"],
+        "equip": { "flag": "STRENGTH", "damage": "1d6", "to_hit": 0 }
     },
     {
         "id": "equip_longsword",
@@ -158,7 +164,8 @@
         "renderable": { "glyph": ")", "fg": "#FFF8DC", "bg": "#000000", "order": 2 },
         "weight": 3,
         "value": 15,
-        "equip": { "slot": "EQUIP_MELEE", "flag": "STRENGTH", "damage": "1d8", "to_hit": 0 }
+        "flags": ["EQUIP_MELEE"],
+        "equip": { "flag": "STRENGTH", "damage": "1d8", "to_hit": 0 }
     },
     {
         "id": "equip_smallshield",

@@ -659,6 +659,7 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
     if let Some(flags) = &item.flags {
         for flag in flags {
             match flag.as_str() {
+                "EQUIP_MELEE" => return EquipmentSlot::Melee,
                 "EQUIP_SHIELD" => return EquipmentSlot::Shield,
                 "EQUIP_BODY" => return EquipmentSlot::Body,
                 "EQUIP_HEAD" => return EquipmentSlot::Head,
@@ -668,12 +669,6 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
                 "EQUIP_HANDS" => return EquipmentSlot::Hands,
                 _ => {}
             }
-        }
-    }
-    if let Some(equip) = &item.equip {
-        match equip.slot.as_str() {
-            "EQUIP_MELEE" => return EquipmentSlot::Melee,
-            _ => {}
         }
     }
     panic!("Trying to equip {}, but it has no slot tag.", tag);

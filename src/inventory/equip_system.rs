@@ -2,7 +2,7 @@ use crate::{
     gamelog,
     gui::{item_colour, obfuscate_name},
     Beatitude, EquipmentChanged, Equippable, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
-    WantsToUseItem,
+    WantsToUseItem, BUC,
 };
 use specs::prelude::*;
 
@@ -47,13 +47,39 @@ impl<'a> System<'a> for ItemEquipSystem {
             if let Some(can_equip) = equippable.get(wants_to_use_item.item) {
                 let target_slot = can_equip.slot;
                 let mut logger = gamelog::Logger::new();
-
                 // Remove any items target has in item's slot
+                let mut can_equip = true;
                 let mut to_unequip: Vec<Entity> = Vec::new();
                 for (item_entity, already_equipped, _name) in (&entities, &equipped, &names).join() {
                     if already_equipped.owner == target && already_equipped.slot == target_slot {
+                        if let Some(beatitude) = beatitudes.get(item_entity) {
+                            if beatitude.buc == BUC::Cursed {
+                                can_equip = false;
+                                logger = logger
+                                    .append("You can't remove the")
+                                    .colour(item_colour(item_entity, &beatitudes, &dm))
+                                    .append_n(
+                                        obfuscate_name(
+                                            item_entity,
+                                            &names,
+                                            &magic_items,
+                                            &obfuscated_names,
+                                            &beatitudes,
+                                            &dm,
+                                            None,
+                                        )
+                                        .0,
+                                    )
+                                    .colour(rltk::WHITE)
+                                    .append("!");
+                            }
+                        }
                         to_unequip.push(item_entity);
                     }
+                }
+                if !can_equip {
+                    logger.log();
+                    continue;
                 }
                 for item in to_unequip.iter() {
                     equipped.remove(*item);

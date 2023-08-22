@@ -22,7 +22,6 @@ pub struct Name {
 
 #[derive(Deserialize, Debug)]
 pub struct Equippable {
-    pub slot: String,
     pub flag: String,
     pub damage: String,
     pub to_hit: Option<i32>,

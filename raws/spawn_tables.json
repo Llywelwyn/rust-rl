@@ -48,12 +48,10 @@
         "id": "scrolls",
         "table": [
             { "id": "scroll_confusion",         "weight": 2,    "difficulty": 1},
-            { "id": "scroll_magicmap_c",        "weight": 2,    "difficulty": 1},
             { "id": "scroll_magicmap",          "weight": 2,    "difficulty": 1},
             { "id": "scroll_embers",            "weight": 2,    "difficulty": 2},
             { "id": "scroll_health",            "weight": 2,    "difficulty": 2},
             { "id": "scroll_fireball",          "weight": 2,    "difficulty": 2},
-            { "id": "scroll_fireball_c",        "weight": 2,    "difficulty": 2},
             { "id": "scroll_mass_health",       "weight": 1,    "difficulty": 2},
             { "id": "scroll_mass_confusion",    "weight": 1,    "difficulty": 3}
         ]
