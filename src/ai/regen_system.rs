@@ -85,11 +85,12 @@ fn try_hp_regen_tick(pool: &mut Pools, amount: i32) {
 }
 
 fn get_mana_regen_per_tick(e: Entity, attributes: &ReadStorage<Attributes>) -> i32 {
-    return if let Some(attributes) = attributes.get(e) {
+    let regen = if let Some(attributes) = attributes.get(e) {
         ((attributes.intelligence.bonus + attributes.wisdom.bonus) / 2) + MIN_MP_REGEN_PER_TURN
     } else {
         MIN_MP_REGEN_PER_TURN
     };
+    return i32::max(regen, 1);
 }
 
 fn try_mana_regen_tick(pool: &mut Pools, amount: i32) {
