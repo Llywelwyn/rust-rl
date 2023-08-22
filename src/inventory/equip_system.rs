@@ -1,8 +1,8 @@
 use crate::{
     gamelog,
     gui::{item_colour, obfuscate_name},
-    Beatitude, EquipmentChanged, Equippable, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName,
-    WantsToUseItem, BUC,
+    Beatitude, EquipmentChanged, Equippable, Equipped, IdentifiedItem, InBackpack, MagicItem, MasterDungeonMap, Name,
+    ObfuscatedName, WantsToUseItem, BUC,
 };
 use specs::prelude::*;
 
@@ -14,6 +14,7 @@ impl<'a> System<'a> for ItemEquipSystem {
         ReadExpect<'a, Entity>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
+        WriteStorage<'a, IdentifiedItem>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Equippable>,
         WriteStorage<'a, Equipped>,
@@ -31,6 +32,7 @@ impl<'a> System<'a> for ItemEquipSystem {
             player_entity,
             entities,
             mut wants_to_use_item,
+            mut identified_items,
             names,
             equippable,
             mut equipped,
@@ -120,6 +122,12 @@ impl<'a> System<'a> for ItemEquipSystem {
                         .colour(rltk::WHITE)
                         .period();
                     logger.log();
+                    identified_items
+                        .insert(
+                            target,
+                            IdentifiedItem { name: names.get(wants_to_use_item.item).unwrap().name.clone() },
+                        )
+                        .expect("Unable to insert IdentifiedItem");
                 }
                 remove.push(target);
             }

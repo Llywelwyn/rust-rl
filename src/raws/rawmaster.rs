@@ -10,6 +10,8 @@ use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::{HashMap, HashSet};
 
+/// Applies effects to the entity - e.g. "healing: 1d4+1", where
+///  effects are components on the entity with varying parameters.
 macro_rules! apply_effects {
     ($effects:expr, $eb:expr) => {
         for effect in $effects.iter() {
@@ -27,8 +29,6 @@ macro_rules! apply_effects {
                 "aoe" => $eb = $eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
                 "confusion" => $eb = $eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
                 "ac" => $eb = $eb.with(ArmourClassBonus { amount: effect.1.parse::<i32>().unwrap() }),
-                "magicmapper" => $eb = $eb.with(MagicMapper {}),
-                "digger" => $eb = $eb.with(Digger {}),
                 "particle_line" => $eb = $eb.with(parse_particle_line(&effect.1)),
                 "particle_burst" => $eb = $eb.with(parse_particle_burst(&effect.1)),
                 "particle" => $eb = $eb.with(parse_particle(&effect.1)),
@@ -38,11 +38,13 @@ macro_rules! apply_effects {
     };
 }
 
+/// Applies flags to the entity - e.g. "blocks_tile", where
+/// flags are components that have no parameters to modify.
 macro_rules! apply_flags {
     ($flags:expr, $eb:expr) => {
         for flag in $flags.iter() {
             match flag.as_str() {
-                // --- PROP/ITEM FLAGS BEGIN HERE ---
+                // --- PROP FLAGS BEGIN HERE ---
                 "HIDDEN" => $eb = $eb.with(Hidden {}),
                 "BLOCKS_TILE" => $eb = $eb.with(BlocksTile {}),
                 "BLOCKS_VISIBILITY" => $eb = $eb.with(BlocksVisibility {}),
@@ -53,15 +55,16 @@ macro_rules! apply_flags {
                     $eb = $eb.with(BlocksVisibility {});
                     $eb = $eb.with(BlocksTile {});
                 }
-                // RESTORES NUTRITION
+                // --- EFFECT FLAGS ---
                 "FOOD" => $eb = $eb.with(ProvidesNutrition {}),
-                // IS DELETED ON USE
                 "CONSUMABLE" => $eb = $eb.with(Consumable {}),
-                // HAS CHARGES
                 "CHARGES" => $eb = $eb.with(Charges { uses: 3, max_uses: 3 }),
+                "REMOVE_CURSE" => $eb = $eb.with(RemovesCurse {}),
+                "DIGGER" => $eb = $eb.with(Digger {}),
+                "MAGICMAP" => $eb = $eb.with(MagicMapper {}),
                 // CAN BE DESTROYED BY DAMAGE
                 "DESTRUCTIBLE" => $eb = $eb.with(Destructible {}),
-                // EQUIP SLOTS
+                // --- EQUIP SLOTS ---
                 "EQUIP_MELEE" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Melee }),
                 "EQUIP_SHIELD" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Shield }),
                 "EQUIP_HEAD" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Head }),
@@ -70,23 +73,22 @@ macro_rules! apply_flags {
                 "EQUIP_HANDS" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Hands }),
                 "EQUIP_NECK" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Neck }),
                 "EQUIP_BACK" => $eb = $eb.with(Equippable { slot: EquipmentSlot::Back }),
-                // --- MOB FLAGS BEGIN HERE ---
-                // RACES
+                // --- MOB ANCESTRIES ---
                 "IS_PLAYER" => $eb = $eb.with(Player {}),
                 "IS_HUMAN" => $eb = $eb.with(HasAncestry { name: Ancestry::Human }),
                 "IS_DWARF" => $eb = $eb.with(HasAncestry { name: Ancestry::Dwarf }),
                 "IS_ELF" => $eb = $eb.with(HasAncestry { name: Ancestry::Elf }),
                 "IS_CATFOLK" => $eb = $eb.with(HasAncestry { name: Ancestry::Catfolk }),
                 "IS_GNOME" => $eb = $eb.with(HasAncestry { name: Ancestry::Gnome }),
-                // FACTIONS
+                // --- MOB FACTIONS ---
                 "MINDLESS" => $eb = $eb.with(Faction { name: "mindless".to_string() }),
                 "NEUTRAL" => $eb = $eb.with(Faction { name: "neutral".to_string() }),
                 "HERBIVORE" => $eb = $eb.with(Faction { name: "herbivore".to_string() }),
                 "CARNIVORE" => $eb = $eb.with(Faction { name: "carnivore".to_string() }),
-                // MOVEMENT FLAGS (DEFAULTS TO WANDERING)
+                // --- MOVEMENT MODES --- ( defaults to WANDER )
                 "STATIC" => $eb = $eb.with(MoveMode { mode: Movement::Static }),
                 "RANDOM_PATH" => $eb = $eb.with(MoveMode { mode: Movement::RandomWaypoint { path: None } }),
-                // ATTRIBUTES/MISC
+                // --- RANDOM MOB ATTRIBUTES ---
                 "SMALL_GROUP" => {} // These flags are for region spawning,
                 "LARGE_GROUP" => {} // and don't need to apply a component.
                 "MULTIATTACK" => $eb = $eb.with(MultiAttack {}),

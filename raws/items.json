@@ -20,6 +20,15 @@
         "magic": { "class": "uncommon", "naming": "potion" }
     },
     {
+        "id": "scroll_removecurse",
+        "name": { "name": "scroll of remove curse", "plural": "scrolls of remove curse" },
+        "renderable": { "glyph": "?", "fg": "#0FFFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 50,
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE", "REMOVE_CURSE"],
+        "magic": { "class": "uncommon", "naming": "scroll" }
+    },
+    {
         "id": "scroll_health",
         "name": { "name": "scroll of healing word", "plural": "scrolls of healing word" },
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
@@ -100,8 +109,8 @@
         "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "weight": 0.5,
         "value": 50,
-        "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "magicmapper": "" },
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE", "MAGICMAP"],
+        "effects": {},
         "magic": { "class": "common", "naming": "scroll" }
     },
     {
@@ -364,8 +373,8 @@
         "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "weight": 2,
         "value": 300,
-        "flags": ["CHARGES"],
-        "effects": { "ranged": "10", "digger": "" },
+        "flags": ["CHARGES", "DIGGER"],
+        "effects": { "ranged": "10" },
         "magic": { "class": "rare", "naming": "wand" }
     },
     {

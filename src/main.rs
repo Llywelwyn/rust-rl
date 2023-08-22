@@ -617,6 +617,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<EntryTrigger>();
     gs.ecs.register::<EntityMoved>();
     gs.ecs.register::<MultiAttack>();
+    gs.ecs.register::<RemovesCurse>();
     gs.ecs.register::<ParticleLifetime>();
     gs.ecs.register::<SpawnParticleSimple>();
     gs.ecs.register::<SpawnParticleBurst>();

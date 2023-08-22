@@ -47,6 +47,7 @@
     {
         "id": "scrolls",
         "table": [
+            { "id": "scroll_removecurse",       "weight": 2,    "difficulty": 1},
             { "id": "scroll_confusion",         "weight": 2,    "difficulty": 1},
             { "id": "scroll_magicmap",          "weight": 2,    "difficulty": 1},
             { "id": "scroll_embers",            "weight": 2,    "difficulty": 2},

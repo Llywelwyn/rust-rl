@@ -443,6 +443,9 @@ pub struct SpawnParticleBurst {
 pub struct Destructible {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct RemovesCurse {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Digger {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
