@@ -134,17 +134,22 @@ i'll try to remember to update the web version on my page at the end of every we
 - character creation!
   - it doesn't look too pretty yet, but i managed to get it done in time. classes and ancestries are selectable, with ancestries determining some intrinsic bonuses (dwarves are hardy, catfolk are fast and have claws, etc.) and attribute maximums, and classes determining starting equipment and the actual attribute rolls. along with this, i expanded entity reactions - now a shared ancestry is taken into account first of all, and it checks faction if it doesn't manage to find anything. this means humans wont attack other humans, dwarves wont be attacked by gnomes and other dwarves, etc.
   
-  [image here]
+    ![char creation](https://github.com/Llywelwyn/rust-rl/assets/82828093/fb0e99d4-fd76-4995-8542-9690bb3d45dd)
+
+
+- proper identification and beatitude
+  - item-ID is split from beatitudes as it should be, scrolls of identify and remove curse are in, and blessed/cursed effects are applied for a bunch of things.
+ 
+    ![beatitude/buc](https://github.com/Llywelwyn/rust-rl/assets/82828093/387a9be4-225b-4b63-b9be-086973feb5ed)
+
 
 - better AI
    - straight from thebracket, with a handful of tweaks of my own, i've finally atomised AI into adjacent, visible, chase, flee, and default systems. most notably,rather than hostile mobs attacking everything and passive mobs doing nothing, every mob has a faction, and most mobs have an ancestry. like mentioned above, mobs will take all this into account when determining how they want to react to any other entity. i see a lot of places to expand on this in the future, like going into alignments and other increasingly-specific reasons why any entity might want to murder another. or make friends with them. taming comes to mind here.
  
 - an effects system
-  - instead of randomly doing things all around the codebase, everything is in the process of being moved over to an effects system. to put it very simply, there's a big list of every effect that needs to take place on the next tick, and each tick the queue is iterated through, the next effect is checked against a list of every entity that died this turn to make sure that it should still take place (no dead mobs still getting their attacks off), and then it makes the event happen if appropriate. if not, it just gets tossed out. it's all super modular, so effects can pretty much be applied to everything. the same damage and targeting effects work for item use and traps going off, or an entity swinging their sword, for example. i made use of this new system by adding in some aoe scrolls, like mass function and mass healing.
-
-- better logging
-  - it's still in process, but i'm making every entity name in chat use the proper colour now, and working with the effects system to combine relevant logs all into one line, and make them more specific. generally i'm trying not to include too many numbers in the log; it's just personal preference, but i don't like seeing exactly how much damage every hit has done - i'd rather just see my health bar go up or down, or tell by seeing how fast a mob dies. this took *too much* fumbling with the function that renders my log to the screen, but now it's fixed and works a lot better than before, so it was definitely worth it.
-
-  [image here]
+  - instead of randomly doing things all around the codebase, everything is in the process of being moved over to an effects system. to put it very simply, there's a big list of every effect that needs to take place on the next tick, and each tick the queue is iterated through, the next effect is checked against a list of every entity that died this turn to make sure that it should still take place (no dead mobs still getting their attacks off), and then it makes the event happen if appropriate. if not, it just gets tossed out. it's all super modular, so effects can pretty much be applied to everything. the same damage and targeting effects work for item use and traps going off, or an entity swinging their sword, for example. i made use of this new system by adding in some aoe scrolls, like mass function and mass healing. see below for blindness improving telepathy range, and nice new particle effects.
+  
+    ![blindness](https://github.com/Llywelwyn/rust-rl/assets/82828093/800f7d36-3fa7-42b7-b80f-247e0d56d014)
+    ![squares](https://github.com/Llywelwyn/rust-rl/assets/82828093/b752e1cb-340d-475d-84ae-68fdb4977a80)
 
 </details>
