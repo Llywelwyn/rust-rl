@@ -611,6 +611,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<MeleeWeapon>();
     gs.ecs.register::<NaturalAttacks>();
     gs.ecs.register::<ArmourClassBonus>();
+    gs.ecs.register::<ToHitBonus>();
     gs.ecs.register::<MoveMode>();
     gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<InflictsDamage>();

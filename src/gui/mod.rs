@@ -489,7 +489,7 @@ pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
         if has_beatitude.known {
             let prefix = match has_beatitude.buc {
                 BUC::Cursed => Some("cursed "),
-                BUC::Uncursed => None,
+                BUC::Uncursed => Some("uncursed "),
                 BUC::Blessed => Some("blessed "),
             };
             if prefix.is_some() {

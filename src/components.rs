@@ -316,6 +316,11 @@ pub struct ArmourClassBonus {
     pub amount: i32,
 }
 
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct ToHitBonus {
+    pub amount: i32,
+}
+
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Equippable {
     pub slot: EquipmentSlot,

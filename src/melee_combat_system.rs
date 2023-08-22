@@ -3,7 +3,8 @@ use super::{
     gamelog, gamesystem,
     gui::renderable_colour,
     ArmourClassBonus, Attributes, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon, MultiAttack, Name,
-    NaturalAttacks, ParticleBuilder, Pools, Position, Renderable, Skill, Skills, WantsToMelee, WeaponAttribute,
+    NaturalAttacks, ParticleBuilder, Pools, Position, Renderable, Skill, Skills, ToHitBonus, WantsToMelee,
+    WeaponAttribute,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -26,6 +27,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, MeleeWeapon>,
         ReadStorage<'a, NaturalAttacks>,
         ReadStorage<'a, ArmourClassBonus>,
+        ReadStorage<'a, ToHitBonus>,
         ReadStorage<'a, HungerClock>,
         ReadStorage<'a, MultiAttack>,
         WriteExpect<'a, rltk::RandomNumberGenerator>,
@@ -47,6 +49,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             melee_weapons,
             natural_attacks,
             ac,
+            to_hit,
             hunger_clock,
             multi_attackers,
             mut rng,
@@ -96,10 +99,10 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     attacks.push((
                         MeleeWeapon {
                             attribute: WeaponAttribute::Strength,
-                            hit_bonus: 0,
                             damage_n_dice: 1,
                             damage_die_type: 4,
                             damage_bonus: 0,
+                            hit_bonus: 0,
                         },
                         "punches".to_string(),
                     ));
@@ -124,7 +127,12 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 let d20 = rng.roll_dice(1, 20);
                 let attribute_hit_bonus = attacker_attributes.dexterity.bonus;
                 let skill_hit_bonus = gamesystem::skill_bonus(Skill::Melee, &*attacker_skills);
-                let weapon_hit_bonus = weapon_info.hit_bonus;
+                let mut equipment_hit_bonus = weapon_info.hit_bonus;
+                for (wielded, to_hit) in (&equipped, &to_hit).join() {
+                    if wielded.owner == entity {
+                        equipment_hit_bonus += to_hit.amount;
+                    }
+                }
                 let mut status_hit_bonus = 0;
                 let hc = hunger_clock.get(entity);
                 if let Some(hc) = hc {
@@ -141,8 +149,13 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         _ => {}
                     }
                 }
-                let attacker_bonuses =
-                    attacker_pools.level + attribute_hit_bonus + skill_hit_bonus + weapon_hit_bonus + status_hit_bonus;
+                // Total to-hit bonus
+                let attacker_bonuses = 1    // +1 for being in melee combat
+                    + attacker_pools.level  // + level
+                    + attribute_hit_bonus   // +- str/dex bonus depending on weapon used
+                    + skill_hit_bonus       // +- relevant skill modifier
+                    + equipment_hit_bonus   // +- any other to-hit modifiers from equipment
+                    + status_hit_bonus; //     +- any to-hit modifiers from status effects
 
                 // Get armour class
                 let bac = target_pools.bac;
@@ -164,17 +177,21 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     armour_class_roll = -armour_class_roll;
                 }
 
-                let target_number = 10 + armour_class_roll + attacker_bonuses;
+                // Monster attacks receive a +10 to-hit bonus against the player.
+                let monster_v_player_bonus = if wants_melee.target == *player_entity { 10 } else { 0 };
+
+                let target_number = monster_v_player_bonus + armour_class_roll + attacker_bonuses;
 
                 let target_name = names.get(wants_melee.target).unwrap();
                 if COMBAT_LOGGING {
                     rltk::console::log(format!(
-                        "ATTACKLOG: {} *{}* {}: rolled ({}) 1d20 vs. {} (10 + {}AC + {}to-hit)",
+                        "ATTACKLOG: {} *{}* {}: rolled ({}) 1d20 vs. {} ({} + {}AC + {}to-hit)",
                         &name.name,
                         attack_verb,
                         &target_name.name,
                         d20,
                         target_number,
+                        monster_v_player_bonus,
                         armour_class_roll,
                         attacker_bonuses
                     ));

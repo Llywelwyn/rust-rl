@@ -29,6 +29,7 @@ macro_rules! apply_effects {
                 "aoe" => $eb = $eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
                 "confusion" => $eb = $eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
                 "ac" => $eb = $eb.with(ArmourClassBonus { amount: effect.1.parse::<i32>().unwrap() }),
+                "to_hit" => $eb = $eb.with(ToHitBonus { amount: effect.1.parse::<i32>().unwrap() }),
                 "particle_line" => $eb = $eb.with(parse_particle_line(&effect.1)),
                 "particle_burst" => $eb = $eb.with(parse_particle_burst(&effect.1)),
                 "particle" => $eb = $eb.with(parse_particle(&effect.1)),
@@ -230,7 +231,7 @@ pub fn spawn_named_item(
 ) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         let item_template = &raws.raws.items[raws.item_index[key]];
-        let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
+        let mut dm = ecs.fetch_mut::<crate::map::MasterDungeonMap>();
         let scroll_names = dm.scroll_map.clone();
         let potion_names = dm.potion_map.clone();
         let wand_names = dm.wand_map.clone();
@@ -256,6 +257,9 @@ pub fn spawn_named_item(
             }
             _ => false,
         };
+        if known_beatitude && !identified_items.contains(&item_template.name.name) {
+            dm.identified_items.insert(item_template.name.name.clone());
+        }
         std::mem::drop(player_entity);
         std::mem::drop(dm);
         // -- DROP EVERYTHING THAT INVOLVES THE ECS BEFORE THIS POINT ---

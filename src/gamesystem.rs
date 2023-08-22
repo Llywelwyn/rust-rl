@@ -17,7 +17,7 @@ pub fn hp_per_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32) ->
 #[allow(dead_code)]
 /// Returns a total HP roll for a player, based on a given constitution score and level.
 pub fn player_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
-    let mut total = 10 + attr_bonus(constitution);
+    let mut total = 8 + attr_bonus(constitution);
     for _i in 0..level {
         total += hp_per_level(rng, constitution);
     }

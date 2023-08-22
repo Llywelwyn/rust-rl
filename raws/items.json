@@ -192,7 +192,7 @@
         "weight": 6,
         "value": 10,
         "flags": ["EQUIP_SHIELD"],
-        "effects": { "ac": "2" }
+        "effects": { "ac": "2", "to_hit": "-1" }
     },
     {
         "id": "equip_largeshield",
@@ -201,7 +201,7 @@
         "weight": 12,
         "value": 35,
         "flags": ["EQUIP_SHIELD"],
-        "effects": { "ac": "3" }
+        "effects": { "ac": "3", "to_hit": "-2" }
     },
     {
         "id": "equip_body_weakleather",
