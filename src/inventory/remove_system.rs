@@ -45,7 +45,7 @@ impl<'a> System<'a> for ItemRemoveSystem {
                     can_remove = false;
                     gamelog::Logger::new()
                         .append("You can't remove the")
-                        .colour(item_colour(to_remove.item, &beatitudes, &dm))
+                        .colour(item_colour(to_remove.item, &beatitudes))
                         .append_n(
                             obfuscate_name(
                                 to_remove.item,
@@ -72,7 +72,7 @@ impl<'a> System<'a> for ItemRemoveSystem {
                 if entity == *player_entity {
                     gamelog::Logger::new()
                         .append("You unequip the")
-                        .colour(item_colour(to_remove.item, &beatitudes, &dm))
+                        .colour(item_colour(to_remove.item, &beatitudes))
                         .append_n(
                             obfuscate_name(
                                 to_remove.item,

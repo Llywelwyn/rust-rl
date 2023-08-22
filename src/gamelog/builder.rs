@@ -57,6 +57,7 @@ impl Logger {
     }
 
     /// Appends text in YELLOW to the current message logger.
+    #[allow(unused)]
     pub fn npc_name<T: ToString>(mut self, text: T) -> Self {
         let mut text_with_space = text.to_string();
         text_with_space.push_str(" ");

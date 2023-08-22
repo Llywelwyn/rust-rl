@@ -1,4 +1,4 @@
-use super::{add_effect, get_noncursed, targeting, EffectSpawner, EffectType, Entity, Targets, World};
+use super::{add_effect, targeting, EffectSpawner, EffectType, Entity, Targets, World};
 use crate::{
     gamelog,
     gamesystem::{hp_per_level, mana_per_level},

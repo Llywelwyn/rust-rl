@@ -45,7 +45,7 @@ impl<'a> System<'a> for VisibilitySystem {
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
                 viewshed.dirty = false;
-                let mut range = if let Some(is_blind) = blind_entities.get(ent) { 1 } else { viewshed.range };
+                let range = if let Some(_is_blind) = blind_entities.get(ent) { 1 } else { viewshed.range };
                 let origin = Point::new(pos.x, pos.y);
                 viewshed.visible_tiles = SymmetricShadowcasting.field_of_view(origin, range, &*map);
                 viewshed.visible_tiles.retain(|p| {
@@ -94,7 +94,7 @@ impl<'a> System<'a> for VisibilitySystem {
             if telepath.dirty {
                 telepath.dirty = false;
                 let mut range = telepath.range;
-                if let Some(is_blind) = blind_entities.get(ent) {
+                if let Some(_is_blind) = blind_entities.get(ent) {
                     range *= BLIND_TELEPATHY_RANGE_MULTIPLIER;
                 }
                 telepath.telepath_tiles = fast_fov(pos.x, pos.y, range);

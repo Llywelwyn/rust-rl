@@ -1,5 +1,5 @@
 use super::{EffectSpawner, EffectType};
-use crate::{HungerClock, BUC};
+use crate::HungerClock;
 use specs::prelude::*;
 
 pub fn modify_nutrition(ecs: &mut World, effect: &EffectSpawner, target: Entity) {

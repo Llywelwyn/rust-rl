@@ -1,8 +1,8 @@
 use super::{
     ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, hunger_system::get_hunger_colour,
     rex_assets::RexAssets, ArmourClassBonus, Attributes, Beatitude, Burden, Charges, Equipped, Hidden, HungerClock,
-    HungerState, InBackpack, MagicItem, MagicItemClass, Map, MasterDungeonMap, Name, ObfuscatedName, Player, Point,
-    Pools, Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed, BUC,
+    HungerState, InBackpack, MagicItem, Map, MasterDungeonMap, Name, ObfuscatedName, Player, Point, Pools, Position,
+    Prop, Renderable, RunState, Skill, Skills, State, Viewshed, BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -527,7 +527,7 @@ pub fn item_colour_ecs(ecs: &World, item: Entity) -> (u8, u8, u8) {
     return WHITE;
 }
 
-pub fn item_colour(item: Entity, beatitudes: &ReadStorage<Beatitude>, dm: &MasterDungeonMap) -> (u8, u8, u8) {
+pub fn item_colour(item: Entity, beatitudes: &ReadStorage<Beatitude>) -> (u8, u8, u8) {
     if let Some(beatitude) = beatitudes.get(item) {
         if beatitude.known {
             match beatitude.buc {

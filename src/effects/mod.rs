@@ -35,6 +35,7 @@ pub enum EffectType {
 }
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub enum Targets {
     Entity { target: Entity },
     EntityList { targets: Vec<Entity> },

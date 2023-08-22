@@ -64,28 +64,40 @@ impl<'a> System<'a> for VisibleAI {
                     // If we didn't already evaluate this idx (if it's not contained in the HashSet),
                     // and it's not the idx we're standing on, then evaluate here w/ minds taken into
                     // account.
-                    if this_idx != idx && idxs.contains(&idx) {
+                    if this_idx != idx && !idxs.contains(&idx) {
                         evaluate(entity, idx, &ancestries, &factions, &mut reactions, Some(&minds));
                     }
                 }
             }
-            let mut done = false;
+            reactions.sort_by(|(a, _, _), (b, _, _)| {
+                let (a_x, a_y) = (a % map.width as usize, a / map.width as usize);
+                let dist_a = DistanceAlg::PythagorasSquared.distance2d(Point::new(a_x, a_y), Point::new(pos.x, pos.y));
+                let dist_a_estimate = dist_a as i32;
+                let (b_x, b_y) = (b % map.width as usize, b / map.width as usize);
+                let dist_b = DistanceAlg::PythagorasSquared.distance2d(Point::new(b_x, b_y), Point::new(pos.x, pos.y));
+                let dist_b_estimate = dist_b as i32;
+                return dist_b_estimate.cmp(&dist_a_estimate);
+            });
+            let mut found_flee = false;
             for reaction in reactions.iter() {
                 match reaction.1 {
                     Reaction::Attack => {
-                        wants_to_approach
-                            .insert(entity, WantsToApproach { idx: reaction.0 as i32 })
-                            .expect("Error inserting WantsToApproach");
-                        chasing.insert(entity, Chasing { target: reaction.2 }).expect("Unable to insert Chasing");
-                        done = true;
+                        if !found_flee {
+                            wants_to_approach
+                                .insert(entity, WantsToApproach { idx: reaction.0 as i32 })
+                                .expect("Error inserting WantsToApproach");
+                            chasing.insert(entity, Chasing { target: reaction.2 }).expect("Unable to insert Chasing");
+                            continue;
+                        }
                     }
                     Reaction::Flee => {
                         flee.push(reaction.0);
+                        found_flee = true;
                     }
                     _ => {}
                 }
             }
-            if !done && !flee.is_empty() {
+            if !flee.is_empty() {
                 wants_to_flee.insert(entity, WantsToFlee { indices: flee }).expect("Unable to insert");
             }
         }
@@ -103,7 +115,9 @@ fn evaluate(
     crate::spatial::for_each_tile_content(idx, |other_entity| {
         let mut check = true;
         if minds.is_some() {
+            console::log("Minds got passed! Evaluating!");
             if minds.unwrap().get(other_entity).is_none() {
+                console::log("No brain here. Skipping!");
                 check = false;
             }
         }

@@ -61,7 +61,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                                 can_equip = false;
                                 logger = logger
                                     .append("You can't remove the")
-                                    .colour(item_colour(item_entity, &beatitudes, &dm))
+                                    .colour(item_colour(item_entity, &beatitudes))
                                     .append_n(
                                         obfuscate_name(
                                             item_entity,
@@ -94,7 +94,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                     if target == *player_entity {
                         logger = logger
                             .append("You remove your")
-                            .colour(item_colour(*item, &beatitudes, &dm))
+                            .colour(item_colour(*item, &beatitudes))
                             .append_n(
                                 obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &beatitudes, &dm, None)
                                     .0,
@@ -112,7 +112,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                 if target == *player_entity {
                     logger = logger
                         .append("You equip the")
-                        .colour(item_colour(wants_to_use_item.item, &beatitudes, &dm))
+                        .colour(item_colour(wants_to_use_item.item, &beatitudes))
                         .append_n(
                             obfuscate_name(
                                 wants_to_use_item.item,

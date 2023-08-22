@@ -93,6 +93,7 @@ macro_rules! apply_flags {
                 "SMALL_GROUP" => {} // These flags are for region spawning,
                 "LARGE_GROUP" => {} // and don't need to apply a component.
                 "MULTIATTACK" => $eb = $eb.with(MultiAttack {}),
+                "BLIND" => $eb = $eb.with(Blind {}),
                 _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
             }
         }
@@ -379,6 +380,9 @@ pub fn spawn_named_mob(
         eb = spawn_position(pos, eb, key, raws);
         eb = eb.with(Name { name: mob_template.name.clone(), plural: mob_template.name.clone() });
         eb = eb.with(Viewshed { visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
+        if let Some(telepath) = &mob_template.telepathy_range {
+            eb = eb.with(Telepath { telepath_tiles: Vec::new(), range: *telepath, dirty: true });
+        }
         if let Some(renderable) = &mob_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
         }
