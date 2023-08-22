@@ -13,6 +13,8 @@ mod letter_to_option;
 pub use character_creation::*;
 mod remove_curse_menu;
 pub use remove_curse_menu::*;
+mod identify_menu;
+pub use identify_menu::*;
 mod tooltip;
 pub use cheat_menu::*;
 

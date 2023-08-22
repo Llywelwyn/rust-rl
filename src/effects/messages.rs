@@ -1,6 +1,9 @@
 pub const NOCHARGES_WREST: &str = "You wrest one last charge from the worn-out wand.";
 pub const NOCHARGES_DIDNOTHING: &str = "The wand does nothing.";
 
+pub const IDENTIFY_ALL: &str = "You feel attuned to your belongings!";
+pub const IDENTIFY_ALL_BLESSED: &str = "Divine favour reveals all";
+
 pub const REMOVECURSE: &str = "You feel a weight lifted!";
 pub const REMOVECURSE_BLESSED: &str = "You feel righteous";
 pub const REMOVECURSE_BLESSED_FAILED: &str = "You feel righteous! But nothing happened.";

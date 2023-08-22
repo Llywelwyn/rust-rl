@@ -20,13 +20,22 @@
         "magic": { "class": "uncommon", "naming": "potion" }
     },
     {
+        "id": "scroll_identify",
+        "name": { "name": "scroll of identify", "plural": "scrolls of identify" },
+        "renderable": { "glyph": "?", "fg": "#0FFFFF", "bg": "#000000", "order": 2 },
+        "weight": 0.5,
+        "value": 100,
+        "flags": ["CONSUMABLE", "DESTRUCTIBLE", "IDENTIFY"],
+        "magic": { "class": "uncommon", "naming": "scroll" }
+    },
+    {
         "id": "scroll_removecurse",
         "name": { "name": "scroll of remove curse", "plural": "scrolls of remove curse" },
         "renderable": { "glyph": "?", "fg": "#0FFFFF", "bg": "#000000", "order": 2 },
         "weight": 0.5,
-        "value": 50,
+        "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "REMOVE_CURSE"],
-        "magic": { "class": "uncommon", "naming": "scroll" }
+        "magic": { "class": "rare", "naming": "scroll" }
     },
     {
         "id": "scroll_health",

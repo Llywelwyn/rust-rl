@@ -451,7 +451,10 @@ pub struct SpawnParticleBurst {
 pub struct Destructible {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct RemovesCurse {}
+pub struct ProvidesRemoveCurse {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ProvidesIdentify {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Digger {}

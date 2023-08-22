@@ -54,6 +54,7 @@ pub enum RunState {
     ShowRemoveItem,
     ShowTargeting { range: i32, item: Entity, aoe: i32 },
     ShowRemoveCurse,
+    ShowIdentify,
     ActionWithDirection { function: fn(i: i32, j: i32, ecs: &mut World) -> RunState },
     MainMenu { menu_selection: gui::MainMenuSelection },
     CharacterCreation { ancestry: gui::Ancestry, class: gui::Class },
@@ -263,6 +264,7 @@ impl GameState for State {
                             new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
                         }
                         RunState::ShowRemoveCurse => new_runstate = RunState::ShowRemoveCurse,
+                        RunState::ShowIdentify => new_runstate = RunState::ShowIdentify,
                         _ => new_runstate = RunState::Ticking,
                     }
                 }
@@ -393,6 +395,24 @@ impl GameState for State {
                             .write_storage::<Beatitude>()
                             .insert(item_entity, Beatitude { buc: BUC::Uncursed, known: true })
                             .expect("Unable to insert beatitude");
+                        new_runstate = RunState::Ticking;
+                    }
+                }
+            }
+            RunState::ShowIdentify => {
+                let result = gui::identify(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        if let Some(name) = self.ecs.read_storage::<Name>().get(item_entity) {
+                            let mut dm = self.ecs.fetch_mut::<MasterDungeonMap>();
+                            dm.identified_items.insert(name.name.clone());
+                        }
+                        if let Some(beatitude) = self.ecs.write_storage::<Beatitude>().get_mut(item_entity) {
+                            beatitude.known = true;
+                        }
                         new_runstate = RunState::Ticking;
                     }
                 }
@@ -637,7 +657,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<EntryTrigger>();
     gs.ecs.register::<EntityMoved>();
     gs.ecs.register::<MultiAttack>();
-    gs.ecs.register::<RemovesCurse>();
+    gs.ecs.register::<ProvidesRemoveCurse>();
+    gs.ecs.register::<ProvidesIdentify>();
     gs.ecs.register::<ParticleLifetime>();
     gs.ecs.register::<SpawnParticleSimple>();
     gs.ecs.register::<SpawnParticleBurst>();

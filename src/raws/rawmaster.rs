@@ -60,7 +60,8 @@ macro_rules! apply_flags {
                 "FOOD" => $eb = $eb.with(ProvidesNutrition {}),
                 "CONSUMABLE" => $eb = $eb.with(Consumable {}),
                 "CHARGES" => $eb = $eb.with(Charges { uses: 3, max_uses: 3 }),
-                "REMOVE_CURSE" => $eb = $eb.with(RemovesCurse {}),
+                "REMOVE_CURSE" => $eb = $eb.with(ProvidesRemoveCurse {}),
+                "IDENTIFY" => $eb = $eb.with(ProvidesIdentify {}),
                 "DIGGER" => $eb = $eb.with(Digger {}),
                 "MAGICMAP" => $eb = $eb.with(MagicMapper {}),
                 // CAN BE DESTROYED BY DAMAGE

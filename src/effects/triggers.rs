@@ -1,9 +1,9 @@
 use super::{add_effect, get_noncursed, messages::*, particles, spatial, EffectType, Entity, Targets, World};
 use crate::{
     gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Beatitude, Charges, Confusion,
-    Consumable, Destructible, Equipped, Hidden, InBackpack, InflictsDamage, Item, MagicMapper, Player, Prop,
-    ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, RemovesCurse, Renderable, RunState, SingleActivation,
-    BUC,
+    Consumable, Destructible, Equipped, Hidden, InBackpack, InflictsDamage, Item, MagicMapper, MasterDungeonMap, Name,
+    ObfuscatedName, Player, Prop, ProvidesHealing, ProvidesIdentify, ProvidesNutrition, ProvidesRemoveCurse,
+    RandomNumberGenerator, Renderable, RunState, SingleActivation, BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -68,11 +68,12 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
     let (logger, restored_nutrition) = handle_restore_nutrition(ecs, &mut event, logger);
     let (logger, magic_mapped) = handle_magic_mapper(ecs, &mut event, logger);
     let (logger, removed_curse) = handle_remove_curse(ecs, &mut event, logger);
+    let (logger, identified) = handle_identify(ecs, &mut event, logger);
     let (logger, healed) = handle_healing(ecs, &mut event, logger);
     let (logger, damaged) = handle_damage(ecs, &mut event, logger);
     let (logger, confused) = handle_confusion(ecs, &mut event, logger);
     //let (logger, dug) = handle_dig(ecs, &mut event, logger); -- NYI i.e. Wand of Digging
-    did_something |= restored_nutrition || magic_mapped || healed || damaged || confused || removed_curse;
+    did_something |= restored_nutrition || magic_mapped || healed || damaged || confused || removed_curse || identified;
 
     if event.log {
         logger.log();
@@ -208,18 +209,59 @@ fn handle_confusion(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog:
     return (logger, false);
 }
 
-fn select_single_remove_curse(ecs: &World) {
-    let mut runstate = ecs.fetch_mut::<RunState>();
-    *runstate = RunState::ShowRemoveCurse;
+fn select_single(ecs: &World, runstate: RunState) {
+    let mut new_runstate = ecs.fetch_mut::<RunState>();
+    *new_runstate = runstate;
+}
+
+fn handle_identify(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+    if let Some(_i) = ecs.read_storage::<ProvidesIdentify>().get(event.entity) {
+        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+        let mut dm = ecs.fetch_mut::<MasterDungeonMap>();
+        let identify_all = match event.buc {
+            BUC::Blessed => rng.roll_dice(1, 5) == 1,
+            BUC::Uncursed => rng.roll_dice(1, 25) == 1,
+            _ => false,
+        };
+        if !identify_all {
+            select_single(ecs, RunState::ShowIdentify);
+            return (logger, true);
+        }
+        let mut to_identify: Vec<(Entity, String)> = Vec::new();
+        for (e, _i, _bp, _o, name) in (
+            &ecs.entities(),
+            &ecs.read_storage::<Item>(),
+            &ecs.read_storage::<InBackpack>(),
+            &ecs.read_storage::<ObfuscatedName>(),
+            &ecs.read_storage::<Name>(),
+        )
+            .join()
+            .filter(|(_e, _i, bp, _o, name)| {
+                bp.owner == event.source.unwrap() && !dm.identified_items.contains(&name.name.clone())
+            })
+        {
+            to_identify.push((e, name.name.clone()));
+        }
+        for item in to_identify {
+            dm.identified_items.insert(item.1);
+            if let Some(beatitude) = ecs.write_storage::<Beatitude>().get_mut(item.0) {
+                beatitude.known = true;
+            }
+        }
+        logger = logger.append(IDENTIFY_ALL).buc(event.buc.clone(), None, Some(IDENTIFY_ALL_BLESSED));
+        event.log = true;
+        return (logger, true);
+    }
+    return (logger, false);
 }
 
 fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
-    if let Some(_r) = ecs.read_storage::<RemovesCurse>().get(event.entity) {
+    if let Some(_r) = ecs.read_storage::<ProvidesRemoveCurse>().get(event.entity) {
         let mut to_decurse: Vec<Entity> = Vec::new();
         match event.buc {
             // If cursed, show the prompt to select one item.
             BUC::Cursed => {
-                select_single_remove_curse(ecs);
+                select_single(ecs, RunState::ShowRemoveCurse);
                 return (logger, true);
             }
             // If blessed, decurse everything in our backpack.
@@ -252,7 +294,7 @@ fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
         }
         if to_decurse.len() == 0 {
             match event.buc {
-                BUC::Uncursed => select_single_remove_curse(ecs),
+                BUC::Uncursed => select_single(ecs, RunState::ShowRemoveCurse),
                 BUC::Blessed => logger = logger.append(REMOVECURSE_BLESSED_FAILED),
                 _ => {}
             }

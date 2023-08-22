@@ -2,74 +2,74 @@ use super::{
     get_max_inventory_width, item_colour_ecs, obfuscate_name_ecs, print_options, renderable_colour, ItemMenuResult,
     UniqueInventoryItem,
 };
-use crate::{gamelog, Beatitude, Entity, Equipped, InBackpack, Item, Name, Renderable, State, BUC};
+use crate::{
+    gamelog, Beatitude, Entity, Equipped, InBackpack, Item, MasterDungeonMap, Name, ObfuscatedName, Renderable, State,
+    BUC,
+};
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
 
-/// Handles the Remove Curse menu.
-pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+/// Handles the Identify menu.
+pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let equipped = gs.ecs.read_storage::<Equipped>();
     let backpack = gs.ecs.read_storage::<InBackpack>();
     let entities = gs.ecs.entities();
     let items = gs.ecs.read_storage::<Item>();
-    let beatitudes = gs.ecs.read_storage::<Beatitude>();
+    let obfuscated = gs.ecs.read_storage::<ObfuscatedName>();
+    let dm = gs.ecs.fetch::<MasterDungeonMap>();
     let names = gs.ecs.read_storage::<Name>();
     let renderables = gs.ecs.read_storage::<Renderable>();
 
-    let build_cursed_iterator = || {
-        (&entities, &items, &beatitudes, &renderables, &names).join().filter(|(item_entity, _i, b, _r, _n)| {
-            // Set all items to FALSE initially.
+    let build_identify_iterator = || {
+        (&entities, &items, &renderables, &names).join().filter(|(item_entity, _i, _r, n)| {
+            // If not owned by the player, return false.
             let mut keep = false;
-            // If found in the player's backpack, set to TRUE
             if let Some(bp) = backpack.get(*item_entity) {
                 if bp.owner == *player_entity {
                     keep = true;
                 }
             }
-            // If found in the player's equipslot, set to TRUE
+            // If not equipped by the player, return false.
             if let Some(equip) = equipped.get(*item_entity) {
                 if equip.owner == *player_entity {
                     keep = true;
                 }
             }
-            // If it's not OUR item, RETURN FALSE.
             if !keep {
                 return false;
             }
-            // If it's identified as noncursed, RETURN FALSE.
-            if b.known && b.buc != BUC::Cursed {
+            // If not obfuscated, or already identified, return false.
+            if !obfuscated.get(*item_entity).is_some() || dm.identified_items.contains(&n.name) {
                 return false;
             }
-            // Otherwise, return: returns any items that are unidentified,
-            // or identified as being cursed.
             return true;
         })
     };
 
     // Build list of items to display
-    let count = build_cursed_iterator().count();
+    let count = build_identify_iterator().count();
     // If no items, return nothing, wasting the scroll.
     if count == 0 {
-        gamelog::Logger::new().append("You've got nothing to decurse! What a waste.").log();
+        gamelog::Logger::new().append("You've got nothing to identify! Know-it-all.").log();
         return (ItemMenuResult::Cancel, None);
     }
     // If only one item, return it.
     if count == 1 {
-        let item = build_cursed_iterator().nth(0).unwrap().0;
+        let item = build_identify_iterator().nth(0).unwrap().0;
         gamelog::Logger::new()
-            .append("You decurse the")
+            .append("You identify the")
             .colour(item_colour_ecs(&gs.ecs, item))
             .append_n(obfuscate_name_ecs(&gs.ecs, item).0)
             .colour(WHITE)
             .append("!")
             .log();
-        return (ItemMenuResult::Selected, Some(item));
+        return (ItemMenuResult::Selected, Some(build_identify_iterator().nth(0).unwrap().0));
     }
     let mut player_inventory: BTreeMap<UniqueInventoryItem, i32> = BTreeMap::new();
     let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
-    for (entity, _i, _b, renderable, name) in build_cursed_iterator() {
+    for (entity, _i, renderable, name) in build_identify_iterator() {
         let (singular, plural) = obfuscate_name_ecs(&gs.ecs, entity);
         player_inventory
             .entry(UniqueInventoryItem {
@@ -93,7 +93,7 @@ pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<E
         1 + y_offset,
         RGB::named(rltk::WHITE),
         RGB::named(rltk::BLACK),
-        "Decurse which item? [aA-zZ][Esc.]",
+        "Identify which item? [aA-zZ][Esc.]",
     );
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
     print_options(player_inventory, x + 1, y + 1, ctx);
@@ -107,7 +107,7 @@ pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<E
                 if selection > -1 && selection < count as i32 {
                     let item = inventory_ids.iter().nth(selection as usize).unwrap().1;
                     gamelog::Logger::new()
-                        .append("You decurse the")
+                        .append("You identify the")
                         .colour(item_colour_ecs(&gs.ecs, *item))
                         .append_n(obfuscate_name_ecs(&gs.ecs, *item).0)
                         .colour(WHITE)
