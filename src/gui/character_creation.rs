@@ -284,8 +284,8 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
             .insert(
                 player,
                 Pools {
-                    hit_points: Pool { current: 10 + attr_bonus(con), max: 10 + attr_bonus(con) },
-                    mana: Pool { current: 2 + attr_bonus(int), max: 2 + attr_bonus(int) },
+                    hit_points: Pool { current: 8 + attr_bonus(con), max: 8 + attr_bonus(con) },
+                    mana: Pool { current: 1 + attr_bonus(int), max: 1 + attr_bonus(int) },
                     xp: 0,
                     level: 1,
                     bac: 10,

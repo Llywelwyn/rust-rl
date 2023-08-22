@@ -1,7 +1,9 @@
 use super::{
-    ai::NORMAL_SPEED, random_table::RandomTable, raws, Clock, Energy, EquipmentChanged, Faction, HungerClock,
-    HungerState, Map, Mind, Name, Player, Position, Rect, Renderable, SerializeMe, Skill, Skills, TileType, Viewshed,
+    ai::NORMAL_SPEED, random_table::RandomTable, raws, Attribute, Attributes, Clock, Energy, EquipmentChanged, Faction,
+    HungerClock, HungerState, Map, Mind, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe, Skill,
+    Skills, TileType, Viewshed,
 };
+use crate::gamesystem::*;
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
@@ -13,7 +15,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     skills.skills.insert(Skill::Melee, 0);
     skills.skills.insert(Skill::Defence, 0);
     skills.skills.insert(Skill::Magic, 0);
-
+    let (int, con) = (10, 10);
     // We only create the player once, so create the Clock here for counting turns too.
     ecs.create_entity().with(Clock {}).with(Energy { current: 0, speed: NORMAL_SPEED }).build();
     let player = ecs
@@ -31,7 +33,8 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Viewshed { visible_tiles: Vec::new(), range: 12, dirty: true })
         .with(Name { name: "you".to_string(), plural: "you".to_string() })
         .with(HungerClock { state: HungerState::Satiated, duration: 1200 })
-        /*.with(Attributes {
+        .with(Attributes {
+            // These are overwritten with chargen later -- placeholders.
             strength: Attribute { base: 10, modifiers: 0, bonus: 0 },
             dexterity: Attribute { base: 10, modifiers: 0, bonus: 0 },
             constitution: Attribute { base: 10, modifiers: 0, bonus: 0 },
@@ -40,14 +43,15 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             charisma: Attribute { base: 10, modifiers: 0, bonus: 0 },
         })
         .with(Pools {
-            hit_points: Pool { current: 10 + attr_bonus(con), max: 10 + attr_bonus(con) },
-            mana: Pool { current: 2 + attr_bonus(int), max: 2 + attr_bonus(int) },
+            // These are overwritten with chargen later -- placeholders.
+            hit_points: Pool { current: 8 + attr_bonus(con), max: 8 + attr_bonus(con) },
+            mana: Pool { current: 1 + attr_bonus(int), max: 1 + attr_bonus(int) },
             xp: 0,
             level: 1,
             bac: 10,
             weight: 0.0,
             god: false,
-        })*/
+        })
         .with(EquipmentChanged {})
         .with(skills)
         .with(Energy { current: 0, speed: NORMAL_SPEED })
