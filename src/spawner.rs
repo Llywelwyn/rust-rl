@@ -1,15 +1,14 @@
 use super::{
-    ai::NORMAL_SPEED, random_table::RandomTable, raws, Attribute, Attributes, Clock, Energy, EquipmentChanged, Faction,
-    HungerClock, HungerState, Map, Mind, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe, Skill,
-    Skills, TileType, Viewshed,
+    random_table::RandomTable, raws, Attribute, Attributes, Clock, Energy, EquipmentChanged, Faction, HungerClock,
+    HungerState, Map, Mind, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe, Skill, Skills,
+    TileType, Viewshed,
 };
+use crate::config::entity;
 use crate::gamesystem::*;
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
-
-pub const VIEWSHED_MOD: f32 = 1.25;
 
 /// Spawns the player and returns his/her entity object.
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
@@ -19,7 +18,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     skills.skills.insert(Skill::Magic, 0);
     let (int, con) = (10, 10);
     // We only create the player once, so create the Clock here for counting turns too.
-    ecs.create_entity().with(Clock {}).with(Energy { current: 0, speed: NORMAL_SPEED }).build();
+    ecs.create_entity().with(Clock {}).with(Energy { current: 0, speed: entity::NORMAL_SPEED }).build();
     let player = ecs
         .create_entity()
         .with(Position { x: player_x, y: player_y })
@@ -32,7 +31,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Player {})
         .with(Mind {})
         .with(Faction { name: "player".to_string() })
-        .with(Viewshed { visible_tiles: Vec::new(), range: (12 as f32 * VIEWSHED_MOD) as i32, dirty: true })
+        .with(Viewshed { visible_tiles: Vec::new(), range: entity::DEFAULT_VIEWSHED_STANDARD, dirty: true })
         .with(Name { name: "you".to_string(), plural: "you".to_string() })
         .with(HungerClock { state: HungerState::Satiated, duration: 1200 })
         .with(Attributes {
@@ -56,7 +55,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         })
         .with(EquipmentChanged {})
         .with(skills)
-        .with(Energy { current: 0, speed: NORMAL_SPEED })
+        .with(Energy { current: 0, speed: entity::NORMAL_SPEED })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 

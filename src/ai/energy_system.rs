@@ -1,11 +1,11 @@
+use crate::config::entity::*;
 use crate::{Burden, BurdenLevel, Clock, Energy, Name, Position, RunState, TakingTurn, LOG_TICKS};
 use rltk::prelude::*;
 use specs::prelude::*;
 
 pub struct EnergySystem {}
 
-pub const NORMAL_SPEED: i32 = 12;
-const TURN_COST: i32 = NORMAL_SPEED * 4;
+const TURN_COST: i32 = NORMAL_SPEED * TURN_COST_MULTIPLIER;
 
 impl<'a> System<'a> for EnergySystem {
     #[allow(clippy::type_complexity)]

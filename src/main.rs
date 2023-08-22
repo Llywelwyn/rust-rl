@@ -29,6 +29,7 @@ mod inventory;
 mod particle_system;
 use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
 mod ai;
+mod config;
 mod effects;
 mod gamesystem;
 mod random_table;

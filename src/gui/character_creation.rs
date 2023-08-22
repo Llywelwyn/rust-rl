@@ -1,7 +1,7 @@
 use super::{gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State};
+use crate::config::entity::NORMAL_SPEED;
 use crate::{
-    ai::NORMAL_SPEED, raws, Attribute, Energy, HasAncestry, HasClass, KnownSpell, KnownSpells, Pool, Skill, Skills,
-    Telepath, BUC,
+    raws, Attribute, Energy, HasAncestry, HasClass, KnownSpell, KnownSpells, Pool, Skill, Skills, Telepath, BUC,
 };
 use rltk::prelude::*;
 use serde::{Deserialize, Serialize};

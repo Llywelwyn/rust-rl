@@ -1,5 +1,5 @@
 mod energy_system;
-pub use energy_system::{EnergySystem, NORMAL_SPEED};
+pub use energy_system::EnergySystem;
 mod turn_status_system;
 pub use turn_status_system::TurnStatusSystem;
 mod quip_system;

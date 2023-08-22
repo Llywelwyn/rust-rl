@@ -252,7 +252,7 @@ pub fn multiply_by_float(rgb: rltk::RGB, offsets: (f32, f32, f32)) -> RGB {
 fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
     let distance = DistanceAlg::Pythagoras.distance2d(pos, other_pos) as f32; // Get distance in tiles.
     let interp_factor = (distance - START_DARKEN_AT_N_TILES)
-        / (MAX_DARKEN_AT_N_TILES * crate::spawner::VIEWSHED_MOD - START_DARKEN_AT_N_TILES);
+        / (MAX_DARKEN_AT_N_TILES * crate::config::entity::DEFAULT_VIEWSHED_STANDARD as f32 - START_DARKEN_AT_N_TILES);
     let interp_factor = interp_factor.max(0.0).min(1.0); // Clamp [0-1]
     return 1.0 - interp_factor * (1.0 - MAX_DARKENING);
 }
