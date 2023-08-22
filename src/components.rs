@@ -362,6 +362,9 @@ pub struct Confusion {
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Blind {}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct MagicMapper {}
 
 #[derive(Component, Debug, ConvertSaveload)]

@@ -2,8 +2,8 @@ use super::{
     effects::{add_effect, EffectType, Targets},
     gamelog, gamesystem,
     gui::renderable_colour,
-    ArmourClassBonus, Attributes, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon, MultiAttack, Name,
-    NaturalAttacks, ParticleBuilder, Pools, Position, Renderable, Skill, Skills, ToHitBonus, WantsToMelee,
+    ArmourClassBonus, Attributes, Blind, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon, MultiAttack,
+    Name, NaturalAttacks, ParticleBuilder, Pools, Position, Renderable, Skill, Skills, ToHitBonus, WantsToMelee,
     WeaponAttribute,
 };
 use rltk::prelude::*;
@@ -30,6 +30,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, ToHitBonus>,
         ReadStorage<'a, HungerClock>,
         ReadStorage<'a, MultiAttack>,
+        ReadStorage<'a, Blind>,
         WriteExpect<'a, rltk::RandomNumberGenerator>,
     );
 
@@ -52,6 +53,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             to_hit,
             hunger_clock,
             multi_attackers,
+            blind_entities,
             mut rng,
         ) = data;
 
@@ -119,10 +121,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 if target_pools.hit_points.current <= 0 {
                     break;
                 }
-
                 let weapon_info = attack.0;
                 let attack_verb = attack.1;
-
                 // Get all offensive bonuses
                 let d20 = rng.roll_dice(1, 20);
                 let attribute_hit_bonus = attacker_attributes.dexterity.bonus;
@@ -134,6 +134,9 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     }
                 }
                 let mut status_hit_bonus = 0;
+                if let Some(_) = blind_entities.get(entity) {
+                    status_hit_bonus -= 4;
+                };
                 let hc = hunger_clock.get(entity);
                 if let Some(hc) = hc {
                     match hc.state {

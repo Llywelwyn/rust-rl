@@ -619,6 +619,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<AOE>();
     gs.ecs.register::<Digger>();
     gs.ecs.register::<Confusion>();
+    gs.ecs.register::<Blind>();
     gs.ecs.register::<MagicMapper>();
     gs.ecs.register::<InBackpack>();
     gs.ecs.register::<WantsToApproach>();

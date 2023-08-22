@@ -1,8 +1,10 @@
-use super::{gamelog, BlocksVisibility, Hidden, Map, Name, Player, Position, Telepath, Viewshed};
+use super::{gamelog, Blind, BlocksVisibility, Hidden, Map, Name, Player, Position, Telepath, Viewshed};
 use rltk::{FieldOfViewAlg::SymmetricShadowcasting, Point};
 use specs::prelude::*;
 
 pub struct VisibilitySystem {}
+
+const BLIND_TELEPATHY_RANGE_MULTIPLIER: i32 = 3;
 
 impl<'a> System<'a> for VisibilitySystem {
     type SystemData = (
@@ -15,12 +17,24 @@ impl<'a> System<'a> for VisibilitySystem {
         ReadStorage<'a, Player>,
         WriteStorage<'a, Hidden>,
         ReadStorage<'a, Name>,
+        ReadStorage<'a, Blind>,
         ReadStorage<'a, BlocksVisibility>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut map, mut rng, entities, mut viewshed, mut telepath, pos, player, mut hidden, names, blocks_visibility) =
-            data;
+        let (
+            mut map,
+            mut rng,
+            entities,
+            mut viewshed,
+            mut telepath,
+            pos,
+            player,
+            mut hidden,
+            names,
+            blind_entities,
+            blocks_visibility,
+        ) = data;
 
         map.view_blocked.clear();
         for (block_pos, _block) in (&pos, &blocks_visibility).join() {
@@ -31,8 +45,9 @@ impl<'a> System<'a> for VisibilitySystem {
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
                 viewshed.dirty = false;
+                let mut range = if let Some(is_blind) = blind_entities.get(ent) { 1 } else { viewshed.range };
                 let origin = Point::new(pos.x, pos.y);
-                viewshed.visible_tiles = SymmetricShadowcasting.field_of_view(origin, viewshed.range, &*map);
+                viewshed.visible_tiles = SymmetricShadowcasting.field_of_view(origin, range, &*map);
                 viewshed.visible_tiles.retain(|p| {
                     p.x >= 0
                         && p.x < map.width
@@ -78,8 +93,11 @@ impl<'a> System<'a> for VisibilitySystem {
         for (ent, telepath, pos) in (&entities, &mut telepath, &pos).join() {
             if telepath.dirty {
                 telepath.dirty = false;
-
-                telepath.telepath_tiles = fast_fov(pos.x, pos.y, telepath.range);
+                let mut range = telepath.range;
+                if let Some(is_blind) = blind_entities.get(ent) {
+                    range *= BLIND_TELEPATHY_RANGE_MULTIPLIER;
+                }
+                telepath.telepath_tiles = fast_fov(pos.x, pos.y, range);
                 telepath.telepath_tiles.retain(|p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height);
 
                 // If this is the player, reveal what they can see
