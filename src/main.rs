@@ -599,6 +599,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Item>();
     gs.ecs.register::<Beatitude>();
     gs.ecs.register::<IdentifiedItem>();
+    gs.ecs.register::<IdentifiedBeatitude>();
     gs.ecs.register::<MagicItem>();
     gs.ecs.register::<GrantsXP>();
     gs.ecs.register::<LootTable>();

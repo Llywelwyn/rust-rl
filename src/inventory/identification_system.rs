@@ -1,4 +1,4 @@
-use crate::{Beatitude, IdentifiedItem, Item, MasterDungeonMap, Name, ObfuscatedName, Player};
+use crate::{Beatitude, IdentifiedBeatitude, IdentifiedItem, Item, MasterDungeonMap, Name, ObfuscatedName, Player};
 use specs::prelude::*;
 
 pub struct ItemIdentificationSystem {}
@@ -9,6 +9,7 @@ impl<'a> System<'a> for ItemIdentificationSystem {
         ReadStorage<'a, Player>,
         WriteStorage<'a, IdentifiedItem>,
         WriteStorage<'a, Beatitude>,
+        WriteStorage<'a, IdentifiedBeatitude>,
         WriteExpect<'a, MasterDungeonMap>,
         ReadStorage<'a, Item>,
         ReadStorage<'a, Name>,
@@ -17,7 +18,17 @@ impl<'a> System<'a> for ItemIdentificationSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player, mut identified, mut beatitudes, mut dm, items, names, mut obfuscated_names, entities) = data;
+        let (
+            player,
+            mut identified,
+            mut beatitudes,
+            mut identified_beatitudes,
+            mut dm,
+            items,
+            names,
+            mut obfuscated_names,
+            entities,
+        ) = data;
         for (_p, id) in (&player, &identified).join() {
             let tag = crate::raws::get_id_from_name(id.name.clone());
             if !dm.identified_items.contains(&id.name) && crate::raws::is_tag_magic(&tag) {
@@ -29,7 +40,13 @@ impl<'a> System<'a> for ItemIdentificationSystem {
                 }
             }
         }
+        for (e, _id) in (&entities, &identified_beatitudes).join() {
+            if let Some(beatitude) = beatitudes.get_mut(e) {
+                beatitude.known = true;
+            }
+        }
         // Clean up
         identified.clear();
+        identified_beatitudes.clear();
     }
 }

@@ -454,6 +454,9 @@ pub struct Hidden {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct SingleActivation {}
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct IdentifiedBeatitude {}
+
 #[derive(Component, Clone, ConvertSaveload)]
 pub struct ParticleLifetime {
     pub lifetime_ms: f32,

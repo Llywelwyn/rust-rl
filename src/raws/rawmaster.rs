@@ -235,8 +235,30 @@ pub fn spawn_named_item(
         let potion_names = dm.potion_map.clone();
         let wand_names = dm.wand_map.clone();
         let identified_items = dm.identified_items.clone();
+        // --- WE GET ALL THE VALUES FROM THE ECS WE NEED HERE, BEFORE ---
+        // --- WE CREATE THE EB, TO AVOID BORROW CHECKER COMPLAINTS    ---
         let roll = ecs.write_resource::<RandomNumberGenerator>().roll_dice(1, 6);
+        let player_entity = ecs.fetch::<Entity>();
+        let known_beatitude = match pos {
+            SpawnType::Equipped { by } => {
+                if by == *player_entity {
+                    true
+                } else {
+                    false
+                }
+            }
+            SpawnType::Carried { by } => {
+                if by == *player_entity {
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        };
+        std::mem::drop(player_entity);
         std::mem::drop(dm);
+        // -- DROP EVERYTHING THAT INVOLVES THE ECS BEFORE THIS POINT ---
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
         eb = eb.with(Name { name: item_template.name.name.clone(), plural: item_template.name.plural.clone() });
@@ -256,7 +278,7 @@ pub fn spawn_named_item(
                 _ => BUC::Uncursed,
             }
         };
-        eb = eb.with(Beatitude { buc, known: true });
+        eb = eb.with(Beatitude { buc, known: known_beatitude });
 
         if let Some(flags) = &item_template.flags {
             apply_flags!(flags, eb);

@@ -1,8 +1,8 @@
 use crate::{
     gamelog,
     gui::{item_colour, obfuscate_name},
-    Beatitude, EquipmentChanged, Equippable, Equipped, IdentifiedItem, InBackpack, MagicItem, MasterDungeonMap, Name,
-    ObfuscatedName, WantsToUseItem, BUC,
+    Beatitude, EquipmentChanged, Equippable, Equipped, IdentifiedBeatitude, IdentifiedItem, InBackpack, MagicItem,
+    MasterDungeonMap, Name, ObfuscatedName, WantsToUseItem, BUC,
 };
 use specs::prelude::*;
 
@@ -23,6 +23,7 @@ impl<'a> System<'a> for ItemEquipSystem {
         ReadStorage<'a, MagicItem>,
         ReadStorage<'a, ObfuscatedName>,
         ReadStorage<'a, Beatitude>,
+        WriteStorage<'a, IdentifiedBeatitude>,
         ReadExpect<'a, MasterDungeonMap>,
     );
 
@@ -41,6 +42,7 @@ impl<'a> System<'a> for ItemEquipSystem {
             magic_items,
             obfuscated_names,
             beatitudes,
+            mut identified_beatitude,
             dm,
         ) = data;
         let mut remove: Vec<Entity> = Vec::new();
@@ -74,6 +76,9 @@ impl<'a> System<'a> for ItemEquipSystem {
                                     )
                                     .colour(rltk::WHITE)
                                     .append("!");
+                                identified_beatitude
+                                    .insert(item_entity, IdentifiedBeatitude {})
+                                    .expect("Unable to push");
                             }
                         }
                         to_unequip.push(item_entity);
@@ -129,6 +134,9 @@ impl<'a> System<'a> for ItemEquipSystem {
                             IdentifiedItem { name: names.get(wants_to_use_item.item).unwrap().name.clone() },
                         )
                         .expect("Unable to insert IdentifiedItem");
+                    identified_beatitude
+                        .insert(wants_to_use_item.item, IdentifiedBeatitude {})
+                        .expect("Unable to push");
                 }
                 remove.push(target);
             }
