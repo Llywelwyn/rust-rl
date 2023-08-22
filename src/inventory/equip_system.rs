@@ -89,11 +89,12 @@ impl<'a> System<'a> for ItemEquipSystem {
                     if target == *player_entity {
                         logger = logger
                             .append("You remove your")
+                            .colour(item_colour(*item, &beatitudes, &dm))
                             .append_n(
                                 obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &beatitudes, &dm, None)
                                     .0,
                             )
-                            .colour(item_colour(*item, &beatitudes, &dm))
+                            .colour(rltk::WHITE)
                             .period();
                     }
                 }

@@ -11,6 +11,8 @@ mod character_creation;
 mod cheat_menu;
 mod letter_to_option;
 pub use character_creation::*;
+mod remove_curse_menu;
+pub use remove_curse_menu::*;
 mod tooltip;
 pub use cheat_menu::*;
 
@@ -391,15 +393,18 @@ pub fn get_max_inventory_width(inventory: &BTreeMap<UniqueInventoryItem, i32>) -
     let mut width: i32 = 0;
     for (item, count) in inventory {
         let mut this_width = item.display_name.singular.len() as i32;
-        if count < &1 {
-            this_width += 6;
-            if item.display_name.singular.ends_with("s") {
-                this_width += 5;
+        // Clean this up. It should use consts.
+        this_width += 4; // The spaces before and after the character to select this item, etc.
+        if count <= &1 {
+            if item.display_name.singular == item.display_name.plural {
+                this_width += 4; // "some".len
             } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.starts_with(v)) {
-                this_width += 3;
+                this_width += 2; // "an".len
+            } else {
+                this_width += 1; // "a".len
             }
         } else {
-            this_width += 6;
+            this_width += count.to_string().len() as i32; // i.e. "12".len
         }
         width = if width > this_width { width } else { this_width };
     }

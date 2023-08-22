@@ -1,8 +1,9 @@
-use super::{add_effect, get_noncursed, particles, spatial, targeting, EffectType, Entity, Targets, World};
+use super::{add_effect, get_noncursed, particles, spatial, EffectType, Entity, Targets, World};
 use crate::{
     gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Beatitude, Charges, Confusion,
-    Consumable, Destructible, Hidden, InflictsDamage, Item, MagicMapper, Player, Prop, ProvidesHealing,
-    ProvidesNutrition, RandomNumberGenerator, Renderable, RunState, SingleActivation, BUC,
+    Consumable, Destructible, Equipped, Hidden, InBackpack, InflictsDamage, Item, MagicMapper, Player, Prop,
+    ProvidesHealing, ProvidesNutrition, RandomNumberGenerator, RemovesCurse, Renderable, RunState, SingleActivation,
+    BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -61,14 +62,17 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
     let logger = gamelog::Logger::new();
 
     let mut did_something = false;
+    particles::handle_simple_particles(ecs, entity, target);
     particles::handle_burst_particles(ecs, entity, &target);
     particles::handle_line_particles(ecs, entity, &target);
     let (logger, restored_nutrition) = handle_restore_nutrition(ecs, &mut event, logger);
     let (logger, magic_mapped) = handle_magic_mapper(ecs, &mut event, logger);
+    let (logger, removed_curse) = handle_remove_curse(ecs, &mut event, logger);
     let (logger, healed) = handle_healing(ecs, &mut event, logger);
     let (logger, damaged) = handle_damage(ecs, &mut event, logger);
     let (logger, confused) = handle_confusion(ecs, &mut event, logger);
-    did_something |= restored_nutrition || magic_mapped || healed || damaged || confused;
+    //let (logger, dug) = handle_dig(ecs, &mut event, logger); -- NYI i.e. Wand of Digging
+    did_something |= restored_nutrition || magic_mapped || healed || damaged || confused || removed_curse;
 
     if event.log {
         logger.log();
@@ -203,6 +207,72 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
 fn handle_confusion(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
     if let Some(confusion) = ecs.read_storage::<Confusion>().get(event.entity) {
         add_effect(event.source, EffectType::Confusion { turns: confusion.turns }, event.target.clone());
+        return (logger, true);
+    }
+    return (logger, false);
+}
+
+fn select_single_remove_curse(ecs: &World) {
+    let mut runstate = ecs.fetch_mut::<RunState>();
+    *runstate = RunState::ShowRemoveCurse;
+}
+
+fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+    if let Some(_r) = ecs.read_storage::<RemovesCurse>().get(event.entity) {
+        let mut to_decurse: Vec<Entity> = Vec::new();
+        let mut cursed_in_backpack = false;
+        let mut cursed_in_inventory = false;
+        match event.buc {
+            // If cursed, show the prompt to select one item.
+            BUC::Cursed => {
+                select_single_remove_curse(ecs);
+                return (logger, true);
+            }
+            // If blessed, decurse everything in our backpack.
+            BUC::Blessed => {
+                for (entity, _i, _bp, _b) in (
+                    &ecs.entities(),
+                    &ecs.read_storage::<Item>(),
+                    &ecs.read_storage::<InBackpack>(),
+                    &ecs.read_storage::<Beatitude>(),
+                )
+                    .join()
+                    .filter(|(_e, _i, bp, b)| bp.owner == event.source.unwrap() && b.buc == BUC::Cursed)
+                {
+                    cursed_in_backpack = true;
+                    to_decurse.push(entity);
+                }
+            }
+            _ => {}
+        }
+        // If noncursed, decurse everything we have equipped.
+        for (entity, _i, _e, _b) in (
+            &ecs.entities(),
+            &ecs.read_storage::<Item>(),
+            &ecs.read_storage::<Equipped>(),
+            &ecs.read_storage::<Beatitude>(),
+        )
+            .join()
+            .filter(|(_e, _i, e, b)| e.owner == event.source.unwrap() && b.buc == BUC::Cursed)
+        {
+            cursed_in_inventory = true;
+            to_decurse.push(entity);
+        }
+        if to_decurse.len() == 0 {
+            match event.buc {
+                BUC::Uncursed => select_single_remove_curse(ecs),
+                BUC::Blessed => logger = logger.append("You feel righteous! ... but nothing happens."),
+                _ => {}
+            }
+            return (logger, true);
+        }
+        let mut beatitudes = ecs.write_storage::<Beatitude>();
+        for e in to_decurse {
+            beatitudes.insert(e, Beatitude { buc: BUC::Uncursed, known: true }).expect("Unable to insert beatitude");
+        }
+        logger =
+            logger.append("You feel a reassuring presence.").buc(event.buc.clone(), None, Some("You feel righteous!"));
+        event.log = true;
         return (logger, true);
     }
     return (logger, false);

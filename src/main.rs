@@ -53,6 +53,7 @@ pub enum RunState {
     ShowDropItem,
     ShowRemoveItem,
     ShowTargeting { range: i32, item: Entity, aoe: i32 },
+    ShowRemoveCurse,
     ActionWithDirection { function: fn(i: i32, j: i32, ecs: &mut World) -> RunState },
     MainMenu { menu_selection: gui::MainMenuSelection },
     CharacterCreation { ancestry: gui::Ancestry, class: gui::Class },
@@ -261,6 +262,7 @@ impl GameState for State {
                         RunState::MagicMapReveal { row, cursed } => {
                             new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
                         }
+                        RunState::ShowRemoveCurse => new_runstate = RunState::ShowRemoveCurse,
                         _ => new_runstate = RunState::Ticking,
                     }
                 }
@@ -376,6 +378,21 @@ impl GameState for State {
                         intent
                             .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item, target: result.1 })
                             .expect("Unable to insert intent.");
+                        new_runstate = RunState::Ticking;
+                    }
+                }
+            }
+            RunState::ShowRemoveCurse => {
+                let result = gui::remove_curse(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        self.ecs
+                            .write_storage::<Beatitude>()
+                            .insert(item_entity, Beatitude { buc: BUC::Uncursed, known: true })
+                            .expect("Unable to insert beatitude");
                         new_runstate = RunState::Ticking;
                     }
                 }
