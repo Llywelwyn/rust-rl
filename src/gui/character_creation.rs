@@ -1,5 +1,8 @@
 use super::{gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State};
-use crate::{ai::NORMAL_SPEED, raws, Attribute, Energy, HasAncestry, HasClass, Pool, Skill, Skills, Telepath, BUC};
+use crate::{
+    ai::NORMAL_SPEED, raws, Attribute, Energy, HasAncestry, HasClass, KnownSpell, KnownSpells, Pool, Skill, Skills,
+    Telepath, BUC,
+};
 use rltk::prelude::*;
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
@@ -261,9 +264,17 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
     {
         let mut classes = ecs.write_storage::<HasClass>();
         classes.insert(player, HasClass { name: class }).expect("Unable to insert class component");
+        if class == Class::Wizard {
+            let mut spells = ecs.write_storage::<KnownSpells>();
+            spells
+                .insert(
+                    player,
+                    KnownSpells { spells: vec![KnownSpell { display_name: "zap".to_string(), mana_cost: 1 }] },
+                )
+                .expect("Unable to insert known spells component");
+        }
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let mut attributes = ecs.write_storage::<Attributes>();
-
         let (str, dex, con, int, wis, cha) = get_attribute_rolls(&mut rng, class, ancestry);
         attributes
             .insert(

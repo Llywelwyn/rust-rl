@@ -1,8 +1,8 @@
 use super::{
     ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, hunger_system::get_hunger_colour,
     rex_assets::RexAssets, ArmourClassBonus, Attributes, Beatitude, Burden, Charges, Equipped, Hidden, HungerClock,
-    HungerState, InBackpack, MagicItem, Map, MasterDungeonMap, Name, ObfuscatedName, Player, Point, Pools, Position,
-    Prop, Renderable, RunState, Skill, Skills, State, Viewshed, BUC,
+    HungerState, InBackpack, KnownSpells, MagicItem, Map, MasterDungeonMap, Name, ObfuscatedName, Player, Point, Pools,
+    Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed, BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -207,6 +207,27 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         y += 1;
         let (player_inventory, _inventory_ids) = get_player_inventory(&ecs);
         y = print_options(player_inventory, 72, y, ctx).0;
+
+        // Draw spells - if we have any -- NYI!
+        if let Some(known_spells) = ecs.read_storage::<KnownSpells>().get(*player_entity) {
+            y += 1;
+            // Draw known spells
+            ctx.print_color(72, y, RGB::named(BLACK), RGB::named(WHITE), "Known Spells");
+            y += 1;
+            let mut index = 1;
+            for spell in known_spells.spells.iter() {
+                ctx.print_color(72, y, RGB::named(YELLOW), RGB::named(BLACK), &format!("{}", index));
+                ctx.print_color(
+                    74,
+                    y,
+                    RGB::named(CYAN),
+                    RGB::named(BLACK),
+                    &format!("{} ({})", "Force Bolt - NYI!", spell.mana_cost),
+                );
+                index += 1;
+                y += 1;
+            }
+        }
 
         // Draw entities seen on screen
         let viewsheds = ecs.read_storage::<Viewshed>();
