@@ -1,4 +1,4 @@
-use super::{add_effect, get_noncursed, particles, spatial, EffectType, Entity, Targets, World};
+use super::{add_effect, get_noncursed, messages::*, particles, spatial, EffectType, Entity, Targets, World};
 use crate::{
     gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Beatitude, Charges, Confusion,
     Consumable, Destructible, Equipped, Hidden, InBackpack, InflictsDamage, Item, MagicMapper, Player, Prop,
@@ -13,10 +13,10 @@ pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs:
         if has_charges.uses <= 0 {
             let mut rng = ecs.write_resource::<RandomNumberGenerator>();
             if rng.roll_dice(1, 121) != 1 {
-                gamelog::Logger::new().append("The wand does nothing.").log();
+                gamelog::Logger::new().append(NOCHARGES_DIDNOTHING).log();
                 return;
             }
-            gamelog::Logger::new().colour(rltk::YELLOW).append("You wrest one last charge from the worn-out wand.");
+            gamelog::Logger::new().colour(rltk::YELLOW).append(NOCHARGES_WREST);
             ecs.write_storage::<Consumable>().insert(item, Consumable {}).expect("Could not insert consumable");
         }
         has_charges.uses -= 1;
@@ -94,12 +94,12 @@ fn handle_restore_nutrition(
         };
         add_effect(event.source, EffectType::ModifyNutrition { amount }, event.target.clone());
         logger = logger
-            .append("You eat the")
+            .append(NUTRITION)
             .colour(item_colour_ecs(ecs, event.entity))
             .append_n(obfuscate_name_ecs(ecs, event.entity).0)
             .colour(WHITE)
             .period()
-            .buc(event.buc.clone(), Some("Blech! Rotten"), Some("Delicious"));
+            .buc(event.buc.clone(), Some(NUTRITION_CURSED), Some(NUTRITION_BLESSED));
         event.log = true;
         return (logger, true);
     }
@@ -111,11 +111,7 @@ fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
         let mut runstate = ecs.fetch_mut::<RunState>();
         let cursed = if event.buc == BUC::Cursed { true } else { false };
         *runstate = RunState::MagicMapReveal { row: 0, cursed: cursed };
-        logger = logger.append("You recall your surroundings!").buc(
-            event.buc.clone(),
-            Some("... but forget where you last were."),
-            None,
-        );
+        logger = logger.append(MAGICMAP).buc(event.buc.clone(), Some(MAGICMAP_CURSED), None);
         event.log = true;
         return (logger, true);
     }
@@ -146,15 +142,15 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
                     .colour(renderable_colour(&renderables, target))
                     .append("You")
                     .colour(WHITE)
-                    .append("recover some vigour.")
-                    .buc(event.buc.clone(), None, Some("You feel great!"));
+                    .append(HEAL_PLAYER_HIT)
+                    .buc(event.buc.clone(), None, Some(HEAL_PLAYER_HIT_BLESSED));
             } else {
                 logger = logger
                     .append("The")
                     .colour(renderable_colour(&renderables, target))
                     .append(obfuscate_name_ecs(ecs, target).0)
                     .colour(WHITE)
-                    .append("is rejuvenated!");
+                    .append(HEAL_OTHER_HIT);
             }
             event.log = true;
         }
@@ -178,7 +174,7 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
                     .colour(renderable_colour(&renderables, target))
                     .append("You")
                     .colour(WHITE)
-                    .append("are hit!");
+                    .append(DAMAGE_PLAYER_HIT);
             } else if ecs.read_storage::<Item>().get(target).is_some() {
                 if ecs.read_storage::<Destructible>().get(target).is_some() {
                     logger = logger
@@ -186,7 +182,7 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
                         .colour(renderable_colour(&renderables, target))
                         .append(obfuscate_name_ecs(ecs, target).0)
                         .colour(WHITE)
-                        .append("is ruined!");
+                        .append(DAMAGE_ITEM_HIT);
                 }
             } else {
                 logger = logger
@@ -194,7 +190,7 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
                     .colour(renderable_colour(&renderables, target))
                     .append(obfuscate_name_ecs(ecs, target).0)
                     .colour(WHITE)
-                    .append("is hit!");
+                    .append(DAMAGE_OTHER_HIT);
             }
             event.log = true;
         }
@@ -220,8 +216,6 @@ fn select_single_remove_curse(ecs: &World) {
 fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
     if let Some(_r) = ecs.read_storage::<RemovesCurse>().get(event.entity) {
         let mut to_decurse: Vec<Entity> = Vec::new();
-        let mut cursed_in_backpack = false;
-        let mut cursed_in_inventory = false;
         match event.buc {
             // If cursed, show the prompt to select one item.
             BUC::Cursed => {
@@ -239,7 +233,6 @@ fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
                     .join()
                     .filter(|(_e, _i, bp, b)| bp.owner == event.source.unwrap() && b.buc == BUC::Cursed)
                 {
-                    cursed_in_backpack = true;
                     to_decurse.push(entity);
                 }
             }
@@ -255,13 +248,12 @@ fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
             .join()
             .filter(|(_e, _i, e, b)| e.owner == event.source.unwrap() && b.buc == BUC::Cursed)
         {
-            cursed_in_inventory = true;
             to_decurse.push(entity);
         }
         if to_decurse.len() == 0 {
             match event.buc {
                 BUC::Uncursed => select_single_remove_curse(ecs),
-                BUC::Blessed => logger = logger.append("You feel righteous! ... but nothing happens."),
+                BUC::Blessed => logger = logger.append(REMOVECURSE_BLESSED_FAILED),
                 _ => {}
             }
             return (logger, true);
@@ -270,8 +262,7 @@ fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
         for e in to_decurse {
             beatitudes.insert(e, Beatitude { buc: BUC::Uncursed, known: true }).expect("Unable to insert beatitude");
         }
-        logger =
-            logger.append("You feel a reassuring presence.").buc(event.buc.clone(), None, Some("You feel righteous!"));
+        logger = logger.append(REMOVECURSE).buc(event.buc.clone(), None, Some(REMOVECURSE_BLESSED));
         event.log = true;
         return (logger, true);
     }

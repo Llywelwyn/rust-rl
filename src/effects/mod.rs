@@ -7,6 +7,7 @@ use std::sync::Mutex;
 
 mod damage;
 mod hunger;
+mod messages;
 mod particles;
 mod targeting;
 mod triggers;
