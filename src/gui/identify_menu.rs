@@ -21,6 +21,7 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
     let dm = gs.ecs.fetch::<MasterDungeonMap>();
     let names = gs.ecs.read_storage::<Name>();
     let renderables = gs.ecs.read_storage::<Renderable>();
+    let beatitudes = gs.ecs.read_storage::<Beatitude>();
 
     let build_identify_iterator = || {
         (&entities, &items, &renderables, &names).join().filter(|(item_entity, _i, _r, n)| {
@@ -41,7 +42,9 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
                 return false;
             }
             // If not obfuscated, or already identified, return false.
-            if !obfuscated.get(*item_entity).is_some() || dm.identified_items.contains(&n.name) {
+            if (!obfuscated.get(*item_entity).is_some() || dm.identified_items.contains(&n.name))
+                && beatitudes.get(*item_entity).map(|beatitude| beatitude.known).unwrap_or(true)
+            {
                 return false;
             }
             return true;

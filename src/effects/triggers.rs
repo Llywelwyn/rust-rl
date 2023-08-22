@@ -228,6 +228,7 @@ fn handle_identify(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::
             return (logger, true);
         }
         let mut to_identify: Vec<(Entity, String)> = Vec::new();
+        let mut beatitudes = ecs.write_storage::<Beatitude>();
         for (e, _i, _bp, _o, name) in (
             &ecs.entities(),
             &ecs.read_storage::<Item>(),
@@ -237,14 +238,16 @@ fn handle_identify(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::
         )
             .join()
             .filter(|(_e, _i, bp, _o, name)| {
-                bp.owner == event.source.unwrap() && !dm.identified_items.contains(&name.name.clone())
+                bp.owner == event.source.unwrap()
+                    && (!dm.identified_items.contains(&name.name.clone())
+                        || !beatitudes.get(event.source.unwrap()).map(|beatitude| beatitude.known).unwrap_or(true))
             })
         {
             to_identify.push((e, name.name.clone()));
         }
         for item in to_identify {
             dm.identified_items.insert(item.1);
-            if let Some(beatitude) = ecs.write_storage::<Beatitude>().get_mut(item.0) {
+            if let Some(beatitude) = beatitudes.get_mut(item.0) {
                 beatitude.known = true;
             }
         }
