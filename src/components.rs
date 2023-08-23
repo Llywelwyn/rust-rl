@@ -200,8 +200,15 @@ pub struct KnownSpell {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct KnownSpells {
-    pub spells: Vec<KnownSpell>,
+    pub list: Vec<KnownSpell>,
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct GrantsSpell {
+    pub spell: String,
+}
+
+// TODO: GrantsIntrinsic, Intrinsics, etc. ? Done the same way as spells?
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Attributes {

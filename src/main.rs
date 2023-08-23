@@ -700,6 +700,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<ProvidesRemoveCurse>();
     gs.ecs.register::<ProvidesIdentify>();
     gs.ecs.register::<KnownSpells>();
+    gs.ecs.register::<GrantsSpell>();
     gs.ecs.register::<ParticleLifetime>();
     gs.ecs.register::<SpawnParticleSimple>();
     gs.ecs.register::<SpawnParticleBurst>();

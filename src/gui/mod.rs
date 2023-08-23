@@ -246,7 +246,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             ctx.print_color(72, y, RGB::named(BLACK), RGB::named(WHITE), "Known Spells");
             y += 1;
             let mut index = 1;
-            for spell in known_spells.spells.iter() {
+            for spell in known_spells.list.iter() {
                 ctx.print_color(72, y, RGB::named(YELLOW), RGB::named(BLACK), &format!("{}", index));
                 ctx.print_color(
                     74,

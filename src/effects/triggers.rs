@@ -29,6 +29,9 @@ use crate::{
     RunState,
     SingleActivation,
     BUC,
+    GrantsSpell,
+    KnownSpell,
+    KnownSpells,
 };
 use crate::config::messages::*;
 use rltk::prelude::*;
@@ -93,13 +96,22 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
     particles::handle_line_particles(ecs, entity, &target);
     let (logger, restored_nutrition) = handle_restore_nutrition(ecs, &mut event, logger);
     let (logger, magic_mapped) = handle_magic_mapper(ecs, &mut event, logger);
+    let (logger, granted_spell) = handle_grant_spell(ecs, &mut event, logger);
     let (logger, removed_curse) = handle_remove_curse(ecs, &mut event, logger);
     let (logger, identified) = handle_identify(ecs, &mut event, logger);
     let (logger, healed) = handle_healing(ecs, &mut event, logger);
     let (logger, damaged) = handle_damage(ecs, &mut event, logger);
     let (logger, confused) = handle_confusion(ecs, &mut event, logger);
     //let (logger, dug) = handle_dig(ecs, &mut event, logger); -- NYI i.e. Wand of Digging
-    did_something |= restored_nutrition || magic_mapped || healed || damaged || confused || removed_curse || identified;
+    did_something |=
+        restored_nutrition ||
+        magic_mapped ||
+        granted_spell ||
+        healed ||
+        damaged ||
+        confused ||
+        removed_curse ||
+        identified;
 
     if event.log {
         logger.log();
@@ -141,6 +153,17 @@ fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
         logger = logger.append(MAGICMAP).buc(event.buc.clone(), Some(MAGICMAP_CURSED), None);
         event.log = true;
         return (logger, true);
+    }
+    return (logger, false);
+}
+
+fn handle_grant_spell(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+    if let Some(granted_spell) = ecs.read_storage::<GrantsSpell>().get(event.entity) {
+        if let Some(known_spells) = ecs.write_storage::<KnownSpells>().get_mut(event.source.unwrap()) {
+            // TODO: Check if the player knows *this* spell, and add it if not.
+        } else {
+            // TODO: Grant the KnownSpells component, and then add the spell.
+        }
     }
     return (logger, false);
 }
@@ -255,21 +278,23 @@ fn handle_identify(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::
         }
         let mut to_identify: Vec<(Entity, String)> = Vec::new();
         let mut beatitudes = ecs.write_storage::<Beatitude>();
-        for (e, _i, _bp, _o, name) in (
+        let obfuscated = ecs.read_storage::<ObfuscatedName>();
+        for (e, _i, _bp, name) in (
             &ecs.entities(),
             &ecs.read_storage::<Item>(),
             &ecs.read_storage::<InBackpack>(),
-            &ecs.read_storage::<ObfuscatedName>(),
             &ecs.read_storage::<Name>(),
         )
             .join()
-            .filter(|(_e, _i, bp, _o, name)| {
-                bp.owner == event.source.unwrap() &&
-                    (!dm.identified_items.contains(&name.name.clone()) ||
-                        !beatitudes
-                            .get(event.source.unwrap())
-                            .map(|beatitude| beatitude.known)
-                            .unwrap_or(true))
+            .filter(|(e, _i, bp, name)| {
+                let in_this_backpack = bp.owner == event.source.unwrap();
+                let has_obfuscated_name = obfuscated.get(*e).is_some();
+                let already_identified = dm.identified_items.contains(&name.name.clone());
+                let known_beatitude = beatitudes
+                    .get(event.source.unwrap())
+                    .map(|b| b.known)
+                    .unwrap_or(true);
+                return in_this_backpack && (has_obfuscated_name || !already_identified || !known_beatitude);
             }) {
             to_identify.push((e, name.name.clone()));
         }

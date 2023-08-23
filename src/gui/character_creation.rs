@@ -64,25 +64,25 @@ lazy_static! {
         m.insert(
             "fighter".to_string(),
             vec![
-                "a longsword, ring mail, and 1d2+1 food".to_string(),
+                format!("a longsword, ring mail, and {} food", FIGHTER_STARTING_FOOD),
                 "10 str, 8 dex, 10 con, 6 int, 6 wis, 8 cha".to_string(),
                 "and 27 random stat points".to_string()]);
         m.insert(
             "rogue".to_string(),
             vec![
-                "a rapier, leather armour, and 1d2+2 food".to_string(),
+                format!("a rapier, leather armour, and {} food", ROGUE_STARTING_FOOD),
                 "8 str, 10 dex, 8 con, 6 int, 8 wis, 10 cha".to_string(),
                 "and 35 random stat points".to_string()]);
         m.insert(
             "wizard".to_string(),
             vec![
-                "a dagger, random scrolls/potions, and 1d2+1 food".to_string(),
+                format!("a dagger, random scrolls/potions, and {} food", WIZARD_STARTING_FOOD),
                 "6 str, 8 dex, 6 con, 10 int, 10 wis, 8 cha".to_string(),
                 "and 17 random stat points".to_string()]);
         m.insert(
             "villager".to_string(),
             vec![
-                "the first weapon you could find, and 1d3+2 food".to_string(),
+                format!("the first weapon you could find, and {} food", VILLAGER_STARTING_FOOD),
                 "6 str, 6 dex, 6 con, 6 int, 6 wis, 6 cha".to_string(),
                 "and 39 random stat points".to_string()]);
         return m;
@@ -109,7 +109,7 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
     let mut y = 11;
     let column_width = 20;
 
-    ctx.print_color(x, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Who are you? [Aa-Zz]");
+    ctx.print_color(x, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), CHAR_CREATE_HEADER);
     y += 2;
 
     if let RunState::CharacterCreation { ancestry, class } = *runstate {
@@ -313,7 +313,7 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
             let mut spells = ecs.write_storage::<KnownSpells>();
             spells
                 .insert(player, KnownSpells {
-                    spells: vec![KnownSpell { display_name: "zap".to_string(), mana_cost: 1 }],
+                    list: vec![KnownSpell { display_name: "zap".to_string(), mana_cost: 1 }],
                 })
                 .expect("Unable to insert known spells component");
         }
@@ -386,12 +386,12 @@ fn get_starting_inventory(class: Class, rng: &mut RandomNumberGenerator) -> (Vec
         }
         Class::Rogue => {
             starting_food = ROGUE_STARTING_FOOD;
-            equipped = vec!["equip_rapier".to_string(), "equip_body_weakleather".to_string()];
+            equipped = vec![ROGUE_STARTING_WEAPON.to_string(), ROGUE_STARTING_ARMOUR.to_string()];
             carried = vec!["equip_dagger".to_string(), "equip_dagger".to_string()];
         }
         Class::Wizard => {
             starting_food = WIZARD_STARTING_FOOD;
-            equipped = vec!["equip_dagger".to_string(), "equip_back_protection".to_string()];
+            equipped = vec![WIZARD_STARTING_WEAPON.to_string(), WIZARD_STARTING_ARMOUR.to_string()];
             pick_random_table_item(rng, &mut carried, "scrolls", WIZARD_SCROLL_AMOUNT, Some(WIZARD_MAX_SCROLL_LVL));
             pick_random_table_item(rng, &mut carried, "potions", WIZARD_POTION_AMOUNT, Some(WIZARD_MAX_SCROLL_LVL));
         }

@@ -1,6 +1,7 @@
 use super::{ Skill, Skills };
 use crate::gui::{ Ancestry, Class };
 use crate::config::entity;
+use crate::config::char_create::*;
 use rltk::prelude::*;
 use std::cmp::max;
 
@@ -84,25 +85,25 @@ pub fn get_attribute_rolls(
     ancestry: Ancestry
 ) -> (i32, i32, i32, i32, i32, i32) {
     let (mut str, mut dex, mut con, mut int, mut wis, mut cha) = match class {
-        Class::Fighter => (10, 8, 10, 6, 6, 8),
-        Class::Rogue => (8, 10, 8, 6, 8, 10),
-        Class::Wizard => (6, 8, 6, 10, 10, 8),
-        Class::Villager => (6, 6, 6, 6, 6, 6),
+        Class::Fighter => FIGHTER_MIN_ATTR,
+        Class::Rogue => ROGUE_MIN_ATTR,
+        Class::Wizard => WIZARD_MIN_ATTR,
+        Class::Villager => VILLAGER_MIN_ATTR,
     };
-    let mut remaining_points = 75 - (str + dex + con + int + wis + cha);
+    let mut remaining_points = TOTAL_ATTRIBUTE_POINTS_MAXIMUM - (str + dex + con + int + wis + cha);
     let improve_chance: [i32; 6] = match class {
-        Class::Fighter => [30, 20, 30, 6, 7, 7],
-        Class::Rogue => [18, 30, 20, 9, 8, 15],
-        Class::Wizard => [10, 15, 20, 30, 15, 10],
-        Class::Villager => [15, 15, 25, 15, 15, 15],
+        Class::Fighter => FIGHTER_IMPR_CHANCE,
+        Class::Rogue => ROGUE_IMPR_CHANCE,
+        Class::Wizard => WIZARD_IMPR_CHANCE,
+        Class::Villager => VILLAGER_IMPR_CHANCE,
     };
     let ancestry_maximums: [i32; 6] = match ancestry {
-        Ancestry::Human => [19, 19, 19, 19, 19, 19], // 114
-        Ancestry::Elf => [15, 18, 15, 20, 20, 18], // 106
-        Ancestry::Dwarf => [19, 17, 20, 16, 16, 16], // 106
-        Ancestry::Gnome => [16, 18, 16, 20, 18, 18], // 106
-        Ancestry::Catfolk => [16, 20, 16, 16, 18, 20], // 106
-        _ => [18, 18, 18, 18, 18, 18],
+        Ancestry::Human => HUMAN_MAX_ATTR, // 114
+        Ancestry::Elf => ELF_MAX_ATTR, // 106
+        Ancestry::Dwarf => DWARF_MAX_ATTR, // 106
+        Ancestry::Gnome => GNOME_MAX_ATTR, // 106
+        Ancestry::Catfolk => CATFOLK_MAX_ATTR, // 106
+        _ => UNKNOWN_MAX_ATTR,
     };
     let improve_table = crate::random_table::RandomTable
         ::new()
