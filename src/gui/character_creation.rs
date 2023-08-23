@@ -1,5 +1,6 @@
 use super::{ gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State };
-use crate::config::entity::NORMAL_SPEED;
+use crate::config::entity;
+use crate::config::char_create::*;
 use crate::{
     raws,
     Attribute,
@@ -181,13 +182,13 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
         ctx.print_color(x, y + 3, fg, bg, "v. Villager");
         // Selected ancestry/class benefits
         x += column_width;
-        ctx.print_color(x, y, selected_fg, bg, "Your ancestry grants...");
+        ctx.print_color(x, y, selected_fg, bg, ANCESTRY_INFO_HEADER);
         for line in ANCESTRY_CLASS_DATA.get(race_str).unwrap().iter() {
             y += 1;
             ctx.print_color(x + 1, y, unselected_fg, bg, line);
         }
         y += 2;
-        ctx.print_color(x, y, selected_fg, bg, "Your class grants...");
+        ctx.print_color(x, y, selected_fg, bg, CLASS_INFO_HEADER);
         for line in ANCESTRY_CLASS_DATA.get(class_str).unwrap().iter() {
             y += 1;
             ctx.print_color(x + 1, y, unselected_fg, bg, line);
@@ -257,36 +258,44 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
         Ancestry::Dwarf => {
             renderables
                 .insert(*player, Renderable {
-                    glyph: rltk::to_cp437('h'),
-                    fg: RGB::named(rltk::RED),
+                    glyph: rltk::to_cp437(DWARF_GLYPH),
+                    fg: RGB::named(DWARF_COLOUR),
                     bg: RGB::named(rltk::BLACK),
                     render_order: 0,
                 })
                 .expect("Unable to insert renderable component");
-            *player_skills.skills.entry(Skill::Defence).or_insert(0) += 1;
+            *player_skills.skills.entry(Skill::Defence).or_insert(0) += DWARF_DEFENCE_MOD;
         }
         Ancestry::Elf => {
             renderables
                 .insert(*player, Renderable {
-                    glyph: rltk::to_cp437('@'),
-                    fg: RGB::named(rltk::GREEN),
+                    glyph: rltk::to_cp437(ELF_GLYPH),
+                    fg: RGB::named(ELF_COLOUR),
                     bg: RGB::named(rltk::BLACK),
                     render_order: 0,
                 })
                 .expect("Unable to insert renderable component");
             let mut telepaths = ecs.write_storage::<Telepath>();
             telepaths
-                .insert(*player, Telepath { telepath_tiles: Vec::new(), range: 6, dirty: true })
+                .insert(*player, Telepath { telepath_tiles: Vec::new(), range: ELF_TELEPATH_RANGE, dirty: true })
                 .expect("Unable to insert telepath component");
             let mut speeds = ecs.write_storage::<Energy>();
             speeds
-                .insert(*player, Energy { current: 0, speed: NORMAL_SPEED + 1 })
+                .insert(*player, Energy { current: 0, speed: entity::NORMAL_SPEED + ELF_SPEED_BONUS })
                 .expect("Unable to insert energy component");
         }
         Ancestry::Catfolk => {
+            renderables
+                .insert(*player, Renderable {
+                    glyph: rltk::to_cp437(CATFOLK_GLYPH),
+                    fg: RGB::named(CATFOLK_COLOUR),
+                    bg: RGB::named(rltk::BLACK),
+                    render_order: 0,
+                })
+                .expect("Unable to insert renderable component");
             let mut speeds = ecs.write_storage::<Energy>();
             speeds
-                .insert(*player, Energy { current: 0, speed: NORMAL_SPEED + 2 })
+                .insert(*player, Energy { current: 0, speed: entity::NORMAL_SPEED + CATFOLK_SPEED_BONUS })
                 .expect("Unable to insert energy component");
         }
         _ => {}
@@ -325,11 +334,11 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
         let mut pools = ecs.write_storage::<Pools>();
         pools
             .insert(player, Pools {
-                hit_points: Pool { current: 8 + attr_bonus(con), max: 8 + attr_bonus(con) },
-                mana: Pool { current: 1 + attr_bonus(int), max: 1 + attr_bonus(int) },
+                hit_points: Pool { current: 8 + attr_bonus(con), max: entity::STANDARD_HIT_DIE + attr_bonus(con) },
+                mana: Pool { current: 1 + attr_bonus(int), max: entity::MINIMUM_MANA_PLAYER + attr_bonus(int) },
                 xp: 0,
                 level: 1,
-                bac: 10,
+                bac: entity::STANDARD_BAC,
                 weight: 0.0,
                 god: false,
             })
@@ -368,26 +377,26 @@ fn get_starting_inventory(class: Class, rng: &mut RandomNumberGenerator) -> (Vec
     let starting_food: &str;
     match class {
         Class::Fighter => {
-            starting_food = "1d2+1";
+            starting_food = FIGHTER_STARTING_FOOD;
             equipped = vec![
-                "equip_shortsword".to_string(),
-                "equip_body_ringmail".to_string(),
-                "equip_mediumshield".to_string()
+                FIGHTER_STARTING_WEAPON.to_string(),
+                FIGHTER_STARTING_ARMOUR.to_string(),
+                FIGHTER_STARTING_SHIELD.to_string()
             ];
         }
         Class::Rogue => {
-            starting_food = "1d2+2";
+            starting_food = ROGUE_STARTING_FOOD;
             equipped = vec!["equip_rapier".to_string(), "equip_body_weakleather".to_string()];
             carried = vec!["equip_dagger".to_string(), "equip_dagger".to_string()];
         }
         Class::Wizard => {
-            starting_food = "1d2+1";
+            starting_food = WIZARD_STARTING_FOOD;
             equipped = vec!["equip_dagger".to_string(), "equip_back_protection".to_string()];
-            pick_random_table_item(rng, &mut carried, "scrolls", "1d3", Some(3));
-            pick_random_table_item(rng, &mut carried, "potions", "1d3-1", Some(3));
+            pick_random_table_item(rng, &mut carried, "scrolls", WIZARD_SCROLL_AMOUNT, Some(WIZARD_MAX_SCROLL_LVL));
+            pick_random_table_item(rng, &mut carried, "potions", WIZARD_POTION_AMOUNT, Some(WIZARD_MAX_SCROLL_LVL));
         }
         Class::Villager => {
-            starting_food = "1d3+2";
+            starting_food = VILLAGER_STARTING_FOOD;
             pick_random_table_item(rng, &mut equipped, "villager_equipment", "1", None);
         }
     }

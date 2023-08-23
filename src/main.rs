@@ -27,7 +27,7 @@ mod trigger_system;
 use melee_combat_system::MeleeCombatSystem;
 mod inventory;
 mod particle_system;
-use particle_system::{ ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
+use particle_system::ParticleBuilder;
 mod ai;
 mod config;
 mod effects;

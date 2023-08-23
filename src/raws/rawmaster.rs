@@ -1,6 +1,5 @@
 use super::{ Raws, Reaction };
 use crate::components::*;
-use crate::config::entity;
 use crate::gamesystem::*;
 use crate::gui::Ancestry;
 use crate::random_table::RandomTable;

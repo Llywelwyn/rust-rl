@@ -1,13 +1,7 @@
 use super::{ ParticleLifetime, Position, Renderable, Rltk };
 use rltk::RGB;
 use specs::prelude::*;
-
-pub const SHORT_PARTICLE_LIFETIME: f32 = 100.0;
-// For things which will happen frequently - i.e. attacking.
-pub const DEFAULT_PARTICLE_LIFETIME: f32 = 200.0;
-// For exceptional things, like large AOEs, to make sure the
-// player can actually see what's being impacted - i.e. fireball.
-pub const LONG_PARTICLE_LIFETIME: f32 = 300.0;
+use crate::config::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME };
 
 /// Runs each tick, deleting particles who are past their expiry.
 // Should make an addition to this to also spawn delayed particles,

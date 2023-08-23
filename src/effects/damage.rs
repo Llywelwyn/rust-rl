@@ -9,9 +9,8 @@ use crate::{
     Map,
     Player,
     Pools,
-    DEFAULT_PARTICLE_LIFETIME,
-    LONG_PARTICLE_LIFETIME,
 };
+use crate::config::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
 use rltk::prelude::*;
 use specs::prelude::*;
 
