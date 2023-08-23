@@ -11,6 +11,7 @@ use crate::{
     Pools,
 };
 use crate::config::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
+use crate::config::messages::LEVELUP_PLAYER;
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -161,12 +162,7 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 // If it was the PLAYER that levelled up:
                 if ecs.read_storage::<Player>().get(source).is_some() {
                     gamelog::record_event("player_level", 1);
-                    gamelog::Logger
-                        ::new()
-                        .append("Welcome to experience level")
-                        .append_n(source_pools.level)
-                        .append("!")
-                        .log();
+                    gamelog::Logger::new().append(LEVELUP_PLAYER).append_n(source_pools.level).append("!").log();
                     let player_pos = ecs.fetch::<Point>();
                     let map = ecs.fetch_mut::<Map>();
                     for i in 0..5 {

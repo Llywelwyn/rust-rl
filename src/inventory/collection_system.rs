@@ -13,6 +13,7 @@ use crate::{
     WantsToPickupItem,
 };
 use specs::prelude::*;
+use crate::config::messages;
 
 pub struct ItemCollectionSystem {}
 
@@ -57,7 +58,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
             if pickup.collected_by == *player_entity {
                 gamelog::Logger
                     ::new()
-                    .append("You pick up the")
+                    .append(messages::YOU_PICKUP_ITEM)
                     .item_name_n(
                         format!(
                             "{}",

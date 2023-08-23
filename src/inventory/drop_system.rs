@@ -13,6 +13,7 @@ use crate::{
     WantsToDropItem,
 };
 use specs::prelude::*;
+use crate::config::messages;
 
 pub struct ItemDropSystem {}
 
@@ -65,7 +66,7 @@ impl<'a> System<'a> for ItemDropSystem {
             if entity == *player_entity {
                 gamelog::Logger
                     ::new()
-                    .append("You drop the")
+                    .append(messages::YOU_DROP_ITEM)
                     .item_name_n(
                         format!(
                             "{}",

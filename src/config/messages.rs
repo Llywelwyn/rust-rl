@@ -22,3 +22,10 @@ pub const MAGICMAP_CURSED: &str = "... but forget where you last were";
 pub const NUTRITION: &str = "You eat the";
 pub const NUTRITION_CURSED: &str = "Blech! Rotten";
 pub const NUTRITION_BLESSED: &str = "Delicious";
+
+pub const LEVELUP_PLAYER: &str = "Welcome to experience level";
+pub const YOU_PICKUP_ITEM: &str = "You pick up the";
+pub const YOU_DROP_ITEM: &str = "You drop the";
+pub const YOU_EQUIP_ITEM: &str = "You equip the";
+pub const YOU_REMOVE_ITEM: &str = "You unequip your";
+pub const YOU_REMOVE_ITEM_CURSED: &str = "You can't remove the";

@@ -13,6 +13,7 @@ use crate::{
 };
 use rltk::prelude::*;
 use specs::prelude::*;
+use crate::config::messages;
 
 pub struct ItemRemoveSystem {}
 
@@ -53,7 +54,7 @@ impl<'a> System<'a> for ItemRemoveSystem {
                     can_remove = false;
                     gamelog::Logger
                         ::new()
-                        .append("You can't remove the")
+                        .append(messages::YOU_REMOVE_ITEM_CURSED)
                         .colour(item_colour(to_remove.item, &beatitudes))
                         .append_n(
                             obfuscate_name(
@@ -80,7 +81,7 @@ impl<'a> System<'a> for ItemRemoveSystem {
                 if entity == *player_entity {
                     gamelog::Logger
                         ::new()
-                        .append("You unequip the")
+                        .append(messages::YOU_REMOVE_ITEM)
                         .colour(item_colour(to_remove.item, &beatitudes))
                         .append_n(
                             obfuscate_name(

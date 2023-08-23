@@ -16,6 +16,7 @@ use crate::{
     BUC,
 };
 use specs::prelude::*;
+use crate::config::messages;
 
 pub struct ItemEquipSystem {}
 
@@ -71,7 +72,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                             if beatitude.buc == BUC::Cursed {
                                 can_equip = false;
                                 logger = logger
-                                    .append("You can't remove the")
+                                    .append(messages::YOU_REMOVE_ITEM_CURSED)
                                     .colour(item_colour(item_entity, &beatitudes))
                                     .append_n(
                                         obfuscate_name(
@@ -103,7 +104,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                     backpack.insert(*item, InBackpack { owner: target }).expect("Unable to insert backpack");
                     if target == *player_entity {
                         logger = logger
-                            .append("You remove your")
+                            .append(messages::YOU_REMOVE_ITEM)
                             .colour(item_colour(*item, &beatitudes))
                             .append_n(
                                 obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &beatitudes, &dm, None).0
@@ -120,7 +121,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                 backpack.remove(wants_to_use_item.item);
                 if target == *player_entity {
                     logger = logger
-                        .append("You equip the")
+                        .append(messages::YOU_EQUIP_ITEM)
                         .colour(item_colour(wants_to_use_item.item, &beatitudes))
                         .append_n(
                             obfuscate_name(
