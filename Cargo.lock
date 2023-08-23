@@ -2272,8 +2272,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-llyrl"
-version = "0.1.0"
+name = "rust-rl"
+version = "0.1.1"
 dependencies = [
  "bracket-lib 0.8.7 (git+https://github.com/amethyst/bracket-lib.git?rev=851f6f08675444fb6fa088b9e67bee9fd75554c6)",
  "criterion",
