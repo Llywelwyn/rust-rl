@@ -2,6 +2,7 @@ use crate::{
     effects::{ add_effect, aoe_tiles, EffectType, Targets },
     EquipmentChanged,
     IdentifiedItem,
+    IdentifiedBeatitude,
     Map,
     Name,
     WantsToUseItem,
@@ -22,11 +23,22 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, AOE>,
         WriteStorage<'a, EquipmentChanged>,
         WriteStorage<'a, IdentifiedItem>,
+        WriteStorage<'a, IdentifiedBeatitude>,
     );
 
     #[allow(clippy::cognitive_complexity)]
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, map, entities, mut wants_use, names, aoe, mut dirty, mut identified_item) = data;
+        let (
+            player_entity,
+            map,
+            entities,
+            mut wants_use,
+            names,
+            aoe,
+            mut dirty,
+            mut identified_item,
+            mut identified_beatitude,
+        ) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
             dirty.insert(entity, EquipmentChanged {}).expect("Unable to insert");
@@ -35,6 +47,7 @@ impl<'a> System<'a> for ItemUseSystem {
                 identified_item
                     .insert(entity, IdentifiedItem { name: names.get(useitem.item).unwrap().name.clone() })
                     .expect("Unable to insert");
+                identified_beatitude.insert(useitem.item, IdentifiedBeatitude {}).expect("Unable to push");
             }
             // Call the effects system
             add_effect(Some(entity), EffectType::ItemUse { item: useitem.item }, match useitem.target {
