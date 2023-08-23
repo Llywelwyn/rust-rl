@@ -1,8 +1,6 @@
 use rltk::{ Algorithm2D, BaseMap, Point };
 use serde::{ Deserialize, Serialize };
 use std::collections::HashSet;
-pub mod colours;
-mod glyphs;
 mod tiletype;
 pub use tiletype::{ tile_cost, tile_opaque, tile_walkable, TileType };
 mod interval_spawning_system;
@@ -10,7 +8,6 @@ pub use interval_spawning_system::try_spawn_interval;
 pub mod dungeon;
 pub use dungeon::{ level_transition, MasterDungeonMap };
 pub mod themes;
-pub use colours::NON_VISIBLE_MULTIPLIER;
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.

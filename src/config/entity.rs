@@ -1,4 +1,3 @@
-// prettier-ignore
 #[rustfmt::skip]
 pub const DEFAULT_VIEWSHED_STANDARD: i32 = 16; // Standard viewshed radius for almost all entities.
 

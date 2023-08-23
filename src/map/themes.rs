@@ -1,4 +1,6 @@
-use super::{ colours::*, glyphs::*, Map, Point, TileType };
+use super::{ Map, Point, TileType };
+use crate::config::glyphs::*;
+use crate::config::colours::*;
 use rltk::prelude::*;
 use std::ops::{ Add, Mul };
 
