@@ -164,8 +164,8 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                     gamelog::Logger
                         ::new()
                         .append("Welcome to experience level")
-                        .append(source_pools.level)
-                        .append(".")
+                        .append_n(source_pools.level)
+                        .append("!")
                         .log();
                     let player_pos = ecs.fetch::<Point>();
                     let map = ecs.fetch_mut::<Map>();
