@@ -1,8 +1,19 @@
 use crate::{
     gamelog,
-    gui::{item_colour, obfuscate_name},
-    Beatitude, EquipmentChanged, Equippable, Equipped, IdentifiedBeatitude, IdentifiedItem, InBackpack, MagicItem,
-    MasterDungeonMap, Name, ObfuscatedName, WantsToUseItem, BUC,
+    gui::{ item_colour, obfuscate_name },
+    Beatitude,
+    EquipmentChanged,
+    Equippable,
+    Equipped,
+    IdentifiedBeatitude,
+    IdentifiedItem,
+    InBackpack,
+    MagicItem,
+    MasterDungeonMap,
+    Name,
+    ObfuscatedName,
+    WantsToUseItem,
+    BUC,
 };
 use specs::prelude::*;
 
@@ -70,9 +81,8 @@ impl<'a> System<'a> for ItemEquipSystem {
                                             &obfuscated_names,
                                             &beatitudes,
                                             &dm,
-                                            None,
-                                        )
-                                        .0,
+                                            None
+                                        ).0
                                     )
                                     .colour(rltk::WHITE)
                                     .append("!");
@@ -96,8 +106,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                             .append("You remove your")
                             .colour(item_colour(*item, &beatitudes))
                             .append_n(
-                                obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &beatitudes, &dm, None)
-                                    .0,
+                                obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &beatitudes, &dm, None).0
                             )
                             .colour(rltk::WHITE)
                             .period();
@@ -121,18 +130,16 @@ impl<'a> System<'a> for ItemEquipSystem {
                                 &obfuscated_names,
                                 &beatitudes,
                                 &dm,
-                                None,
-                            )
-                            .0,
+                                None
+                            ).0
                         )
                         .colour(rltk::WHITE)
                         .period();
                     logger.log();
                     identified_items
-                        .insert(
-                            target,
-                            IdentifiedItem { name: names.get(wants_to_use_item.item).unwrap().name.clone() },
-                        )
+                        .insert(target, IdentifiedItem {
+                            name: names.get(wants_to_use_item.item).unwrap().name.clone(),
+                        })
                         .expect("Unable to insert IdentifiedItem");
                     identified_beatitude
                         .insert(wants_to_use_item.item, IdentifiedBeatitude {})

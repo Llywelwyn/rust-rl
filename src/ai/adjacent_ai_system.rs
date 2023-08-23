@@ -1,4 +1,4 @@
-use crate::{raws::Reaction, Faction, HasAncestry, Map, Position, TakingTurn, WantsToMelee};
+use crate::{ raws::Reaction, Faction, HasAncestry, Map, Position, TakingTurn, WantsToMelee };
 use specs::prelude::*;
 
 pub struct AdjacentAI {}
@@ -34,22 +34,22 @@ impl<'a> System<'a> for AdjacentAI {
                     evaluate(entity, idx + 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y > 0 {
-                    evaluate(entity, idx - w as usize, &ancestries, &factions, &mut reactions);
+                    evaluate(entity, idx - (w as usize), &ancestries, &factions, &mut reactions);
                 }
                 if pos.y < h - 1 {
-                    evaluate(entity, idx + w as usize, &ancestries, &factions, &mut reactions);
+                    evaluate(entity, idx + (w as usize), &ancestries, &factions, &mut reactions);
                 }
                 if pos.y > 0 && pos.x > 0 {
-                    evaluate(entity, (idx - w as usize) - 1, &ancestries, &factions, &mut reactions);
+                    evaluate(entity, idx - (w as usize) - 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y > 0 && pos.x < w - 1 {
-                    evaluate(entity, (idx - w as usize) + 1, &ancestries, &factions, &mut reactions);
+                    evaluate(entity, idx - (w as usize) + 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y < h - 1 && pos.x > 0 {
-                    evaluate(entity, (idx + w as usize) - 1, &ancestries, &factions, &mut reactions);
+                    evaluate(entity, idx + (w as usize) - 1, &ancestries, &factions, &mut reactions);
                 }
                 if pos.y < h - 1 && pos.x < w - 1 {
-                    evaluate(entity, (idx + w as usize) + 1, &ancestries, &factions, &mut reactions);
+                    evaluate(entity, idx + (w as usize) + 1, &ancestries, &factions, &mut reactions);
                 }
 
                 let mut done = false;
@@ -79,7 +79,7 @@ fn evaluate(
     idx: usize,
     ancestries: &ReadStorage<HasAncestry>,
     factions: &ReadStorage<Faction>,
-    reactions: &mut Vec<(Entity, Reaction)>,
+    reactions: &mut Vec<(Entity, Reaction)>
 ) {
     crate::spatial::for_each_tile_content(idx, |other_entity| {
         let result = crate::raws::get_reactions(
@@ -87,7 +87,7 @@ fn evaluate(
             other_entity,
             &factions,
             &ancestries,
-            &crate::raws::RAWS.lock().unwrap(),
+            &crate::raws::RAWS.lock().unwrap()
         );
         reactions.push((other_entity, result));
     });

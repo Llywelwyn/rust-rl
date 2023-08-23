@@ -1,4 +1,4 @@
-use super::{draw_corridor, BuilderMap, InitialMapBuilder, Rect, TileType};
+use super::{ draw_corridor, BuilderMap, InitialMapBuilder, Rect, TileType };
 use rltk::RandomNumberGenerator;
 
 const MIN_ROOM_SIZE: i32 = 8;
@@ -36,7 +36,7 @@ impl BspInteriorBuilder {
             for y in room.y1..room.y2 {
                 for x in room.x1..room.x2 {
                     let idx = build_data.map.xy_idx(x, y);
-                    if idx > 0 && idx < ((build_data.map.width * build_data.map.height) - 1) as usize {
+                    if idx > 0 && idx < ((build_data.map.width * build_data.map.height - 1) as usize) {
                         build_data.map.tiles[idx] = TileType::Floor;
                     }
                 }

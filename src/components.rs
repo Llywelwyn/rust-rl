@@ -1,10 +1,10 @@
 use crate::gui::Ancestry;
 use crate::gui::Class;
 use rltk::RGB;
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 use specs::error::NoError;
 use specs::prelude::*;
-use specs::saveload::{ConvertSaveload, Marker};
+use specs::saveload::{ ConvertSaveload, Marker };
 use specs_derive::*;
 use std::collections::HashMap;
 
@@ -57,7 +57,9 @@ pub struct Faction {
 pub enum Movement {
     Static,
     Random,
-    RandomWaypoint { path: Option<Vec<usize>> },
+    RandomWaypoint {
+        path: Option<Vec<usize>>,
+    },
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -237,7 +239,7 @@ pub struct Beatitude {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Item {
     pub weight: f32, // in lbs
-    pub value: f32,  // base
+    pub value: f32, // base
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]

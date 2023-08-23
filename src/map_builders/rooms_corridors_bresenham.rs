@@ -1,4 +1,4 @@
-use super::{BuilderMap, MetaMapBuilder, Rect, TileType};
+use super::{ BuilderMap, MetaMapBuilder, Rect, TileType };
 use rltk::RandomNumberGenerator;
 use std::collections::HashSet;
 
@@ -46,7 +46,7 @@ impl BresenhamCorridors {
                 let line = rltk::line2d(
                     rltk::LineAlg::Bresenham,
                     room_centre_pt,
-                    rltk::Point::new(dest_centre.0, dest_centre.1),
+                    rltk::Point::new(dest_centre.0, dest_centre.1)
                 );
                 let mut corridor = Vec::new();
                 for cell in line.iter() {

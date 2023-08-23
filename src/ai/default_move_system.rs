@@ -1,4 +1,4 @@
-use crate::{tile_walkable, EntityMoved, Map, MoveMode, Movement, Position, TakingTurn, Telepath, Viewshed};
+use crate::{ tile_walkable, EntityMoved, Map, MoveMode, Movement, Position, TakingTurn, Telepath, Viewshed };
 use specs::prelude::*;
 
 // Rolling a 1d8+x to decide where to move, where x are the number
@@ -33,9 +33,13 @@ impl<'a> System<'a> for DefaultAI {
             entities,
         ) = data;
         let mut turn_done: Vec<Entity> = Vec::new();
-        for (entity, _turn, mut pos, mut move_mode, mut viewshed) in
-            (&entities, &turns, &mut positions, &mut move_mode, &mut viewsheds).join()
-        {
+        for (entity, _turn, mut pos, mut move_mode, mut viewshed) in (
+            &entities,
+            &turns,
+            &mut positions,
+            &mut move_mode,
+            &mut viewsheds,
+        ).join() {
             turn_done.push(entity);
             match &mut move_mode.mode {
                 Movement::Static => {}
@@ -44,25 +48,33 @@ impl<'a> System<'a> for DefaultAI {
                     let mut y = pos.y;
                     let move_roll = rng.roll_dice(1, 8 + CHANCE_OF_REMAINING_STATIONARY);
                     match move_roll {
-                        1 => x -= 1,
-                        2 => x += 1,
-                        3 => y -= 1,
-                        4 => y += 1,
+                        1 => {
+                            x -= 1;
+                        }
+                        2 => {
+                            x += 1;
+                        }
+                        3 => {
+                            y -= 1;
+                        }
+                        4 => {
+                            y += 1;
+                        }
                         5 => {
                             x -= 1;
-                            y -= 1
+                            y -= 1;
                         }
                         6 => {
                             x += 1;
-                            y -= 1
+                            y -= 1;
                         }
                         7 => {
                             x -= 1;
-                            y += 1
+                            y += 1;
                         }
                         8 => {
                             x += 1;
-                            y += 1
+                            y += 1;
                         }
                         _ => {}
                     }
@@ -88,8 +100,8 @@ impl<'a> System<'a> for DefaultAI {
                         let idx = map.xy_idx(pos.x, pos.y);
                         if path.len() > 1 {
                             if !crate::spatial::is_blocked(path[1] as usize) {
-                                pos.x = path[1] as i32 % map.width;
-                                pos.y = path[1] as i32 / map.width;
+                                pos.x = (path[1] as i32) % map.width;
+                                pos.y = (path[1] as i32) / map.width;
                                 entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert EntityMoved");
                                 let new_idx = map.xy_idx(pos.x, pos.y);
                                 crate::spatial::move_entity(entity, idx, new_idx);
@@ -110,10 +122,12 @@ impl<'a> System<'a> for DefaultAI {
                             let path = rltk::a_star_search(
                                 map.xy_idx(pos.x, pos.y) as i32,
                                 map.xy_idx(target_x, target_y) as i32,
-                                &mut *map,
+                                &mut *map
                             );
                             if path.success && path.steps.len() > 1 {
-                                move_mode.mode = Movement::RandomWaypoint { path: Some(path.steps) };
+                                move_mode.mode = Movement::RandomWaypoint {
+                                    path: Some(path.steps),
+                                };
                             }
                         }
                     }

@@ -19,7 +19,7 @@ pub fn show_cheat_menu(_gs: &mut State, ctx: &mut Rltk) -> CheatMenuResult {
         1 + y_offset,
         RGB::named(rltk::RED),
         RGB::named(rltk::BLACK),
-        "DEBUG MENU! [aA-zZ][Esc.]",
+        "DEBUG MENU! [aA-zZ][Esc.]"
     );
     let x = 1 + x_offset;
     let mut y = 3 + y_offset;
@@ -50,14 +50,15 @@ pub fn show_cheat_menu(_gs: &mut State, ctx: &mut Rltk) -> CheatMenuResult {
     // Match keys
     match ctx.key {
         None => CheatMenuResult::NoResponse,
-        Some(key) => match key {
-            VirtualKeyCode::A => CheatMenuResult::Ascend,
-            VirtualKeyCode::D => CheatMenuResult::Descend,
-            VirtualKeyCode::H => CheatMenuResult::Heal,
-            VirtualKeyCode::M => CheatMenuResult::MagicMap,
-            VirtualKeyCode::G => CheatMenuResult::GodMode,
-            VirtualKeyCode::Escape => CheatMenuResult::Cancel,
-            _ => CheatMenuResult::NoResponse,
-        },
+        Some(key) =>
+            match key {
+                VirtualKeyCode::A => CheatMenuResult::Ascend,
+                VirtualKeyCode::D => CheatMenuResult::Descend,
+                VirtualKeyCode::H => CheatMenuResult::Heal,
+                VirtualKeyCode::M => CheatMenuResult::MagicMap,
+                VirtualKeyCode::G => CheatMenuResult::GodMode,
+                VirtualKeyCode::Escape => CheatMenuResult::Cancel,
+                _ => CheatMenuResult::NoResponse,
+            }
     }
 }

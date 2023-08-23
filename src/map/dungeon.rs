@@ -1,9 +1,9 @@
-use super::{Map, TileType};
-use crate::{gamelog, map_builders, OtherLevelPosition, Position, Telepath, Viewshed};
+use super::{ Map, TileType };
+use crate::{ gamelog, map_builders, OtherLevelPosition, Position, Telepath, Viewshed };
 use rltk::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::{ HashMap, HashSet };
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct MasterDungeonMap {
@@ -108,18 +108,42 @@ fn make_scroll_name(rng: &mut RandomNumberGenerator) -> String {
 }
 
 const POTION_COLOURS: &[&str] = &[
-    "red", "orange", "yellow", "green", "blue", "indigo", "violet", "black", "white", "silver", "gold", "rainbow",
-    "blood", "purple", "cyan", "brown", "grey", "octarine",
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "indigo",
+    "violet",
+    "black",
+    "white",
+    "silver",
+    "gold",
+    "rainbow",
+    "blood",
+    "purple",
+    "cyan",
+    "brown",
+    "grey",
+    "octarine",
 ];
-const POTION_ADJECTIVES: &[&str] =
-    &["swirling", "viscous", "effervescent", "slimy", "oily", "metallic", "prismatic", "goopy"];
+const POTION_ADJECTIVES: &[&str] = &[
+    "swirling",
+    "viscous",
+    "effervescent",
+    "slimy",
+    "oily",
+    "metallic",
+    "prismatic",
+    "goopy",
+];
 
 fn make_potion_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
     loop {
         let mut name: String =
-            POTION_ADJECTIVES[rng.roll_dice(1, POTION_ADJECTIVES.len() as i32) as usize - 1].to_string();
+            POTION_ADJECTIVES[(rng.roll_dice(1, POTION_ADJECTIVES.len() as i32) as usize) - 1].to_string();
         name += " ";
-        name += POTION_COLOURS[rng.roll_dice(1, POTION_COLOURS.len() as i32) as usize - 1];
+        name += POTION_COLOURS[(rng.roll_dice(1, POTION_COLOURS.len() as i32) as usize) - 1];
         name += " potion";
 
         if !used_names.contains(&name) {
@@ -153,7 +177,7 @@ const WAND_TYPES: &[&str] = &[
 
 fn make_wand_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
     loop {
-        let mut name: String = WAND_TYPES[rng.roll_dice(1, WAND_TYPES.len() as i32) as usize - 1].to_string();
+        let mut name: String = WAND_TYPES[(rng.roll_dice(1, WAND_TYPES.len() as i32) as usize) - 1].to_string();
         name += " wand";
 
         if !used_names.contains(&name) {
@@ -189,12 +213,12 @@ fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32) {
     for (idx, tt) in map.tiles.iter().enumerate() {
         if *tt == stair_type {
             let mut player_position = ecs.write_resource::<Point>();
-            *player_position = Point::new(idx as i32 % w, idx as i32 / w);
+            *player_position = Point::new((idx as i32) % w, (idx as i32) / w);
             let mut position_components = ecs.write_storage::<Position>();
             let player_pos_component = position_components.get_mut(*player_entity);
             if let Some(player_pos_component) = player_pos_component {
-                player_pos_component.x = idx as i32 % w;
-                player_pos_component.y = idx as i32 / w;
+                player_pos_component.x = (idx as i32) % w;
+                player_pos_component.y = (idx as i32) / w;
             }
         }
     }

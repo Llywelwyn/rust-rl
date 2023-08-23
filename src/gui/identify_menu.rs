@@ -1,9 +1,24 @@
 use super::{
-    get_max_inventory_width, item_colour_ecs, obfuscate_name_ecs, print_options, renderable_colour, ItemMenuResult,
+    get_max_inventory_width,
+    item_colour_ecs,
+    obfuscate_name_ecs,
+    print_options,
+    renderable_colour,
+    ItemMenuResult,
     UniqueInventoryItem,
 };
 use crate::{
-    gamelog, Beatitude, Entity, Equipped, InBackpack, Item, MasterDungeonMap, Name, ObfuscatedName, Renderable, State,
+    gamelog,
+    Beatitude,
+    Entity,
+    Equipped,
+    InBackpack,
+    Item,
+    MasterDungeonMap,
+    Name,
+    ObfuscatedName,
+    Renderable,
+    State,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -41,8 +56,12 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
                 return false;
             }
             // If not obfuscated, or already identified, return false.
-            if (!obfuscated.get(*item_entity).is_some() || dm.identified_items.contains(&n.name))
-                && beatitudes.get(*item_entity).map(|beatitude| beatitude.known).unwrap_or(true)
+            if
+                (!obfuscated.get(*item_entity).is_some() || dm.identified_items.contains(&n.name)) &&
+                beatitudes
+                    .get(*item_entity)
+                    .map(|beatitude| beatitude.known)
+                    .unwrap_or(true)
             {
                 return false;
             }
@@ -60,7 +79,8 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
     // If only one item, return it.
     if count == 1 {
         let item = build_identify_iterator().nth(0).unwrap().0;
-        gamelog::Logger::new()
+        gamelog::Logger
+            ::new()
             .append("You identify the")
             .colour(item_colour_ecs(&gs.ecs, item))
             .append_n(obfuscate_name_ecs(&gs.ecs, item).0)
@@ -81,7 +101,9 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
                 glyph: renderable.glyph,
                 name: name.name.clone(),
             })
-            .and_modify(|count| *count += 1)
+            .and_modify(|count| {
+                *count += 1;
+            })
             .or_insert(1);
         inventory_ids.entry(singular).or_insert(entity);
     }
@@ -95,30 +117,35 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
         1 + y_offset,
         RGB::named(rltk::WHITE),
         RGB::named(rltk::BLACK),
-        "Identify which item? [aA-zZ][Esc.]",
+        "Identify which item? [aA-zZ][Esc.]"
     );
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
     print_options(player_inventory, x + 1, y + 1, ctx);
     // Input
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
-        Some(key) => match key {
-            VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
-            _ => {
-                let selection = rltk::letter_to_option(key);
-                if selection > -1 && selection < count as i32 {
-                    let item = inventory_ids.iter().nth(selection as usize).unwrap().1;
-                    gamelog::Logger::new()
-                        .append("You identify the")
-                        .colour(item_colour_ecs(&gs.ecs, *item))
-                        .append_n(obfuscate_name_ecs(&gs.ecs, *item).0)
-                        .colour(WHITE)
-                        .append("!")
-                        .log();
-                    return (ItemMenuResult::Selected, Some(*item));
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
+                _ => {
+                    let selection = rltk::letter_to_option(key);
+                    if selection > -1 && selection < (count as i32) {
+                        let item = inventory_ids
+                            .iter()
+                            .nth(selection as usize)
+                            .unwrap().1;
+                        gamelog::Logger
+                            ::new()
+                            .append("You identify the")
+                            .colour(item_colour_ecs(&gs.ecs, *item))
+                            .append_n(obfuscate_name_ecs(&gs.ecs, *item).0)
+                            .colour(WHITE)
+                            .append("!")
+                            .log();
+                        return (ItemMenuResult::Selected, Some(*item));
+                    }
+                    (ItemMenuResult::NoResponse, None)
                 }
-                (ItemMenuResult::NoResponse, None)
             }
-        },
     }
 }

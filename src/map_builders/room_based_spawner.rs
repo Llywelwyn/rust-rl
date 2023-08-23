@@ -1,4 +1,4 @@
-use super::{spawner, BuilderMap, MetaMapBuilder};
+use super::{ spawner, BuilderMap, MetaMapBuilder };
 use rltk::RandomNumberGenerator;
 
 pub struct RoomBasedSpawner {}
@@ -23,7 +23,7 @@ impl RoomBasedSpawner {
                     rng,
                     room,
                     &mut build_data.spawn_list,
-                    build_data.initial_player_level,
+                    build_data.initial_player_level
                 );
             }
         } else {

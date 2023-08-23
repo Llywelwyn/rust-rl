@@ -1,4 +1,4 @@
-use super::{BuilderMap, MetaMapBuilder, Rect, TileType};
+use super::{ BuilderMap, MetaMapBuilder, Rect, TileType };
 use rltk::RandomNumberGenerator;
 
 pub struct RoomCornerRounder {}
@@ -23,13 +23,13 @@ impl RoomCornerRounder {
         if x > 0 && build_data.map.tiles[idx - 1] == TileType::Wall {
             neighbour_walls += 1;
         }
-        if y > 0 && build_data.map.tiles[idx - w as usize] == TileType::Wall {
+        if y > 0 && build_data.map.tiles[idx - (w as usize)] == TileType::Wall {
             neighbour_walls += 1;
         }
         if x < w - 2 && build_data.map.tiles[idx + 1] == TileType::Wall {
             neighbour_walls += 1;
         }
-        if y < h - 2 && build_data.map.tiles[idx + w as usize] == TileType::Wall {
+        if y < h - 2 && build_data.map.tiles[idx + (w as usize)] == TileType::Wall {
             neighbour_walls += 1;
         }
         if neighbour_walls == 2 {

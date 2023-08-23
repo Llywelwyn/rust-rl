@@ -1,4 +1,4 @@
-use crate::{gamelog, Attributes, Burden, EquipmentChanged, Equipped, InBackpack, Item, Pools};
+use crate::{ gamelog, Attributes, Burden, EquipmentChanged, Equipped, InBackpack, Item, Pools };
 use specs::prelude::*;
 use std::collections::HashMap;
 
@@ -52,7 +52,7 @@ impl<'a> System<'a> for EncumbranceSystem {
                 if let Some(attr) = attributes.get(*entity) {
                     let carry_capacity_lbs =
                         (attr.strength.base + attr.strength.modifiers) * CARRY_CAPACITY_PER_STRENGTH;
-                    if pool.weight as i32 > 3 * carry_capacity_lbs {
+                    if (pool.weight as i32) > 3 * carry_capacity_lbs {
                         // Overloaded
                         burdened
                             .insert(*entity, Burden { level: crate::BurdenLevel::Overloaded })
@@ -60,7 +60,7 @@ impl<'a> System<'a> for EncumbranceSystem {
                         if *entity == *player {
                             gamelog::Logger::new().append("You're overloaded!").log();
                         }
-                    } else if pool.weight as i32 > 2 * carry_capacity_lbs {
+                    } else if (pool.weight as i32) > 2 * carry_capacity_lbs {
                         // Strained
                         burdened
                             .insert(*entity, Burden { level: crate::BurdenLevel::Strained })
@@ -68,7 +68,7 @@ impl<'a> System<'a> for EncumbranceSystem {
                         if *entity == *player {
                             gamelog::Logger::new().append("You're strained.").log();
                         }
-                    } else if pool.weight as i32 > carry_capacity_lbs {
+                    } else if (pool.weight as i32) > carry_capacity_lbs {
                         // Burdened
                         burdened
                             .insert(*entity, Burden { level: crate::BurdenLevel::Burdened })

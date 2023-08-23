@@ -1,4 +1,4 @@
-use super::{paint, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, Symmetry, TileType};
+use super::{ paint, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, Symmetry, TileType };
 use rltk::RandomNumberGenerator;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -100,13 +100,16 @@ impl DLABuilder {
         build_data.map.tiles[start_idx] = TileType::Floor;
         build_data.map.tiles[start_idx - 1] = TileType::Floor;
         build_data.map.tiles[start_idx + 1] = TileType::Floor;
-        build_data.map.tiles[start_idx - build_data.map.width as usize] = TileType::Floor;
-        build_data.map.tiles[start_idx + build_data.map.width as usize] = TileType::Floor;
+        build_data.map.tiles[start_idx - (build_data.map.width as usize)] = TileType::Floor;
+        build_data.map.tiles[start_idx + (build_data.map.width as usize)] = TileType::Floor;
 
         // Random walker
         let total_tiles = build_data.map.width * build_data.map.height;
-        let desired_floor_tiles = (self.floor_percent * total_tiles as f32) as usize;
-        let mut floor_tile_count = build_data.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
+        let desired_floor_tiles = (self.floor_percent * (total_tiles as f32)) as usize;
+        let mut floor_tile_count = build_data.map.tiles
+            .iter()
+            .filter(|a| **a == TileType::Floor)
+            .count();
         while floor_tile_count < desired_floor_tiles {
             match self.algorithm {
                 DLAAlgorithm::WalkInwards => {
@@ -189,7 +192,7 @@ impl DLABuilder {
                     let mut path = rltk::line2d(
                         rltk::LineAlg::Bresenham,
                         rltk::Point::new(digger_x, digger_y),
-                        rltk::Point::new(starting_position.x, starting_position.y),
+                        rltk::Point::new(starting_position.x, starting_position.y)
                     );
 
                     while build_data.map.tiles[digger_idx] == TileType::Wall && !path.is_empty() {
@@ -206,7 +209,10 @@ impl DLABuilder {
 
             build_data.take_snapshot();
 
-            floor_tile_count = build_data.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
+            floor_tile_count = build_data.map.tiles
+                .iter()
+                .filter(|a| **a == TileType::Floor)
+                .count();
         }
     }
 }

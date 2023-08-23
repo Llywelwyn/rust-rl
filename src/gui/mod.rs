@@ -1,8 +1,38 @@
 use super::{
-    ai::CARRY_CAPACITY_PER_STRENGTH, camera, gamelog, gamesystem, hunger_system::get_hunger_colour,
-    rex_assets::RexAssets, ArmourClassBonus, Attributes, Beatitude, Burden, Charges, Equipped, Hidden, HungerClock,
-    HungerState, InBackpack, KnownSpells, MagicItem, Map, MasterDungeonMap, Name, ObfuscatedName, Player, Point, Pools,
-    Position, Prop, Renderable, RunState, Skill, Skills, State, Viewshed, BUC,
+    ai::CARRY_CAPACITY_PER_STRENGTH,
+    camera,
+    gamelog,
+    gamesystem,
+    hunger_system::get_hunger_colour,
+    rex_assets::RexAssets,
+    ArmourClassBonus,
+    Attributes,
+    Beatitude,
+    Burden,
+    Charges,
+    Equipped,
+    Hidden,
+    HungerClock,
+    HungerState,
+    InBackpack,
+    KnownSpells,
+    MagicItem,
+    Map,
+    MasterDungeonMap,
+    Name,
+    ObfuscatedName,
+    Player,
+    Point,
+    Pools,
+    Position,
+    Prop,
+    Renderable,
+    RunState,
+    Skill,
+    Skills,
+    State,
+    Viewshed,
+    BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -25,11 +55,12 @@ pub fn yes_no(ctx: &mut Rltk, question: String) -> Option<bool> {
     ctx.print_color_centered(17, RGB::named(rltk::CYAN), RGB::named(rltk::BLACK), "(y)es or (n)o");
     match ctx.key {
         None => None,
-        Some(key) => match key {
-            VirtualKeyCode::Y => Some(true),
-            VirtualKeyCode::N => Some(false),
-            _ => None,
-        },
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Y => Some(true),
+                VirtualKeyCode::N => Some(false),
+                _ => None,
+            }
     }
 }
 
@@ -41,10 +72,10 @@ pub fn draw_lerping_bar(
     n: i32,
     max: i32,
     full_colour: RGB,
-    empty_colour: RGB,
+    empty_colour: RGB
 ) {
-    let percent = n as f32 / max as f32;
-    let fill_width = (percent * width as f32) as i32;
+    let percent = (n as f32) / (max as f32);
+    let fill_width = (percent * (width as f32)) as i32;
     let bg = empty_colour.lerp(full_colour, percent);
     let fg = RGB::named(rltk::BLACK);
     for x in 0..width {
@@ -78,7 +109,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             stats.hit_points.current,
             stats.hit_points.max,
             RGB::from_u8(0, 255, 0),
-            RGB::from_u8(255, 0, 0),
+            RGB::from_u8(255, 0, 0)
         );
         draw_lerping_bar(
             ctx,
@@ -88,7 +119,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             stats.mana.current,
             stats.mana.max,
             RGB::named(rltk::BLUE),
-            RGB::named(rltk::BLACK),
+            RGB::named(rltk::BLACK)
         );
         // Draw AC
         let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
@@ -101,7 +132,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                 armour_ac_bonus += ac.amount;
             }
         }
-        let armour_class = stats.bac - (attributes.dexterity.bonus / 2) - skill_ac_bonus - armour_ac_bonus;
+        let armour_class = stats.bac - attributes.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus;
         ctx.print_color(26, 53, RGB::named(rltk::PINK), RGB::named(rltk::BLACK), "AC");
         ctx.print_color(28, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), armour_class);
         // Draw level
@@ -110,7 +141,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             54,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            format!("XP{}/{}", stats.level, stats.xp),
+            format!("XP{}/{}", stats.level, stats.xp)
         );
         // Draw attributes
         let x = 38;
@@ -129,33 +160,33 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         // Draw hunger
         match hunger.state {
             HungerState::Satiated => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Satiated")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Satiated");
             }
             HungerState::Normal => {}
             HungerState::Hungry => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Hungry")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Hungry");
             }
             HungerState::Weak => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Weak")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Weak");
             }
             HungerState::Fainting => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Fainting")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Fainting");
             }
             HungerState::Starving => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Starving")
+                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Starving");
             }
         }
         // Burden
         if let Some(burden) = burden.get(*player_entity) {
             match burden.level {
                 crate::BurdenLevel::Burdened => {
-                    ctx.print_color_right(70, 50, RGB::named(rltk::BROWN1), RGB::named(rltk::BLACK), "Burdened")
+                    ctx.print_color_right(70, 50, RGB::named(rltk::BROWN1), RGB::named(rltk::BLACK), "Burdened");
                 }
                 crate::BurdenLevel::Strained => {
-                    ctx.print_color_right(70, 50, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Strained")
+                    ctx.print_color_right(70, 50, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Strained");
                 }
                 crate::BurdenLevel::Overloaded => {
-                    ctx.print_color_right(70, 50, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Overloaded")
+                    ctx.print_color_right(70, 50, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Overloaded");
                 }
             }
         }
@@ -166,9 +197,9 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         let renderables = ecs.read_storage::<Renderable>();
         let mut equipment: Vec<(String, RGB, RGB, rltk::FontCharType)> = Vec::new();
         let entities = ecs.entities();
-        for (entity, _equipped, renderable) in
-            (&entities, &equipped, &renderables).join().filter(|item| item.1.owner == *player_entity)
-        {
+        for (entity, _equipped, renderable) in (&entities, &equipped, &renderables)
+            .join()
+            .filter(|item| item.1.owner == *player_entity) {
             equipment.push((
                 obfuscate_name_ecs(ecs, entity).0,
                 RGB::named(item_colour_ecs(ecs, entity)),
@@ -182,7 +213,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             let mut j = 0;
             for item in equipment {
                 y += 1;
-                ctx.set(72, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
+                ctx.set(72, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + (j as rltk::FontCharType));
                 j += 1;
                 ctx.set(74, y, item.2, RGB::named(rltk::BLACK), item.3);
                 ctx.print_color(76, y, item.1, RGB::named(rltk::BLACK), &item.0);
@@ -202,7 +233,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                 "[{:.1}/{} lbs]",
                 stats.weight,
                 (attributes.strength.base + attributes.strength.modifiers) * CARRY_CAPACITY_PER_STRENGTH
-            ),
+            )
         );
         y += 1;
         let (player_inventory, _inventory_ids) = get_player_inventory(&ecs);
@@ -222,7 +253,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                     y,
                     RGB::named(CYAN),
                     RGB::named(BLACK),
-                    &format!("{} ({})", "Force Bolt - NYI!", spell.mana_cost),
+                    &format!("{} ({})", "Force Bolt - NYI!", spell.mana_cost)
                 );
                 index += 1;
                 y += 1;
@@ -298,7 +329,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         54,
         RGB::named(rltk::YELLOW),
         RGB::named(rltk::BLACK),
-        &format!("T{}", crate::gamelog::get_event_count("turns")),
+        &format!("T{}", crate::gamelog::get_event_count("turns"))
     );
 
     // Boxes and tooltips last, so they draw over everything else.
@@ -312,7 +343,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
 pub fn get_input_direction(
     ecs: &mut World,
     ctx: &mut Rltk,
-    function: fn(i: i32, j: i32, ecs: &mut World) -> RunState,
+    function: fn(i: i32, j: i32, ecs: &mut World) -> RunState
 ) -> RunState {
     let (_, _, _, _, x_offset, y_offset) = camera::get_screen_bounds(ecs, ctx);
 
@@ -321,24 +352,47 @@ pub fn get_input_direction(
         1 + y_offset,
         RGB::named(rltk::WHITE),
         RGB::named(rltk::BLACK),
-        "In what direction? [0-9]/[YUHJKLBN]",
+        "In what direction? [0-9]/[YUHJKLBN]"
     );
     match ctx.key {
-        None => return RunState::ActionWithDirection { function },
-        Some(key) => match key {
-            VirtualKeyCode::Escape => return RunState::AwaitingInput,
-            // Cardinals
-            VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => return function(-1, 0, ecs),
-            VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => return function(1, 0, ecs),
-            VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => return function(0, -1, ecs),
-            VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => return function(0, 1, ecs),
-            // Diagonals
-            VirtualKeyCode::Numpad9 | VirtualKeyCode::U => return function(1, -1, ecs),
-            VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => return function(-1, -1, ecs),
-            VirtualKeyCode::Numpad3 | VirtualKeyCode::N => return function(1, 1, ecs),
-            VirtualKeyCode::Numpad1 | VirtualKeyCode::B => return function(-1, 1, ecs),
-            _ => return RunState::ActionWithDirection { function },
-        },
+        None => {
+            return RunState::ActionWithDirection { function };
+        }
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Escape => {
+                    return RunState::AwaitingInput;
+                }
+                // Cardinals
+                VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
+                    return function(-1, 0, ecs);
+                }
+                VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
+                    return function(1, 0, ecs);
+                }
+                VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
+                    return function(0, -1, ecs);
+                }
+                VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
+                    return function(0, 1, ecs);
+                }
+                // Diagonals
+                VirtualKeyCode::Numpad9 | VirtualKeyCode::U => {
+                    return function(1, -1, ecs);
+                }
+                VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => {
+                    return function(-1, -1, ecs);
+                }
+                VirtualKeyCode::Numpad3 | VirtualKeyCode::N => {
+                    return function(1, 1, ecs);
+                }
+                VirtualKeyCode::Numpad1 | VirtualKeyCode::B => {
+                    return function(-1, 1, ecs);
+                }
+                _ => {
+                    return RunState::ActionWithDirection { function };
+                }
+            }
     }
 }
 
@@ -353,7 +407,7 @@ pub fn print_options(
     inventory: BTreeMap<UniqueInventoryItem, i32>,
     mut x: i32,
     mut y: i32,
-    ctx: &mut Rltk,
+    ctx: &mut Rltk
 ) -> (i32, i32) {
     let mut j = 0;
     let initial_x: i32 = x;
@@ -362,10 +416,10 @@ pub fn print_options(
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
         if j < 26 {
-            ctx.set(x, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
+            ctx.set(x, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + (j as rltk::FontCharType));
         } else {
             // If we somehow have more than 26, start using capitals
-            ctx.set(x, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 65 - 26 + j as rltk::FontCharType);
+            ctx.set(x, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 65 - 26 + (j as rltk::FontCharType));
         }
 
         x += 2;
@@ -380,15 +434,14 @@ pub fn print_options(
             ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item_count);
             x += 2;
             ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.plural.to_string());
-            let this_width = x - initial_x + item.display_name.plural.len() as i32;
+            let this_width = x - initial_x + (item.display_name.plural.len() as i32);
             width = if width > this_width { width } else { this_width };
         } else {
             if item.display_name.singular.to_lowercase().ends_with("s") {
                 ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "some");
                 x += 5;
-            } else if ['a', 'e', 'i', 'o', 'u']
-                .iter()
-                .any(|&v| item.display_name.singular.to_lowercase().starts_with(v))
+            } else if
+                ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.to_lowercase().starts_with(v))
             {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
@@ -401,7 +454,7 @@ pub fn print_options(
                 x += 2;
             }
             ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.singular.to_string());
-            let this_width = x - initial_x + item.display_name.singular.len() as i32;
+            let this_width = x - initial_x + (item.display_name.singular.len() as i32);
             width = if width > this_width { width } else { this_width };
         }
 
@@ -442,7 +495,7 @@ pub fn obfuscate_name(
     obfuscated_names: &ReadStorage<ObfuscatedName>,
     beatitudes: &ReadStorage<Beatitude>,
     dm: &MasterDungeonMap,
-    wand: Option<&ReadStorage<Charges>>,
+    wand: Option<&ReadStorage<Charges>>
 ) -> (String, String) {
     let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
     if let Some(name) = names.get(item) {
@@ -537,9 +590,15 @@ pub fn item_colour_ecs(ecs: &World, item: Entity) -> (u8, u8, u8) {
     if let Some(beatitude) = ecs.read_storage::<Beatitude>().get(item) {
         if beatitude.known {
             match beatitude.buc {
-                BUC::Blessed => return GREEN,
-                BUC::Uncursed => return WHITE,
-                BUC::Cursed => return RED,
+                BUC::Blessed => {
+                    return GREEN;
+                }
+                BUC::Uncursed => {
+                    return WHITE;
+                }
+                BUC::Cursed => {
+                    return RED;
+                }
             }
         } else {
             // Unidentified magic item
@@ -554,9 +613,15 @@ pub fn item_colour(item: Entity, beatitudes: &ReadStorage<Beatitude>) -> (u8, u8
     if let Some(beatitude) = beatitudes.get(item) {
         if beatitude.known {
             match beatitude.buc {
-                BUC::Blessed => return GREEN,
-                BUC::Uncursed => return WHITE,
-                BUC::Cursed => return RED,
+                BUC::Blessed => {
+                    return GREEN;
+                }
+                BUC::Uncursed => {
+                    return WHITE;
+                }
+                BUC::Cursed => {
+                    return RED;
+                }
             }
         } else {
             // Unidentified magic item
@@ -601,16 +666,17 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
 
     match ctx.key {
         None => YesNoResult::NoSelection,
-        Some(key) => match key {
-            VirtualKeyCode::Escape => YesNoResult::Yes,
-            VirtualKeyCode::Slash => {
-                if ctx.shift {
-                    return YesNoResult::Yes;
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Escape => YesNoResult::Yes,
+                VirtualKeyCode::Slash => {
+                    if ctx.shift {
+                        return YesNoResult::Yes;
+                    }
+                    return YesNoResult::NoSelection;
                 }
-                return YesNoResult::NoSelection;
+                _ => YesNoResult::NoSelection,
             }
-            _ => YesNoResult::NoSelection,
-        },
     }
 }
 
@@ -638,13 +704,16 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<UniqueInventoryItem, i32>,
 
     let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
     let mut player_inventory: BTreeMap<UniqueInventoryItem, i32> = BTreeMap::new();
-    for (entity, _pack, name, renderable) in
-        (&entities, &backpack, &names, &renderables).join().filter(|item| item.1.owner == *player_entity)
-    {
+    for (entity, _pack, name, renderable) in (&entities, &backpack, &names, &renderables)
+        .join()
+        .filter(|item| item.1.owner == *player_entity) {
         // RGB can't be used as a key. This is converting the RGB (tuple of f32) into a tuple of u8s.
         let item_colour = item_colour_ecs(ecs, entity);
-        let renderables =
-            ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8);
+        let renderables = (
+            (renderable.fg.r * 255.0) as u8,
+            (renderable.fg.g * 255.0) as u8,
+            (renderable.fg.b * 255.0) as u8,
+        );
         let (singular, plural) = obfuscate_name_ecs(ecs, entity);
         player_inventory
             .entry(UniqueInventoryItem {
@@ -654,7 +723,9 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<UniqueInventoryItem, i32>,
                 glyph: renderable.glyph,
                 name: name.name.clone(),
             })
-            .and_modify(|count| *count += 1)
+            .and_modify(|count| {
+                *count += 1;
+            })
             .or_insert(1);
         inventory_ids.entry(singular).or_insert(entity);
     }
@@ -673,7 +744,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
         1 + y_offset,
         RGB::named(rltk::WHITE),
         RGB::named(rltk::BLACK),
-        "Interact with what item? [aA-zZ][Esc.]",
+        "Interact with what item? [aA-zZ][Esc.]"
     );
 
     let x = 1 + x_offset;
@@ -684,16 +755,25 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
-        Some(key) => match key {
-            VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
-            _ => {
-                let selection = letter_to_option::letter_to_option(key, ctx.shift);
-                if selection > -1 && selection < count as i32 {
-                    return (ItemMenuResult::Selected, Some(*inventory_ids.iter().nth(selection as usize).unwrap().1));
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
+                _ => {
+                    let selection = letter_to_option::letter_to_option(key, ctx.shift);
+                    if selection > -1 && selection < (count as i32) {
+                        return (
+                            ItemMenuResult::Selected,
+                            Some(
+                                *inventory_ids
+                                    .iter()
+                                    .nth(selection as usize)
+                                    .unwrap().1
+                            ),
+                        );
+                    }
+                    (ItemMenuResult::NoResponse, None)
                 }
-                (ItemMenuResult::NoResponse, None)
             }
-        },
     }
 }
 
@@ -708,7 +788,7 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
         1 + y_offset,
         RGB::named(rltk::WHITE),
         RGB::named(rltk::BLACK),
-        "Drop what? [aA-zZ][Esc.]",
+        "Drop what? [aA-zZ][Esc.]"
     );
 
     let x = 1 + x_offset;
@@ -719,16 +799,25 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
-        Some(key) => match key {
-            VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
-            _ => {
-                let selection = rltk::letter_to_option(key);
-                if selection > -1 && selection < count as i32 {
-                    return (ItemMenuResult::Selected, Some(*inventory_ids.iter().nth(selection as usize).unwrap().1));
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
+                _ => {
+                    let selection = rltk::letter_to_option(key);
+                    if selection > -1 && selection < (count as i32) {
+                        return (
+                            ItemMenuResult::Selected,
+                            Some(
+                                *inventory_ids
+                                    .iter()
+                                    .nth(selection as usize)
+                                    .unwrap().1
+                            ),
+                        );
+                    }
+                    (ItemMenuResult::NoResponse, None)
                 }
-                (ItemMenuResult::NoResponse, None)
             }
-        },
     }
 }
 
@@ -746,7 +835,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
         1 + y_offset,
         RGB::named(rltk::WHITE),
         RGB::named(rltk::BLACK),
-        "Unequip what? [aA-zZ][Esc.]",
+        "Unequip what? [aA-zZ][Esc.]"
     );
 
     let mut equippable: Vec<(Entity, String)> = Vec::new();
@@ -772,7 +861,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
         } else {
             (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
         };
-        ctx.set(x + 1, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
+        ctx.set(x + 1, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + (j as rltk::FontCharType));
         ctx.set(x + 3, y, fg, RGB::named(rltk::BLACK), glyph);
         fg = RGB::named(item_colour_ecs(&gs.ecs, *e));
         ctx.print_color(x + 5, y, fg, RGB::named(rltk::BLACK), name);
@@ -782,16 +871,17 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
-        Some(key) => match key {
-            VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
-            _ => {
-                let selection = rltk::letter_to_option(key);
-                if selection > -1 && selection < count as i32 {
-                    return (ItemMenuResult::Selected, Some(equippable[selection as usize].0));
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
+                _ => {
+                    let selection = rltk::letter_to_option(key);
+                    if selection > -1 && selection < (count as i32) {
+                        return (ItemMenuResult::Selected, Some(equippable[selection as usize].0));
+                    }
+                    (ItemMenuResult::NoResponse, None)
                 }
-                (ItemMenuResult::NoResponse, None)
             }
-        },
     }
 }
 
@@ -806,7 +896,7 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
         1 + y_offset,
         RGB::named(rltk::WHITE),
         RGB::named(rltk::BLACK),
-        "Targeting which tile? [mouse input]",
+        "Targeting which tile? [mouse input]"
     );
 
     // Highlight available cells
@@ -816,10 +906,10 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
         // We have a viewshed
         for idx in visible.visible_tiles.iter() {
             let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
-            if distance <= range as f32 {
+            if distance <= (range as f32) {
                 let screen_x = idx.x - min_x;
                 let screen_y = idx.y - min_y;
-                if screen_x > 1 && screen_x < (max_x - min_x) - 1 && screen_y > 1 && screen_y < (max_y - min_y) - 1 {
+                if screen_x > 1 && screen_x < max_x - min_x - 1 && screen_y > 1 && screen_y < max_y - min_y - 1 {
                     ctx.set_bg(screen_x + x_offset, screen_y + y_offset, RGB::named(rltk::BLUE));
                     available_cells.push(idx);
                 }
@@ -845,8 +935,11 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
         if aoe > 0 {
             // We adjust for camera position when getting FOV, but then we need to adjust back
             // when iterating through the tiles themselves, by taking away min_x/min_y.
-            let mut blast_tiles =
-                rltk::field_of_view(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1), aoe, &*map);
+            let mut blast_tiles = rltk::field_of_view(
+                Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1),
+                aoe,
+                &*map
+            );
             blast_tiles.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
             for tile in blast_tiles.iter() {
                 ctx.set_bg(tile.x - min_x + x_offset, tile.y - min_y + y_offset, RGB::named(rltk::DARKCYAN));
@@ -875,8 +968,12 @@ pub enum MainMenuSelection {
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum MainMenuResult {
-    NoSelection { selected: MainMenuSelection },
-    Selected { selected: MainMenuSelection },
+    NoSelection {
+        selected: MainMenuSelection,
+    },
+    Selected {
+        selected: MainMenuSelection,
+    },
 }
 
 pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
@@ -924,42 +1021,63 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
         }
 
         match ctx.key {
-            None => return MainMenuResult::NoSelection { selected: selection },
-            Some(key) => match key {
-                VirtualKeyCode::Escape | VirtualKeyCode::C => {
-                    return MainMenuResult::NoSelection { selected: MainMenuSelection::Quit }
-                }
-                VirtualKeyCode::N => return MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame },
-                VirtualKeyCode::L => return MainMenuResult::NoSelection { selected: MainMenuSelection::LoadGame },
-                VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                    let mut new_selection;
-                    match selection {
-                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::LoadGame,
-                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::Quit,
-                        MainMenuSelection::Quit => new_selection = MainMenuSelection::NewGame,
+            None => {
+                return MainMenuResult::NoSelection { selected: selection };
+            }
+            Some(key) =>
+                match key {
+                    VirtualKeyCode::Escape | VirtualKeyCode::C => {
+                        return MainMenuResult::NoSelection { selected: MainMenuSelection::Quit };
                     }
-                    if new_selection == MainMenuSelection::LoadGame && !save_exists {
-                        new_selection = MainMenuSelection::NewGame;
+                    VirtualKeyCode::N => {
+                        return MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame };
                     }
-                    return MainMenuResult::NoSelection { selected: new_selection };
-                }
-                VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                    let mut new_selection;
-                    match selection {
-                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::Quit,
-                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
-                        MainMenuSelection::Quit => new_selection = MainMenuSelection::LoadGame,
+                    VirtualKeyCode::L => {
+                        return MainMenuResult::NoSelection { selected: MainMenuSelection::LoadGame };
                     }
-                    if new_selection == MainMenuSelection::LoadGame && !save_exists {
-                        new_selection = MainMenuSelection::Quit;
+                    VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
+                        let mut new_selection;
+                        match selection {
+                            MainMenuSelection::NewGame => {
+                                new_selection = MainMenuSelection::LoadGame;
+                            }
+                            MainMenuSelection::LoadGame => {
+                                new_selection = MainMenuSelection::Quit;
+                            }
+                            MainMenuSelection::Quit => {
+                                new_selection = MainMenuSelection::NewGame;
+                            }
+                        }
+                        if new_selection == MainMenuSelection::LoadGame && !save_exists {
+                            new_selection = MainMenuSelection::NewGame;
+                        }
+                        return MainMenuResult::NoSelection { selected: new_selection };
                     }
-                    return MainMenuResult::NoSelection { selected: new_selection };
+                    VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
+                        let mut new_selection;
+                        match selection {
+                            MainMenuSelection::NewGame => {
+                                new_selection = MainMenuSelection::Quit;
+                            }
+                            MainMenuSelection::LoadGame => {
+                                new_selection = MainMenuSelection::NewGame;
+                            }
+                            MainMenuSelection::Quit => {
+                                new_selection = MainMenuSelection::LoadGame;
+                            }
+                        }
+                        if new_selection == MainMenuSelection::LoadGame && !save_exists {
+                            new_selection = MainMenuSelection::Quit;
+                        }
+                        return MainMenuResult::NoSelection { selected: new_selection };
+                    }
+                    VirtualKeyCode::Return | VirtualKeyCode::NumpadEnter => {
+                        return MainMenuResult::Selected { selected: selection };
+                    }
+                    _ => {
+                        return MainMenuResult::NoSelection { selected: selection };
+                    }
                 }
-                VirtualKeyCode::Return | VirtualKeyCode::NumpadEnter => {
-                    return MainMenuResult::Selected { selected: selection }
-                }
-                _ => return MainMenuResult::NoSelection { selected: selection },
-            },
         }
     }
     MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame }
@@ -986,7 +1104,7 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
         y,
         RGB::named(rltk::GREEN),
         RGB::named(rltk::BLACK),
-        format!("You survived for {} turns.", crate::gamelog::get_event_count("turns")),
+        format!("You survived for {} turns.", crate::gamelog::get_event_count("turns"))
     );
     y += 2;
     ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), format!("And in the process, you"));
@@ -997,7 +1115,7 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
             y,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            format!("- descended {} floor(s)", crate::gamelog::get_event_count("descended")),
+            format!("- descended {} floor(s)", crate::gamelog::get_event_count("descended"))
         );
         y += 1;
     }
@@ -1011,7 +1129,7 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
                 "- kicked {} time(s), breaking {} object(s)",
                 crate::gamelog::get_event_count("kick_count"),
                 crate::gamelog::get_event_count("broken_doors")
-            ),
+            )
         );
         y += 1;
     }
@@ -1021,7 +1139,7 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
             y,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            format!("- slew {} other creature(s)", crate::gamelog::get_event_count("death_count")),
+            format!("- slew {} other creature(s)", crate::gamelog::get_event_count("death_count"))
         );
         y += 1;
     }
@@ -1031,15 +1149,16 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
             y,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            format!("- forgot the controls {} time(s)", crate::gamelog::get_event_count("looked_for_help")),
+            format!("- forgot the controls {} time(s)", crate::gamelog::get_event_count("looked_for_help"))
         );
     }
 
     match ctx.key {
         None => YesNoResult::NoSelection,
-        Some(key) => match key {
-            VirtualKeyCode::Escape => YesNoResult::Yes,
-            _ => YesNoResult::NoSelection,
-        },
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Escape => YesNoResult::Yes,
+                _ => YesNoResult::NoSelection,
+            }
     }
 }

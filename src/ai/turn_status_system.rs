@@ -1,8 +1,12 @@
 use crate::{
-    effects::{add_effect, EffectType, Targets},
+    effects::{ add_effect, EffectType, Targets },
     gamelog,
     gui::renderable_colour,
-    Clock, Confusion, Name, Renderable, TakingTurn,
+    Clock,
+    Confusion,
+    Name,
+    Renderable,
+    TakingTurn,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -63,7 +67,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                         lifespan: 200.0,
                         delay: 0.0,
                     },
-                    Targets::Entity { target: entity },
+                    Targets::Entity { target: entity }
                 );
             } else {
                 not_my_turn.push(entity);
@@ -93,7 +97,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                         lifespan: 200.0,
                         delay: 0.0,
                     },
-                    Targets::Entity { target: entity },
+                    Targets::Entity { target: entity }
                 );
             }
         }

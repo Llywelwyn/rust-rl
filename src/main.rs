@@ -1,6 +1,6 @@
-use rltk::{GameState, Point, RandomNumberGenerator, Rltk};
+use rltk::{ GameState, Point, RandomNumberGenerator, Rltk };
 use specs::prelude::*;
-use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
+use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 extern crate serde;
 
 pub mod camera;
@@ -27,7 +27,7 @@ mod trigger_system;
 use melee_combat_system::MeleeCombatSystem;
 mod inventory;
 mod particle_system;
-use particle_system::{ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME};
+use particle_system::{ ParticleBuilder, DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
 mod ai;
 mod config;
 mod effects;
@@ -48,23 +48,37 @@ pub const LOG_TICKS: bool = false;
 pub enum RunState {
     AwaitingInput, // Player's turn
     PreRun,
-    Ticking,       // Tick systems
+    Ticking, // Tick systems
     ShowCheatMenu, // Teleport, godmode, etc. - for debugging
     ShowInventory,
     ShowDropItem,
     ShowRemoveItem,
-    ShowTargeting { range: i32, item: Entity, aoe: i32 },
+    ShowTargeting {
+        range: i32,
+        item: Entity,
+        aoe: i32,
+    },
     ShowRemoveCurse,
     ShowIdentify,
-    ActionWithDirection { function: fn(i: i32, j: i32, ecs: &mut World) -> RunState },
-    MainMenu { menu_selection: gui::MainMenuSelection },
-    CharacterCreation { ancestry: gui::Ancestry, class: gui::Class },
+    ActionWithDirection {
+        function: fn(i: i32, j: i32, ecs: &mut World) -> RunState,
+    },
+    MainMenu {
+        menu_selection: gui::MainMenuSelection,
+    },
+    CharacterCreation {
+        ancestry: gui::Ancestry,
+        class: gui::Class,
+    },
     SaveGame,
     GameOver,
     NextLevel,
     PreviousLevel,
     HelpScreen,
-    MagicMapReveal { row: i32, cursed: bool }, // Animates magic mapping effect
+    MagicMapReveal {
+        row: i32,
+        cursed: bool,
+    }, // Animates magic mapping effect
     MapGeneration,
 }
 
@@ -260,20 +274,30 @@ impl GameState for State {
                     self.ecs.maintain();
                     try_spawn_interval(&mut self.ecs);
                     match *self.ecs.fetch::<RunState>() {
-                        RunState::AwaitingInput => new_runstate = RunState::AwaitingInput,
-                        RunState::MagicMapReveal { row, cursed } => {
-                            new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed }
+                        RunState::AwaitingInput => {
+                            new_runstate = RunState::AwaitingInput;
                         }
-                        RunState::ShowRemoveCurse => new_runstate = RunState::ShowRemoveCurse,
-                        RunState::ShowIdentify => new_runstate = RunState::ShowIdentify,
-                        _ => new_runstate = RunState::Ticking,
+                        RunState::MagicMapReveal { row, cursed } => {
+                            new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed };
+                        }
+                        RunState::ShowRemoveCurse => {
+                            new_runstate = RunState::ShowRemoveCurse;
+                        }
+                        RunState::ShowIdentify => {
+                            new_runstate = RunState::ShowIdentify;
+                        }
+                        _ => {
+                            new_runstate = RunState::Ticking;
+                        }
                     }
                 }
             }
             RunState::ShowCheatMenu => {
                 let result = gui::show_cheat_menu(self, ctx);
                 match result {
-                    gui::CheatMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::CheatMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
                     gui::CheatMenuResult::NoResponse => {}
                     gui::CheatMenuResult::Ascend => {
                         self.goto_level(-1);
@@ -312,7 +336,9 @@ impl GameState for State {
             RunState::ShowInventory => {
                 let result = gui::show_inventory(self, ctx);
                 match result.0 {
-                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
                         let item_entity = result.1.unwrap();
@@ -326,10 +352,13 @@ impl GameState for State {
                                     range: ranged_item.range,
                                     item: item_entity,
                                     aoe: aoe_item.radius,
-                                }
+                                };
                             } else {
-                                new_runstate =
-                                    RunState::ShowTargeting { range: ranged_item.range, item: item_entity, aoe: 0 }
+                                new_runstate = RunState::ShowTargeting {
+                                    range: ranged_item.range,
+                                    item: item_entity,
+                                    aoe: 0,
+                                };
                             }
                         } else {
                             let mut intent = self.ecs.write_storage::<WantsToUseItem>();
@@ -344,7 +373,9 @@ impl GameState for State {
             RunState::ShowDropItem => {
                 let result = gui::drop_item_menu(self, ctx);
                 match result.0 {
-                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
                         let item_entity = result.1.unwrap();
@@ -359,7 +390,9 @@ impl GameState for State {
             RunState::ShowRemoveItem => {
                 let result = gui::remove_item_menu(self, ctx);
                 match result.0 {
-                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
                         let item_entity = result.1.unwrap();
@@ -374,7 +407,9 @@ impl GameState for State {
             RunState::ShowTargeting { range, item, aoe } => {
                 let result = gui::ranged_target(self, ctx, range, aoe);
                 match result.0 {
-                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
                         let mut intent = self.ecs.write_storage::<WantsToUseItem>();
@@ -388,7 +423,9 @@ impl GameState for State {
             RunState::ShowRemoveCurse => {
                 let result = gui::remove_curse(self, ctx);
                 match result.0 {
-                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
                         let item_entity = result.1.unwrap();
@@ -403,7 +440,9 @@ impl GameState for State {
             RunState::ShowIdentify => {
                 let result = gui::identify(self, ctx);
                 match result.0 {
-                    gui::ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
                         let item_entity = result.1.unwrap();
@@ -425,31 +464,32 @@ impl GameState for State {
                 let result = gui::main_menu(self, ctx);
                 match result {
                     gui::MainMenuResult::NoSelection { selected } => {
-                        new_runstate = RunState::MainMenu { menu_selection: selected }
+                        new_runstate = RunState::MainMenu { menu_selection: selected };
                     }
-                    gui::MainMenuResult::Selected { selected } => match selected {
-                        gui::MainMenuSelection::NewGame => {
-                            new_runstate = RunState::CharacterCreation {
-                                ancestry: gui::Ancestry::Human,
-                                class: gui::Class::Fighter,
+                    gui::MainMenuResult::Selected { selected } =>
+                        match selected {
+                            gui::MainMenuSelection::NewGame => {
+                                new_runstate = RunState::CharacterCreation {
+                                    ancestry: gui::Ancestry::Human,
+                                    class: gui::Class::Fighter,
+                                };
+                            }
+                            gui::MainMenuSelection::LoadGame => {
+                                saveload_system::load_game(&mut self.ecs);
+                                new_runstate = RunState::AwaitingInput;
+                                saveload_system::delete_save();
+                            }
+                            gui::MainMenuSelection::Quit => {
+                                ::std::process::exit(0);
                             }
                         }
-                        gui::MainMenuSelection::LoadGame => {
-                            saveload_system::load_game(&mut self.ecs);
-                            new_runstate = RunState::AwaitingInput;
-                            saveload_system::delete_save();
-                        }
-                        gui::MainMenuSelection::Quit => {
-                            ::std::process::exit(0);
-                        }
-                    },
                 }
             }
             RunState::CharacterCreation { .. } => {
                 let result = gui::character_creation(self, ctx);
                 match result {
                     gui::CharCreateResult::NoSelection { ancestry, class } => {
-                        new_runstate = RunState::CharacterCreation { ancestry, class }
+                        new_runstate = RunState::CharacterCreation { ancestry, class };
                     }
                     gui::CharCreateResult::Selected { ancestry, class } => {
                         if ancestry == gui::Ancestry::NULL {
@@ -473,8 +513,9 @@ impl GameState for State {
                     gui::YesNoResult::Yes => {
                         self.game_over_cleanup();
                         new_runstate = RunState::MapGeneration;
-                        self.mapgen_next_state =
-                            Some(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
+                        self.mapgen_next_state = Some(RunState::MainMenu {
+                            menu_selection: gui::MainMenuSelection::NewGame,
+                        });
                     }
                 }
             }
@@ -508,7 +549,7 @@ impl GameState for State {
                     if x % 2 == 0 {
                         idx = map.xy_idx(x as i32, row);
                     } else {
-                        idx = map.xy_idx(x as i32, (map.height as i32 - 1) - (row));
+                        idx = map.xy_idx(x as i32, (map.height as i32) - 1 - row);
                     }
                     if !cursed {
                         map.revealed_tiles[idx] = true;
@@ -527,7 +568,7 @@ impl GameState for State {
                     }
                 }
 
-                if row as usize == map.height as usize - 1 {
+                if (row as usize) == (map.height as usize) - 1 {
                     new_runstate = RunState::Ticking;
                 } else {
                     new_runstate = RunState::MagicMapReveal { row: row + 1, cursed: cursed };

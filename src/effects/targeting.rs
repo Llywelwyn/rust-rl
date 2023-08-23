@@ -1,4 +1,4 @@
-use crate::{Equipped, InBackpack, Map, Position};
+use crate::{ Equipped, InBackpack, Map, Position };
 use rltk::prelude::*;
 use specs::prelude::*;
 

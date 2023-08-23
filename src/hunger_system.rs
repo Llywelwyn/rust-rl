@@ -1,6 +1,11 @@
 use super::{
-    effects::{add_effect, EffectType, Targets},
-    gamelog, Clock, HungerClock, HungerState, TakingTurn, LOG_TICKS,
+    effects::{ add_effect, EffectType, Targets },
+    gamelog,
+    Clock,
+    HungerClock,
+    HungerState,
+    TakingTurn,
+    LOG_TICKS,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -74,10 +79,9 @@ impl<'a> System<'a> for HungerSystem {
                 add_effect(None, EffectType::Damage { amount: 1 }, Targets::Entity { target: entity });
             }
             if LOG_TICKS && entity == *player_entity {
-                rltk::console::log(format!(
-                    "HUNGER SYSTEM: Ticked for player entity. [clock: {}]",
-                    hunger_clock.duration
-                ));
+                rltk::console::log(
+                    format!("HUNGER SYSTEM: Ticked for player entity. [clock: {}]", hunger_clock.duration)
+                );
             }
             if hunger_clock.state == initial_state {
                 continue;
@@ -87,39 +91,49 @@ impl<'a> System<'a> for HungerSystem {
             }
             // Things which only happen to the player.
             match hunger_clock.state {
-                HungerState::Satiated => gamelog::Logger::new()
-                    .append("You feel")
-                    .colour(get_hunger_colour(hunger_clock.state))
-                    .append_n("satiated")
-                    .colour(WHITE)
-                    .period()
-                    .log(),
+                HungerState::Satiated =>
+                    gamelog::Logger
+                        ::new()
+                        .append("You feel")
+                        .colour(get_hunger_colour(hunger_clock.state))
+                        .append_n("satiated")
+                        .colour(WHITE)
+                        .period()
+                        .log(),
                 HungerState::Normal => {}
-                HungerState::Hungry => gamelog::Logger::new()
-                    .append("You feel")
-                    .colour(get_hunger_colour(hunger_clock.state))
-                    .append_n("hungry")
-                    .colour(WHITE)
-                    .period()
-                    .log(),
-                HungerState::Weak => gamelog::Logger::new()
-                    .append("You feel")
-                    .colour(get_hunger_colour(hunger_clock.state))
-                    .append_n("weak with hunger")
-                    .colour(WHITE)
-                    .period()
-                    .log(),
-                HungerState::Fainting => gamelog::Logger::new()
-                    .append("You feel")
-                    .colour(get_hunger_colour(hunger_clock.state))
-                    .append_n("hungry enough to faint")
-                    .colour(WHITE)
-                    .period()
-                    .log(),
-                _ => gamelog::Logger::new()
-                    .colour(get_hunger_colour(hunger_clock.state))
-                    .append_n("You can't go on without food!")
-                    .log(),
+                HungerState::Hungry =>
+                    gamelog::Logger
+                        ::new()
+                        .append("You feel")
+                        .colour(get_hunger_colour(hunger_clock.state))
+                        .append_n("hungry")
+                        .colour(WHITE)
+                        .period()
+                        .log(),
+                HungerState::Weak =>
+                    gamelog::Logger
+                        ::new()
+                        .append("You feel")
+                        .colour(get_hunger_colour(hunger_clock.state))
+                        .append_n("weak with hunger")
+                        .colour(WHITE)
+                        .period()
+                        .log(),
+                HungerState::Fainting =>
+                    gamelog::Logger
+                        ::new()
+                        .append("You feel")
+                        .colour(get_hunger_colour(hunger_clock.state))
+                        .append_n("hungry enough to faint")
+                        .colour(WHITE)
+                        .period()
+                        .log(),
+                _ =>
+                    gamelog::Logger
+                        ::new()
+                        .colour(get_hunger_colour(hunger_clock.state))
+                        .append_n("You can't go on without food!")
+                        .log(),
             }
         }
     }

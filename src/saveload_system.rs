@@ -1,13 +1,13 @@
 use super::components::*;
 use specs::error::NoError;
 use specs::prelude::*;
-use specs::saveload::{DeserializeComponents, MarkedBuilder, SerializeComponents, SimpleMarker, SimpleMarkerAllocator};
+use specs::saveload::{ DeserializeComponents, MarkedBuilder, SerializeComponents, SimpleMarker, SimpleMarkerAllocator };
 use std::fs;
 use std::fs::File;
 use std::path::Path;
 
 macro_rules! serialize_individually {
-    ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
+    ($ecs:expr, $ser:expr, $data:expr, $($type:ty),*) => {
         $(
         SerializeComponents::<NoError, SimpleMarker<SerializeMe>>::serialize(
             &( $ecs.read_storage::<$type>(), ),
@@ -28,8 +28,11 @@ pub fn save_game(ecs: &mut World) {
     // Create helper
     let mapcopy = ecs.get_mut::<super::map::Map>().unwrap().clone();
     let dungeon_master = ecs.get_mut::<super::map::MasterDungeonMap>().unwrap().clone();
-    let savehelper =
-        ecs.create_entity().with(SerializationHelper { map: mapcopy }).marked::<SimpleMarker<SerializeMe>>().build();
+    let savehelper = ecs
+        .create_entity()
+        .with(SerializationHelper { map: mapcopy })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
     let savehelper2 = ecs
         .create_entity()
         .with(DMSerializationHelper {
@@ -138,7 +141,7 @@ pub fn does_save_exist() -> bool {
 }
 
 macro_rules! deserialize_individually {
-    ($ecs:expr, $de:expr, $data:expr, $( $type:ty),*) => {
+    ($ecs:expr, $de:expr, $data:expr, $($type:ty),*) => {
         $(
         DeserializeComponents::<NoError, _>::deserialize(
             &mut ( &mut $ecs.write_storage::<$type>(), ),

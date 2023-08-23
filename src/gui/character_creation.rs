@@ -1,10 +1,21 @@
-use super::{gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State};
+use super::{ gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State };
 use crate::config::entity::NORMAL_SPEED;
 use crate::{
-    raws, Attribute, Energy, HasAncestry, HasClass, KnownSpell, KnownSpells, Pool, Skill, Skills, Telepath, BUC,
+    raws,
+    Attribute,
+    Energy,
+    HasAncestry,
+    HasClass,
+    KnownSpell,
+    KnownSpells,
+    Pool,
+    Skill,
+    Skills,
+    Telepath,
+    BUC,
 };
 use rltk::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
 use std::collections::HashMap;
 
@@ -79,8 +90,14 @@ lazy_static! {
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum CharCreateResult {
-    NoSelection { ancestry: Ancestry, class: Class },
-    Selected { ancestry: Ancestry, class: Class },
+    NoSelection {
+        ancestry: Ancestry,
+        class: Class,
+    },
+    Selected {
+        ancestry: Ancestry,
+        class: Class,
+    },
 }
 
 /// Handles the player character creation screen.
@@ -177,20 +194,45 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
         }
 
         match ctx.key {
-            None => return CharCreateResult::NoSelection { ancestry, class },
-            Some(key) => match key {
-                VirtualKeyCode::Escape => return CharCreateResult::Selected { ancestry: Ancestry::NULL, class },
-                VirtualKeyCode::Return => return CharCreateResult::Selected { ancestry, class },
-                VirtualKeyCode::H => return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class },
-                VirtualKeyCode::E => return CharCreateResult::NoSelection { ancestry: Ancestry::Elf, class },
-                VirtualKeyCode::D => return CharCreateResult::NoSelection { ancestry: Ancestry::Dwarf, class },
-                VirtualKeyCode::C => return CharCreateResult::NoSelection { ancestry: Ancestry::Catfolk, class },
-                VirtualKeyCode::F => return CharCreateResult::NoSelection { ancestry, class: Class::Fighter },
-                VirtualKeyCode::R => return CharCreateResult::NoSelection { ancestry, class: Class::Rogue },
-                VirtualKeyCode::W => return CharCreateResult::NoSelection { ancestry, class: Class::Wizard },
-                VirtualKeyCode::V => return CharCreateResult::NoSelection { ancestry, class: Class::Villager },
-                _ => return CharCreateResult::NoSelection { ancestry, class },
-            },
+            None => {
+                return CharCreateResult::NoSelection { ancestry, class };
+            }
+            Some(key) =>
+                match key {
+                    VirtualKeyCode::Escape => {
+                        return CharCreateResult::Selected { ancestry: Ancestry::NULL, class };
+                    }
+                    VirtualKeyCode::Return => {
+                        return CharCreateResult::Selected { ancestry, class };
+                    }
+                    VirtualKeyCode::H => {
+                        return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class };
+                    }
+                    VirtualKeyCode::E => {
+                        return CharCreateResult::NoSelection { ancestry: Ancestry::Elf, class };
+                    }
+                    VirtualKeyCode::D => {
+                        return CharCreateResult::NoSelection { ancestry: Ancestry::Dwarf, class };
+                    }
+                    VirtualKeyCode::C => {
+                        return CharCreateResult::NoSelection { ancestry: Ancestry::Catfolk, class };
+                    }
+                    VirtualKeyCode::F => {
+                        return CharCreateResult::NoSelection { ancestry, class: Class::Fighter };
+                    }
+                    VirtualKeyCode::R => {
+                        return CharCreateResult::NoSelection { ancestry, class: Class::Rogue };
+                    }
+                    VirtualKeyCode::W => {
+                        return CharCreateResult::NoSelection { ancestry, class: Class::Wizard };
+                    }
+                    VirtualKeyCode::V => {
+                        return CharCreateResult::NoSelection { ancestry, class: Class::Villager };
+                    }
+                    _ => {
+                        return CharCreateResult::NoSelection { ancestry, class };
+                    }
+                }
         }
     }
     return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class: Class::Fighter };
@@ -214,29 +256,23 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
         Ancestry::Human => {}
         Ancestry::Dwarf => {
             renderables
-                .insert(
-                    *player,
-                    Renderable {
-                        glyph: rltk::to_cp437('h'),
-                        fg: RGB::named(rltk::RED),
-                        bg: RGB::named(rltk::BLACK),
-                        render_order: 0,
-                    },
-                )
+                .insert(*player, Renderable {
+                    glyph: rltk::to_cp437('h'),
+                    fg: RGB::named(rltk::RED),
+                    bg: RGB::named(rltk::BLACK),
+                    render_order: 0,
+                })
                 .expect("Unable to insert renderable component");
             *player_skills.skills.entry(Skill::Defence).or_insert(0) += 1;
         }
         Ancestry::Elf => {
             renderables
-                .insert(
-                    *player,
-                    Renderable {
-                        glyph: rltk::to_cp437('@'),
-                        fg: RGB::named(rltk::GREEN),
-                        bg: RGB::named(rltk::BLACK),
-                        render_order: 0,
-                    },
-                )
+                .insert(*player, Renderable {
+                    glyph: rltk::to_cp437('@'),
+                    fg: RGB::named(rltk::GREEN),
+                    bg: RGB::named(rltk::BLACK),
+                    render_order: 0,
+                })
                 .expect("Unable to insert renderable component");
             let mut telepaths = ecs.write_storage::<Telepath>();
             telepaths
@@ -267,43 +303,36 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
         if class == Class::Wizard {
             let mut spells = ecs.write_storage::<KnownSpells>();
             spells
-                .insert(
-                    player,
-                    KnownSpells { spells: vec![KnownSpell { display_name: "zap".to_string(), mana_cost: 1 }] },
-                )
+                .insert(player, KnownSpells {
+                    spells: vec![KnownSpell { display_name: "zap".to_string(), mana_cost: 1 }],
+                })
                 .expect("Unable to insert known spells component");
         }
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let mut attributes = ecs.write_storage::<Attributes>();
         let (str, dex, con, int, wis, cha) = get_attribute_rolls(&mut rng, class, ancestry);
         attributes
-            .insert(
-                player,
-                Attributes {
-                    strength: Attribute { base: str, modifiers: 0, bonus: attr_bonus(str) },
-                    dexterity: Attribute { base: dex, modifiers: 0, bonus: attr_bonus(dex) },
-                    constitution: Attribute { base: con, modifiers: 0, bonus: attr_bonus(con) },
-                    intelligence: Attribute { base: int, modifiers: 0, bonus: attr_bonus(int) },
-                    wisdom: Attribute { base: wis, modifiers: 0, bonus: attr_bonus(wis) },
-                    charisma: Attribute { base: cha, modifiers: 0, bonus: attr_bonus(cha) },
-                },
-            )
+            .insert(player, Attributes {
+                strength: Attribute { base: str, modifiers: 0, bonus: attr_bonus(str) },
+                dexterity: Attribute { base: dex, modifiers: 0, bonus: attr_bonus(dex) },
+                constitution: Attribute { base: con, modifiers: 0, bonus: attr_bonus(con) },
+                intelligence: Attribute { base: int, modifiers: 0, bonus: attr_bonus(int) },
+                wisdom: Attribute { base: wis, modifiers: 0, bonus: attr_bonus(wis) },
+                charisma: Attribute { base: cha, modifiers: 0, bonus: attr_bonus(cha) },
+            })
             .expect("Unable to insert attributes component");
 
         let mut pools = ecs.write_storage::<Pools>();
         pools
-            .insert(
-                player,
-                Pools {
-                    hit_points: Pool { current: 8 + attr_bonus(con), max: 8 + attr_bonus(con) },
-                    mana: Pool { current: 1 + attr_bonus(int), max: 1 + attr_bonus(int) },
-                    xp: 0,
-                    level: 1,
-                    bac: 10,
-                    weight: 0.0,
-                    god: false,
-                },
-            )
+            .insert(player, Pools {
+                hit_points: Pool { current: 8 + attr_bonus(con), max: 8 + attr_bonus(con) },
+                mana: Pool { current: 1 + attr_bonus(int), max: 1 + attr_bonus(int) },
+                xp: 0,
+                level: 1,
+                bac: 10,
+                weight: 0.0,
+                god: false,
+            })
             .expect("Unable to insert pools component");
     }
 
@@ -318,7 +347,7 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
             item,
             buc,
             raws::SpawnType::Equipped { by: player },
-            0,
+            0
         );
     }
     for item in starts_with.1.iter() {
@@ -328,7 +357,7 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
             item,
             None,
             raws::SpawnType::Carried { by: player },
-            0,
+            0
         );
     }
 }
@@ -343,7 +372,7 @@ fn get_starting_inventory(class: Class, rng: &mut RandomNumberGenerator) -> (Vec
             equipped = vec![
                 "equip_shortsword".to_string(),
                 "equip_body_ringmail".to_string(),
-                "equip_mediumshield".to_string(),
+                "equip_mediumshield".to_string()
             ];
         }
         Class::Rogue => {
@@ -371,7 +400,7 @@ fn pick_random_table_item(
     push_to: &mut Vec<String>,
     table: &'static str,
     dice: &'static str,
-    difficulty: Option<i32>,
+    difficulty: Option<i32>
 ) {
     let (n, d, m) = raws::parse_dice_string(dice);
     for _i in 0..rng.roll_dice(n, d) + m {

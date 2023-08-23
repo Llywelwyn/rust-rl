@@ -1,4 +1,4 @@
-use crate::{gamelog, gui::renderable_colour, Name, Quips, Renderable, TakingTurn, Viewshed};
+use crate::{ gamelog, gui::renderable_colour, Name, Quips, Renderable, TakingTurn, Viewshed };
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -26,7 +26,8 @@ impl<'a> System<'a> for QuipSystem {
                 } else {
                     (rng.roll_dice(1, quip.available.len() as i32) - 1) as usize
                 };
-                gamelog::Logger::new()
+                gamelog::Logger
+                    ::new()
                     .append("The")
                     .colour(renderable_colour(&renderables, entity))
                     .append(&name.name)

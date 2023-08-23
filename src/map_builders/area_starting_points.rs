@@ -1,4 +1,4 @@
-use super::{BuilderMap, MetaMapBuilder, Position};
+use super::{ BuilderMap, MetaMapBuilder, Position };
 use rltk::RandomNumberGenerator;
 
 #[allow(dead_code)]
@@ -37,14 +37,26 @@ impl AreaStartingPosition {
         let seed_y;
 
         match self.x {
-            XStart::LEFT => seed_x = 1,
-            XStart::CENTRE => seed_x = build_data.map.width / 2,
-            XStart::RIGHT => seed_x = build_data.map.width - 2,
+            XStart::LEFT => {
+                seed_x = 1;
+            }
+            XStart::CENTRE => {
+                seed_x = build_data.map.width / 2;
+            }
+            XStart::RIGHT => {
+                seed_x = build_data.map.width - 2;
+            }
         }
         match self.y {
-            YStart::TOP => seed_y = 1,
-            YStart::CENTRE => seed_y = build_data.map.height / 2,
-            YStart::BOTTOM => seed_y = build_data.map.height - 2,
+            YStart::TOP => {
+                seed_y = 1;
+            }
+            YStart::CENTRE => {
+                seed_y = build_data.map.height / 2;
+            }
+            YStart::BOTTOM => {
+                seed_y = build_data.map.height - 2;
+            }
         }
 
         let mut available_floors: Vec<(usize, f32)> = Vec::new();
@@ -53,8 +65,8 @@ impl AreaStartingPosition {
                 available_floors.push((
                     idx,
                     rltk::DistanceAlg::PythagorasSquared.distance2d(
-                        rltk::Point::new(idx as i32 % build_data.map.width, idx as i32 / build_data.map.width),
-                        rltk::Point::new(seed_x, seed_y),
+                        rltk::Point::new((idx as i32) % build_data.map.width, (idx as i32) / build_data.map.width),
+                        rltk::Point::new(seed_x, seed_y)
                     ),
                 ));
             }
@@ -65,8 +77,8 @@ impl AreaStartingPosition {
 
         available_floors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 
-        let start_x = available_floors[0].0 as i32 % build_data.map.width;
-        let start_y = available_floors[0].0 as i32 / build_data.map.width;
+        let start_x = (available_floors[0].0 as i32) % build_data.map.width;
+        let start_y = (available_floors[0].0 as i32) / build_data.map.width;
 
         build_data.starting_position = Some(Position { x: start_x, y: start_y });
     }

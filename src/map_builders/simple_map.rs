@@ -1,4 +1,4 @@
-use super::{BuilderMap, InitialMapBuilder, Rect};
+use super::{ BuilderMap, InitialMapBuilder, Rect };
 use rltk::RandomNumberGenerator;
 
 pub struct SimpleMapBuilder {
@@ -22,9 +22,9 @@ impl SimpleMapBuilder {
         let (max_rooms, min_size, max_size);
 
         if let Some(room_params) = room_params {
-            (max_rooms, min_size, max_size) = (room_params.0, room_params.1, room_params.2)
+            (max_rooms, min_size, max_size) = (room_params.0, room_params.1, room_params.2);
         } else {
-            (max_rooms, min_size, max_size) = (DEFAULT_MAX_ROOMS, DEFAULT_MIN_SIZE, DEFAULT_MAX_SIZE)
+            (max_rooms, min_size, max_size) = (DEFAULT_MAX_ROOMS, DEFAULT_MIN_SIZE, DEFAULT_MAX_SIZE);
         }
 
         Box::new(SimpleMapBuilder { room_params: (max_rooms, min_size, max_size) })
@@ -42,7 +42,7 @@ impl SimpleMapBuilder {
             let mut ok = true;
             for other_room in rooms.iter() {
                 if new_room.intersect(other_room) {
-                    ok = false
+                    ok = false;
                 }
             }
             if ok {

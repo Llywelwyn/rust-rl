@@ -1,4 +1,4 @@
-use super::{BuilderMap, MetaMapBuilder, TileType};
+use super::{ BuilderMap, MetaMapBuilder, TileType };
 use rltk::RandomNumberGenerator;
 
 pub struct CullUnreachable {}
@@ -25,7 +25,7 @@ impl CullUnreachable {
             build_data.map.height as usize,
             &map_starts,
             &build_data.map,
-            1000.0,
+            1000.0
         );
         for (i, tile) in build_data.map.tiles.iter_mut().enumerate() {
             if *tile == TileType::Floor {

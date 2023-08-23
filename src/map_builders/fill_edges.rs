@@ -1,4 +1,4 @@
-use super::{BuilderMap, MetaMapBuilder, TileType};
+use super::{ BuilderMap, MetaMapBuilder, TileType };
 use rltk::RandomNumberGenerator;
 
 pub struct FillEdges {

@@ -1,6 +1,16 @@
 use crate::{
-    raws::Reaction, Chasing, Faction, HasAncestry, Map, Mind, Position, TakingTurn, Telepath, Viewshed,
-    WantsToApproach, WantsToFlee,
+    raws::Reaction,
+    Chasing,
+    Faction,
+    HasAncestry,
+    Map,
+    Mind,
+    Position,
+    TakingTurn,
+    Telepath,
+    Viewshed,
+    WantsToApproach,
+    WantsToFlee,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -70,10 +80,10 @@ impl<'a> System<'a> for VisibleAI {
                 }
             }
             reactions.sort_by(|(a, _, _), (b, _, _)| {
-                let (a_x, a_y) = (a % map.width as usize, a / map.width as usize);
+                let (a_x, a_y) = (a % (map.width as usize), a / (map.width as usize));
                 let dist_a = DistanceAlg::PythagorasSquared.distance2d(Point::new(a_x, a_y), Point::new(pos.x, pos.y));
                 let dist_a_estimate = dist_a as i32;
-                let (b_x, b_y) = (b % map.width as usize, b / map.width as usize);
+                let (b_x, b_y) = (b % (map.width as usize), b / (map.width as usize));
                 let dist_b = DistanceAlg::PythagorasSquared.distance2d(Point::new(b_x, b_y), Point::new(pos.x, pos.y));
                 let dist_b_estimate = dist_b as i32;
                 return dist_b_estimate.cmp(&dist_a_estimate);
@@ -110,7 +120,7 @@ fn evaluate(
     ancestries: &ReadStorage<HasAncestry>,
     factions: &ReadStorage<Faction>,
     reactions: &mut Vec<(usize, Reaction, Entity)>,
-    minds: Option<&ReadStorage<Mind>>,
+    minds: Option<&ReadStorage<Mind>>
 ) {
     crate::spatial::for_each_tile_content(idx, |other_entity| {
         let mut check = true;
@@ -129,7 +139,7 @@ fn evaluate(
                     other_entity,
                     &factions,
                     &ancestries,
-                    &crate::raws::RAWS.lock().unwrap(),
+                    &crate::raws::RAWS.lock().unwrap()
                 ),
                 other_entity,
             ));

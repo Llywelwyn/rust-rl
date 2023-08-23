@@ -1,4 +1,4 @@
-use super::{append_entry, LogFragment};
+use super::{ append_entry, LogFragment };
 use crate::BUC;
 use rltk::prelude::*;
 

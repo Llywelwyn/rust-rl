@@ -1,4 +1,4 @@
-use super::{spawner, BuilderMap, MetaMapBuilder, TileType};
+use super::{ spawner, BuilderMap, MetaMapBuilder, TileType };
 use rltk::RandomNumberGenerator;
 use std::collections::HashMap;
 
@@ -47,7 +47,7 @@ impl VoronoiSpawning {
                 rng,
                 area.1,
                 &mut build_data.spawn_list,
-                build_data.initial_player_level,
+                build_data.initial_player_level
             );
         }
     }

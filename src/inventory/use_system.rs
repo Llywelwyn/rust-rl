@@ -1,6 +1,11 @@
 use crate::{
-    effects::{add_effect, aoe_tiles, EffectType, Targets},
-    EquipmentChanged, IdentifiedItem, Map, Name, WantsToUseItem, AOE,
+    effects::{ add_effect, aoe_tiles, EffectType, Targets },
+    EquipmentChanged,
+    IdentifiedItem,
+    Map,
+    Name,
+    WantsToUseItem,
+    AOE,
 };
 use specs::prelude::*;
 
@@ -32,20 +37,16 @@ impl<'a> System<'a> for ItemUseSystem {
                     .expect("Unable to insert");
             }
             // Call the effects system
-            add_effect(
-                Some(entity),
-                EffectType::ItemUse { item: useitem.item },
-                match useitem.target {
-                    None => Targets::Entity { target: *player_entity },
-                    Some(target) => {
-                        if let Some(aoe) = aoe.get(useitem.item) {
-                            Targets::TileList { targets: aoe_tiles(&*map, target, aoe.radius) }
-                        } else {
-                            Targets::Tile { target: map.xy_idx(target.x, target.y) }
-                        }
+            add_effect(Some(entity), EffectType::ItemUse { item: useitem.item }, match useitem.target {
+                None => Targets::Entity { target: *player_entity },
+                Some(target) => {
+                    if let Some(aoe) = aoe.get(useitem.item) {
+                        Targets::TileList { targets: aoe_tiles(&*map, target, aoe.radius) }
+                    } else {
+                        Targets::Tile { target: map.xy_idx(target.x, target.y) }
                     }
-                },
-            );
+                }
+            });
         }
         wants_use.clear();
     }

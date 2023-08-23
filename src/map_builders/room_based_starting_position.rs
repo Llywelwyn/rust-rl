@@ -1,4 +1,4 @@
-use super::{BuilderMap, MetaMapBuilder, Position};
+use super::{ BuilderMap, MetaMapBuilder, Position };
 use rltk::RandomNumberGenerator;
 
 pub struct RoomBasedStartingPosition {}

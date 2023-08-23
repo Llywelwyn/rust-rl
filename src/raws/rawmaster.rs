@@ -1,4 +1,4 @@
-use super::{Raws, Reaction};
+use super::{ Raws, Reaction };
 use crate::components::*;
 use crate::config::entity;
 use crate::gamesystem::*;
@@ -8,8 +8,8 @@ use crate::LOG_SPAWNING;
 use regex::Regex;
 use rltk::prelude::*;
 use specs::prelude::*;
-use specs::saveload::{MarkedBuilder, SimpleMarker};
-use std::collections::{HashMap, HashSet};
+use specs::saveload::{ MarkedBuilder, SimpleMarker };
+use std::collections::{ HashMap, HashSet };
 
 /// Applies effects to the entity - e.g. "healing: 1d4+1", where
 ///  effects are components on the entity with varying parameters.
@@ -103,9 +103,16 @@ macro_rules! apply_flags {
 }
 
 pub enum SpawnType {
-    AtPosition { x: i32, y: i32 },
-    Equipped { by: Entity },
-    Carried { by: Entity },
+    AtPosition {
+        x: i32,
+        y: i32,
+    },
+    Equipped {
+        by: Entity,
+    },
+    Carried {
+        by: Entity,
+    },
 }
 
 pub struct RawMaster {
@@ -164,27 +171,24 @@ impl RawMaster {
             self.table_index.insert(table.id.clone(), i);
             used_names.insert(table.id.clone());
             for entry in table.table.iter() {
-                check_for_unspecified_entity(&used_names, &entry.id)
+                check_for_unspecified_entity(&used_names, &entry.id);
             }
         }
         for (i, loot_table) in self.raws.loot_tables.iter().enumerate() {
             check_for_duplicate_entries(&used_names, &loot_table.id);
             self.loot_index.insert(loot_table.id.clone(), i);
             for entry in loot_table.table.iter() {
-                check_for_unspecified_entity(&used_names, &entry.id)
+                check_for_unspecified_entity(&used_names, &entry.id);
             }
         }
         for faction in self.raws.factions.iter() {
             let mut reactions: HashMap<String, Reaction> = HashMap::new();
             for other in faction.responses.iter() {
-                reactions.insert(
-                    other.0.clone(),
-                    match other.1.as_str() {
-                        "flee" => Reaction::Flee,
-                        "attack" => Reaction::Attack,
-                        _ => Reaction::Ignore,
-                    },
-                );
+                reactions.insert(other.0.clone(), match other.1.as_str() {
+                    "flee" => Reaction::Flee,
+                    "attack" => Reaction::Attack,
+                    _ => Reaction::Ignore,
+                });
             }
             self.faction_index.insert(faction.id.clone(), reactions);
         }
@@ -213,7 +217,7 @@ pub fn spawn_named_entity(
     key: &str,
     buc: Option<BUC>,
     pos: SpawnType,
-    map_difficulty: i32,
+    map_difficulty: i32
 ) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         return spawn_named_item(raws, ecs, key, buc, pos);
@@ -230,7 +234,7 @@ pub fn spawn_named_item(
     ecs: &mut World,
     key: &str,
     buc: Option<BUC>,
-    pos: SpawnType,
+    pos: SpawnType
 ) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         let item_template = &raws.raws.items[raws.item_index[key]];
@@ -245,18 +249,10 @@ pub fn spawn_named_item(
         let player_entity = ecs.fetch::<Entity>();
         let known_beatitude = match pos {
             SpawnType::Equipped { by } => {
-                if by == *player_entity {
-                    true
-                } else {
-                    false
-                }
+                if by == *player_entity { true } else { false }
             }
             SpawnType::Carried { by } => {
-                if by == *player_entity {
-                    true
-                } else {
-                    false
-                }
+                if by == *player_entity { true } else { false }
             }
             _ => false,
         };
@@ -310,25 +306,25 @@ pub fn spawn_named_item(
                         let singular = scroll_names[&item_template.name.name].clone();
                         let mut plural = singular.clone();
                         plural += "s";
-                        eb = eb.with(ObfuscatedName { name: singular, plural: plural })
+                        eb = eb.with(ObfuscatedName { name: singular, plural: plural });
                     }
                     "potion" => {
                         let singular = potion_names[&item_template.name.name].clone();
                         let mut plural = singular.clone();
                         plural += "s";
-                        eb = eb.with(ObfuscatedName { name: singular, plural: plural })
+                        eb = eb.with(ObfuscatedName { name: singular, plural: plural });
                     }
                     "wand" => {
                         let singular = wand_names[&item_template.name.name].clone();
                         let mut plural = singular.clone();
                         plural += "s";
-                        eb = eb.with(ObfuscatedName { name: singular, plural: plural })
+                        eb = eb.with(ObfuscatedName { name: singular, plural: plural });
                     }
                     _ => {
                         let singular = magic_item.naming.clone();
                         let mut plural = singular.clone();
                         plural += "s";
-                        eb = eb.with(ObfuscatedName { name: singular, plural: plural })
+                        eb = eb.with(ObfuscatedName { name: singular, plural: plural });
                     }
                 }
             }
@@ -362,7 +358,7 @@ pub fn spawn_named_mob(
     ecs: &mut World,
     key: &str,
     pos: SpawnType,
-    map_difficulty: i32,
+    map_difficulty: i32
 ) -> Option<Entity> {
     if raws.mob_index.contains_key(key) {
         let mob_template = &raws.raws.mobs[raws.mob_index[key]];
@@ -462,7 +458,7 @@ pub fn spawn_named_mob(
             mob_level += (player_level - base_mob_level) / 4;
         }
         // If the resulting mob level is more than 1.5x the base, lower it to that number
-        mob_level = i32::min(mob_level, (1.5 * base_mob_level as f32).trunc() as i32);
+        mob_level = i32::min(mob_level, (1.5 * (base_mob_level as f32)).trunc() as i32);
 
         // Should really use existing RNG here
         let mut rng = rltk::RandomNumberGenerator::new();
@@ -549,10 +545,20 @@ pub fn spawn_named_mob(
         }
 
         if LOG_SPAWNING {
-            rltk::console::log(format!(
-                "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level]), worth {} XP",
-                &mob_template.name, mob_hp, mob_mana, mob_bac, mob_level, base_mob_level, map_difficulty, player_level, xp_value
-            ));
+            rltk::console::log(
+                format!(
+                    "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level]), worth {} XP",
+                    &mob_template.name,
+                    mob_hp,
+                    mob_mana,
+                    mob_bac,
+                    mob_level,
+                    base_mob_level,
+                    map_difficulty,
+                    player_level,
+                    xp_value
+                )
+            );
         }
 
         let new_mob = eb.build();
@@ -605,11 +611,15 @@ fn spawn_position<'a>(pos: SpawnType, new_entity: EntityBuilder<'a>, tag: &str, 
     let mut eb = new_entity;
 
     match pos {
-        SpawnType::AtPosition { x, y } => eb = eb.with(Position { x, y }),
-        SpawnType::Carried { by } => eb = eb.with(InBackpack { owner: by }),
+        SpawnType::AtPosition { x, y } => {
+            eb = eb.with(Position { x, y });
+        }
+        SpawnType::Carried { by } => {
+            eb = eb.with(InBackpack { owner: by });
+        }
         SpawnType::Equipped { by } => {
             let slot = find_slot_for_equippable_item(tag, raws);
-            eb = eb.with(Equipped { owner: by, slot })
+            eb = eb.with(Equipped { owner: by, slot });
         }
     }
 
@@ -641,8 +651,7 @@ pub fn table_by_name(raws: &RawMaster, key: &str, optional_difficulty: Option<i3
 
         use super::SpawnTableEntry;
 
-        let available_options: Vec<&SpawnTableEntry> = spawn_table
-            .table
+        let available_options: Vec<&SpawnTableEntry> = spawn_table.table
             .iter()
             .filter(|entry| entry.difficulty >= lower_bound && entry.difficulty <= upper_bound)
             .collect();
@@ -656,10 +665,15 @@ pub fn table_by_name(raws: &RawMaster, key: &str, optional_difficulty: Option<i3
             return rt;
         }
     }
-    rltk::console::log(format!(
-        "DEBUGINFO: Something went wrong when trying to spawn {} @ map difficulty {} [upper bound: {}, lower bound: {}]. Returned debug entry.",
-        key, difficulty, upper_bound, lower_bound
-    ));
+    rltk::console::log(
+        format!(
+            "DEBUGINFO: Something went wrong when trying to spawn {} @ map difficulty {} [upper bound: {}, lower bound: {}]. Returned debug entry.",
+            key,
+            difficulty,
+            upper_bound,
+            lower_bound
+        )
+    );
     return RandomTable::new().add("debug", 1);
 }
 
@@ -693,14 +707,30 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
     if let Some(flags) = &item.flags {
         for flag in flags {
             match flag.as_str() {
-                "EQUIP_MELEE" => return EquipmentSlot::Melee,
-                "EQUIP_SHIELD" => return EquipmentSlot::Shield,
-                "EQUIP_BODY" => return EquipmentSlot::Body,
-                "EQUIP_HEAD" => return EquipmentSlot::Head,
-                "EQUIP_FEET" => return EquipmentSlot::Feet,
-                "EQUIP_NECK" => return EquipmentSlot::Neck,
-                "EQUIP_BACK" => return EquipmentSlot::Back,
-                "EQUIP_HANDS" => return EquipmentSlot::Hands,
+                "EQUIP_MELEE" => {
+                    return EquipmentSlot::Melee;
+                }
+                "EQUIP_SHIELD" => {
+                    return EquipmentSlot::Shield;
+                }
+                "EQUIP_BODY" => {
+                    return EquipmentSlot::Body;
+                }
+                "EQUIP_HEAD" => {
+                    return EquipmentSlot::Head;
+                }
+                "EQUIP_FEET" => {
+                    return EquipmentSlot::Feet;
+                }
+                "EQUIP_NECK" => {
+                    return EquipmentSlot::Neck;
+                }
+                "EQUIP_BACK" => {
+                    return EquipmentSlot::Back;
+                }
+                "EQUIP_HANDS" => {
+                    return EquipmentSlot::Hands;
+                }
                 _ => {}
             }
         }
@@ -745,8 +775,12 @@ pub fn get_mob_spawn_type(raws: &RawMaster, key: &str) -> SpawnsAs {
         if let Some(flags) = &mob_template.flags {
             for flag in flags {
                 match flag.as_str() {
-                    "SMALL_GROUP" => return SpawnsAs::SmallGroup,
-                    "LARGE_GROUP" => return SpawnsAs::LargeGroup,
+                    "SMALL_GROUP" => {
+                        return SpawnsAs::SmallGroup;
+                    }
+                    "LARGE_GROUP" => {
+                        return SpawnsAs::LargeGroup;
+                    }
                     _ => {}
                 }
             }
@@ -761,29 +795,27 @@ pub fn get_mob_spawn_amount(rng: &mut RandomNumberGenerator, spawn_type: &Spawns
         SpawnsAs::Single => 1,
         // Small groups either spawn alone or as a small group (2-4).
         SpawnsAs::SmallGroup => {
-            if rng.roll_dice(1, 2) == 1 {
-                1
-            } else {
-                4
-            }
+            if rng.roll_dice(1, 2) == 1 { 1 } else { 4 }
         }
         // Large groups either spawn in a small group or as a large group (2-11).
         SpawnsAs::LargeGroup => {
-            if rng.roll_dice(1, 2) == 1 {
-                4
-            } else {
-                11
-            }
+            if rng.roll_dice(1, 2) == 1 { 4 } else { 11 }
         }
     };
     let roll = if n == 1 { 1 } else { rng.roll_dice(2, n) };
     // We want to constrain group sizes depending on player's level, so
     // we don't get large groups of mobs when the player is unequipped.
     match player_level {
-        0..=2 => return i32::max(1, roll / 4),
-        3..=4 => return i32::max(1, roll / 2),
-        _ => return roll,
-    };
+        0..=2 => {
+            return i32::max(1, roll / 4);
+        }
+        3..=4 => {
+            return i32::max(1, roll / 2);
+        }
+        _ => {
+            return roll;
+        }
+    }
 }
 
 pub fn get_scroll_tags() -> Vec<String> {
@@ -879,7 +911,7 @@ pub fn get_reactions(
     other_entity: Entity,
     factions: &ReadStorage<Faction>,
     ancestries: &ReadStorage<HasAncestry>,
-    raws: &RawMaster,
+    raws: &RawMaster
 ) -> Reaction {
     if let Some(this_ancestry) = ancestries.get(this_entity) {
         if let Some(other_ancestry) = ancestries.get(other_entity) {
@@ -899,12 +931,24 @@ pub fn get_reactions(
 
 fn get_ancestry_string(ancestry: Ancestry) -> &'static str {
     match ancestry {
-        Ancestry::Human => return "human",
-        Ancestry::Elf => return "elf",
-        Ancestry::Dwarf => return "dwarf",
-        Ancestry::Catfolk => return "catfolk",
-        Ancestry::Gnome => return "gnome",
-        Ancestry::NULL => return "NULL",
+        Ancestry::Human => {
+            return "human";
+        }
+        Ancestry::Elf => {
+            return "elf";
+        }
+        Ancestry::Dwarf => {
+            return "dwarf";
+        }
+        Ancestry::Catfolk => {
+            return "catfolk";
+        }
+        Ancestry::Gnome => {
+            return "gnome";
+        }
+        Ancestry::NULL => {
+            return "NULL";
+        }
     }
 }
 

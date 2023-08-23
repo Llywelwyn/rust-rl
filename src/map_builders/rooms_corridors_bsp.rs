@@ -1,4 +1,4 @@
-use super::{draw_corridor, BuilderMap, MetaMapBuilder, Rect};
+use super::{ draw_corridor, BuilderMap, MetaMapBuilder, Rect };
 use rltk::RandomNumberGenerator;
 
 pub struct BspCorridors {}

@@ -1,8 +1,15 @@
 use super::{
-    effects::{add_effect, aoe_tiles, EffectType, Targets},
+    effects::{ add_effect, aoe_tiles, EffectType, Targets },
     gamelog,
     gui::renderable_colour,
-    EntityMoved, EntryTrigger, Map, Name, Point, Position, Renderable, AOE,
+    EntityMoved,
+    EntryTrigger,
+    Map,
+    Name,
+    Point,
+    Position,
+    Renderable,
+    AOE,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -34,7 +41,8 @@ impl<'a> System<'a> for TriggerSystem {
                         Some(_trigger) => {
                             if map.visible_tiles[idx] == true {
                                 if let Some(name) = names.get(entity_id) {
-                                    gamelog::Logger::new()
+                                    gamelog::Logger
+                                        ::new()
                                         .append("The")
                                         .colour(renderable_colour(&renderables, entity_id))
                                         .append(&name.name)
@@ -43,17 +51,15 @@ impl<'a> System<'a> for TriggerSystem {
                                         .log();
                                 }
                             }
-                            add_effect(
-                                Some(entity_id),
-                                EffectType::TriggerFire { trigger: entity_id },
-                                if let Some(aoe) = aoes.get(entity_id) {
-                                    Targets::TileList {
-                                        targets: aoe_tiles(&*map, Point::new(pos.x, pos.y), aoe.radius),
-                                    }
-                                } else {
-                                    Targets::Tile { target: idx }
-                                },
-                            );
+                            add_effect(Some(entity_id), EffectType::TriggerFire { trigger: entity_id }, if
+                                let Some(aoe) = aoes.get(entity_id)
+                            {
+                                Targets::TileList {
+                                    targets: aoe_tiles(&*map, Point::new(pos.x, pos.y), aoe.radius),
+                                }
+                            } else {
+                                Targets::Tile { target: idx }
+                            });
                         }
                     }
                 }

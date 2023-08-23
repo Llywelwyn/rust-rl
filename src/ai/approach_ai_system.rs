@@ -1,4 +1,4 @@
-use crate::{EntityMoved, Map, Position, TakingTurn, Telepath, Viewshed, WantsToApproach};
+use crate::{ EntityMoved, Map, Position, TakingTurn, Telepath, Viewshed, WantsToApproach };
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -29,19 +29,23 @@ impl<'a> System<'a> for ApproachAI {
             entities,
         ) = data;
         let mut turn_done: Vec<Entity> = Vec::new();
-        for (entity, mut pos, approach, mut viewshed, _turn) in
-            (&entities, &mut positions, &wants_to_approach, &mut viewsheds, &turns).join()
-        {
+        for (entity, mut pos, approach, mut viewshed, _turn) in (
+            &entities,
+            &mut positions,
+            &wants_to_approach,
+            &mut viewsheds,
+            &turns,
+        ).join() {
             turn_done.push(entity);
             let path = a_star_search(
                 map.xy_idx(pos.x, pos.y) as i32,
                 map.xy_idx(approach.idx % map.width, approach.idx / map.width) as i32,
-                &mut *map,
+                &mut *map
             );
             if path.success && path.steps.len() > 1 {
                 let idx = map.xy_idx(pos.x, pos.y);
-                pos.x = path.steps[1] as i32 % map.width;
-                pos.y = path.steps[1] as i32 / map.width;
+                pos.x = (path.steps[1] as i32) % map.width;
+                pos.y = (path.steps[1] as i32) / map.width;
                 entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert EntityMoved");
                 let new_idx = map.xy_idx(pos.x, pos.y);
                 crate::spatial::move_entity(entity, idx, new_idx);

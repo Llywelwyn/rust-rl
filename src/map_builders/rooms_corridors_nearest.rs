@@ -1,4 +1,4 @@
-use super::{draw_corridor, BuilderMap, MetaMapBuilder, Rect};
+use super::{ draw_corridor, BuilderMap, MetaMapBuilder, Rect };
 use rltk::RandomNumberGenerator;
 use std::collections::HashSet;
 
@@ -43,8 +43,13 @@ impl NearestCorridors {
             if !room_distance.is_empty() {
                 room_distance.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
                 let dest_centre = rooms[room_distance[0].0].centre();
-                let corridor =
-                    draw_corridor(&mut build_data.map, room_centre.0, room_centre.1, dest_centre.0, dest_centre.1);
+                let corridor = draw_corridor(
+                    &mut build_data.map,
+                    room_centre.0,
+                    room_centre.1,
+                    dest_centre.0,
+                    dest_centre.1
+                );
                 connected.insert(i);
                 build_data.take_snapshot();
                 corridors.push(corridor);

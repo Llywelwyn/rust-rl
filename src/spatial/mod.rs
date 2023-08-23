@@ -1,4 +1,4 @@
-use crate::{tile_walkable, Map, RunState};
+use crate::{ tile_walkable, Map, RunState };
 use specs::prelude::*;
 use std::sync::Mutex;
 
@@ -94,10 +94,7 @@ pub fn is_blocked(idx: usize) -> bool {
 }
 
 /// Calls a function on every entity within a given tile idx.
-pub fn for_each_tile_content<F>(idx: usize, mut f: F)
-where
-    F: FnMut(Entity),
-{
+pub fn for_each_tile_content<F>(idx: usize, mut f: F) where F: FnMut(Entity) {
     let lock = SPATIAL_MAP.lock().unwrap();
     for entity in lock.tile_content[idx].iter() {
         f(entity.0);
@@ -107,8 +104,7 @@ where
 /// Calls a function on every entity within a given tile idx, with the
 /// added ability to return a RunState mid-calc.
 pub fn for_each_tile_content_with_runstate<F>(idx: usize, mut f: F) -> Option<RunState>
-where
-    F: FnMut(Entity) -> Option<RunState>,
+    where F: FnMut(Entity) -> Option<RunState>
 {
     let lock = SPATIAL_MAP.lock().unwrap();
     for entity in lock.tile_content[idx].iter() {
@@ -121,10 +117,7 @@ where
 
 /// Calls a function on every entity within a given tile idx, breaking if
 /// the closure ever returns false.
-pub fn for_each_tile_content_with_bool<F>(idx: usize, mut f: F)
-where
-    F: FnMut(Entity) -> bool,
-{
+pub fn for_each_tile_content_with_bool<F>(idx: usize, mut f: F) where F: FnMut(Entity) -> bool {
     let lock = SPATIAL_MAP.lock().unwrap();
     for entity in lock.tile_content[idx].iter() {
         if !f(entity.0) {

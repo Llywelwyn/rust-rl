@@ -1,9 +1,34 @@
-use super::{add_effect, get_noncursed, messages::*, particles, spatial, EffectType, Entity, Targets, World};
+use super::{ add_effect, get_noncursed, messages::*, particles, spatial, EffectType, Entity, Targets, World };
 use crate::{
-    gamelog, gui::item_colour_ecs, gui::obfuscate_name_ecs, gui::renderable_colour, Beatitude, Charges, Confusion,
-    Consumable, Destructible, Equipped, Hidden, InBackpack, InflictsDamage, Item, MagicMapper, MasterDungeonMap, Name,
-    ObfuscatedName, Player, Prop, ProvidesHealing, ProvidesIdentify, ProvidesNutrition, ProvidesRemoveCurse,
-    RandomNumberGenerator, Renderable, RunState, SingleActivation, BUC,
+    gamelog,
+    gui::item_colour_ecs,
+    gui::obfuscate_name_ecs,
+    gui::renderable_colour,
+    Beatitude,
+    Charges,
+    Confusion,
+    Consumable,
+    Destructible,
+    Equipped,
+    Hidden,
+    InBackpack,
+    InflictsDamage,
+    Item,
+    MagicMapper,
+    MasterDungeonMap,
+    Name,
+    ObfuscatedName,
+    Player,
+    Prop,
+    ProvidesHealing,
+    ProvidesIdentify,
+    ProvidesNutrition,
+    ProvidesRemoveCurse,
+    RandomNumberGenerator,
+    Renderable,
+    RunState,
+    SingleActivation,
+    BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -85,7 +110,7 @@ fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: 
 fn handle_restore_nutrition(
     ecs: &mut World,
     event: &mut EventInfo,
-    mut logger: gamelog::Logger,
+    mut logger: gamelog::Logger
 ) -> (gamelog::Logger, bool) {
     if ecs.read_storage::<ProvidesNutrition>().get(event.entity).is_some() {
         let amount = match event.buc {
@@ -131,7 +156,7 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
         add_effect(
             event.source,
             EffectType::Healing { amount: roll, increment_max: get_noncursed(&event.buc) },
-            event.target.clone(),
+            event.target.clone()
         );
         for target in get_entity_targets(&event.target) {
             if ecs.read_storage::<Prop>().get(target).is_some() || ecs.read_storage::<Item>().get(target).is_some() {
@@ -238,11 +263,13 @@ fn handle_identify(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::
         )
             .join()
             .filter(|(_e, _i, bp, _o, name)| {
-                bp.owner == event.source.unwrap()
-                    && (!dm.identified_items.contains(&name.name.clone())
-                        || !beatitudes.get(event.source.unwrap()).map(|beatitude| beatitude.known).unwrap_or(true))
-            })
-        {
+                bp.owner == event.source.unwrap() &&
+                    (!dm.identified_items.contains(&name.name.clone()) ||
+                        !beatitudes
+                            .get(event.source.unwrap())
+                            .map(|beatitude| beatitude.known)
+                            .unwrap_or(true))
+            }) {
             to_identify.push((e, name.name.clone()));
         }
         for item in to_identify {
@@ -276,8 +303,7 @@ fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
                     &ecs.read_storage::<Beatitude>(),
                 )
                     .join()
-                    .filter(|(_e, _i, bp, b)| bp.owner == event.source.unwrap() && b.buc == BUC::Cursed)
-                {
+                    .filter(|(_e, _i, bp, b)| bp.owner == event.source.unwrap() && b.buc == BUC::Cursed) {
                     to_decurse.push(entity);
                 }
             }
@@ -291,14 +317,15 @@ fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
             &ecs.read_storage::<Beatitude>(),
         )
             .join()
-            .filter(|(_e, _i, e, b)| e.owner == event.source.unwrap() && b.buc == BUC::Cursed)
-        {
+            .filter(|(_e, _i, e, b)| e.owner == event.source.unwrap() && b.buc == BUC::Cursed) {
             to_decurse.push(entity);
         }
         if to_decurse.len() == 0 {
             match event.buc {
                 BUC::Uncursed => select_single(ecs, RunState::ShowRemoveCurse),
-                BUC::Blessed => logger = logger.append(REMOVECURSE_BLESSED_FAILED),
+                BUC::Blessed => {
+                    logger = logger.append(REMOVECURSE_BLESSED_FAILED);
+                }
                 _ => {}
             }
             return (logger, true);

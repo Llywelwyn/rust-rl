@@ -1,4 +1,4 @@
-use crate::{Beatitude, IdentifiedBeatitude, IdentifiedItem, Item, MasterDungeonMap, Name, ObfuscatedName, Player};
+use crate::{ Beatitude, IdentifiedBeatitude, IdentifiedItem, Item, MasterDungeonMap, Name, ObfuscatedName, Player };
 use specs::prelude::*;
 
 pub struct ItemIdentificationSystem {}

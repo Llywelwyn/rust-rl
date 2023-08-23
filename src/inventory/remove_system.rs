@@ -1,7 +1,15 @@
 use crate::{
     gamelog,
-    gui::{item_colour, obfuscate_name},
-    Beatitude, Equipped, InBackpack, MagicItem, MasterDungeonMap, Name, ObfuscatedName, WantsToRemoveItem, BUC,
+    gui::{ item_colour, obfuscate_name },
+    Beatitude,
+    Equipped,
+    InBackpack,
+    MagicItem,
+    MasterDungeonMap,
+    Name,
+    ObfuscatedName,
+    WantsToRemoveItem,
+    BUC,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -43,7 +51,8 @@ impl<'a> System<'a> for ItemRemoveSystem {
                 // If cursed, can't remove!
                 if beatitude.buc == BUC::Cursed {
                     can_remove = false;
-                    gamelog::Logger::new()
+                    gamelog::Logger
+                        ::new()
                         .append("You can't remove the")
                         .colour(item_colour(to_remove.item, &beatitudes))
                         .append_n(
@@ -54,9 +63,8 @@ impl<'a> System<'a> for ItemRemoveSystem {
                                 &obfuscated_names,
                                 &beatitudes,
                                 &dm,
-                                None,
-                            )
-                            .0,
+                                None
+                            ).0
                         )
                         .colour(WHITE)
                         .append("!")
@@ -70,7 +78,8 @@ impl<'a> System<'a> for ItemRemoveSystem {
             equipped.remove(to_remove.item);
             if let Some(_) = names.get(to_remove.item) {
                 if entity == *player_entity {
-                    gamelog::Logger::new()
+                    gamelog::Logger
+                        ::new()
                         .append("You unequip the")
                         .colour(item_colour(to_remove.item, &beatitudes))
                         .append_n(
@@ -81,9 +90,8 @@ impl<'a> System<'a> for ItemRemoveSystem {
                                 &obfuscated_names,
                                 &beatitudes,
                                 &dm,
-                                None,
-                            )
-                            .0,
+                                None
+                            ).0
                         )
                         .colour(WHITE)
                         .period()

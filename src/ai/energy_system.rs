@@ -1,5 +1,5 @@
 use crate::config::entity::*;
-use crate::{Burden, BurdenLevel, Clock, Energy, Name, Position, RunState, TakingTurn, LOG_TICKS};
+use crate::{ Burden, BurdenLevel, Clock, Energy, Name, Position, RunState, TakingTurn, LOG_TICKS };
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -68,7 +68,7 @@ impl<'a> System<'a> for EnergySystem {
                 1.0
             };
             // Every entity has a POTENTIAL equal to their speed.
-            let mut energy_potential: i32 = (energy.speed as f32 * burden_modifier) as i32;
+            let mut energy_potential: i32 = ((energy.speed as f32) * burden_modifier) as i32;
             // Increment current energy by NORMAL_SPEED for every
             // whole number of NORMAL_SPEEDS in their POTENTIAL.
             while energy_potential >= NORMAL_SPEED {
@@ -103,10 +103,9 @@ impl<'a> System<'a> for EnergySystem {
                     turns.insert(entity, TakingTurn {}).expect("Unable to insert turn.");
                     if LOG_TICKS {
                         let name = if let Some(name) = names.get(entity) { &name.name } else { "Unknown entity" };
-                        console::log(format!(
-                            "ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].",
-                            name, energy.current
-                        ));
+                        console::log(
+                            format!("ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].", name, energy.current)
+                        );
                     }
                 }
             }

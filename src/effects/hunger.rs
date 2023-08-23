@@ -1,4 +1,4 @@
-use super::{EffectSpawner, EffectType};
+use super::{ EffectSpawner, EffectType };
 use crate::HungerClock;
 use specs::prelude::*;
 

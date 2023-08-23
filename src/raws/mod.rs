@@ -13,7 +13,7 @@ mod loot_table_structs;
 use loot_table_structs::*;
 mod reaction_structs;
 pub use reaction_structs::Reaction;
-use reaction_structs::{AncestryData, FactionData};
+use reaction_structs::{ AncestryData, FactionData };
 use std::sync::Mutex;
 
 lazy_static! {
@@ -76,6 +76,6 @@ macro_rules! impl_ParseJson {
                 return serde_json::from_str(&raw_string).expect("Failed to convert &str to json");
             }
         })*
-    }
+    };
 }
 impl_ParseJson!(for Vec<Item>, Vec<Mob>, Vec<Prop>, Vec<SpawnTable>, Vec<LootTable>, Vec<FactionData>, Vec<AncestryData>);

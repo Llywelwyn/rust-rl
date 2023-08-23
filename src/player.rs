@@ -1,17 +1,39 @@
 use super::{
-    effects::{add_effect, EffectType, Targets},
+    effects::{ add_effect, EffectType, Targets },
     gamelog,
     gui::obfuscate_name_ecs,
     gui::renderable_colour,
     raws::Reaction,
-    Attributes, BlocksTile, BlocksVisibility, Door, EntityMoved, Faction, HasAncestry, Hidden, HungerClock,
-    HungerState, Item, Map, Name, ParticleBuilder, Player, Pools, Position, Renderable, RunState, State, Telepath,
-    TileType, Viewshed, WantsToMelee, WantsToPickupItem,
+    Attributes,
+    BlocksTile,
+    BlocksVisibility,
+    Door,
+    EntityMoved,
+    Faction,
+    HasAncestry,
+    Hidden,
+    HungerClock,
+    HungerState,
+    Item,
+    Map,
+    Name,
+    ParticleBuilder,
+    Player,
+    Pools,
+    Position,
+    Renderable,
+    RunState,
+    State,
+    Telepath,
+    TileType,
+    Viewshed,
+    WantsToMelee,
+    WantsToPickupItem,
 };
 use rltk::prelude::*;
-use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
+use rltk::{ Point, RandomNumberGenerator, Rltk, VirtualKeyCode };
 use specs::prelude::*;
-use std::cmp::{max, min};
+use std::cmp::{ max, min };
 
 pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
@@ -35,10 +57,13 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
         let delta_x = i;
         let delta_y = j;
 
-        if !(pos.x + delta_x < 0
-            || pos.x + delta_x > map.width - 1
-            || pos.y + delta_y < 0
-            || pos.y + delta_y > map.height - 1)
+        if
+            !(
+                pos.x + delta_x < 0 ||
+                pos.x + delta_x > map.width - 1 ||
+                pos.y + delta_y < 0 ||
+                pos.y + delta_y > map.height - 1
+            )
         {
             let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
@@ -120,10 +145,13 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
         let delta_x = i;
         let delta_y = j;
 
-        if !(pos.x + delta_x < 0
-            || pos.x + delta_x > map.width - 1
-            || pos.y + delta_y < 0
-            || pos.y + delta_y > map.height - 1)
+        if
+            !(
+                pos.x + delta_x < 0 ||
+                pos.x + delta_x > map.width - 1 ||
+                pos.y + delta_y < 0 ||
+                pos.y + delta_y > map.height - 1
+            )
         {
             let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
@@ -190,10 +218,13 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
             let delta_x = i;
             let delta_y = j;
 
-            if !(pos.x + delta_x < 0
-                || pos.x + delta_x > map.width - 1
-                || pos.y + delta_y < 0
-                || pos.y + delta_y > map.height - 1)
+            if
+                !(
+                    pos.x + delta_x < 0 ||
+                    pos.x + delta_x > map.width - 1 ||
+                    pos.y + delta_y < 0 ||
+                    pos.y + delta_y > map.height - 1
+                )
             {
                 let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
@@ -224,7 +255,8 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                 particle_builder.kick(pos.x + delta_x, pos.y + delta_y);
                                 // ~33% chance of breaking it down + str
                                 if rng.roll_dice(1, 10) + attributes.strength.bonus > 6 {
-                                    gamelog::Logger::new()
+                                    gamelog::Logger
+                                        ::new()
                                         .append("As you kick the")
                                         .item_name_n(target_name)
                                         .append(", it crashes open!")
@@ -233,16 +265,17 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                     destroyed_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                                     gamelog::record_event("broken_doors", 1);
                                     return false;
-                                // 66% chance of just kicking it.
+                                    // 66% chance of just kicking it.
                                 } else {
-                                    gamelog::Logger::new()
+                                    gamelog::Logger
+                                        ::new()
                                         .append("You kick the")
                                         .item_name_n(target_name)
                                         .period()
                                         .log();
                                     return false;
                                 }
-                            // If the door is open and there's nothing else on the tile,
+                                // If the door is open and there's nothing else on the tile,
                             } else if crate::spatial::length(destination_idx) == 1 {
                                 // Just kick the air.
                                 gamelog::Logger::new().append("You kick the open air.").log();
@@ -297,10 +330,11 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     let mut result: Option<RunState>;
 
     for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
-        if pos.x + delta_x < 0
-            || pos.x + delta_x > map.width - 1
-            || pos.y + delta_y < 0
-            || pos.y + delta_y > map.height - 1
+        if
+            pos.x + delta_x < 0 ||
+            pos.x + delta_x > map.width - 1 ||
+            pos.y + delta_y < 0 ||
+            pos.y + delta_y > map.height - 1
         {
             return RunState::AwaitingInput;
         }
@@ -317,7 +351,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                     entity,
                     &factions,
                     &ancestries,
-                    &crate::raws::RAWS.lock().unwrap(),
+                    &crate::raws::RAWS.lock().unwrap()
                 );
                 if result != Reaction::Attack {
                     hostile = false;
@@ -408,7 +442,8 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     for m in swap_entities.iter() {
         if let Some(name) = names.get(m.0) {
             let renderables = ecs.read_storage::<Renderable>();
-            gamelog::Logger::new()
+            gamelog::Logger
+                ::new()
                 .append("You swap places with the")
                 .colour(renderable_colour(&renderables, m.0))
                 .append_n(&name.name)
@@ -459,71 +494,98 @@ fn get_item(ecs: &mut World) -> RunState {
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     match ctx.key {
-        None => return RunState::AwaitingInput,
-        Some(key) => match key {
-            // Cardinals
-            VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
-                return try_move_player(-1, 0, &mut gs.ecs)
-            }
-            VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
-                return try_move_player(1, 0, &mut gs.ecs);
-            }
-            VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                return try_move_player(0, -1, &mut gs.ecs);
-            }
-            VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                return try_move_player(0, 1, &mut gs.ecs);
-            }
-            // Diagonals
-            VirtualKeyCode::Numpad9 | VirtualKeyCode::U => return try_move_player(1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => return try_move_player(-1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad3 | VirtualKeyCode::N => return try_move_player(1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad1 | VirtualKeyCode::B => return try_move_player(-1, 1, &mut gs.ecs),
-            // id
-            VirtualKeyCode::Period => {
-                if ctx.shift {
-                    if !try_next_level(&mut gs.ecs) {
-                        return RunState::AwaitingInput;
+        None => {
+            return RunState::AwaitingInput;
+        }
+        Some(key) =>
+            match key {
+                // Cardinals
+                VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
+                    return try_move_player(-1, 0, &mut gs.ecs);
+                }
+                VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
+                    return try_move_player(1, 0, &mut gs.ecs);
+                }
+                VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
+                    return try_move_player(0, -1, &mut gs.ecs);
+                }
+                VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
+                    return try_move_player(0, 1, &mut gs.ecs);
+                }
+                // Diagonals
+                VirtualKeyCode::Numpad9 | VirtualKeyCode::U => {
+                    return try_move_player(1, -1, &mut gs.ecs);
+                }
+                VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => {
+                    return try_move_player(-1, -1, &mut gs.ecs);
+                }
+                VirtualKeyCode::Numpad3 | VirtualKeyCode::N => {
+                    return try_move_player(1, 1, &mut gs.ecs);
+                }
+                VirtualKeyCode::Numpad1 | VirtualKeyCode::B => {
+                    return try_move_player(-1, 1, &mut gs.ecs);
+                }
+                // id
+                VirtualKeyCode::Period => {
+                    if ctx.shift {
+                        if !try_next_level(&mut gs.ecs) {
+                            return RunState::AwaitingInput;
+                        }
+                        return RunState::NextLevel; // > to descend
+                    } else {
+                        return skip_turn(&mut gs.ecs); // (Wait a turn)
                     }
-                    return RunState::NextLevel; // > to descend
-                } else {
-                    return skip_turn(&mut gs.ecs); // (Wait a turn)
                 }
-            }
-            VirtualKeyCode::Comma => {
-                if ctx.shift {
-                    if !try_previous_level(&mut gs.ecs) {
-                        return RunState::AwaitingInput;
+                VirtualKeyCode::Comma => {
+                    if ctx.shift {
+                        if !try_previous_level(&mut gs.ecs) {
+                            return RunState::AwaitingInput;
+                        }
+                        return RunState::PreviousLevel; // < to ascend
                     }
-                    return RunState::PreviousLevel; // < to ascend
                 }
-            }
-            VirtualKeyCode::Slash => {
-                if ctx.shift {
-                    return RunState::HelpScreen;
+                VirtualKeyCode::Slash => {
+                    if ctx.shift {
+                        return RunState::HelpScreen;
+                    }
                 }
-            }
-            VirtualKeyCode::NumpadDecimal => {
-                return skip_turn(&mut gs.ecs);
-            }
+                VirtualKeyCode::NumpadDecimal => {
+                    return skip_turn(&mut gs.ecs);
+                }
 
-            // Items
-            VirtualKeyCode::C => return RunState::ActionWithDirection { function: try_door },
-            VirtualKeyCode::O => return RunState::ActionWithDirection { function: open },
-            VirtualKeyCode::F => return RunState::ActionWithDirection { function: kick },
-            VirtualKeyCode::G => {
-                return get_item(&mut gs.ecs);
+                // Items
+                VirtualKeyCode::C => {
+                    return RunState::ActionWithDirection { function: try_door };
+                }
+                VirtualKeyCode::O => {
+                    return RunState::ActionWithDirection { function: open };
+                }
+                VirtualKeyCode::F => {
+                    return RunState::ActionWithDirection { function: kick };
+                }
+                VirtualKeyCode::G => {
+                    return get_item(&mut gs.ecs);
+                }
+                VirtualKeyCode::I => {
+                    return RunState::ShowInventory;
+                }
+                VirtualKeyCode::D => {
+                    return RunState::ShowDropItem;
+                }
+                VirtualKeyCode::R => {
+                    return RunState::ShowRemoveItem;
+                }
+                // Other
+                VirtualKeyCode::Minus => {
+                    return RunState::ShowCheatMenu;
+                }
+                VirtualKeyCode::Escape => {
+                    return RunState::SaveGame;
+                }
+                _ => {
+                    return RunState::AwaitingInput;
+                }
             }
-            VirtualKeyCode::I => return RunState::ShowInventory,
-            VirtualKeyCode::D => return RunState::ShowDropItem,
-            VirtualKeyCode::R => return RunState::ShowRemoveItem,
-            // Other
-            VirtualKeyCode::Minus => return RunState::ShowCheatMenu,
-            VirtualKeyCode::Escape => return RunState::SaveGame,
-            _ => {
-                return RunState::AwaitingInput;
-            }
-        },
     }
     return RunState::AwaitingInput;
 }
@@ -573,7 +635,7 @@ fn skip_turn(ecs: &mut World) -> RunState {
                 entity_id,
                 &factions,
                 &ancestries,
-                &crate::raws::RAWS.lock().unwrap(),
+                &crate::raws::RAWS.lock().unwrap()
             );
             if result == Reaction::Attack {
                 can_heal = false;
@@ -587,9 +649,15 @@ fn skip_turn(ecs: &mut World) -> RunState {
     let player_hunger_clock = hunger_clocks.get(*player_entity);
     if let Some(clock) = player_hunger_clock {
         match clock.state {
-            HungerState::Hungry => can_heal = false,
-            HungerState::Weak => can_heal = false,
-            HungerState::Fainting => can_heal = false,
+            HungerState::Hungry => {
+                can_heal = false;
+            }
+            HungerState::Weak => {
+                can_heal = false;
+            }
+            HungerState::Fainting => {
+                can_heal = false;
+            }
             _ => {}
         }
     }
@@ -599,7 +667,7 @@ fn skip_turn(ecs: &mut World) -> RunState {
         let pools = health_components.get_mut(*player_entity).unwrap();
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let roll = rng.roll_dice(1, 6);
-        if (roll == 6) && pools.hit_points.current < pools.hit_points.max {
+        if roll == 6 && pools.hit_points.current < pools.hit_points.max {
             pools.hit_points.current += 1;
         }
     }

@@ -1,4 +1,4 @@
-use super::{Hidden, Map, Mind, Position, Prop, Renderable};
+use super::{ Hidden, Map, Mind, Position, Prop, Renderable };
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
@@ -15,8 +15,8 @@ pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32, i
 
     let min_x = player_pos.x - centre_x;
     let min_y = player_pos.y - centre_y;
-    let max_x = min_x + x_chars as i32;
-    let max_y = min_y + y_chars as i32;
+    let max_x = min_x + (x_chars as i32);
+    let max_y = min_y + (y_chars as i32);
 
     (min_x, max_x, min_y, max_y, x_offset, y_offset)
 }
@@ -33,8 +33,11 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
             if t_x >= 0 && t_x < map.width && t_y >= 0 && t_y < map.height {
                 let idx = map.xy_idx(t_x, t_y);
                 if map.revealed_tiles[idx] {
-                    let (glyph, fg, bg) =
-                        crate::map::themes::get_tile_renderables_for_id(idx, &*map, Some(*ecs.fetch::<Point>()));
+                    let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(
+                        idx,
+                        &*map,
+                        Some(*ecs.fetch::<Point>())
+                    );
                     ctx.set(x + x_offset, y + y_offset, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
@@ -108,9 +111,9 @@ pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
     let center_y = (y_chars / 2) as i32;
 
     let min_x = player_pos.x - center_x;
-    let max_x = min_x + x_chars as i32;
+    let max_x = min_x + (x_chars as i32);
     let min_y = player_pos.y - center_y;
-    let max_y = min_y + y_chars as i32;
+    let max_y = min_y + (y_chars as i32);
 
     let map_width = map.width;
     let map_height = map.height;

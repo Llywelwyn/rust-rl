@@ -1,6 +1,6 @@
-use super::{colours::*, glyphs::*, Map, Point, TileType};
+use super::{ colours::*, glyphs::*, Map, Point, TileType };
 use rltk::prelude::*;
-use std::ops::{Add, Mul};
+use std::ops::{ Add, Mul };
 
 const DARKEN_TILES_BY_DISTANCE: bool = true;
 
@@ -12,7 +12,7 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Poin
 
     // If one of the colours was left blank, make them the same.
     if fg == RGB::new() {
-        fg = bg
+        fg = bg;
     } else if bg == RGB::new() {
         bg = fg;
     }
@@ -22,8 +22,10 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Poin
     bg = apply_bloodstain_if_necessary(bg, map, idx);
     (fg, bg) = darken_if_not_visible(fg, bg, map, idx);
     if other_pos.is_some() && DARKEN_TILES_BY_DISTANCE {
-        let distance =
-            darken_by_distance(Point::new(idx as i32 % map.width, idx as i32 / map.width), other_pos.unwrap());
+        let distance = darken_by_distance(
+            Point::new((idx as i32) % map.width, (idx as i32) / map.width),
+            other_pos.unwrap()
+        );
         (fg, bg) = (fg.mul(distance), bg.mul(distance));
     }
 
@@ -83,7 +85,7 @@ fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
 }
 
 fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
-    if x < 1 || x > map.width - 2 || y < 1 || y > map.height - 2 as i32 {
+    if x < 1 || x > map.width - 2 || y < 1 || y > map.height - (2 as i32) {
         return 35;
     }
     let mut mask: u8 = 0;
@@ -126,16 +128,16 @@ fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
     }
 
     match mask {
-        0 => 254,  // ■ (254) square pillar; but maybe ○ (9) looks better
-        1 => 186,  // Wall only to the north
-        2 => 186,  // Wall only to the south
-        3 => 186,  // Wall to the north and south
-        4 => 205,  // Wall only to the west
-        5 => 188,  // Wall to the north and west
-        6 => 187,  // Wall to the south and west
-        7 => 185,  // Wall to the north, south and west
-        8 => 205,  // Wall only to the east
-        9 => 200,  // Wall to the north and east
+        0 => 254, // ■ (254) square pillar; but maybe ○ (9) looks better
+        1 => 186, // Wall only to the north
+        2 => 186, // Wall only to the south
+        3 => 186, // Wall to the north and south
+        4 => 205, // Wall only to the west
+        5 => 188, // Wall to the north and west
+        6 => 187, // Wall to the south and west
+        7 => 185, // Wall to the north, south and west
+        8 => 205, // Wall only to the east
+        9 => 200, // Wall to the north and east
         10 => 201, // Wall to the south and east
         11 => 204, // Wall to the north, south and east
         12 => 205, // Wall to the east and west
@@ -194,7 +196,7 @@ fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
         205 => 202,
         175 => 204,
         203 => 204,
-        61 => 205,  // NEW cases
+        61 => 205, // NEW cases
         125 => 205, // NEW cases
         189 => 205, // NEW cases
         206 => 205,
@@ -204,7 +206,7 @@ fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
         253 => 205,
         254 => 205,
         167 => 186, // NSW, NW, SW
-        91 => 186,  // NSE, NE, SE
+        91 => 186, // NSE, NE, SE
         183 => 186, // NSW, NW, SW, NE
         123 => 186, // NSE, NE, SE, NW
         231 => 186, // NSW, NW, SW, SE
@@ -215,7 +217,7 @@ fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
         191 => 201, // Everything except NW
         223 => 188, // Everything except SE
         239 => 200, // Everything except SW
-        _ => 35,    // We missed one?
+        _ => 35, // We missed one?
     }
 }
 
@@ -251,8 +253,9 @@ pub fn multiply_by_float(rgb: rltk::RGB, offsets: (f32, f32, f32)) -> RGB {
 
 fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
     let distance = DistanceAlg::Pythagoras.distance2d(pos, other_pos) as f32; // Get distance in tiles.
-    let interp_factor = (distance - START_DARKEN_AT_N_TILES)
-        / (MAX_DARKEN_AT_N_TILES * crate::config::entity::DEFAULT_VIEWSHED_STANDARD as f32 - START_DARKEN_AT_N_TILES);
+    let interp_factor =
+        (distance - START_DARKEN_AT_N_TILES) /
+        (MAX_DARKEN_AT_N_TILES * (crate::config::entity::DEFAULT_VIEWSHED_STANDARD as f32) - START_DARKEN_AT_N_TILES);
     let interp_factor = interp_factor.max(0.0).min(1.0); // Clamp [0-1]
     return 1.0 - interp_factor * (1.0 - MAX_DARKENING);
 }

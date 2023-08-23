@@ -1,4 +1,4 @@
-use super::{paint, BuilderMap, MetaMapBuilder, Rect, Symmetry, TileType};
+use super::{ paint, BuilderMap, MetaMapBuilder, Rect, Symmetry, TileType };
 use rltk::RandomNumberGenerator;
 
 pub struct RoomExploder {}

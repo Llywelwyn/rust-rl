@@ -1,4 +1,4 @@
-use super::{BuilderMap, InitialMapBuilder, Map, TileType};
+use super::{ BuilderMap, InitialMapBuilder, Map, TileType };
 use rltk::RandomNumberGenerator;
 
 pub struct MazeBuilder {}
@@ -19,7 +19,7 @@ impl MazeBuilder {
     #[allow(clippy::map_entry)]
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         // Maze gen
-        let mut maze = Grid::new((build_data.map.width / 2) - 2, (build_data.map.height / 2) - 2, rng);
+        let mut maze = Grid::new(build_data.map.width / 2 - 2, build_data.map.height / 2 - 2, rng);
         maze.generate_maze(build_data);
     }
 }
@@ -90,7 +90,7 @@ impl<'a> Grid<'a> {
         if row < 0 || column < 0 || column > self.width - 1 || row > self.height - 1 {
             -1
         } else {
-            column + (row * self.width)
+            column + row * self.width
         }
     }
 
@@ -178,16 +178,16 @@ impl<'a> Grid<'a> {
 
             map.tiles[idx] = TileType::Floor;
             if !cell.walls[TOP] {
-                map.tiles[idx - map.width as usize] = TileType::Floor
+                map.tiles[idx - (map.width as usize)] = TileType::Floor;
             }
             if !cell.walls[RIGHT] {
-                map.tiles[idx + 1] = TileType::Floor
+                map.tiles[idx + 1] = TileType::Floor;
             }
             if !cell.walls[BOTTOM] {
-                map.tiles[idx + map.width as usize] = TileType::Floor
+                map.tiles[idx + (map.width as usize)] = TileType::Floor;
             }
             if !cell.walls[LEFT] {
-                map.tiles[idx - 1] = TileType::Floor
+                map.tiles[idx - 1] = TileType::Floor;
             }
         }
     }

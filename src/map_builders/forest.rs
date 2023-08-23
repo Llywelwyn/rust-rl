@@ -1,6 +1,14 @@
 use super::{
-    AreaStartingPosition, BuilderChain, BuilderMap, CellularAutomataBuilder, CullUnreachable, MetaMapBuilder, TileType,
-    VoronoiSpawning, XStart, YStart,
+    AreaStartingPosition,
+    BuilderChain,
+    BuilderMap,
+    CellularAutomataBuilder,
+    CullUnreachable,
+    MetaMapBuilder,
+    TileType,
+    VoronoiSpawning,
+    XStart,
+    YStart,
 };
 use rltk::prelude::*;
 
@@ -10,7 +18,7 @@ pub fn forest_builder(
     width: i32,
     height: i32,
     difficulty: i32,
-    initial_player_level: i32,
+    initial_player_level: i32
 ) -> BuilderChain {
     let mut chain = BuilderChain::new(new_id, width, height, difficulty, "the woods", initial_player_level);
     chain.start_with(CellularAutomataBuilder::new());
@@ -44,8 +52,8 @@ impl RoadExit {
                 available_floors.push((
                     idx,
                     DistanceAlg::PythagorasSquared.distance2d(
-                        Point::new(idx as i32 % build_data.map.width, idx as i32 / build_data.map.width),
-                        Point::new(seed_x, seed_y),
+                        Point::new((idx as i32) % build_data.map.width, (idx as i32) / build_data.map.width),
+                        Point::new(seed_x, seed_y)
                     ),
                 ));
             }
@@ -54,8 +62,8 @@ impl RoadExit {
             panic!("No valid floors to start on.");
         }
         available_floors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-        let end_x = available_floors[0].0 as i32 % build_data.map.width;
-        let end_y = available_floors[0].0 as i32 / build_data.map.width;
+        let end_x = (available_floors[0].0 as i32) % build_data.map.width;
+        let end_y = (available_floors[0].0 as i32) / build_data.map.width;
         return (end_x, end_y);
     }
 
@@ -78,8 +86,8 @@ impl RoadExit {
 
         let path = a_star_search(start_idx, end_idx, &mut build_data.map);
         for idx in path.steps.iter() {
-            let x = *idx as i32 % build_data.map.width;
-            let y = *idx as i32 / build_data.map.width;
+            let x = (*idx as i32) % build_data.map.width;
+            let y = (*idx as i32) / build_data.map.width;
             self.paint_road(build_data, x, y);
             self.paint_road(build_data, x - 1, y);
             self.paint_road(build_data, x + 1, y);

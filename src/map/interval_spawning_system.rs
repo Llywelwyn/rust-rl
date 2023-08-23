@@ -1,4 +1,4 @@
-use crate::{gamelog, raws, spawner, Clock, Map, RandomNumberGenerator, TakingTurn, LOG_SPAWNING};
+use crate::{ gamelog, raws, spawner, Clock, Map, RandomNumberGenerator, TakingTurn, LOG_SPAWNING };
 use specs::prelude::*;
 
 const TRY_SPAWN_CHANCE: i32 = 70;
@@ -48,7 +48,7 @@ fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
     let roll = raws::get_mob_spawn_amount(&mut rng, &spawn_type, player_level);
     for _i in 0..roll {
         let idx = get_random_idx_from_tiles(&mut rng, &mut available_tiles);
-        spawn_locations.push((idx as i32 % map.width, idx as i32 / map.width));
+        spawn_locations.push(((idx as i32) % map.width, (idx as i32) / map.width));
     }
     // Dropping resources for borrow-checker.
     std::mem::drop(map);
@@ -64,7 +64,7 @@ fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
             &key,
             None,
             raws::SpawnType::AtPosition { x: idx.0, y: idx.1 },
-            difficulty,
+            difficulty
         );
     }
 }

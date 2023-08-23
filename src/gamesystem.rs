@@ -1,5 +1,5 @@
-use super::{Skill, Skills};
-use crate::gui::{Ancestry, Class};
+use super::{ Skill, Skills };
+use crate::gui::{ Ancestry, Class };
 use rltk::prelude::*;
 use std::cmp::max;
 
@@ -80,7 +80,7 @@ pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
 pub fn get_attribute_rolls(
     rng: &mut RandomNumberGenerator,
     class: Class,
-    ancestry: Ancestry,
+    ancestry: Ancestry
 ) -> (i32, i32, i32, i32, i32, i32) {
     let (mut str, mut dex, mut con, mut int, mut wis, mut cha) = match class {
         Class::Fighter => (10, 8, 10, 6, 6, 8),
@@ -96,14 +96,15 @@ pub fn get_attribute_rolls(
         Class::Villager => [15, 15, 25, 15, 15, 15],
     };
     let ancestry_maximums: [i32; 6] = match ancestry {
-        Ancestry::Human => [19, 19, 19, 19, 19, 19],   // 114
-        Ancestry::Elf => [15, 18, 15, 20, 20, 18],     // 106
-        Ancestry::Dwarf => [19, 17, 20, 16, 16, 16],   // 106
-        Ancestry::Gnome => [16, 18, 16, 20, 18, 18],   // 106
+        Ancestry::Human => [19, 19, 19, 19, 19, 19], // 114
+        Ancestry::Elf => [15, 18, 15, 20, 20, 18], // 106
+        Ancestry::Dwarf => [19, 17, 20, 16, 16, 16], // 106
+        Ancestry::Gnome => [16, 18, 16, 20, 18, 18], // 106
         Ancestry::Catfolk => [16, 20, 16, 16, 18, 20], // 106
         _ => [18, 18, 18, 18, 18, 18],
     };
-    let improve_table = crate::random_table::RandomTable::new()
+    let improve_table = crate::random_table::RandomTable
+        ::new()
         .add("Strength", improve_chance[0])
         .add("Dexterity", improve_chance[1])
         .add("Constitution", improve_chance[2])

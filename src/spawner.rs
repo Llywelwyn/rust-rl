@@ -1,13 +1,34 @@
 use super::{
-    random_table::RandomTable, raws, Attribute, Attributes, Clock, Energy, EquipmentChanged, Faction, HungerClock,
-    HungerState, Map, Mind, Name, Player, Pool, Pools, Position, Rect, Renderable, SerializeMe, Skill, Skills,
-    TileType, Viewshed,
+    random_table::RandomTable,
+    raws,
+    Attribute,
+    Attributes,
+    Clock,
+    Energy,
+    EquipmentChanged,
+    Faction,
+    HungerClock,
+    HungerState,
+    Map,
+    Mind,
+    Name,
+    Player,
+    Pool,
+    Pools,
+    Position,
+    Rect,
+    Renderable,
+    SerializeMe,
+    Skill,
+    Skills,
+    TileType,
+    Viewshed,
 };
 use crate::config::entity;
 use crate::gamesystem::*;
-use rltk::{RandomNumberGenerator, RGB};
+use rltk::{ RandomNumberGenerator, RGB };
 use specs::prelude::*;
-use specs::saveload::{MarkedBuilder, SimpleMarker};
+use specs::saveload::{ MarkedBuilder, SimpleMarker };
 use std::collections::HashMap;
 
 /// Spawns the player and returns his/her entity object.
@@ -68,7 +89,7 @@ pub fn spawn_room(
     rng: &mut RandomNumberGenerator,
     room: &Rect,
     spawn_list: &mut Vec<(usize, String)>,
-    player_level: i32,
+    player_level: i32
 ) {
     let mut possible_targets: Vec<usize> = Vec::new();
     {
@@ -91,7 +112,7 @@ pub fn spawn_region(
     rng: &mut RandomNumberGenerator,
     area: &[usize],
     spawn_list: &mut Vec<(usize, String)>,
-    player_level: i32,
+    player_level: i32
 ) {
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
@@ -105,9 +126,9 @@ pub fn spawn_region(
     let spawn_mob: bool = rng.roll_dice(1, 3) == 1;
     let num_items = match rng.roll_dice(1, 20) {
         1..=2 => 1, // 10% chance of spawning 1 item
-        3 => 2,     // 5% chance of spawning 2 items
-        4 => 3,     // 5% chance of spawning 3 items
-        _ => 0,     // 80% chance of spawning nothing
+        3 => 2, // 5% chance of spawning 2 items
+        4 => 3, // 5% chance of spawning 3 items
+        _ => 0, // 80% chance of spawning nothing
     };
     let num_traps = match rng.roll_dice(1, 20) {
         1 => 1, // 5% chance of spawning 1 trap
@@ -143,13 +164,16 @@ fn entity_to_spawn_list(
     rng: &mut RandomNumberGenerator,
     possible_areas: &mut Vec<usize>,
     key: String,
-    spawn_points: &mut HashMap<usize, String>,
+    spawn_points: &mut HashMap<usize, String>
 ) {
     if possible_areas.len() == 0 {
         return;
     }
-    let array_idx =
-        if possible_areas.len() == 1 { 0usize } else { (rng.roll_dice(1, possible_areas.len() as i32) - 1) as usize };
+    let array_idx = if possible_areas.len() == 1 {
+        0usize
+    } else {
+        (rng.roll_dice(1, possible_areas.len() as i32) - 1) as usize
+    };
     let map_idx = possible_areas[array_idx];
     spawn_points.insert(map_idx, key);
     possible_areas.remove(array_idx);
@@ -170,7 +194,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         &spawn.1,
         None,
         raws::SpawnType::AtPosition { x, y },
-        map_difficulty,
+        map_difficulty
     );
     if spawn_result.is_some() {
         return;
@@ -191,12 +215,24 @@ fn debug_table() -> RandomTable {
 fn get_random_item_category(rng: &mut RandomNumberGenerator, difficulty: Option<i32>) -> RandomTable {
     let item_category = item_category_table().roll(rng);
     match item_category.as_ref() {
-        "equipment" => return equipment_table(difficulty),
-        "food" => return food_table(difficulty),
-        "potion" => return potion_table(difficulty),
-        "scroll" => return scroll_table(difficulty),
-        "wand" => return wand_table(difficulty),
-        _ => return debug_table(),
+        "equipment" => {
+            return equipment_table(difficulty);
+        }
+        "food" => {
+            return food_table(difficulty);
+        }
+        "potion" => {
+            return potion_table(difficulty);
+        }
+        "scroll" => {
+            return scroll_table(difficulty);
+        }
+        "wand" => {
+            return wand_table(difficulty);
+        }
+        _ => {
+            return debug_table();
+        }
     };
 }
 

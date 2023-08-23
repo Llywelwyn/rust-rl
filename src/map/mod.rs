@@ -1,14 +1,14 @@
-use rltk::{Algorithm2D, BaseMap, Point};
-use serde::{Deserialize, Serialize};
+use rltk::{ Algorithm2D, BaseMap, Point };
+use serde::{ Deserialize, Serialize };
 use std::collections::HashSet;
 pub mod colours;
 mod glyphs;
 mod tiletype;
-pub use tiletype::{tile_cost, tile_opaque, tile_walkable, TileType};
+pub use tiletype::{ tile_cost, tile_opaque, tile_walkable, TileType };
 mod interval_spawning_system;
 pub use interval_spawning_system::try_spawn_interval;
 pub mod dungeon;
-pub use dungeon::{level_transition, MasterDungeonMap};
+pub use dungeon::{ level_transition, MasterDungeonMap };
 pub mod themes;
 pub use colours::NON_VISIBLE_MULTIPLIER;
 
@@ -65,9 +65,9 @@ impl Map {
         let mut rng = rltk::RandomNumberGenerator::new();
 
         for idx in 0..map.colour_offset.len() {
-            let red_roll: f32 = (rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32 / 100f32 + 1.0;
-            let green_roll: f32 = (rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32 / 100f32 + 1.0;
-            let blue_roll: f32 = (rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32 / 100f32 + 1.0;
+            let red_roll: f32 = ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32) / 100f32 + 1.0;
+            let green_roll: f32 = ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32) / 100f32 + 1.0;
+            let blue_roll: f32 = ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32) / 100f32 + 1.0;
             map.colour_offset[idx] = (red_roll, green_roll, blue_roll);
         }
 

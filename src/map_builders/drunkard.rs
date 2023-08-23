@@ -1,4 +1,4 @@
-use super::{paint, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, Symmetry, TileType};
+use super::{ paint, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, Symmetry, TileType };
 use rltk::RandomNumberGenerator;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -112,8 +112,11 @@ impl DrunkardsWalkBuilder {
         build_data.map.tiles[start_idx] = TileType::Floor;
 
         let total_tiles = build_data.map.width * build_data.map.height;
-        let desired_floor_tiles = (self.settings.floor_percent * total_tiles as f32) as usize;
-        let mut floor_tile_count = build_data.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
+        let desired_floor_tiles = (self.settings.floor_percent * (total_tiles as f32)) as usize;
+        let mut floor_tile_count = build_data.map.tiles
+            .iter()
+            .filter(|a| **a == TileType::Floor)
+            .count();
         let mut digger_count = 0;
         while floor_tile_count < desired_floor_tiles {
             let mut did_something = false;
@@ -180,7 +183,10 @@ impl DrunkardsWalkBuilder {
                     *t = TileType::Floor;
                 }
             }
-            floor_tile_count = build_data.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
+            floor_tile_count = build_data.map.tiles
+                .iter()
+                .filter(|a| **a == TileType::Floor)
+                .count();
         }
     }
 }

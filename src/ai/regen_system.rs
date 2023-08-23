@@ -1,5 +1,14 @@
 use crate::{
-    gamelog, gui::Class, Attributes, Clock, HasClass, Player, Pools, Position, RandomNumberGenerator, TakingTurn,
+    gamelog,
+    gui::Class,
+    Attributes,
+    Clock,
+    HasClass,
+    Player,
+    Pools,
+    Position,
+    RandomNumberGenerator,
+    TakingTurn,
 };
 use specs::prelude::*;
 
@@ -55,8 +64,8 @@ impl<'a> System<'a> for RegenSystem {
         for (e, _p, pool) in (&entities, &positions, &mut pools).join() {
             let is_wizard = if let Some(class) = classes.get(e) { class.name == Class::Wizard } else { false };
             let numerator = if is_wizard { WIZARD_MP_REGEN_MOD } else { NONWIZARD_MP_REGEN_MOD };
-            let multiplier: f32 = numerator as f32 / MP_REGEN_DIVISOR as f32;
-            let mp_regen_tick = ((MP_REGEN_BASE - pool.level) as f32 * multiplier) as i32;
+            let multiplier: f32 = (numerator as f32) / (MP_REGEN_DIVISOR as f32);
+            let mp_regen_tick = (((MP_REGEN_BASE - pool.level) as f32) * multiplier) as i32;
             if current_turn % mp_regen_tick == 0 {
                 try_mana_regen_tick(pool, rng.roll_dice(1, get_mana_regen_per_tick(e, &attributes)));
             }
@@ -66,7 +75,7 @@ impl<'a> System<'a> for RegenSystem {
 
 fn get_player_hp_regen_turn(level: i32) -> i32 {
     if level < 10 {
-        return (42 / (level + 2)) + 1;
+        return 42 / (level + 2) + 1;
     } else {
         return 3;
     }
@@ -86,7 +95,7 @@ fn try_hp_regen_tick(pool: &mut Pools, amount: i32) {
 
 fn get_mana_regen_per_tick(e: Entity, attributes: &ReadStorage<Attributes>) -> i32 {
     let regen = if let Some(attributes) = attributes.get(e) {
-        ((attributes.intelligence.bonus + attributes.wisdom.bonus) / 2) + MIN_MP_REGEN_PER_TURN
+        (attributes.intelligence.bonus + attributes.wisdom.bonus) / 2 + MIN_MP_REGEN_PER_TURN
     } else {
         MIN_MP_REGEN_PER_TURN
     };

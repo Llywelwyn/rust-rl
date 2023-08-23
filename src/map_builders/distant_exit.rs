@@ -1,4 +1,4 @@
-use super::{BuilderMap, MetaMapBuilder, TileType};
+use super::{ BuilderMap, MetaMapBuilder, TileType };
 use rltk::RandomNumberGenerator;
 
 pub struct DistantExit {}
@@ -25,7 +25,7 @@ impl DistantExit {
             build_data.map.height as usize,
             &map_starts,
             &build_data.map,
-            1000.0,
+            1000.0
         );
         let mut exit_tile = (0, 0.0f32);
         for (i, tile) in build_data.map.tiles.iter_mut().enumerate() {

@@ -1,4 +1,4 @@
-use super::{BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType};
+use super::{ BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType };
 use std::collections::HashSet;
 
 pub fn town_builder(
@@ -7,7 +7,7 @@ pub fn town_builder(
     width: i32,
     height: i32,
     difficulty: i32,
-    initial_player_level: i32,
+    initial_player_level: i32
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building town (ID:{}, DIFF:{})", new_id, difficulty));
     let mut chain = BuilderChain::new(new_id, width, height, difficulty, "the town", initial_player_level);
@@ -78,7 +78,7 @@ impl TownBuilder {
         building_size[2].2 = BuildingTag::Mine;
         building_size[3].2 = BuildingTag::PlayerHouse;
         for b in building_size.iter_mut().skip(4) {
-            b.2 = BuildingTag::NPCHouse
+            b.2 = BuildingTag::NPCHouse;
         }
         let last_idx = building_size.len() - 1;
         building_size[last_idx].2 = BuildingTag::Abandoned;
@@ -91,7 +91,7 @@ impl TownBuilder {
         rng: &mut rltk::RandomNumberGenerator,
         build_data: &mut BuilderMap,
         buildings: &[(i32, i32, i32, i32)],
-        building_index: &[(usize, i32, BuildingTag)],
+        building_index: &[(usize, i32, BuildingTag)]
     ) {
         for (i, building) in buildings.iter().enumerate() {
             let build_tag = &building_index[i].2;
@@ -123,7 +123,7 @@ impl TownBuilder {
         &mut self,
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator,
-        available_building_tiles: &mut HashSet<usize>,
+        available_building_tiles: &mut HashSet<usize>
     ) {
         for idx in available_building_tiles.iter() {
             if rng.roll_dice(1, 40) == 1 {
@@ -161,15 +161,16 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator,
         to_place: &mut Vec<&str>,
-        avoid_tile: usize,
+        avoid_tile: usize
     ) {
         for y in building.1..building.1 + building.3 {
             for x in building.0..building.0 + building.2 {
                 let idx = build_data.map.xy_idx(x, y);
-                if build_data.map.tiles[idx] == TileType::WoodFloor
-                    && idx != avoid_tile
-                    && rng.roll_dice(1, 3) == 1
-                    && !to_place.is_empty()
+                if
+                    build_data.map.tiles[idx] == TileType::WoodFloor &&
+                    idx != avoid_tile &&
+                    rng.roll_dice(1, 3) == 1 &&
+                    !to_place.is_empty()
                 {
                     let entity_tag = to_place[0];
                     to_place.remove(0);
@@ -183,12 +184,14 @@ impl TownBuilder {
         &mut self,
         building: &(i32, i32, i32, i32),
         build_data: &mut BuilderMap,
-        rng: &mut rltk::RandomNumberGenerator,
+        rng: &mut rltk::RandomNumberGenerator
     ) {
         // Place player
-        build_data.starting_position =
-            Some(Position { x: building.0 + (building.2 / 2), y: building.1 + (building.3 / 2) });
-        let player_idx = build_data.map.xy_idx(building.0 + (building.2 / 2), building.1 + (building.3 / 2));
+        build_data.starting_position = Some(Position {
+            x: building.0 + building.2 / 2,
+            y: building.1 + building.3 / 2,
+        });
+        let player_idx = build_data.map.xy_idx(building.0 + building.2 / 2, building.1 + building.3 / 2);
 
         // Place other items
         let mut to_place: Vec<&str> = vec![
@@ -200,7 +203,7 @@ impl TownBuilder {
             "prop_table",
             "prop_table",
             "prop_chair",
-            "prop_chair",
+            "prop_chair"
         ];
         self.random_building_spawn(building, build_data, rng, &mut to_place, player_idx);
     }
@@ -209,7 +212,7 @@ impl TownBuilder {
         &mut self,
         building: &(i32, i32, i32, i32),
         build_data: &mut BuilderMap,
-        rng: &mut rltk::RandomNumberGenerator,
+        rng: &mut rltk::RandomNumberGenerator
     ) {
         let mut to_place: Vec<&str> = vec![
             "npc_priest",
@@ -220,7 +223,7 @@ impl TownBuilder {
             "prop_table",
             "prop_table",
             "prop_candle",
-            "prop_candle",
+            "prop_candle"
         ];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0)
     }
@@ -229,10 +232,10 @@ impl TownBuilder {
         &mut self,
         building: &(i32, i32, i32, i32),
         build_data: &mut BuilderMap,
-        rng: &mut rltk::RandomNumberGenerator,
+        rng: &mut rltk::RandomNumberGenerator
     ) {
         // Place exit
-        let exit_idx = build_data.map.xy_idx(building.0 + (building.2 / 2), building.1 + (building.3 / 2));
+        let exit_idx = build_data.map.xy_idx(building.0 + building.2 / 2, building.1 + building.3 / 2);
         build_data.map.tiles[exit_idx] = TileType::DownStair;
         let mut to_place: Vec<&str> = vec!["npc_miner", "npc_miner", "npc_guard", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, exit_idx)
@@ -242,7 +245,7 @@ impl TownBuilder {
         &mut self,
         building: &(i32, i32, i32, i32),
         build_data: &mut BuilderMap,
-        rng: &mut rltk::RandomNumberGenerator,
+        rng: &mut rltk::RandomNumberGenerator
     ) {
         let mut to_place: Vec<&str> = vec!["prop_bed", "prop_table", "dog_little", "prop_chair", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
@@ -252,7 +255,7 @@ impl TownBuilder {
         &mut self,
         building: &(i32, i32, i32, i32),
         build_data: &mut BuilderMap,
-        rng: &mut rltk::RandomNumberGenerator,
+        rng: &mut rltk::RandomNumberGenerator
     ) {
         let mut to_place: Vec<&str> = vec!["npc_townsperson", "prop_bed", "prop_table", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
@@ -262,7 +265,7 @@ impl TownBuilder {
         &mut self,
         building: &(i32, i32, i32, i32),
         build_data: &mut BuilderMap,
-        rng: &mut rltk::RandomNumberGenerator,
+        rng: &mut rltk::RandomNumberGenerator
     ) {
         let mut to_place: Vec<&str> = vec!["rat", "rat", "rat", "prop_table", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
@@ -285,7 +288,7 @@ impl TownBuilder {
         let sand_width = shallow_width + 4;
 
         for y in 0..build_data.height {
-            let n_water = (f32::sin(n) * variance as f32) as i32 + minimum_width + rng.roll_dice(1, 2);
+            let n_water = ((f32::sin(n) * (variance as f32)) as i32) + minimum_width + rng.roll_dice(1, 2);
             water_width.push(n_water);
             n += 0.1;
             for x in 0..n_water {
@@ -323,10 +326,10 @@ impl TownBuilder {
 
             let start_roll = rng.roll_dice(1, 4);
             let largest_water_width;
-            if water_width[y as usize] > water_width[y as usize + 1] {
+            if water_width[y as usize] > water_width[(y as usize) + 1] {
                 largest_water_width = water_width[y as usize];
             } else {
-                largest_water_width = water_width[y as usize + 1];
+                largest_water_width = water_width[(y as usize) + 1];
             }
 
             // Make pier length
@@ -360,7 +363,7 @@ impl TownBuilder {
     fn town_walls(
         &mut self,
         rng: &mut rltk::RandomNumberGenerator,
-        build_data: &mut BuilderMap,
+        build_data: &mut BuilderMap
     ) -> (HashSet<usize>, i32) {
         let mut available_building_tiles: HashSet<usize> = HashSet::new();
 
@@ -370,7 +373,7 @@ impl TownBuilder {
         const HALF_PATH_THICKNESS: i32 = 3;
 
         let wall_gap_y =
-            (build_data.height / 2) + rng.roll_dice(1, PATH_OFFSET_FROM_CENTRE * 2) - 1 - PATH_OFFSET_FROM_CENTRE;
+            build_data.height / 2 + rng.roll_dice(1, PATH_OFFSET_FROM_CENTRE * 2) - 1 - PATH_OFFSET_FROM_CENTRE;
 
         for y in BORDER..build_data.height - BORDER {
             if !(y > wall_gap_y - HALF_PATH_THICKNESS && y < wall_gap_y + HALF_PATH_THICKNESS) {
@@ -384,14 +387,19 @@ impl TownBuilder {
                     let gravel_idx = build_data.map.xy_idx(x, y);
                     let roll = rng.roll_dice(1, 6);
                     match roll {
-                        1 => build_data.map.tiles[gravel_idx] = TileType::Foliage,
-                        2 => build_data.map.tiles[gravel_idx] = TileType::HeavyFoliage,
+                        1 => {
+                            build_data.map.tiles[gravel_idx] = TileType::Foliage;
+                        }
+                        2 => {
+                            build_data.map.tiles[gravel_idx] = TileType::HeavyFoliage;
+                        }
                         _ => {}
                     }
-                    if y > BORDER + 1
-                        && y < build_data.height - BORDER - 1
-                        && x > OFFSET_FROM_LEFT + 2
-                        && x < build_data.width - BORDER - 1
+                    if
+                        y > BORDER + 1 &&
+                        y < build_data.height - BORDER - 1 &&
+                        x > OFFSET_FROM_LEFT + 2 &&
+                        x < build_data.width - BORDER - 1
                     {
                         available_building_tiles.insert(gravel_idx);
                     }
@@ -420,7 +428,7 @@ impl TownBuilder {
         &mut self,
         rng: &mut rltk::RandomNumberGenerator,
         build_data: &mut BuilderMap,
-        available_building_tiles: &mut HashSet<usize>,
+        available_building_tiles: &mut HashSet<usize>
     ) -> Vec<(i32, i32, i32, i32)> {
         let mut buildings: Vec<(i32, i32, i32, i32)> = Vec::new();
         let mut n_buildings = 0;
@@ -458,9 +466,9 @@ impl TownBuilder {
                         build_data.map.tiles[idx] = TileType::WoodFloor;
                         available_building_tiles.remove(&idx);
                         available_building_tiles.remove(&(idx + 1));
-                        available_building_tiles.remove(&(idx + build_data.width as usize));
+                        available_building_tiles.remove(&(idx + (build_data.width as usize)));
                         available_building_tiles.remove(&(idx - 1));
-                        available_building_tiles.remove(&(idx - build_data.width as usize));
+                        available_building_tiles.remove(&(idx - (build_data.width as usize)));
                     }
                 }
                 build_data.take_snapshot();
@@ -480,10 +488,10 @@ impl TownBuilder {
                     if build_data.map.tiles[idx + 1] != TileType::WoodFloor {
                         neighbours += 1;
                     }
-                    if build_data.map.tiles[idx - build_data.width as usize] != TileType::WoodFloor {
+                    if build_data.map.tiles[idx - (build_data.width as usize)] != TileType::WoodFloor {
                         neighbours += 1;
                     }
-                    if build_data.map.tiles[idx + build_data.width as usize] != TileType::WoodFloor {
+                    if build_data.map.tiles[idx + (build_data.width as usize)] != TileType::WoodFloor {
                         neighbours += 1;
                     }
                     if neighbours > 0 {
@@ -503,12 +511,12 @@ impl TownBuilder {
         rng: &mut rltk::RandomNumberGenerator,
         build_data: &mut BuilderMap,
         buildings: &mut Vec<(i32, i32, i32, i32)>,
-        wall_gap_y: i32,
+        wall_gap_y: i32
     ) -> Vec<usize> {
         let mut doors = Vec::new();
         for building in buildings.iter() {
             let door_x = building.0 + 1 + rng.roll_dice(1, building.2 - 3);
-            let cy = building.1 + (building.3 / 2);
+            let cy = building.1 + building.3 / 2;
             let idx = if cy > wall_gap_y {
                 // Door on north wall
                 build_data.map.xy_idx(door_x, building.1)
@@ -529,7 +537,7 @@ impl TownBuilder {
         tiles: &[usize],
         tiletype: TileType,
         new_road_tiletype: TileType,
-        include_new_tiles: bool,
+        include_new_tiles: bool
     ) {
         let mut roads = self.find_tiletype(build_data, tiletype);
 
@@ -537,15 +545,15 @@ impl TownBuilder {
         for tile_idx in tiles.iter() {
             let mut nearest_tiletype: Vec<(usize, f32)> = Vec::new();
             let tile_pt = rltk::Point::new(
-                *tile_idx as i32 % build_data.map.width as i32,
-                *tile_idx as i32 / build_data.map.width as i32,
+                (*tile_idx as i32) % (build_data.map.width as i32),
+                (*tile_idx as i32) / (build_data.map.width as i32)
             );
             for r in roads.iter() {
                 nearest_tiletype.push((
                     *r,
                     rltk::DistanceAlg::Manhattan.distance2d(
                         tile_pt,
-                        rltk::Point::new(*r as i32 % build_data.map.width, *r as i32 / build_data.map.width),
+                        rltk::Point::new((*r as i32) % build_data.map.width, (*r as i32) / build_data.map.width)
                     ),
                 ));
             }

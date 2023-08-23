@@ -1,4 +1,4 @@
-use super::{camera::get_screen_bounds, Attributes, Hidden, Map, Name, Pools, Position, Renderable, Rltk, World, RGB};
+use super::{ camera::get_screen_bounds, Attributes, Hidden, Map, Name, Pools, Position, Renderable, Rltk, World, RGB };
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -26,15 +26,15 @@ impl Tooltip {
                 max = s.0.len();
             }
         }
-        return max as i32 + 2i32;
+        return (max as i32) + 2i32;
     }
     fn height(&self) -> i32 {
-        return self.lines.len() as i32 + 2i32;
+        return (self.lines.len() as i32) + 2i32;
     }
     fn render(&self, ctx: &mut Rltk, x: i32, y: i32) {
         ctx.draw_box(x, y, self.width() - 1, self.height() - 1, RGB::named(WHITE), RGB::named(BLACK));
         for (i, s) in self.lines.iter().enumerate() {
-            ctx.print_color(x + 1, y + i as i32 + 1, s.1, RGB::named(BLACK), &s.0);
+            ctx.print_color(x + 1, y + (i as i32) + 1, s.1, RGB::named(BLACK), &s.0);
         }
     }
 }

@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use std::collections::{HashMap, HashSet};
+use std::collections::{ HashMap, HashSet };
 
 #[derive(Deserialize, Debug)]
 pub struct FactionData {

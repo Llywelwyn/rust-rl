@@ -1,6 +1,16 @@
 use crate::{
-    gamelog, gui::obfuscate_name, Beatitude, Charges, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name,
-    ObfuscatedName, Position, WantsToDropItem,
+    gamelog,
+    gui::obfuscate_name,
+    Beatitude,
+    Charges,
+    EquipmentChanged,
+    InBackpack,
+    MagicItem,
+    MasterDungeonMap,
+    Name,
+    ObfuscatedName,
+    Position,
+    WantsToDropItem,
 };
 use specs::prelude::*;
 
@@ -53,21 +63,23 @@ impl<'a> System<'a> for ItemDropSystem {
             backpack.remove(to_drop.item);
 
             if entity == *player_entity {
-                gamelog::Logger::new()
+                gamelog::Logger
+                    ::new()
                     .append("You drop the")
-                    .item_name_n(format!(
-                        "{}",
-                        obfuscate_name(
-                            to_drop.item,
-                            &names,
-                            &magic_items,
-                            &obfuscated_names,
-                            &beatitudes,
-                            &dm,
-                            Some(&wands)
+                    .item_name_n(
+                        format!(
+                            "{}",
+                            obfuscate_name(
+                                to_drop.item,
+                                &names,
+                                &magic_items,
+                                &obfuscated_names,
+                                &beatitudes,
+                                &dm,
+                                Some(&wands)
+                            ).0
                         )
-                        .0
-                    ))
+                    )
                     .period()
                     .log();
             }

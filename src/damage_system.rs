@@ -1,5 +1,15 @@
 use super::{
-    gamelog, gui::renderable_colour, Equipped, InBackpack, Item, LootTable, Name, Player, Pools, Position, Renderable,
+    gamelog,
+    gui::renderable_colour,
+    Equipped,
+    InBackpack,
+    Item,
+    LootTable,
+    Name,
+    Player,
+    Pools,
+    Position,
+    Renderable,
     RunState,
 };
 use rltk::prelude::*;
@@ -24,7 +34,8 @@ pub fn delete_the_dead(ecs: &mut World) {
                         if let Some(victim_name) = victim_name {
                             let item = items.get(entity);
                             if let Some(_item) = item {
-                                gamelog::Logger::new()
+                                gamelog::Logger
+                                    ::new()
                                     .append("The")
                                     .colour(renderable_colour(&renderables, entity))
                                     .append(&victim_name.name)
@@ -32,7 +43,8 @@ pub fn delete_the_dead(ecs: &mut World) {
                                     .append("is destroyed!")
                                     .log();
                             } else {
-                                gamelog::Logger::new()
+                                gamelog::Logger
+                                    ::new()
                                     .append("The")
                                     .colour(renderable_colour(&renderables, entity))
                                     .append(&victim_name.name)
@@ -41,7 +53,7 @@ pub fn delete_the_dead(ecs: &mut World) {
                                     .log();
                             }
                         }
-                        dead.push(entity)
+                        dead.push(entity);
                     }
                     // The player died, go to GameOver.
                     Some(_) => {
@@ -60,7 +72,7 @@ pub fn delete_the_dead(ecs: &mut World) {
             &loot.0,
             None,
             crate::raws::SpawnType::AtPosition { x: loot.1.x, y: loot.1.y },
-            0,
+            0
         );
     }
     for item in items_to_delete {
@@ -104,8 +116,11 @@ fn handle_dead_entity_items(ecs: &mut World, dead: &Vec<Entity>) -> (Vec<Entity>
         if let Some(table) = loot_tables.get(*victim) {
             let roll: f32 = rng.rand();
             if roll < table.chance {
-                let potential_drop =
-                    crate::raws::roll_on_loot_table(&crate::raws::RAWS.lock().unwrap(), &mut rng, &table.table);
+                let potential_drop = crate::raws::roll_on_loot_table(
+                    &crate::raws::RAWS.lock().unwrap(),
+                    &mut rng,
+                    &table.table
+                );
                 if let Some(id) = potential_drop {
                     if let Some(pos) = pos {
                         to_spawn.push((id, pos.clone()));

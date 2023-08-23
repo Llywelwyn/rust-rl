@@ -1,4 +1,4 @@
-use super::{ParticleLifetime, Position, Renderable, Rltk};
+use super::{ ParticleLifetime, Position, Renderable, Rltk };
 use rltk::RGB;
 use specs::prelude::*;
 
@@ -69,7 +69,10 @@ fn create_delayed_particles(ecs: &mut World, ctx: &Rltk) {
     let mut renderables = ecs.write_storage::<Renderable>();
     let mut particles = ecs.write_storage::<ParticleLifetime>();
     for handled in handled_particles {
-        let index = particle_builder.delayed_requests.iter().position(|x| x.particle == handled).unwrap();
+        let index = particle_builder.delayed_requests
+            .iter()
+            .position(|x| x.particle == handled)
+            .unwrap();
         particle_builder.delayed_requests.remove(index);
         let p = entities.create();
         positions.insert(p, Position { x: handled.x, y: handled.y }).expect("Could not insert position");
@@ -113,8 +116,10 @@ impl ParticleBuilder {
     }
 
     pub fn delay(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32, delay: f32) {
-        self.delayed_requests
-            .push(DelayedParticleRequest { delay: delay, particle: ParticleRequest { x, y, fg, bg, glyph, lifetime } });
+        self.delayed_requests.push(DelayedParticleRequest {
+            delay: delay,
+            particle: ParticleRequest { x, y, fg, bg, glyph, lifetime },
+        });
     }
 
     pub fn damage_taken(&mut self, x: i32, y: i32) {
@@ -124,7 +129,7 @@ impl ParticleBuilder {
             rltk::RGB::named(rltk::ORANGE),
             rltk::RGB::named(rltk::BLACK),
             rltk::to_cp437('‼'),
-            DEFAULT_PARTICLE_LIFETIME,
+            DEFAULT_PARTICLE_LIFETIME
         );
     }
 
@@ -135,7 +140,7 @@ impl ParticleBuilder {
             rltk::RGB::named(rltk::CYAN),
             rltk::RGB::named(rltk::BLACK),
             rltk::to_cp437('‼'),
-            DEFAULT_PARTICLE_LIFETIME,
+            DEFAULT_PARTICLE_LIFETIME
         );
     }
 
@@ -146,7 +151,7 @@ impl ParticleBuilder {
             rltk::RGB::named(rltk::CHOCOLATE),
             rltk::RGB::named(rltk::BLACK),
             rltk::to_cp437('‼'),
-            SHORT_PARTICLE_LIFETIME,
+            SHORT_PARTICLE_LIFETIME
         );
     }
 
@@ -160,7 +165,7 @@ impl ParticleBuilder {
         bg: RGB,
         glyph: rltk::FontCharType,
         lifetime: f32,
-        secondary_fg: RGB,
+        secondary_fg: RGB
     ) {
         let eighth_l = lifetime / 8.0;
         let quarter_l = eighth_l * 2.0;
@@ -231,10 +236,12 @@ impl<'a> System<'a> for ParticleSpawnSystem {
             let p = entities.create();
             positions.insert(p, Position { x: new_particle.x, y: new_particle.y }).expect("Could not insert position");
             renderables
-                .insert(
-                    p,
-                    Renderable { fg: new_particle.fg, bg: new_particle.bg, glyph: new_particle.glyph, render_order: 0 },
-                )
+                .insert(p, Renderable {
+                    fg: new_particle.fg,
+                    bg: new_particle.bg,
+                    glyph: new_particle.glyph,
+                    render_order: 0,
+                })
                 .expect("Could not insert renderables");
             particles
                 .insert(p, ParticleLifetime { lifetime_ms: new_particle.lifetime })

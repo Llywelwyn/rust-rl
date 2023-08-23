@@ -1,6 +1,16 @@
 use crate::{
-    gamelog, gui::obfuscate_name, Beatitude, Charges, EquipmentChanged, InBackpack, MagicItem, MasterDungeonMap, Name,
-    ObfuscatedName, Position, WantsToPickupItem,
+    gamelog,
+    gui::obfuscate_name,
+    Beatitude,
+    Charges,
+    EquipmentChanged,
+    InBackpack,
+    MagicItem,
+    MasterDungeonMap,
+    Name,
+    ObfuscatedName,
+    Position,
+    WantsToPickupItem,
 };
 use specs::prelude::*;
 
@@ -45,21 +55,23 @@ impl<'a> System<'a> for ItemCollectionSystem {
                 .expect("Unable to insert EquipmentChanged.");
 
             if pickup.collected_by == *player_entity {
-                gamelog::Logger::new()
+                gamelog::Logger
+                    ::new()
                     .append("You pick up the")
-                    .item_name_n(format!(
-                        "{}",
-                        obfuscate_name(
-                            pickup.item,
-                            &names,
-                            &magic_items,
-                            &obfuscated_names,
-                            &beatitudes,
-                            &dm,
-                            Some(&wands)
+                    .item_name_n(
+                        format!(
+                            "{}",
+                            obfuscate_name(
+                                pickup.item,
+                                &names,
+                                &magic_items,
+                                &obfuscated_names,
+                                &beatitudes,
+                                &dm,
+                                Some(&wands)
+                            ).0
                         )
-                        .0
-                    ))
+                    )
                     .period()
                     .log();
             }

@@ -1,5 +1,5 @@
-use super::{Map, Rect, TileType};
-use std::cmp::{max, min};
+use super::{ Map, Rect, TileType };
+use std::cmp::{ max, min };
 
 #[allow(dead_code)]
 pub fn apply_room_to_map(map: &mut Map, room: &Rect) {

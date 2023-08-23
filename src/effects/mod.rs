@@ -23,24 +23,51 @@ lazy_static! {
 }
 
 pub enum EffectType {
-    Damage { amount: i32 },
-    Healing { amount: i32, increment_max: bool },
-    Confusion { turns: i32 },
+    Damage {
+        amount: i32,
+    },
+    Healing {
+        amount: i32,
+        increment_max: bool,
+    },
+    Confusion {
+        turns: i32,
+    },
     Bloodstain,
-    Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, delay: f32 },
+    Particle {
+        glyph: FontCharType,
+        fg: RGB,
+        bg: RGB,
+        lifespan: f32,
+        delay: f32,
+    },
     EntityDeath,
-    ItemUse { item: Entity },
-    ModifyNutrition { amount: i32 },
-    TriggerFire { trigger: Entity },
+    ItemUse {
+        item: Entity,
+    },
+    ModifyNutrition {
+        amount: i32,
+    },
+    TriggerFire {
+        trigger: Entity,
+    },
 }
 
 #[derive(Clone)]
 #[allow(dead_code)]
 pub enum Targets {
-    Entity { target: Entity },
-    EntityList { targets: Vec<Entity> },
-    Tile { target: usize },
-    TileList { targets: Vec<usize> },
+    Entity {
+        target: Entity,
+    },
+    EntityList {
+        targets: Vec<Entity>,
+    },
+    Tile {
+        target: usize,
+    },
+    TileList {
+        targets: Vec<usize>,
+    },
 }
 
 pub struct EffectSpawner {
@@ -61,7 +88,9 @@ pub fn run_effects_queue(ecs: &mut World) {
     loop {
         let dead_entity: Option<Entity> = DEAD_ENTITIES.lock().unwrap().pop_front();
         if let Some(dead_entity) = dead_entity {
-            EFFECT_QUEUE.lock().unwrap().retain(|x| x.source != Some(dead_entity));
+            EFFECT_QUEUE.lock()
+                .unwrap()
+                .retain(|x| x.source != Some(dead_entity));
         } else {
             break;
         }
@@ -147,9 +176,5 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
 }
 
 pub fn get_noncursed(buc: &BUC) -> bool {
-    if buc == &BUC::Cursed {
-        false
-    } else {
-        true
-    }
+    if buc == &BUC::Cursed { false } else { true }
 }

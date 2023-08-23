@@ -1,4 +1,4 @@
-use super::{spawner, Map, Position, Rect, TileType, SHOW_MAPGEN};
+use super::{ spawner, Map, Position, Rect, TileType, SHOW_MAPGEN };
 mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod bsp_interior;
@@ -26,7 +26,7 @@ use room_based_stairs::*;
 mod room_based_starting_position;
 use room_based_starting_position::*;
 mod area_starting_points;
-use area_starting_points::{AreaStartingPosition, XStart, YStart};
+use area_starting_points::{ AreaStartingPosition, XStart, YStart };
 mod cull_unreachable;
 use cull_unreachable::CullUnreachable;
 mod distant_exit;
@@ -45,7 +45,7 @@ use rooms_corridors_dogleg::DoglegCorridors;
 mod rooms_corridors_bsp;
 use rooms_corridors_bsp::BspCorridors;
 mod room_sorter;
-use room_sorter::{RoomSort, RoomSorter};
+use room_sorter::{ RoomSort, RoomSorter };
 mod room_draw;
 use room_draw::RoomDrawer;
 mod rooms_corridors_nearest;
@@ -101,7 +101,7 @@ impl BuilderChain {
         height: i32,
         difficulty: i32,
         name: S,
-        initial_player_level: i32,
+        initial_player_level: i32
     ) -> BuilderChain {
         BuilderChain {
             starter: None,
@@ -122,7 +122,9 @@ impl BuilderChain {
 
     pub fn start_with(&mut self, starter: Box<dyn InitialMapBuilder>) {
         match self.starter {
-            None => self.starter = Some(starter),
+            None => {
+                self.starter = Some(starter);
+            }
             Some(_) => panic!("You can only have one starting builder."),
         };
     }
@@ -168,17 +170,29 @@ fn random_start_position(rng: &mut rltk::RandomNumberGenerator) -> (XStart, YSta
     let x;
     let xroll = rng.roll_dice(1, 3);
     match xroll {
-        1 => x = XStart::LEFT,
-        2 => x = XStart::CENTRE,
-        _ => x = XStart::RIGHT,
+        1 => {
+            x = XStart::LEFT;
+        }
+        2 => {
+            x = XStart::CENTRE;
+        }
+        _ => {
+            x = XStart::RIGHT;
+        }
     }
 
     let y;
     let yroll = rng.roll_dice(1, 3);
     match yroll {
-        1 => y = YStart::BOTTOM,
-        2 => y = YStart::CENTRE,
-        _ => y = YStart::TOP,
+        1 => {
+            y = YStart::BOTTOM;
+        }
+        2 => {
+            y = YStart::CENTRE;
+        }
+        _ => {
+            y = YStart::TOP;
+        }
     }
 
     (x, y)
@@ -305,7 +319,7 @@ pub fn random_builder(
     width: i32,
     height: i32,
     difficulty: i32,
-    initial_player_level: i32,
+    initial_player_level: i32
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
     let mut builder = BuilderChain::new(new_id, width, height, difficulty, "the dungeon", initial_player_level);
@@ -313,7 +327,9 @@ pub fn random_builder(
     let mut want_doors = true;
     match type_roll {
         1 => random_room_builder(rng, &mut builder),
-        _ => want_doors = random_shape_builder(rng, &mut builder),
+        _ => {
+            want_doors = random_shape_builder(rng, &mut builder);
+        }
     }
 
     /*
@@ -354,7 +370,7 @@ pub fn level_builder(
     rng: &mut rltk::RandomNumberGenerator,
     width: i32,
     height: i32,
-    initial_player_level: i32,
+    initial_player_level: i32
 ) -> BuilderChain {
     // TODO: With difficulty and ID/depth decoupled, this can be used for branches later.
     let difficulty = new_id;
