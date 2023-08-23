@@ -103,22 +103,30 @@ impl State {
     }
 
     fn run_systems(&mut self) {
-        let mut mapindex = spatial::MapIndexingSystem {};
-        let mut vis = VisibilitySystem {};
+        let mut hunger_clock = hunger_system::HungerSystem {};
+        let mut particle_system = particle_system::ParticleSpawnSystem {};
+
+        // Order is *very* important here, to ensure effects take place in the right order,
+        // and that the player/AI are making decisions based on the most up-to-date info.
+
+        self.resolve_entity_decisions(); //             Push Player messages of intent to effects queue, and run it.
+        self.refresh_indexes(); //                      Get up-to-date map and viewsheds prior to AI turn.
+        self.run_ai(); //                               Get AI decision-making.
+        self.resolve_entity_decisions(); //             Push AI messages of intent to effects queue, and run it.
+        hunger_clock.run_now(&self.ecs); //             Tick the hunger clock (on the turn clock's turn)
+        particle_system.run_now(&self.ecs); //          Spawn/delete particles (turn independent)
+        self.ecs.maintain();
+    }
+
+    fn resolve_entity_decisions(&mut self) {
         let mut trigger_system = trigger_system::TriggerSystem {};
-        let mut melee_system = MeleeCombatSystem {};
         let mut inventory_system = inventory::ItemCollectionSystem {};
         let mut item_equip_system = inventory::ItemEquipSystem {};
         let mut item_use_system = inventory::ItemUseSystem {};
         let mut item_drop_system = inventory::ItemDropSystem {};
         let mut item_remove_system = inventory::ItemRemoveSystem {};
         let mut item_id_system = inventory::ItemIdentificationSystem {};
-        let mut hunger_clock = hunger_system::HungerSystem {};
-        let mut particle_system = particle_system::ParticleSpawnSystem {};
-
-        mapindex.run_now(&self.ecs);
-        vis.run_now(&self.ecs);
-        self.run_ai();
+        let mut melee_system = MeleeCombatSystem {};
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
         item_equip_system.run_now(&self.ecs);
@@ -127,11 +135,15 @@ impl State {
         item_remove_system.run_now(&self.ecs);
         item_id_system.run_now(&self.ecs);
         melee_system.run_now(&self.ecs);
-        effects::run_effects_queue(&mut self.ecs);
-        hunger_clock.run_now(&self.ecs);
-        particle_system.run_now(&self.ecs);
 
-        self.ecs.maintain();
+        effects::run_effects_queue(&mut self.ecs);
+    }
+
+    fn refresh_indexes(&mut self) {
+        let mut mapindex = spatial::MapIndexingSystem {};
+        let mut vis = VisibilitySystem {};
+        mapindex.run_now(&self.ecs);
+        vis.run_now(&self.ecs);
     }
 
     fn run_ai(&mut self) {
@@ -157,11 +169,6 @@ impl State {
         flee_ai.run_now(&self.ecs);
         chase_ai.run_now(&self.ecs);
         default_move_ai.run_now(&self.ecs);
-    }
-
-    fn run_map_index(&mut self) {
-        let mut mapindex = spatial::MapIndexingSystem {};
-        mapindex.run_now(&self.ecs);
     }
 
     fn goto_level(&mut self, offset: i32) {
@@ -243,7 +250,7 @@ impl GameState for State {
                 // We refresh the index, and run anything that might
                 // still be in the queue, just to make 100% sure that
                 // there are no lingering effects from the last tick.
-                self.run_map_index();
+                self.refresh_indexes();
                 effects::run_effects_queue(&mut self.ecs);
                 // Sanity-checking that the player actually *should*
                 // be taking a turn before giving them one. If they
@@ -261,10 +268,6 @@ impl GameState for State {
                 } else {
                     new_runstate = RunState::Ticking;
                 }
-                // Fire the events queue immediately after the player
-                // turn, just to make 100% sure that everything happens
-                // as the player was expecting it to.
-                effects::run_effects_queue(&mut self.ecs);
             }
             RunState::Ticking => {
                 while new_runstate == RunState::Ticking {
