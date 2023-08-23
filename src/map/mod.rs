@@ -8,6 +8,7 @@ pub use interval_spawning_system::try_spawn_interval;
 pub mod dungeon;
 pub use dungeon::{ level_transition, MasterDungeonMap };
 pub mod themes;
+use crate::config::visuals::MAX_COLOUR_OFFSET_PERCENT;
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.
@@ -48,7 +49,11 @@ impl Map {
             lit_tiles: vec![true; map_tile_count], // NYI: Light sources. Once those exist, we can set this to false.
             telepath_tiles: vec![false; map_tile_count],
             colour_offset: vec![(1.0, 1.0, 1.0); map_tile_count],
-            additional_fg_offset: rltk::RGB::from_u8(OFFSET_PERCENT as u8, OFFSET_PERCENT as u8, OFFSET_PERCENT as u8),
+            additional_fg_offset: rltk::RGB::from_u8(
+                MAX_COLOUR_OFFSET_PERCENT as u8,
+                MAX_COLOUR_OFFSET_PERCENT as u8,
+                MAX_COLOUR_OFFSET_PERCENT as u8
+            ),
             id: new_id,
             name: name.to_string(),
             difficulty: difficulty,
@@ -56,14 +61,16 @@ impl Map {
             view_blocked: HashSet::new(),
         };
 
-        const OFFSET_PERCENT: i32 = 20;
-        const TWICE_OFFSET: i32 = OFFSET_PERCENT * 2;
+        const TWICE_OFFSET: i32 = MAX_COLOUR_OFFSET_PERCENT * 2;
         let mut rng = rltk::RandomNumberGenerator::new();
 
         for idx in 0..map.colour_offset.len() {
-            let red_roll: f32 = ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32) / 100f32 + 1.0;
-            let green_roll: f32 = ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32) / 100f32 + 1.0;
-            let blue_roll: f32 = ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - OFFSET_PERCENT) as f32) / 100f32 + 1.0;
+            let red_roll: f32 =
+                ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - MAX_COLOUR_OFFSET_PERCENT) as f32) / 100f32 + 1.0;
+            let green_roll: f32 =
+                ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - MAX_COLOUR_OFFSET_PERCENT) as f32) / 100f32 + 1.0;
+            let blue_roll: f32 =
+                ((rng.roll_dice(1, TWICE_OFFSET - 1) + 1 - MAX_COLOUR_OFFSET_PERCENT) as f32) / 100f32 + 1.0;
             map.colour_offset[idx] = (red_roll, green_roll, blue_roll);
         }
 

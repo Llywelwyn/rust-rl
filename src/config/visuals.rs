@@ -3,6 +3,7 @@ pub const WITH_SCANLINES: bool = false; // Adds scanlines to the screen.
 pub const WITH_SCREEN_BURN: bool = false; // Requires WITH_SCANLINES.
 pub const WITH_DARKEN_BY_DISTANCE: bool = true; // If further away tiles should get darkened, instead of a harsh transition to non-visible.
 
+pub const MAX_COLOUR_OFFSET_PERCENT: i32 = 30;
 pub const WITH_SCANLINES_BRIGHTEN_AMOUNT: f32 = 0.1; // 0.0 = no brightening, 1.0 = full brightening.
 pub const NON_VISIBLE_MULTIPLIER: f32 = 0.3; // 0.0 = black, 1.0 = full colour.
 pub const NON_VISIBLE_MULTIPLIER_IF_SCANLINES: f32 = 0.8; // as above, but when using scanlines. should be higher.
