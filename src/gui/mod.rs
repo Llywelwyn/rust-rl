@@ -700,7 +700,6 @@ pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
     let entities = ecs.entities();
     let renderables = ecs.read_storage::<Renderable>();
 
-    let mut inventory_ids: BTreeMap<Entity, Entity> = BTreeMap::new();
     let mut player_inventory: BTreeMap<UniqueInventoryItem, (Entity, i32)> = BTreeMap::new();
     for (entity, _pack, name, renderable) in (&entities, &backpack, &names, &renderables)
         .join()
