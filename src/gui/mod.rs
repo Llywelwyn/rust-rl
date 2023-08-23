@@ -236,8 +236,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             )
         );
         y += 1;
-        let (player_inventory, _inventory_ids) = get_player_inventory(&ecs);
-        y = print_options(player_inventory, 72, y, ctx).0;
+        let player_inventory = get_player_inventory(&ecs);
+        y = print_options(&player_inventory, 72, y, ctx).0;
 
         // Draw spells - if we have any -- NYI!
         if let Some(known_spells) = ecs.read_storage::<KnownSpells>().get(*player_entity) {
@@ -403,16 +403,11 @@ pub enum ItemMenuResult {
     Selected,
 }
 
-pub fn print_options(
-    inventory: BTreeMap<UniqueInventoryItem, i32>,
-    mut x: i32,
-    mut y: i32,
-    ctx: &mut Rltk
-) -> (i32, i32) {
+pub fn print_options(inventory: &PlayerInventory, mut x: i32, mut y: i32, ctx: &mut Rltk) -> (i32, i32) {
     let mut j = 0;
     let initial_x: i32 = x;
     let mut width: i32 = -1;
-    for (item, item_count) in &inventory {
+    for (item, (_e, item_count)) in inventory {
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
         if j < 26 {
@@ -465,9 +460,9 @@ pub fn print_options(
     return (y, width);
 }
 
-pub fn get_max_inventory_width(inventory: &BTreeMap<UniqueInventoryItem, i32>) -> i32 {
+pub fn get_max_inventory_width(inventory: &PlayerInventory) -> i32 {
     let mut width: i32 = 0;
-    for (item, count) in inventory {
+    for (item, (e, count)) in inventory {
         let mut this_width = item.display_name.singular.len() as i32;
         // Clean this up. It should use consts.
         this_width += 4; // The spaces before and after the character to select this item, etc.
@@ -692,18 +687,21 @@ pub struct UniqueInventoryItem {
     rgb: (u8, u8, u8),
     renderables: (u8, u8, u8),
     glyph: u16,
+    beatitude_status: i32,
     name: String,
 }
 
-pub fn get_player_inventory(ecs: &World) -> (BTreeMap<UniqueInventoryItem, i32>, BTreeMap<String, Entity>) {
+pub type PlayerInventory = BTreeMap<UniqueInventoryItem, (Entity, i32)>;
+
+pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
     let player_entity = ecs.fetch::<Entity>();
     let names = ecs.read_storage::<Name>();
     let backpack = ecs.read_storage::<InBackpack>();
     let entities = ecs.entities();
     let renderables = ecs.read_storage::<Renderable>();
 
-    let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
-    let mut player_inventory: BTreeMap<UniqueInventoryItem, i32> = BTreeMap::new();
+    let mut inventory_ids: BTreeMap<Entity, Entity> = BTreeMap::new();
+    let mut player_inventory: BTreeMap<UniqueInventoryItem, (Entity, i32)> = BTreeMap::new();
     for (entity, _pack, name, renderable) in (&entities, &backpack, &names, &renderables)
         .join()
         .filter(|item| item.1.owner == *player_entity) {
@@ -715,26 +713,36 @@ pub fn get_player_inventory(ecs: &World) -> (BTreeMap<UniqueInventoryItem, i32>,
             (renderable.fg.b * 255.0) as u8,
         );
         let (singular, plural) = obfuscate_name_ecs(ecs, entity);
+        let beatitude_status = if let Some(beatitude) = ecs.read_storage::<Beatitude>().get(entity) {
+            match beatitude.buc {
+                BUC::Blessed => 1,
+                BUC::Uncursed => 2,
+                BUC::Cursed => 3,
+            }
+        } else {
+            0
+        };
+        let unique_item = UniqueInventoryItem {
+            display_name: DisplayName { singular: singular.clone(), plural: plural },
+            rgb: item_colour,
+            renderables: renderables,
+            glyph: renderable.glyph,
+            beatitude_status: beatitude_status,
+            name: name.name.clone(),
+        };
         player_inventory
-            .entry(UniqueInventoryItem {
-                display_name: DisplayName { singular: singular.clone(), plural: plural },
-                rgb: item_colour,
-                renderables: renderables,
-                glyph: renderable.glyph,
-                name: name.name.clone(),
-            })
-            .and_modify(|count| {
+            .entry(unique_item)
+            .and_modify(|(e, count)| {
                 *count += 1;
             })
-            .or_insert(1);
-        inventory_ids.entry(singular).or_insert(entity);
+            .or_insert((entity, 1));
     }
 
-    return (player_inventory, inventory_ids);
+    return player_inventory;
 }
 
 pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
-    let (player_inventory, inventory_ids) = get_player_inventory(&gs.ecs);
+    let player_inventory = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
 
     let (x_offset, y_offset) = (1, 10);
@@ -751,7 +759,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     let y = 3 + y_offset;
     let width = get_max_inventory_width(&player_inventory);
     ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    print_options(player_inventory, x + 1, y + 1, ctx);
+    print_options(&player_inventory, x + 1, y + 1, ctx);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -764,10 +772,10 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
                         return (
                             ItemMenuResult::Selected,
                             Some(
-                                *inventory_ids
+                                player_inventory
                                     .iter()
                                     .nth(selection as usize)
-                                    .unwrap().1
+                                    .unwrap().1.0
                             ),
                         );
                     }
@@ -778,7 +786,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
 }
 
 pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
-    let (player_inventory, inventory_ids) = get_player_inventory(&gs.ecs);
+    let player_inventory = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
 
     let (x_offset, y_offset) = (1, 10);
@@ -795,7 +803,7 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     let y = 3 + y_offset;
     let width = get_max_inventory_width(&player_inventory);
     ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    print_options(player_inventory, x + 1, y + 1, ctx);
+    print_options(&player_inventory, x + 1, y + 1, ctx);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -808,10 +816,10 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
                         return (
                             ItemMenuResult::Selected,
                             Some(
-                                *inventory_ids
+                                player_inventory
                                     .iter()
                                     .nth(selection as usize)
-                                    .unwrap().1
+                                    .unwrap().1.0
                             ),
                         );
                     }

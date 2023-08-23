@@ -6,6 +6,7 @@ use super::{
     renderable_colour,
     ItemMenuResult,
     UniqueInventoryItem,
+    BUC,
 };
 use crate::{
     gamelog,
@@ -89,23 +90,32 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
             .log();
         return (ItemMenuResult::Selected, Some(build_identify_iterator().nth(0).unwrap().0));
     }
-    let mut player_inventory: BTreeMap<UniqueInventoryItem, i32> = BTreeMap::new();
-    let mut inventory_ids: BTreeMap<String, Entity> = BTreeMap::new();
+    let mut player_inventory: super::PlayerInventory = BTreeMap::new();
     for (entity, _i, renderable, name) in build_identify_iterator() {
         let (singular, plural) = obfuscate_name_ecs(&gs.ecs, entity);
+        let beatitude_status = if let Some(beatitude) = gs.ecs.read_storage::<Beatitude>().get(entity) {
+            match beatitude.buc {
+                BUC::Blessed => 1,
+                BUC::Uncursed => 2,
+                BUC::Cursed => 3,
+            }
+        } else {
+            0
+        };
+        let unique_item = UniqueInventoryItem {
+            display_name: super::DisplayName { singular: singular.clone(), plural: plural.clone() },
+            rgb: item_colour_ecs(&gs.ecs, entity),
+            renderables: renderable_colour(&renderables, entity),
+            glyph: renderable.glyph,
+            beatitude_status: beatitude_status,
+            name: name.name.clone(),
+        };
         player_inventory
-            .entry(UniqueInventoryItem {
-                display_name: super::DisplayName { singular: singular.clone(), plural: plural.clone() },
-                rgb: item_colour_ecs(&gs.ecs, entity),
-                renderables: renderable_colour(&renderables, entity),
-                glyph: renderable.glyph,
-                name: name.name.clone(),
-            })
-            .and_modify(|count| {
+            .entry(unique_item)
+            .and_modify(|(e, count)| {
                 *count += 1;
             })
-            .or_insert(1);
-        inventory_ids.entry(singular).or_insert(entity);
+            .or_insert((entity, 1));
     }
     // Get display args
     let width = get_max_inventory_width(&player_inventory);
@@ -120,7 +130,7 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
         "Identify which item? [aA-zZ][Esc.]"
     );
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
-    print_options(player_inventory, x + 1, y + 1, ctx);
+    print_options(&player_inventory, x + 1, y + 1, ctx);
     // Input
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -130,19 +140,19 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
                 _ => {
                     let selection = rltk::letter_to_option(key);
                     if selection > -1 && selection < (count as i32) {
-                        let item = inventory_ids
+                        let item = player_inventory
                             .iter()
                             .nth(selection as usize)
-                            .unwrap().1;
+                            .unwrap().1.0;
                         gamelog::Logger
                             ::new()
                             .append("You identify the")
-                            .colour(item_colour_ecs(&gs.ecs, *item))
-                            .append_n(obfuscate_name_ecs(&gs.ecs, *item).0)
+                            .colour(item_colour_ecs(&gs.ecs, item))
+                            .append_n(obfuscate_name_ecs(&gs.ecs, item).0)
                             .colour(WHITE)
                             .append("!")
                             .log();
-                        return (ItemMenuResult::Selected, Some(*item));
+                        return (ItemMenuResult::Selected, Some(item));
                     }
                     (ItemMenuResult::NoResponse, None)
                 }
