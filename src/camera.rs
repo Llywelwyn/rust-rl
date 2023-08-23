@@ -7,7 +7,6 @@ const SHOW_BOUNDARIES: bool = false;
 
 pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
-    //let (x_chars, y_chars) = ctx.get_char_size();
     let (x_chars, y_chars, x_offset, y_offset) = (69, 41, 1, 10);
 
     let centre_x = (x_chars / 2) as i32;

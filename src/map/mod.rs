@@ -22,7 +22,6 @@ pub struct Map {
     pub visible_tiles: Vec<bool>,
     pub lit_tiles: Vec<bool>,
     pub telepath_tiles: Vec<bool>,
-    // Combine these offsets into one Vec<(u8, u8, u8)>
     pub colour_offset: Vec<(f32, f32, f32)>,
     pub additional_fg_offset: rltk::RGB,
     pub id: i32,

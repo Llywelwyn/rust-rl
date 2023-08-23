@@ -1,8 +1,16 @@
-pub const NON_VISIBLE_MULTIPLIER: f32 = 0.3;
-pub const MAX_DARKENING: f32 = 0.45;
-pub const START_DARKEN_AT_N_TILES: f32 = 8.0;
+// POST-PROCESSING
+pub const WITH_SCANLINES: bool = false; // Adds scanlines to the screen.
+pub const WITH_SCREEN_BURN: bool = false; // Requires WITH_SCANLINES.
+pub const WITH_DARKEN_BY_DISTANCE: bool = true; // If further away tiles should get darkened, instead of a harsh transition to non-visible.
 
-pub const SHORT_PARTICLE_LIFETIME: f32 = 100.0;
+pub const WITH_SCANLINES_BRIGHTEN_AMOUNT: f32 = 0.1; // 0.0 = no brightening, 1.0 = full brightening.
+pub const NON_VISIBLE_MULTIPLIER: f32 = 0.3; // 0.0 = black, 1.0 = full colour.
+pub const NON_VISIBLE_MULTIPLIER_IF_SCANLINES: f32 = 0.8; // as above, but when using scanlines. should be higher.
+pub const MAX_DARKENING: f32 = 0.45; // 0.0 = black, 1.0 = full colour - only used if WITH_DARKEN_BY_DISTANCE is true.
+pub const MAX_DARKENING_IF_SCANLINES: f32 = 0.9; // as above, but when using scanlines. should be higher.
+pub const START_DARKEN_AT_N_TILES: f32 = 8.0; // start darkening at this distance (should always be less than entity::DEFAULT_VIEWSHED_STANDARD).
+
+pub const SHORT_PARTICLE_LIFETIME: f32 = 100.0; // in ms
 pub const DEFAULT_PARTICLE_LIFETIME: f32 = 200.0;
 pub const LONG_PARTICLE_LIFETIME: f32 = 300.0;
 

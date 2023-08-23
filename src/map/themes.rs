@@ -4,8 +4,6 @@ use crate::config::visuals::*;
 use rltk::prelude::*;
 use std::ops::{ Add, Mul };
 
-const DARKEN_TILES_BY_DISTANCE: bool = true;
-
 pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (rltk::FontCharType, RGB, RGB) {
     let (glyph, mut fg, mut bg) = match map.id {
         2 => get_forest_theme_renderables(idx, map),
@@ -21,18 +19,28 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Poin
 
     fg = fg.add(map.additional_fg_offset);
     (fg, bg) = apply_colour_offset(fg, bg, map, idx);
+    if WITH_SCANLINES && WITH_SCANLINES_BRIGHTEN_AMOUNT > 0.0 {
+        (fg, bg) = brighten_by(fg, bg, WITH_SCANLINES_BRIGHTEN_AMOUNT);
+    }
     bg = apply_bloodstain_if_necessary(bg, map, idx);
     let (mut multiplier, mut nonvisible, mut darken) = (1.0, false, false);
     if !map.visible_tiles[idx] {
-        multiplier = NON_VISIBLE_MULTIPLIER;
+        multiplier = if WITH_SCANLINES { NON_VISIBLE_MULTIPLIER_IF_SCANLINES } else { NON_VISIBLE_MULTIPLIER };
         nonvisible = true;
     }
-    if other_pos.is_some() && DARKEN_TILES_BY_DISTANCE && !nonvisible {
+    if other_pos.is_some() && WITH_DARKEN_BY_DISTANCE && !nonvisible {
         let distance = darken_by_distance(
             Point::new((idx as i32) % map.width, (idx as i32) / map.width),
             other_pos.unwrap()
         );
-        multiplier = distance.clamp(NON_VISIBLE_MULTIPLIER, 1.0);
+        multiplier = distance.clamp(
+            if WITH_SCANLINES {
+                NON_VISIBLE_MULTIPLIER_IF_SCANLINES
+            } else {
+                NON_VISIBLE_MULTIPLIER
+            },
+            1.0
+        );
         darken = true;
     }
     if nonvisible || darken {
@@ -237,14 +245,6 @@ fn apply_colour_offset(mut fg: RGB, mut bg: RGB, map: &Map, idx: usize) -> (RGB,
     return (fg, bg);
 }
 
-fn darken_if_not_visible(mut fg: RGB, mut bg: RGB, map: &Map, idx: usize) -> (RGB, RGB) {
-    if !map.visible_tiles[idx] {
-        fg = fg.mul(NON_VISIBLE_MULTIPLIER);
-        bg = bg.mul(NON_VISIBLE_MULTIPLIER);
-    }
-    return (fg, bg);
-}
-
 fn apply_bloodstain_if_necessary(mut bg: RGB, map: &Map, idx: usize) -> RGB {
     if map.bloodstains.contains(&idx) {
         bg = bg.add(RGB::named(BLOODSTAIN_COLOUR));
@@ -266,5 +266,11 @@ fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
         (distance - START_DARKEN_AT_N_TILES) /
         ((crate::config::entity::DEFAULT_VIEWSHED_STANDARD as f32) - START_DARKEN_AT_N_TILES);
     let interp_factor = interp_factor.max(0.0).min(1.0); // Clamp [0-1]
-    return 1.0 - interp_factor * (1.0 - MAX_DARKENING);
+    return 1.0 - interp_factor * (1.0 - (if WITH_SCANLINES { MAX_DARKENING_IF_SCANLINES } else { MAX_DARKENING }));
+}
+
+fn brighten_by(mut fg: RGB, mut bg: RGB, amount: f32) -> (RGB, RGB) {
+    fg = fg.add(RGB::from_f32(amount, amount, amount));
+    bg = bg.add(RGB::from_f32(amount, amount, amount));
+    return (fg, bg);
 }

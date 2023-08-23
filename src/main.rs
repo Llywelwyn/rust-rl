@@ -617,14 +617,16 @@ fn main() -> rltk::BError {
     //rltk::link_resource!(CURSES14X16, "../resources/curses_14x16.png");
 
     use rltk::RltkBuilder;
-    let context = RltkBuilder::new()
+    let mut context = RltkBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
         .with_font("curses14x16.png", 14, 16)
         .with_tile_dimensions(14, 16)
         .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses14x16.png")
-        //.with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "terminal8x8.jpg")
         .build()?;
+    if config::visuals::WITH_SCANLINES {
+        context.with_post_scanlines(config::visuals::WITH_SCREEN_BURN);
+    }
 
     let mut gs = State {
         ecs: World::new(),
