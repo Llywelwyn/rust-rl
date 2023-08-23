@@ -22,15 +22,22 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Poin
     fg = fg.add(map.additional_fg_offset);
     (fg, bg) = apply_colour_offset(fg, bg, map, idx);
     bg = apply_bloodstain_if_necessary(bg, map, idx);
-    (fg, bg) = darken_if_not_visible(fg, bg, map, idx);
-    if other_pos.is_some() && DARKEN_TILES_BY_DISTANCE {
+    let (mut multiplier, mut nonvisible, mut darken) = (1.0, false, false);
+    if !map.visible_tiles[idx] {
+        multiplier = NON_VISIBLE_MULTIPLIER;
+        nonvisible = true;
+    }
+    if other_pos.is_some() && DARKEN_TILES_BY_DISTANCE && !nonvisible {
         let distance = darken_by_distance(
             Point::new((idx as i32) % map.width, (idx as i32) / map.width),
             other_pos.unwrap()
         );
-        (fg, bg) = (fg.mul(distance), bg.mul(distance));
+        multiplier = distance.clamp(NON_VISIBLE_MULTIPLIER, 1.0);
+        darken = true;
     }
-
+    if nonvisible || darken {
+        (fg, bg) = (fg.mul(multiplier), bg.mul(multiplier));
+    }
     return (glyph, fg, bg);
 }
 
@@ -257,7 +264,7 @@ fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
     let distance = DistanceAlg::Pythagoras.distance2d(pos, other_pos) as f32; // Get distance in tiles.
     let interp_factor =
         (distance - START_DARKEN_AT_N_TILES) /
-        (MAX_DARKEN_AT_N_TILES * (crate::config::entity::DEFAULT_VIEWSHED_STANDARD as f32) - START_DARKEN_AT_N_TILES);
+        ((crate::config::entity::DEFAULT_VIEWSHED_STANDARD as f32) - START_DARKEN_AT_N_TILES);
     let interp_factor = interp_factor.max(0.0).min(1.0); // Clamp [0-1]
     return 1.0 - interp_factor * (1.0 - MAX_DARKENING);
 }

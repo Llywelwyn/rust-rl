@@ -1,7 +1,6 @@
 pub const NON_VISIBLE_MULTIPLIER: f32 = 0.3;
-pub const MAX_DARKENING: f32 = 0.3;
-pub const START_DARKEN_AT_N_TILES: f32 = 9.0;
-pub const MAX_DARKEN_AT_N_TILES: f32 = 12.0;
+pub const MAX_DARKENING: f32 = 0.45;
+pub const START_DARKEN_AT_N_TILES: f32 = 8.0;
 
 pub const SHORT_PARTICLE_LIFETIME: f32 = 100.0;
 pub const DEFAULT_PARTICLE_LIFETIME: f32 = 200.0;
