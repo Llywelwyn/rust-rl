@@ -1,4 +1,4 @@
-use super::{ add_effect, get_noncursed, messages::*, particles, spatial, EffectType, Entity, Targets, World };
+use super::{ add_effect, get_noncursed, particles, spatial, EffectType, Entity, Targets, World };
 use crate::{
     gamelog,
     gui::item_colour_ecs,
@@ -30,6 +30,7 @@ use crate::{
     SingleActivation,
     BUC,
 };
+use crate::config::messages::*;
 use rltk::prelude::*;
 use specs::prelude::*;
 pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs: &mut World) {

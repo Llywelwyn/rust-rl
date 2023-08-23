@@ -1,5 +1,4 @@
 use super::{
-    ai::CARRY_CAPACITY_PER_STRENGTH,
     camera,
     gamelog,
     gamesystem,
@@ -34,6 +33,7 @@ use super::{
     Viewshed,
     BUC,
 };
+use crate::config::entity::CARRY_CAPACITY_PER_STRENGTH;
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;

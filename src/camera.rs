@@ -72,7 +72,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                 if map.visible_tiles[idx] {
                     draw = true;
                 } else {
-                    fg = fg.mul(crate::config::colours::NON_VISIBLE_MULTIPLIER);
+                    fg = fg.mul(crate::config::visuals::NON_VISIBLE_MULTIPLIER);
                     // We don't darken BG, because get_tile_renderables_for_id handles this.
                 }
 

@@ -3,8 +3,12 @@ pub const MAX_DARKENING: f32 = 0.3;
 pub const START_DARKEN_AT_N_TILES: f32 = 9.0;
 pub const MAX_DARKEN_AT_N_TILES: f32 = 12.0;
 
-pub const BLOODSTAIN_COLOUR: (u8, u8, u8) = (153, 0, 0);
+pub const SHORT_PARTICLE_LIFETIME: f32 = 100.0;
+pub const DEFAULT_PARTICLE_LIFETIME: f32 = 200.0;
+pub const LONG_PARTICLE_LIFETIME: f32 = 300.0;
 
+// THEMES
+pub const BLOODSTAIN_COLOUR: (u8, u8, u8) = (153, 0, 0);
 // DEFAULT THEME
 pub const DEFAULT_BG_COLOUR: (u8, u8, u8) = (29, 50, 50);
 pub const WALL_COLOUR: (u8, u8, u8) = (229, 191, 94);
@@ -23,6 +27,5 @@ pub const SAND_COLOUR: (u8, u8, u8) = (70, 70, 21);
 pub const SHALLOW_WATER_COLOUR: (u8, u8, u8) = (24, 47, 99);
 pub const DEEP_WATER_COLOUR: (u8, u8, u8) = (18, 33, 63);
 pub const BARS_COLOUR: (u8, u8, u8) = (100, 100, 100);
-
 // FOREST THEME
 pub const FOREST_WALL_COLOUR: (u8, u8, u8) = (0, 153, 0);

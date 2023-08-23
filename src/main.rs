@@ -40,9 +40,7 @@ mod spatial;
 extern crate lazy_static;
 
 //Consts
-pub const SHOW_MAPGEN: bool = false;
-pub const LOG_SPAWNING: bool = true;
-pub const LOG_TICKS: bool = false;
+pub use config::{ SHOW_MAPGEN, LOG_SPAWNING, LOG_TICKS };
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
