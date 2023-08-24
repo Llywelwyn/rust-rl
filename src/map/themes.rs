@@ -1,6 +1,7 @@
 use super::{ Map, Point, TileType };
 use crate::config::glyphs::*;
 use crate::config::visuals::*;
+use crate::config::CONFIG;
 use rltk::prelude::*;
 use std::ops::{ Add, Mul };
 
@@ -19,13 +20,17 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Poin
 
     fg = fg.add(map.additional_fg_offset);
     (fg, bg) = apply_colour_offset(fg, bg, map, idx);
-    if WITH_SCANLINES && WITH_SCANLINES_BRIGHTEN_AMOUNT > 0.0 {
+    if CONFIG.visuals.with_scanlines && WITH_SCANLINES_BRIGHTEN_AMOUNT > 0.0 {
         (fg, bg) = brighten_by(fg, bg, WITH_SCANLINES_BRIGHTEN_AMOUNT);
     }
     bg = apply_bloodstain_if_necessary(bg, map, idx);
     let (mut multiplier, mut nonvisible, mut darken) = (1.0, false, false);
     if !map.visible_tiles[idx] {
-        multiplier = if WITH_SCANLINES { NON_VISIBLE_MULTIPLIER_IF_SCANLINES } else { NON_VISIBLE_MULTIPLIER };
+        multiplier = if CONFIG.visuals.with_scanlines {
+            NON_VISIBLE_MULTIPLIER_IF_SCANLINES
+        } else {
+            NON_VISIBLE_MULTIPLIER
+        };
         nonvisible = true;
     }
     if other_pos.is_some() && WITH_DARKEN_BY_DISTANCE && !nonvisible {
@@ -34,7 +39,7 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Poin
             other_pos.unwrap()
         );
         multiplier = distance.clamp(
-            if WITH_SCANLINES {
+            if CONFIG.visuals.with_scanlines {
                 NON_VISIBLE_MULTIPLIER_IF_SCANLINES
             } else {
                 NON_VISIBLE_MULTIPLIER
@@ -266,7 +271,10 @@ fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
         (distance - START_DARKEN_AT_N_TILES) /
         ((crate::config::entity::DEFAULT_VIEWSHED_STANDARD as f32) - START_DARKEN_AT_N_TILES);
     let interp_factor = interp_factor.max(0.0).min(1.0); // Clamp [0-1]
-    return 1.0 - interp_factor * (1.0 - (if WITH_SCANLINES { MAX_DARKENING_IF_SCANLINES } else { MAX_DARKENING }));
+    return (
+        1.0 -
+        interp_factor * (1.0 - (if CONFIG.visuals.with_scanlines { MAX_DARKENING_IF_SCANLINES } else { MAX_DARKENING }))
+    );
 }
 
 fn brighten_by(mut fg: RGB, mut bg: RGB, amount: f32) -> (RGB, RGB) {

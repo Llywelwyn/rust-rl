@@ -3,7 +3,7 @@ use crate::components::*;
 use crate::gamesystem::*;
 use crate::gui::Ancestry;
 use crate::random_table::RandomTable;
-use crate::LOG_SPAWNING;
+use crate::config::CONFIG;
 use regex::Regex;
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -543,7 +543,7 @@ pub fn spawn_named_mob(
             eb = eb.with(LootTable { table: loot.table.clone(), chance: loot.chance });
         }
 
-        if LOG_SPAWNING {
+        if CONFIG.logging.log_spawning {
             rltk::console::log(
                 format!(
                     "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level]), worth {} XP",

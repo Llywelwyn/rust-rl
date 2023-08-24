@@ -35,12 +35,10 @@ mod gamesystem;
 mod random_table;
 mod rex_assets;
 mod spatial;
+mod morgue;
 
 #[macro_use]
 extern crate lazy_static;
-
-//Consts
-pub use config::{ SHOW_MAPGEN, LOG_SPAWNING, LOG_TICKS };
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -509,15 +507,20 @@ impl GameState for State {
             }
             RunState::GameOver => {
                 let result = gui::game_over(ctx);
-                match result {
-                    gui::YesNoResult::NoSelection => {}
-                    gui::YesNoResult::Yes => {
-                        self.game_over_cleanup();
-                        new_runstate = RunState::MapGeneration;
-                        self.mapgen_next_state = Some(RunState::MainMenu {
-                            menu_selection: gui::MainMenuSelection::NewGame,
-                        });
+                let write_to_morgue: Option<bool> = match result {
+                    gui::YesNoResult::NoSelection => None,
+                    gui::YesNoResult::No => Some(false),
+                    gui::YesNoResult::Yes => Some(true),
+                };
+                if let Some(response) = write_to_morgue {
+                    if response {
+                        morgue::create_morgue_file(&self.ecs);
                     }
+                    self.game_over_cleanup();
+                    new_runstate = RunState::MapGeneration;
+                    self.mapgen_next_state = Some(RunState::MainMenu {
+                        menu_selection: gui::MainMenuSelection::NewGame,
+                    });
                 }
             }
             RunState::NextLevel => {
@@ -533,11 +536,11 @@ impl GameState for State {
             RunState::HelpScreen => {
                 let result = gui::show_help(ctx);
                 match result {
-                    gui::YesNoResult::NoSelection => {}
                     gui::YesNoResult::Yes => {
                         gamelog::record_event("looked_for_help", 1);
                         new_runstate = RunState::AwaitingInput;
                     }
+                    _ => {}
                 }
             }
             RunState::MagicMapReveal { row, cursed } => {
@@ -576,7 +579,7 @@ impl GameState for State {
                 }
             }
             RunState::MapGeneration => {
-                if !SHOW_MAPGEN {
+                if !config::CONFIG.logging.show_mapgen {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 if self.mapgen_history.len() != 0 {
@@ -624,7 +627,7 @@ fn main() -> rltk::BError {
         .with_tile_dimensions(14, 16)
         .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses14x16.png")
         .build()?;
-    if config::visuals::WITH_SCANLINES {
+    if config::CONFIG.visuals.with_scanlines {
         context.with_post_scanlines(config::visuals::WITH_SCREEN_BURN);
     }
 

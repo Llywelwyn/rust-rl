@@ -1,4 +1,4 @@
-use super::{ spawner, Map, Position, Rect, TileType, SHOW_MAPGEN };
+use super::{ spawner, Map, Position, Rect, TileType };
 mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod bsp_interior;
@@ -35,6 +35,7 @@ mod voronoi_spawning;
 use common::*;
 use specs::prelude::*;
 use voronoi_spawning::VoronoiSpawning;
+use super::config::CONFIG;
 //use wfc::WaveFunctionCollapseBuilder;
 mod room_exploder;
 use room_exploder::RoomExploder;
@@ -78,7 +79,7 @@ pub struct BuilderMap {
 
 impl BuilderMap {
     fn take_snapshot(&mut self) {
-        if SHOW_MAPGEN {
+        if CONFIG.logging.show_mapgen {
             let mut snapshot = self.map.clone();
             for v in snapshot.revealed_tiles.iter_mut() {
                 *v = true;
@@ -154,7 +155,9 @@ impl BuilderChain {
             spawned_entities.push(&entity.1);
             spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
         }
-        rltk::console::log(format!("DEBUGINFO: SPAWNED ENTITIES = {:?}", spawned_entities));
+        if CONFIG.logging.log_spawning {
+            rltk::console::log(format!("DEBUGINFO: SPAWNED ENTITIES = {:?}", spawned_entities));
+        }
     }
 }
 

@@ -7,5 +7,9 @@ docs/gifs/*
 .rustfmt.toml
 .prettierignore
 
-# Savegame
+# Save files, morgue files
 savegame.json
+morgue
+
+# A default user config will be written on first run, if not present
+config.toml

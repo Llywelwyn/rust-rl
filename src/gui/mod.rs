@@ -1094,6 +1094,7 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
 pub enum YesNoResult {
     NoSelection,
     Yes,
+    No,
 }
 
 pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
@@ -1103,7 +1104,13 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
     let height = 20;
     ctx.draw_box(x, y, width, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
     ctx.print_color(x + 3, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "You died!");
-    ctx.print_color(x + 3, y + height, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "ESC to close");
+    ctx.print_color(
+        x + 3,
+        y + height,
+        RGB::named(rltk::YELLOW),
+        RGB::named(rltk::BLACK),
+        " Write a morgue file? [y/n] "
+    );
     x += 2;
     y += 2;
     ctx.print_color(
@@ -1164,7 +1171,8 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
         None => YesNoResult::NoSelection,
         Some(key) =>
             match key {
-                VirtualKeyCode::Escape => YesNoResult::Yes,
+                VirtualKeyCode::N => YesNoResult::No,
+                VirtualKeyCode::Y => YesNoResult::Yes,
                 _ => YesNoResult::NoSelection,
             }
     }

@@ -1,4 +1,4 @@
-use crate::{ gamelog, raws, spawner, Clock, Map, RandomNumberGenerator, TakingTurn, LOG_SPAWNING };
+use crate::{ config::CONFIG, gamelog, raws, spawner, Clock, Map, RandomNumberGenerator, TakingTurn };
 use specs::prelude::*;
 
 const TRY_SPAWN_CHANCE: i32 = 70;
@@ -22,7 +22,7 @@ pub fn try_spawn_interval(ecs: &mut World) {
         }
     }
     if try_spawn {
-        if LOG_SPAWNING {
+        if CONFIG.logging.log_spawning {
             rltk::console::log("SPAWNINFO: Trying spawn.");
         }
         spawn_random_mob_in_free_nonvisible_tile(ecs);
@@ -36,7 +36,7 @@ fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
     rltk::console::log(player_level);
     let difficulty = (map.difficulty + player_level) / 2;
     if available_tiles.len() == 0 {
-        if LOG_SPAWNING {
+        if CONFIG.logging.log_spawning {
             rltk::console::log("SPAWNINFO: No free tiles; not spawning anything..");
         }
         return;
@@ -55,7 +55,7 @@ fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
     std::mem::drop(rng);
     // For every idx in the spawn list, spawn mob.
     for idx in spawn_locations {
-        if LOG_SPAWNING {
+        if CONFIG.logging.log_spawning {
             rltk::console::log(format!("SPAWNINFO: Spawning {} at {}, {}.", key, idx.0, idx.1));
         }
         raws::spawn_named_entity(
