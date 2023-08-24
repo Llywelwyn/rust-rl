@@ -2,6 +2,10 @@
 
 #### using _rltk/bracket-lib_, and _specs_
 
+check out the page in the header for the wasm version, pick [a release of your choice](https://github.com/Llywelwyn/rust-rl/releases), or build manually with:
+
+`git clone https://github.com/Llywelwyn/rust-rl/ && cd rust-rl && cargo build --release`,
+
 ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/b05e4f0b-2062-4abe-9fee-c679f9ef420d)
 
 this year for roguelikedev does the complete tutorial, i'm following along with thebracket's [_roguelike tutorial - in rust_](https://bfnightly.bracketproductions.com). for most of the 8 weeks, i'll probably just be working through the content rather than diverging too much into doing my own thing, since it's lengthy and i'd rather finish in time. that said, the ultimate aim here is to strip out the vast majority of the existing entities and replace them with my own, using the systems and components from the tutorial as a jumping-off point for something of my own making.
