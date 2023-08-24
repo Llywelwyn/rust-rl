@@ -6,7 +6,6 @@ pub mod char_create;
 mod load;
 
 use rltk::prelude::*;
-use toml::de::Error as TomlError;
 use toml::Value;
 use serde::{ Serialize, Deserialize };
 
@@ -51,24 +50,6 @@ impl Default for Config {
     }
 }
 
-#[derive(Debug)]
-pub enum ReadError {
-    Io(std::io::Error),
-    Toml(TomlError),
-}
-
-impl From<std::io::Error> for ReadError {
-    fn from(error: std::io::Error) -> Self {
-        ReadError::Io(error)
-    }
-}
-
-impl From<TomlError> for ReadError {
-    fn from(error: TomlError) -> Self {
-        ReadError::Toml(error)
-    }
-}
-
 impl Config {
     pub fn load_from_file(filename: &str) -> Config {
         if let Ok(contents) = std::fs::read_to_string(filename) {
@@ -78,10 +59,9 @@ impl Config {
                 let mut requires_write = false;
                 requires_write |= config.logging.apply_values(&parsed_config);
                 requires_write |= config.visuals.apply_values(&parsed_config);
-
                 if requires_write {
                     if let Err(write_err) = config.save_to_file(filename) {
-                        eprintln!("Error writing config: {:?}", write_err);
+                        console::log(format!("Error writing config: {:?}", write_err));
                     }
                 }
 
