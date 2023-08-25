@@ -6,7 +6,7 @@
         "weight": 1,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "healing": "4d4+2" },
+        "effects": { "heal": "4d4+2" },
         "magic": { "class": "uncommon", "naming": "potion" }
     },
     {
@@ -16,7 +16,7 @@
         "weight": 1,
         "value": 25,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "healing": "2d4+2" },
+        "effects": { "heal": "2d4+2" },
         "magic": { "class": "uncommon", "naming": "potion" }
     },
     {
@@ -44,7 +44,7 @@
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "particle_line": "*;-;#53f06d;75.0;#f9ff9f;100.0", "ranged": "12", "healing": "1d4+2" },
+        "effects": { "particle_line": "*;-;#53f06d;75.0;#f9ff9f;100.0", "ranged": "12", "heal": "1d4+2" },
         "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {
@@ -54,7 +54,7 @@
         "weight": 0.5,
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "particle": "*;#53f06d;200.0", "ranged": "12", "aoe": "3", "healing": "1d4+2" },
+        "effects": { "particle": "*;#53f06d;200.0", "ranged": "12", "aoe": "3", "heal": "1d4+2" },
         "magic": { "class": "rare", "naming": "scroll" }
     },
     {

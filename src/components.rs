@@ -237,7 +237,7 @@ pub enum BUC {
     Blessed,
 }
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+#[derive(Component, Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Clone)]
 pub struct Beatitude {
     pub buc: BUC,
     pub known: bool,

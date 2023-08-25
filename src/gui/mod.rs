@@ -572,6 +572,23 @@ pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
     return (singular, plural);
 }
 
+pub fn unobf_name_ecs(ecs: &World, item: Entity) -> (String, String) {
+    let (mut singular, mut plural) = ("nameless (bug)".to_string(), "nameless (bug)".to_string());
+    if let Some(name) = ecs.read_storage::<Name>().get(item) {
+        (singular, plural) = (name.name.clone(), name.plural.clone());
+    }
+    if let Some(has_beatitude) = ecs.read_storage::<Beatitude>().get(item) {
+        let prefix = match has_beatitude.buc {
+            BUC::Cursed => "cursed ",
+            BUC::Uncursed => "uncursed ",
+            BUC::Blessed => "blessed ",
+        };
+        singular.insert_str(0, prefix);
+        plural.insert_str(0, prefix);
+    }
+    return (singular, plural);
+}
+
 /// Gets renderable colour as tuple of u8
 pub fn renderable_colour(renderables: &ReadStorage<Renderable>, entity: Entity) -> (u8, u8, u8) {
     return if let Some(renderable) = renderables.get(entity) {

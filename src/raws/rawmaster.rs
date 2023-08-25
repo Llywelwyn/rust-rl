@@ -17,7 +17,7 @@ macro_rules! apply_effects {
         for effect in $effects.iter() {
             let effect_name = effect.0.as_str();
             match effect_name {
-                "healing" => {
+                "heal" => {
                     let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
                     $eb = $eb.with(ProvidesHealing { n_dice, sides, modifier })
                 }
