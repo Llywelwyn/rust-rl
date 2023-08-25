@@ -1,14 +1,21 @@
 use std::fs::{ File, create_dir_all };
 use std::io::{ self, Write };
 use std::time::SystemTime;
+use super::Map;
+use crate::gamelog;
 use crate::components::*;
 use crate::gui::{ Class, Ancestry, unobf_name_ecs };
 use specs::prelude::*;
 use rltk::prelude::*;
+use rltk::to_char;
 use std::collections::HashMap;
 
 #[cfg(target_arch = "wasm32")]
-pub fn create_morgue_file(_ecs: &World) {}
+pub fn create_morgue_file(ecs: &World) {
+    console::log("wasm32 doesn't support writing files yet, so here's the morgue info:");
+    let morgue_info = create_morgue_string(ecs);
+    console::log(morgue_info);
+}
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn create_morgue_file(ecs: &World) {
@@ -16,15 +23,37 @@ pub fn create_morgue_file(ecs: &World) {
     if let Err(err) = create_dir_all(&morgue_dir) {
         console::log(format!("Unable to create the directory (/{}): {}", morgue_dir, err));
     }
-    if let Err(err) = write_morgue_file(ecs, &morgue_dir) {
+    let morgue_info = create_morgue_string(ecs);
+    let file_name = create_file_name(ecs, morgue_dir);
+    if let Err(err) = write_morgue_file(morgue_info.as_str(), file_name.as_str()) {
         console::log(format!("Unable to write the morgue file: {}", err));
-    }
+    };
 }
 
-fn write_morgue_file(ecs: &World, morgue_dir: &str) -> Result<(), io::Error> {
+fn create_file_name(ecs: &World, morgue_dir: &str) -> String {
+    let e = ecs.fetch::<Entity>();
+    let pools = ecs.read_storage::<Pools>();
+    let pool = pools.get(*e).unwrap();
+    let class = match ecs.read_storage::<HasClass>().get(*e).unwrap().name {
+        Class::Fighter => "fighter",
+        Class::Wizard => "wizard",
+        Class::Rogue => "rogue",
+        Class::Villager => "villager",
+    };
+    let ancestry = match ecs.read_storage::<HasAncestry>().get(*e).unwrap().name {
+        Ancestry::Human => "human",
+        Ancestry::Elf => "elf",
+        Ancestry::Dwarf => "dwarf",
+        Ancestry::Gnome => "gnome",
+        Ancestry::Catfolk => "catfolk",
+        Ancestry::NULL => "NULL",
+    };
+    return format!("{}/lv{}-{}-{}-{}.txt", morgue_dir, &pool.level, &ancestry, &class, get_timestamp());
+}
+
+fn create_morgue_string(ecs: &World) -> String {
     // Initialise default
     let mut morgue_info: String = Default::default();
-
     let e = ecs.fetch::<Entity>();
     let class = match ecs.read_storage::<HasClass>().get(*e).unwrap().name {
         Class::Fighter => "fighter",
@@ -42,28 +71,20 @@ fn write_morgue_file(ecs: &World, morgue_dir: &str) -> Result<(), io::Error> {
     };
     let pools = ecs.read_storage::<Pools>();
     let pool = pools.get(*e).unwrap();
-    let attrs = ecs.read_storage::<Attributes>();
-    let attr = attrs.get(*e).unwrap();
     let header = format!("{} {}, level {}/{}", &ancestry, &class, &pool.level, &pool.xp);
     morgue_info.push_str(&create_boxed_text(header.as_str(), None));
-    morgue_info.push_str(&draw_tombstone(header.len()));
-    morgue_info.push_str(
-        format!(
-            "HP {}/{}    MP {}/{}\n",
-            pool.hit_points.current,
-            pool.hit_points.max,
-            pool.mana.current,
-            pool.mana.max
-        ).as_str()
-    );
-    morgue_info.push_str(&draw_attributes(attr));
+    morgue_info.push_str(&draw_tombstone(ecs, header.len()));
+    morgue_info.push_str(&draw_map(ecs));
     morgue_info.push_str(&create_boxed_text("Equipment", None));
     morgue_info.push_str(&draw_equipment(ecs));
     morgue_info.push_str(&create_boxed_text("Backpack", None));
     morgue_info.push_str(&draw_backpack(ecs));
 
+    return morgue_info;
+}
+
+fn write_morgue_file(file_name: &str, morgue_info: &str) -> Result<(), io::Error> {
     // Save to file
-    let file_name = format!("{}/lv{}-{}-{}-{}.txt", morgue_dir, &pool.level, &ancestry, &class, get_timestamp());
     let mut file = File::create(&file_name)?; // Open/create morgue file
     file.write_all(morgue_info.as_bytes())?;
     Ok(())
@@ -79,38 +100,75 @@ fn create_boxed_text(content: &str, width: Option<usize>) -> String {
     return format!("╔{h}╗\n║ {c} ║\n╚{h}╝\n", h = horizontal, c = content);
 }
 
-fn draw_tombstone(len: usize) -> String {
+fn draw_tombstone(ecs: &World, len: usize) -> String {
     let pad = (len - 17) / 2;
+    let map = ecs.fetch::<Map>();
+    let pools = ecs.read_storage::<Pools>();
+    let pool = pools.get(*ecs.fetch::<Entity>()).unwrap();
+    let attrs = ecs.read_storage::<Attributes>();
+    let attr = attrs.get(*ecs.fetch::<Entity>()).unwrap();
     return format!(
-        "\n{:^p$}    .-'~~~`-.\n{:^p$}  .'         `.\n{:^p$}  |  rest     |\n{:^p$}  |    in     |\n{:^p$}  |     peace |\n{:^p$}\\\\|           |//\n{:^p$}^^^^^^^^^^^^^^^^^{:^p$}\n\n",
+        "{:^p$}    .-'~~~`-.      HP {}/{}    MP {}/{}\n{:^p$}  .'         `.\n{:^p$}  |  rest     |    STR {:>2} ({:+})  CON {:>2} ({:+})  WIS {:>2} ({:+})\n{:^p$}  |    in     |    DEX {:>2} ({:+})  INT {:>2} ({:+})  CHA {:>2} ({:+})\n{:^p$}  |     peace |\n{:^p$}\\\\|           |//  You died in {} [id {}], after {} turns.\n{:^p$}^^^^^^^^^^^^^^^^^{:^p$}\n",
+        "",
+        pool.hit_points.current,
+        pool.hit_points.max,
+        pool.mana.current,
+        pool.mana.max,
         "",
         "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        p = pad
-    );
-}
-
-fn draw_attributes(attr: &Attributes) -> String {
-    return format!(
-        "\nSTR {:>2} ({:+})  CON {:>2} ({:+})  WIS {:>2} ({:+})\nDEX {:>2} ({:+})  INT {:>2} ({:+})  CHA {:>2} ({:+})\n\n",
         attr.strength.base + attr.strength.modifiers,
         attr.strength.bonus,
         attr.constitution.base + attr.constitution.modifiers,
         attr.constitution.bonus,
         attr.wisdom.base + attr.wisdom.modifiers,
         attr.wisdom.bonus,
+        "",
         attr.dexterity.base + attr.dexterity.modifiers,
         attr.dexterity.bonus,
         attr.intelligence.base + attr.intelligence.modifiers,
         attr.intelligence.bonus,
         attr.charisma.base + attr.charisma.modifiers,
-        attr.charisma.bonus
+        attr.charisma.bonus,
+        "",
+        "",
+        map.name,
+        map.id,
+        gamelog::get_event_count("turns"),
+        "",
+        "",
+        p = pad
     );
+}
+
+fn draw_map(ecs: &World) -> String {
+    let map = ecs.fetch::<Map>();
+    let mut result: String = Default::default();
+    let point = ecs.fetch::<Point>();
+    for y in 0..map.height {
+        for x in 0..map.width {
+            let idx = map.xy_idx(x, y);
+            let mut glyph_u16: u16 = 0;
+            if idx == map.xy_idx(point.x, point.y) {
+                glyph_u16 = to_cp437('@');
+            } else if crate::spatial::has_tile_content(idx) {
+                let mut render_order = 0;
+                crate::spatial::for_each_tile_content(idx, |e| {
+                    if let Some(renderable) = ecs.read_storage::<Renderable>().get(e) {
+                        if renderable.render_order >= render_order {
+                            render_order = renderable.render_order;
+                            glyph_u16 = renderable.glyph;
+                        }
+                    }
+                });
+            } else {
+                glyph_u16 = crate::map::themes::get_tile_renderables_for_id(idx, &*map, None).0;
+            }
+            let char = to_char((glyph_u16 & 0xff) as u8);
+            result.push_str(&char.to_string());
+        }
+        result.push_str("\n");
+    }
+    return result;
 }
 
 fn draw_equipment(ecs: &World) -> String {

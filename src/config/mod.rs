@@ -128,4 +128,5 @@ pub fn try_load_configuration() -> Config {
 #[cfg(target_arch = "wasm32")]
 pub fn try_load_configuration() -> Config {
     let config = Config::default();
+    return config;
 }
