@@ -14,6 +14,7 @@ use super::{
 };
 use rltk::prelude::*;
 use specs::prelude::*;
+use crate::data::events;
 
 pub fn delete_the_dead(ecs: &mut World) {
     let mut dead: Vec<Entity> = Vec::new();
@@ -80,7 +81,7 @@ pub fn delete_the_dead(ecs: &mut World) {
     }
     // For everything that died, increment the event log, and delete.
     for victim in dead {
-        gamelog::record_event("death_count", 1);
+        gamelog::record_event(events::EVENT::TURN(1));
         ecs.delete_entity(victim).expect("Unable to delete.");
     }
 }

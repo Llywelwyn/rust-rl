@@ -1,8 +1,9 @@
-use crate::config::entity::*;
+use crate::data::entity::*;
 use crate::{ Burden, BurdenLevel, Clock, Energy, Name, Position, RunState, TakingTurn };
 use rltk::prelude::*;
 use specs::prelude::*;
 use crate::config::CONFIG;
+use crate::data::events::*;
 
 pub struct EnergySystem {}
 
@@ -50,10 +51,10 @@ impl<'a> System<'a> for EnergySystem {
             if energy.current >= TURN_COST {
                 turns.insert(entity, TakingTurn {}).expect("Unable to insert turn for turn counter.");
                 energy.current -= TURN_COST;
-                crate::gamelog::record_event("turns", 1);
+                crate::gamelog::record_event(EVENT::TURN(1));
                 // Handle spawning mobs each turn
                 if CONFIG.logging.log_ticks {
-                    console::log(format!("===== TURN {} =====", crate::gamelog::get_event_count("turns")));
+                    console::log(format!("===== TURN {} =====", crate::gamelog::get_event_count(EVENT::COUNT_TURN)));
                 }
             }
         }

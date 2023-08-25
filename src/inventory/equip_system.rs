@@ -16,7 +16,7 @@ use crate::{
     BUC,
 };
 use specs::prelude::*;
-use crate::config::messages;
+use crate::data::messages;
 
 pub struct ItemEquipSystem {}
 

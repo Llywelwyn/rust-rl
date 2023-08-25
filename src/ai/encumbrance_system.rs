@@ -1,7 +1,7 @@
 use crate::{ gamelog, Attributes, Burden, EquipmentChanged, Equipped, InBackpack, Item, Pools };
 use specs::prelude::*;
 use std::collections::HashMap;
-use crate::config::entity::CARRY_CAPACITY_PER_STRENGTH;
+use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
 
 pub struct EncumbranceSystem {}
 

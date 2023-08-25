@@ -29,6 +29,7 @@ mod inventory;
 mod particle_system;
 use particle_system::ParticleBuilder;
 mod ai;
+mod data;
 mod config;
 mod effects;
 mod gamesystem;
@@ -36,6 +37,7 @@ mod random_table;
 mod rex_assets;
 mod spatial;
 mod morgue;
+use data::events::*;
 
 #[macro_use]
 extern crate lazy_static;
@@ -177,13 +179,11 @@ impl State {
             current_id = worldmap_resource.id;
         }
         // Record the correct type of event
-        if offset > 0 {
-            gamelog::record_event("descended", 1);
-        } else if current_id == 1 {
+        if offset < 0 && current_id == 1 {
             gamelog::Logger::new().append("CHEAT MENU: YOU CAN'T DO THAT.").colour((255, 0, 0)).log();
             return;
         } else {
-            gamelog::record_event("ascended", 1);
+            gamelog::record_event(EVENT::CHANGED_FLOOR(current_id + offset));
         }
         // Freeze the current level
         map::dungeon::freeze_entities(&mut self.ecs);
@@ -213,7 +213,7 @@ impl State {
         self.generate_world_map(1, 0);
 
         gamelog::setup_log();
-        gamelog::record_event("player_level", 1);
+        gamelog::record_event(EVENT::LEVEL(1));
     }
 }
 
@@ -537,7 +537,7 @@ impl GameState for State {
                 let result = gui::show_help(ctx);
                 match result {
                     gui::YesNoResult::Yes => {
-                        gamelog::record_event("looked_for_help", 1);
+                        gamelog::record_event(EVENT::LOOKED_FOR_HELP(1));
                         new_runstate = RunState::AwaitingInput;
                     }
                     _ => {}
@@ -628,7 +628,7 @@ fn main() -> rltk::BError {
         .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses14x16.png")
         .build()?;
     if config::CONFIG.visuals.with_scanlines {
-        context.with_post_scanlines(config::visuals::WITH_SCREEN_BURN);
+        context.with_post_scanlines(data::visuals::WITH_SCREEN_BURN);
     }
 
     let mut gs = State {
@@ -733,7 +733,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(rex_assets::RexAssets::new());
 
     gamelog::setup_log();
-    gamelog::record_event("player_level", 1);
+    gamelog::record_event(EVENT::LEVEL(1));
     gs.generate_world_map(1, 0);
 
     rltk::main_loop(context, gs)

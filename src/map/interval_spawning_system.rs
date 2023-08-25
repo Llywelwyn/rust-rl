@@ -1,5 +1,6 @@
 use crate::{ config::CONFIG, gamelog, raws, spawner, Clock, Map, RandomNumberGenerator, TakingTurn };
 use specs::prelude::*;
+use crate::data::events::*;
 
 const TRY_SPAWN_CHANCE: i32 = 70;
 
@@ -32,7 +33,7 @@ pub fn try_spawn_interval(ecs: &mut World) {
 fn spawn_random_mob_in_free_nonvisible_tile(ecs: &mut World) {
     let map = ecs.fetch::<Map>();
     let mut available_tiles = populate_unblocked_nonvisible(&map);
-    let player_level = gamelog::get_event_count("player_level");
+    let player_level = gamelog::get_event_count(EVENT::COUNT_LEVEL);
     rltk::console::log(player_level);
     let difficulty = (map.difficulty + player_level) / 2;
     if available_tiles.len() == 0 {

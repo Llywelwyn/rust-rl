@@ -38,6 +38,7 @@ pub fn save_game(ecs: &mut World) {
         .with(DMSerializationHelper {
             map: dungeon_master,
             log: crate::gamelog::clone_log(),
+            event_counts: crate::gamelog::clone_event_counts(),
             events: crate::gamelog::clone_events(),
         })
         .marked::<SimpleMarker<SerializeMe>>()
@@ -280,7 +281,8 @@ pub fn load_game(ecs: &mut World) {
             *dungeonmaster = h.map.clone();
             deleteme2 = Some(e);
             crate::gamelog::restore_log(&mut h.log.clone());
-            crate::gamelog::load_events(h.events.clone());
+            crate::gamelog::restore_event_counter(h.event_counts.clone());
+            crate::gamelog::restore_events(h.events.clone());
         }
         for (e, _p, pos) in (&entities, &player, &position).join() {
             let mut ppos = ecs.write_resource::<rltk::Point>();

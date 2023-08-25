@@ -1,7 +1,7 @@
 use super::{ ParticleLifetime, Position, Renderable, Rltk };
 use rltk::RGB;
 use specs::prelude::*;
-use crate::config::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME };
+use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME };
 
 /// Runs each tick, deleting particles who are past their expiry.
 // Should make an addition to this to also spawn delayed particles,

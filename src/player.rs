@@ -34,6 +34,7 @@ use rltk::prelude::*;
 use rltk::{ Point, RandomNumberGenerator, Rltk, VirtualKeyCode };
 use specs::prelude::*;
 use std::cmp::{ max, min };
+use crate::data::events::*;
 
 pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
@@ -263,7 +264,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         .log();
                                     something_was_destroyed = Some(potential_target);
                                     destroyed_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
-                                    gamelog::record_event("broken_doors", 1);
+                                    gamelog::record_event(EVENT::BROKE_DOOR(1));
                                     return false;
                                     // 66% chance of just kicking it.
                                 } else {
@@ -308,7 +309,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         ecs.delete_entity(destroyed_thing).expect("Unable to delete.");
     }
 
-    gamelog::record_event("kick_count", 1);
+    gamelog::record_event(EVENT::KICKED_SOMETHING(1));
     return RunState::Ticking;
 }
 

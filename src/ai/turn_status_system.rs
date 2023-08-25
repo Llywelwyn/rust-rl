@@ -10,6 +10,7 @@ use crate::{
 };
 use rltk::prelude::*;
 use specs::prelude::*;
+use crate::data::events::*;
 
 pub struct TurnStatusSystem {}
 
@@ -78,7 +79,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                         .colour(WHITE)
                         .append("are confused!");
                     log = true;
-                    gamelog::record_event("player_confused", 1);
+                    gamelog::record_event(EVENT::PLAYER_CONFUSED(1));
                 } else {
                     logger = logger
                         .append("The")

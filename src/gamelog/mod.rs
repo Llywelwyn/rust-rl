@@ -1,5 +1,3 @@
-use rltk::prelude::*;
-
 mod builder;
 pub use builder::*;
 mod logstore;
@@ -9,6 +7,7 @@ mod events;
 pub use events::*;
 
 use serde::{ Deserialize, Serialize };
+use rltk::prelude::*;
 #[derive(Serialize, Deserialize, Clone)]
 pub struct LogFragment {
     pub colour: RGB,

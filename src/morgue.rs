@@ -9,6 +9,7 @@ use specs::prelude::*;
 use rltk::prelude::*;
 use rltk::to_char;
 use std::collections::HashMap;
+use crate::data::events::*;
 
 #[cfg(target_arch = "wasm32")]
 pub fn create_morgue_file(ecs: &World) {
@@ -25,7 +26,7 @@ pub fn create_morgue_file(ecs: &World) {
     }
     let morgue_info = create_morgue_string(ecs);
     let file_name = create_file_name(ecs, morgue_dir);
-    if let Err(err) = write_morgue_file(morgue_info.as_str(), file_name.as_str()) {
+    if let Err(err) = write_morgue_file(file_name.as_str(), morgue_info.as_str()) {
         console::log(format!("Unable to write the morgue file: {}", err));
     };
 }
@@ -75,10 +76,13 @@ fn create_morgue_string(ecs: &World) -> String {
     morgue_info.push_str(&create_boxed_text(header.as_str(), None));
     morgue_info.push_str(&draw_tombstone(ecs, header.len()));
     morgue_info.push_str(&draw_map(ecs));
+    morgue_info.push_str("\n");
     morgue_info.push_str(&create_boxed_text("Equipment", None));
     morgue_info.push_str(&draw_equipment(ecs));
     morgue_info.push_str(&create_boxed_text("Backpack", None));
     morgue_info.push_str(&draw_backpack(ecs));
+    morgue_info.push_str(&create_boxed_text("Significant Events", None));
+    morgue_info.push_str(&draw_events_list());
 
     return morgue_info;
 }
@@ -133,7 +137,7 @@ fn draw_tombstone(ecs: &World, len: usize) -> String {
         "",
         map.name,
         map.id,
-        gamelog::get_event_count("turns"),
+        gamelog::get_event_count(EVENT::COUNT_TURN),
         "",
         "",
         p = pad
@@ -227,5 +231,30 @@ fn draw_backpack(ecs: &World) -> String {
         result.push_str(&format!("- {}\n", name));
     }
     result.push_str("\n");
+    return result;
+}
+
+fn draw_events_list() -> String {
+    // Initialise default (empty) string
+    let mut result: String = Default::default();
+    // Get lock on events mutex
+    let lock = gamelog::EVENTS.lock().unwrap();
+    // Collect all keys, and sort in ascending value (by turn count)
+    let mut sorted_keys: Vec<u32> = lock
+        .keys()
+        .map(|k| *k)
+        .collect();
+    sorted_keys.sort();
+    // Iterate through sorted keys, looking for corresponding values, and append on newline
+    for key in sorted_keys {
+        if let Some(value) = lock.get(&key) {
+            result.push_str(&format!("{:<4} | ", key));
+            for event in value.iter() {
+                result.push_str(&format!("{}", event));
+            }
+            result.push_str("\n");
+        }
+    }
+
     return result;
 }

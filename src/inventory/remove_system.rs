@@ -13,7 +13,7 @@ use crate::{
 };
 use rltk::prelude::*;
 use specs::prelude::*;
-use crate::config::messages;
+use crate::data::messages;
 
 pub struct ItemRemoveSystem {}
 

@@ -1,7 +1,7 @@
 use super::{ Skill, Skills };
 use crate::gui::{ Ancestry, Class };
-use crate::config::entity;
-use crate::config::char_create::*;
+use crate::data::entity;
+use crate::data::char_create::*;
 use rltk::prelude::*;
 use std::cmp::max;
 

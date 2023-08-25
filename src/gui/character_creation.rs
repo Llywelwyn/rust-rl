@@ -1,6 +1,6 @@
 use super::{ gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State };
-use crate::config::entity;
-use crate::config::char_create::*;
+use crate::data::entity;
+use crate::data::char_create::*;
 use crate::{
     raws,
     Attribute,

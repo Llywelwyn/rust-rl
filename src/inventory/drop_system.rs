@@ -13,7 +13,7 @@ use crate::{
     WantsToDropItem,
 };
 use specs::prelude::*;
-use crate::config::messages;
+use crate::data::messages;
 
 pub struct ItemDropSystem {}
 

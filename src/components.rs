@@ -21,7 +21,8 @@ pub struct SerializationHelper {
 pub struct DMSerializationHelper {
     pub map: super::map::MasterDungeonMap,
     pub log: Vec<Vec<crate::gamelog::LogFragment>>,
-    pub events: HashMap<String, i32>,
+    pub event_counts: HashMap<String, i32>,
+    pub events: HashMap<u32, Vec<String>>,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]

@@ -33,7 +33,7 @@ use crate::{
     KnownSpell,
     KnownSpells,
 };
-use crate::config::messages::*;
+use crate::data::messages::*;
 use rltk::prelude::*;
 use specs::prelude::*;
 pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs: &mut World) {

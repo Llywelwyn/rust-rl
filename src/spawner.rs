@@ -24,7 +24,7 @@ use super::{
     TileType,
     Viewshed,
 };
-use crate::config::entity;
+use crate::data::entity;
 use crate::gamesystem::*;
 use rltk::{ RandomNumberGenerator, RGB };
 use specs::prelude::*;

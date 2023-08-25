@@ -33,7 +33,7 @@ use super::{
     Viewshed,
     BUC,
 };
-use crate::config::entity::CARRY_CAPACITY_PER_STRENGTH;
+use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
@@ -47,6 +47,7 @@ mod identify_menu;
 pub use identify_menu::*;
 mod tooltip;
 pub use cheat_menu::*;
+use crate::data::events::*;
 
 /// Gives a popup box with a message and a title, and waits for a keypress.
 #[allow(unused)]
@@ -329,7 +330,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         54,
         RGB::named(rltk::YELLOW),
         RGB::named(rltk::BLACK),
-        &format!("T{}", crate::gamelog::get_event_count("turns"))
+        &format!("T{}", crate::gamelog::get_event_count(EVENT::COUNT_TURN))
     );
 
     // Boxes and tooltips last, so they draw over everything else.
@@ -1135,22 +1136,22 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
         y,
         RGB::named(rltk::GREEN),
         RGB::named(rltk::BLACK),
-        format!("You survived for {} turns.", crate::gamelog::get_event_count("turns"))
+        format!("You survived for {} turns.", crate::gamelog::get_event_count(EVENT::COUNT_TURN))
     );
     y += 2;
     ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), format!("And in the process, you"));
     y += 1;
-    if crate::gamelog::get_event_count("descended") > 0 {
+    if crate::gamelog::get_event_count(EVENT::COUNT_CHANGED_FLOOR) > 0 {
         ctx.print_color(
             x + 1,
             y,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            format!("- descended {} floor(s)", crate::gamelog::get_event_count("descended"))
+            format!("- changed floor {} times", crate::gamelog::get_event_count(EVENT::COUNT_CHANGED_FLOOR))
         );
         y += 1;
     }
-    if crate::gamelog::get_event_count("kick_count") > 0 {
+    if crate::gamelog::get_event_count(EVENT::COUNT_KICK) > 0 {
         ctx.print_color(
             x + 1,
             y,
@@ -1158,29 +1159,29 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
             RGB::named(rltk::BLACK),
             format!(
                 "- kicked {} time(s), breaking {} object(s)",
-                crate::gamelog::get_event_count("kick_count"),
-                crate::gamelog::get_event_count("broken_doors")
+                crate::gamelog::get_event_count(EVENT::COUNT_KICK),
+                crate::gamelog::get_event_count(EVENT::COUNT_BROKE_DOOR)
             )
         );
         y += 1;
     }
-    if crate::gamelog::get_event_count("death_count") > 0 {
+    if crate::gamelog::get_event_count(EVENT::COUNT_DEATH) > 0 {
         ctx.print_color(
             x + 1,
             y,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            format!("- slew {} other creature(s)", crate::gamelog::get_event_count("death_count"))
+            format!("- slew {} other creature(s)", crate::gamelog::get_event_count(EVENT::COUNT_DEATH))
         );
         y += 1;
     }
-    if crate::gamelog::get_event_count("looked_for_help") > 0 {
+    if crate::gamelog::get_event_count(EVENT::COUNT_LOOKED_FOR_HELP) > 0 {
         ctx.print_color(
             x + 1,
             y,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            format!("- forgot the controls {} time(s)", crate::gamelog::get_event_count("looked_for_help"))
+            format!("- forgot the controls {} time(s)", crate::gamelog::get_event_count(EVENT::COUNT_LOOKED_FOR_HELP))
         );
     }
 

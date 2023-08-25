@@ -4,6 +4,7 @@ use rltk::prelude::*;
 use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
 use std::collections::{ HashMap, HashSet };
+use crate::data::events::*;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct MasterDungeonMap {
@@ -241,7 +242,7 @@ fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
     // Might need this to fallback to 1, but if player
     // level isn't found at all, there's a bigger concern
     // concern than just this function not working.
-    let player_level = gamelog::get_event_count("player_level");
+    let player_level = gamelog::get_event_count(EVENT::COUNT_LEVEL);
     let mut builder = map_builders::level_builder(new_id, &mut rng, 100, 50, player_level);
     builder.build_map(&mut rng);
     std::mem::drop(rng);

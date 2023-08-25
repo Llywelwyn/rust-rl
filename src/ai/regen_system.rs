@@ -11,6 +11,7 @@ use crate::{
     TakingTurn,
 };
 use specs::prelude::*;
+use crate::data::events::*;
 
 pub struct RegenSystem {}
 
@@ -47,14 +48,14 @@ impl<'a> System<'a> for RegenSystem {
             return;
         }
         // Monster HP regen
-        let current_turn = gamelog::get_event_count("turns");
+        let current_turn = gamelog::get_event_count(EVENT::COUNT_TURN);
         if current_turn % MONSTER_HP_REGEN_TURN == 0 {
             for (_e, _p, pool, _player) in (&entities, &positions, &mut pools, !&player).join() {
                 try_hp_regen_tick(pool, MONSTER_HP_REGEN_PER_TICK);
             }
         }
         // Player HP regen
-        let level = gamelog::get_event_count("player_level");
+        let level = gamelog::get_event_count(EVENT::COUNT_LEVEL);
         if current_turn % get_player_hp_regen_turn(level) == 0 {
             for (_e, _p, pool, _player) in (&entities, &positions, &mut pools, &player).join() {
                 try_hp_regen_tick(pool, get_player_hp_regen_per_tick(level));
