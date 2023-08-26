@@ -20,7 +20,7 @@ pub fn forest_builder(
     difficulty: i32,
     initial_player_level: i32
 ) -> BuilderChain {
-    let mut chain = BuilderChain::new(new_id, width, height, difficulty, "the woods", initial_player_level);
+    let mut chain = BuilderChain::new(false, new_id, width, height, difficulty, "the woods", initial_player_level);
     chain.start_with(CellularAutomataBuilder::new());
     chain.with(AreaStartingPosition::new(XStart::CENTRE, YStart::CENTRE));
     chain.with(CullUnreachable::new());

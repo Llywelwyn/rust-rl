@@ -10,7 +10,7 @@ pub fn town_builder(
     initial_player_level: i32
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building town (ID:{}, DIFF:{})", new_id, difficulty));
-    let mut chain = BuilderChain::new(new_id, width, height, difficulty, "the town", initial_player_level);
+    let mut chain = BuilderChain::new(false, new_id, width, height, difficulty, "the town", initial_player_level);
     chain.start_with(TownBuilder::new());
 
     return chain;

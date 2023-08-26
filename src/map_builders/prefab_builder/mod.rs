@@ -1,4 +1,4 @@
-use super::{spawner, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, TileType};
+use super::{ spawner, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, TileType };
 use rltk::RandomNumberGenerator;
 pub mod prefab_levels;
 pub mod prefab_sections;
@@ -8,9 +8,13 @@ use std::collections::HashSet;
 #[derive(PartialEq, Copy, Clone)]
 #[allow(dead_code)]
 pub enum PrefabMode {
-    RexLevel { template: &'static str },
-    Constant { level: prefab_levels::PrefabLevel },
-    Sectional { section: prefab_sections::PrefabSection },
+    Overmap,
+    Constant {
+        level: prefab_levels::PrefabLevel,
+    },
+    Sectional {
+        section: prefab_sections::PrefabSection,
+    },
     RoomVaults,
 }
 
@@ -39,8 +43,8 @@ impl PrefabBuilder {
     }
 
     #[allow(dead_code)]
-    pub fn rex_level(template: &'static str) -> Box<PrefabBuilder> {
-        Box::new(PrefabBuilder { mode: PrefabMode::RexLevel { template } })
+    pub fn overmap() -> Box<PrefabBuilder> {
+        Box::new(PrefabBuilder { mode: PrefabMode::Overmap })
     }
 
     #[allow(dead_code)]
@@ -60,8 +64,8 @@ impl PrefabBuilder {
 
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         match self.mode {
-            PrefabMode::RexLevel { template } => self.load_rex_map(&template, rng, build_data),
-            PrefabMode::Constant { level } => self.load_ascii_map(&level, rng, build_data),
+            PrefabMode::Overmap => self.load_ascii_map(&prefab_levels::OVERMAP, rng, build_data, true),
+            PrefabMode::Constant { level } => self.load_ascii_map(&level, rng, build_data, false),
             PrefabMode::Sectional { section } => self.apply_sectional(&section, rng, build_data),
             PrefabMode::RoomVaults => self.apply_room_vaults(rng, build_data),
         }
@@ -71,13 +75,24 @@ impl PrefabBuilder {
     fn char_to_map(&mut self, ch: char, idx: usize, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         let difficulty = (build_data.map.difficulty + build_data.initial_player_level) / 2;
         match ch {
-            ' ' => build_data.map.tiles[idx] = TileType::Floor,
-            '#' => build_data.map.tiles[idx] = TileType::Wall,
-            '>' => build_data.map.tiles[idx] = TileType::DownStair,
-            '≈' => build_data.map.tiles[idx] = TileType::Floor, // Placeholder for vines/brush
+            ' ' => {
+                build_data.map.tiles[idx] = TileType::Floor;
+            }
+            '.' => {
+                build_data.map.tiles[idx] = TileType::Grass;
+            }
+            '#' => {
+                build_data.map.tiles[idx] = TileType::Wall;
+            }
+            '>' => {
+                build_data.map.tiles[idx] = TileType::DownStair;
+            }
+            '≈' => {
+                build_data.map.tiles[idx] = TileType::DeepWater;
+            } // Placeholder for vines/brush
             '@' => {
-                let x = idx as i32 % build_data.map.width;
-                let y = idx as i32 / build_data.map.width;
+                let x = (idx as i32) % build_data.map.width;
+                let y = (idx as i32) / build_data.map.width;
                 build_data.map.tiles[idx] = TileType::Floor;
                 build_data.starting_position = Some(Position { x: x as i32, y: y as i32 });
             }
@@ -122,7 +137,48 @@ impl PrefabBuilder {
                 build_data.spawn_list.push((idx, spawner::equipment_table(Some(difficulty)).roll(rng)));
             }
             _ => {
-                rltk::console::log(format!("Unknown glyph '{}' when loading prefab", (ch as u8) as char));
+                rltk::console::log(format!("Unknown glyph '{}' when loading prefab", ch as u8 as char));
+            }
+        }
+    }
+
+    fn overmap_char_to_map(
+        &mut self,
+        ch: char,
+        idx: usize,
+        _rng: &mut RandomNumberGenerator,
+        build_data: &mut BuilderMap
+    ) {
+        match ch {
+            ' ' => {
+                build_data.map.tiles[idx] = TileType::Floor;
+            }
+            '.' => {
+                build_data.map.tiles[idx] = TileType::Grass;
+            }
+            '#' => {
+                build_data.map.tiles[idx] = TileType::Wall;
+            }
+            '>' => {
+                build_data.map.tiles[idx] = TileType::DownStair;
+            }
+            '~' => {
+                build_data.map.tiles[idx] = TileType::ShallowWater;
+            }
+            '≈' => {
+                build_data.map.tiles[idx] = TileType::DeepWater;
+            }
+            '@' => {
+                let x = (idx as i32) % build_data.map.width;
+                let y = (idx as i32) / build_data.map.width;
+                build_data.map.tiles[idx] = TileType::Grass;
+                build_data.starting_position = Some(Position { x: x as i32, y: y as i32 });
+            }
+            '^' => {
+                build_data.map.tiles[idx] = TileType::ImpassableMountain;
+            }
+            _ => {
+                rltk::console::log(format!("Unknown glyph '{}' when loading overmap", ch as u8 as char));
             }
         }
     }
@@ -135,7 +191,7 @@ impl PrefabBuilder {
             for y in 0..layer.height {
                 for x in 0..layer.width {
                     let cell = layer.get(x, y).unwrap();
-                    if x < build_data.map.width as usize && y < build_data.map.height as usize {
+                    if x < (build_data.map.width as usize) && y < (build_data.map.height as usize) {
                         let idx = build_data.map.xy_idx(x as i32, y as i32);
                         // We're doing some nasty casting to make it easier to type things like '#' in the match
                         self.char_to_map(cell.ch as u8 as char, idx, rng, build_data);
@@ -146,9 +202,12 @@ impl PrefabBuilder {
     }
 
     fn read_ascii_to_vec(template: &str) -> Vec<char> {
-        let mut string_vec: Vec<char> = template.chars().filter(|a| *a != '\r' && *a != '\n').collect();
+        let mut string_vec: Vec<char> = template
+            .chars()
+            .filter(|a| *a != '\r' && *a != '\n')
+            .collect();
         for c in string_vec.iter_mut() {
-            if *c as u8 == 160u8 {
+            if (*c as u8) == 160u8 {
                 *c = ' ';
             }
         }
@@ -161,16 +220,21 @@ impl PrefabBuilder {
         level: &prefab_levels::PrefabLevel,
         rng: &mut RandomNumberGenerator,
         build_data: &mut BuilderMap,
+        overmap: bool
     ) {
         let string_vec = PrefabBuilder::read_ascii_to_vec(level.template);
 
         let mut i = 0;
         for ty in 0..level.height {
             for tx in 0..level.width {
-                if tx < build_data.map.width as usize && ty < build_data.map.height as usize {
+                if tx < (build_data.map.width as usize) && ty < (build_data.map.height as usize) {
                     let idx = build_data.map.xy_idx(tx as i32, ty as i32);
                     if i < string_vec.len() {
-                        self.char_to_map(string_vec[i], idx, rng, build_data);
+                        if overmap {
+                            self.overmap_char_to_map(string_vec[i], idx, rng, build_data);
+                        } else {
+                            self.char_to_map(string_vec[i], idx, rng, build_data);
+                        }
                     }
                 }
                 i += 1;
@@ -182,14 +246,14 @@ impl PrefabBuilder {
         &mut self,
         mut filter: F,
         _rng: &mut RandomNumberGenerator,
-        build_data: &mut BuilderMap,
-    ) where
-        F: FnMut(i32, i32) -> bool,
+        build_data: &mut BuilderMap
+    )
+        where F: FnMut(i32, i32) -> bool
     {
         let width = build_data.map.width;
         build_data.spawn_list.retain(|(idx, _name)| {
-            let x = *idx as i32 % width;
-            let y = *idx as i32 / width;
+            let x = (*idx as i32) % width;
+            let y = (*idx as i32) / width;
             filter(x, y)
         });
         build_data.take_snapshot();
@@ -200,7 +264,7 @@ impl PrefabBuilder {
         &mut self,
         section: &prefab_sections::PrefabSection,
         rng: &mut RandomNumberGenerator,
-        build_data: &mut BuilderMap,
+        build_data: &mut BuilderMap
     ) {
         use prefab_sections::*;
 
@@ -209,36 +273,52 @@ impl PrefabBuilder {
         // Place the new section
         let chunk_x;
         match section.placement.0 {
-            HorizontalPlacement::Left => chunk_x = 0,
-            HorizontalPlacement::Center => chunk_x = (build_data.map.width / 2) - (section.width as i32 / 2),
-            HorizontalPlacement::Right => chunk_x = (build_data.map.width - 1) - section.width as i32,
+            HorizontalPlacement::Left => {
+                chunk_x = 0;
+            }
+            HorizontalPlacement::Center => {
+                chunk_x = build_data.map.width / 2 - (section.width as i32) / 2;
+            }
+            HorizontalPlacement::Right => {
+                chunk_x = build_data.map.width - 1 - (section.width as i32);
+            }
         }
 
         let chunk_y;
         match section.placement.1 {
-            VerticalPlacement::Top => chunk_y = 0,
-            VerticalPlacement::Center => chunk_y = (build_data.map.height / 2) - (section.height as i32 / 2),
-            VerticalPlacement::Bottom => chunk_y = (build_data.map.height - 1) - section.height as i32,
+            VerticalPlacement::Top => {
+                chunk_y = 0;
+            }
+            VerticalPlacement::Center => {
+                chunk_y = build_data.map.height / 2 - (section.height as i32) / 2;
+            }
+            VerticalPlacement::Bottom => {
+                chunk_y = build_data.map.height - 1 - (section.height as i32);
+            }
         }
 
         // Build the map
         self.apply_previous_iteration(
             |x, y| {
-                x < chunk_x
-                    || x > (chunk_x + section.width as i32)
-                    || y < chunk_y
-                    || y > (chunk_y + section.height as i32)
+                x < chunk_x ||
+                    x > chunk_x + (section.width as i32) ||
+                    y < chunk_y ||
+                    y > chunk_y + (section.height as i32)
             },
             rng,
-            build_data,
+            build_data
         );
 
         let mut i = 0;
         for ty in 0..section.height {
             for tx in 0..section.width {
-                if tx > 0 && tx < build_data.map.width as usize - 1 && ty < build_data.map.height as usize - 1 && ty > 0
+                if
+                    tx > 0 &&
+                    tx < (build_data.map.width as usize) - 1 &&
+                    ty < (build_data.map.height as usize) - 1 &&
+                    ty > 0
                 {
-                    let idx = build_data.map.xy_idx(tx as i32 + chunk_x, ty as i32 + chunk_y);
+                    let idx = build_data.map.xy_idx((tx as i32) + chunk_x, (ty as i32) + chunk_y);
                     if i < string_vec.len() {
                         self.char_to_map(string_vec[i], idx, rng, build_data);
                     }
@@ -274,7 +354,7 @@ impl PrefabBuilder {
             FLUFF2_6X3,
             HOUSE_NOTRAP_7X7,
             HOUSE_TRAP_7X7,
-            ORC_HOUSE_8X8,
+            ORC_HOUSE_8X8
         ];
 
         // Filter the vault list down to ones that are applicable to the current id
@@ -313,8 +393,12 @@ impl PrefabBuilder {
                     let roll = rng.roll_dice(1, 4);
                     match roll {
                         1 => {}
-                        2 => flip_x = true,
-                        3 => flip_y = true,
+                        2 => {
+                            flip_x = true;
+                        }
+                        3 => {
+                            flip_y = true;
+                        }
                         _ => {
                             flip_x = true;
                             flip_y = true;
@@ -328,14 +412,15 @@ impl PrefabBuilder {
 
             let mut idx = 0usize;
             loop {
-                let x = (idx % build_data.map.width as usize) as i32;
-                let y = (idx / build_data.map.width as usize) as i32;
+                let x = (idx % (build_data.map.width as usize)) as i32;
+                let y = (idx / (build_data.map.width as usize)) as i32;
 
                 // Check that we won't overflow the map
-                if x > 1
-                    && (x + vault.width as i32) < build_data.map.width - 2
-                    && y > 1
-                    && (y + vault.height as i32) < build_data.map.height - 2
+                if
+                    x > 1 &&
+                    x + (vault.width as i32) < build_data.map.width - 2 &&
+                    y > 1 &&
+                    y + (vault.height as i32) < build_data.map.height - 2
                 {
                     let mut possible = true;
                     for ty in 0..vault.height as i32 {
@@ -379,7 +464,10 @@ impl PrefabBuilder {
                     let idx = e.0 as i32;
                     let x = idx % width;
                     let y = idx / height;
-                    x < chunk_x || x > chunk_x + vault.width as i32 || y < chunk_y || y > chunk_y + vault.height as i32
+                    x < chunk_x ||
+                        x > chunk_x + (vault.width as i32) ||
+                        y < chunk_y ||
+                        y > chunk_y + (vault.height as i32)
                 });
 
                 let string_vec = PrefabBuilder::read_ascii_to_vec(vault.template);
@@ -390,17 +478,22 @@ impl PrefabBuilder {
                         let mut y_: i32 = tile_y as i32;
                         // Handle flipping
                         if flip_x {
-                            x_ = vault.width as i32 - 1 - x_;
+                            x_ = (vault.width as i32) - 1 - x_;
                         }
                         if flip_y {
-                            y_ = vault.height as i32 - 1 - y_;
+                            y_ = (vault.height as i32) - 1 - y_;
                         }
                         if x_ < 0 || y_ < 0 {
                             // If either of these go below 0, we run the risk of CTD, so just panic.
                             // Something went wrong with flipping/rotating/defining a vault.
                             panic!(
                                 "X or Y went below 0 when trying to place a vault! DEBUGINFO == [H: {}, W: {}; FLIPPED X: {}, FLIPPED Y: {}; X_: {}, Y_: {}]",
-                                vault.width, vault.height, flip_x, flip_y, x_, y_
+                                vault.width,
+                                vault.height,
+                                flip_x,
+                                flip_y,
+                                x_,
+                                y_
                             );
                         }
                         let idx = build_data.map.xy_idx(x_ + chunk_x, y_ + chunk_y);

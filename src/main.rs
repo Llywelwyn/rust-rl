@@ -723,7 +723,7 @@ fn main() -> rltk::BError {
     // Insert calls
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
     gs.ecs.insert(map::MasterDungeonMap::new()); // Master map list
-    gs.ecs.insert(Map::new(1, 64, 64, 0, "New Map")); // Map
+    gs.ecs.insert(Map::new(true, 1, 64, 64, 0, "New Map")); // Map
     gs.ecs.insert(Point::new(0, 0)); // Player pos
     gs.ecs.insert(gui::Ancestry::Dwarf); // ancestry
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);

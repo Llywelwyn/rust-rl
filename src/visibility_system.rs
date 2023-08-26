@@ -45,7 +45,11 @@ impl<'a> System<'a> for VisibilitySystem {
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
                 viewshed.dirty = false;
-                let range = if let Some(_is_blind) = blind_entities.get(ent) { 1 } else { viewshed.range };
+                let range = if let Some(_is_blind) = blind_entities.get(ent) {
+                    1
+                } else {
+                    if map.overmap { viewshed.range / 2 } else { viewshed.range }
+                };
                 let origin = Point::new(pos.x, pos.y);
                 viewshed.visible_tiles = SymmetricShadowcasting.field_of_view(origin, range, &*map);
                 viewshed.visible_tiles.retain(|p| {

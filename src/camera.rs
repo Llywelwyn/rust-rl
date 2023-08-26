@@ -7,13 +7,24 @@ const SHOW_BOUNDARIES: bool = false;
 
 pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
-    let (x_chars, y_chars, x_offset, y_offset) = (69, 41, 1, 10);
+    let map = ecs.fetch::<Map>();
+    let (x_chars, y_chars, mut x_offset, mut y_offset) = (69, 41, 1, 10);
 
     let centre_x = (x_chars / 2) as i32;
     let centre_y = (y_chars / 2) as i32;
 
-    let min_x = player_pos.x - centre_x;
-    let min_y = player_pos.y - centre_y;
+    let min_x = if map.width < (x_chars as i32) {
+        x_offset += ((x_chars as i32) - map.width) / 2;
+        0
+    } else {
+        (player_pos.x - centre_x).clamp(0, map.width - (x_chars as i32))
+    };
+    let min_y = if map.height < (y_chars as i32) {
+        y_offset += ((y_chars as i32) - map.height) / 2;
+        0
+    } else {
+        (player_pos.y - centre_y).clamp(0, map.height - (y_chars as i32))
+    };
     let max_x = min_x + (x_chars as i32);
     let max_y = min_y + (y_chars as i32);
 

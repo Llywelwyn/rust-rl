@@ -97,6 +97,7 @@ pub struct BuilderChain {
 
 impl BuilderChain {
     pub fn new<S: ToString>(
+        overmap: bool,
         new_id: i32,
         width: i32,
         height: i32,
@@ -109,7 +110,7 @@ impl BuilderChain {
             builders: Vec::new(),
             build_data: BuilderMap {
                 spawn_list: Vec::new(),
-                map: Map::new(new_id, width, height, difficulty, name),
+                map: Map::new(overmap, new_id, width, height, difficulty, name),
                 starting_position: None,
                 rooms: None,
                 corridors: None,
@@ -316,6 +317,13 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
     return want_doors;
 }
 
+fn overmap_builder() -> BuilderChain {
+    let mut builder = BuilderChain::new(true, 1, 69, 41, 0, "the world", 1);
+    builder.start_with(PrefabBuilder::overmap());
+    builder.with(AreaStartingPosition::new(XStart::CENTRE, YStart::CENTRE));
+    return builder;
+}
+
 pub fn random_builder(
     new_id: i32,
     rng: &mut rltk::RandomNumberGenerator,
@@ -325,7 +333,7 @@ pub fn random_builder(
     initial_player_level: i32
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
-    let mut builder = BuilderChain::new(new_id, width, height, difficulty, "the dungeon", initial_player_level);
+    let mut builder = BuilderChain::new(false, new_id, width, height, difficulty, "the dungeon", initial_player_level);
     let type_roll = rng.roll_dice(1, 2);
     let mut want_doors = true;
     match type_roll {
@@ -378,8 +386,9 @@ pub fn level_builder(
     // TODO: With difficulty and ID/depth decoupled, this can be used for branches later.
     let difficulty = new_id;
     match new_id {
-        1 => town_builder(new_id, rng, width, height, 0, initial_player_level),
-        2 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
+        1 => overmap_builder(),
+        2 => town_builder(new_id, rng, width, height, 0, initial_player_level),
+        3 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
         _ => random_builder(new_id, rng, width, height, difficulty, initial_player_level),
     }
 }
