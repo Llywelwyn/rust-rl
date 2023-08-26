@@ -10,10 +10,13 @@ use crate::{
     Player,
     Pools,
     Name,
+    Blind,
 };
+use crate::gui::with_article;
 use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
 use crate::data::messages::LEVELUP_PLAYER;
 use crate::data::events::*;
+use crate::data::messages::*;
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -135,6 +138,42 @@ fn get_next_level_requirement(level: i32) -> i32 {
     return -1;
 }
 
+fn get_death_message(ecs: &World, source: Entity) -> String {
+    let player = ecs.fetch::<Entity>();
+    let mut result: String = format!("{} ", PLAYER_DIED);
+    // If we killed ourselves,
+    if source == *player {
+        result.push_str(format!("{}", PLAYER_DIED_SUICIDE).as_str());
+    } else if let Some(name) = ecs.read_storage::<Name>().get(source) {
+        result.push_str(format!("{} {}", PLAYER_DIED_NAMED_ATTACKER, with_article(name.name.clone())).as_str());
+    } else {
+        result.push_str(format!("{}", PLAYER_DIED_UNKNOWN).as_str());
+    }
+    // Status effects
+    {
+        let mut addendums: Vec<&str> = Vec::new();
+        if let Some(_confused) = ecs.read_storage::<Confusion>().get(*player) {
+            addendums.push(STATUS_CONFUSED_STRING);
+        }
+        if let Some(_blind) = ecs.read_storage::<Blind>().get(*player) {
+            addendums.push(STATUS_BLIND_STRING);
+        }
+        if !addendums.is_empty() {
+            result.push_str(" whilst");
+            for (i, addendum) in addendums.iter().enumerate() {
+                if i == 0 {
+                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_FIRST, addendum).as_str());
+                } else if i == addendums.len() {
+                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_LAST, addendum).as_str());
+                } else {
+                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_MID, addendum).as_str());
+                }
+            }
+        }
+    }
+    return result;
+}
+
 /// Handles EntityDeath effects.
 pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     let mut xp_gain = 0;
@@ -150,9 +189,7 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let Some(source) = effect.source {
         // If the target was the player, game over, and record source of death.
         if target == *player {
-            if let Some(src_name) = names.get(source) {
-                gamelog::record_event(EVENT::PLAYER_DIED(src_name.name.clone()));
-            }
+            gamelog::record_event(EVENT::PLAYER_DIED(get_death_message(ecs, source)));
             return;
         } else {
             // If the player was the source, record the kill.

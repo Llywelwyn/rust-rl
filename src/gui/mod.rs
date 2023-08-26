@@ -1195,3 +1195,16 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
             }
     }
 }
+
+pub fn with_article(name: String) -> String {
+    // If first letter is a capital
+    if name.chars().nth(0).unwrap().is_uppercase() {
+        return format!("{}", name);
+    }
+    // a/an
+    let vowels = ['a', 'e', 'i', 'o', 'u'];
+    if vowels.contains(&name.chars().nth(0).unwrap()) {
+        return format!("an {}", name);
+    }
+    format!("a {}", name)
+}

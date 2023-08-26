@@ -4,10 +4,16 @@ use crate::config::CONFIG;
 use rltk::prelude::*;
 use std::ops::{ Add, Mul };
 
-pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (rltk::FontCharType, RGB, RGB) {
+/// Gets the renderables for a tile, with darkening/offset/post-processing/etc. Passing a val for "debug" will ignore viewshed.
+pub fn get_tile_renderables_for_id(
+    idx: usize,
+    map: &Map,
+    other_pos: Option<Point>,
+    debug: Option<bool>
+) -> (rltk::FontCharType, RGB, RGB) {
     let (glyph, mut fg, mut bg) = match map.id {
-        2 => get_forest_theme_renderables(idx, map),
-        _ => get_default_theme_renderables(idx, map),
+        2 => get_forest_theme_renderables(idx, map, debug),
+        _ => get_default_theme_renderables(idx, map, debug),
     };
 
     // If one of the colours was left blank, make them the same.
@@ -54,7 +60,7 @@ pub fn get_tile_renderables_for_id(idx: usize, map: &Map, other_pos: Option<Poin
 }
 
 #[rustfmt::skip]
-pub fn get_default_theme_renderables(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
+pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB) {
     let glyph: rltk::FontCharType;
     #[allow(unused_assignments)]
     let mut fg: RGB = RGB::new();
@@ -65,7 +71,7 @@ pub fn get_default_theme_renderables(idx: usize, map: &Map) -> (rltk::FontCharTy
         TileType::Floor => { glyph = rltk::to_cp437(FLOOR_GLYPH); fg = RGB::named(FLOOR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
         TileType::WoodFloor => { glyph = rltk::to_cp437(WOOD_FLOOR_GLYPH); bg = RGB::named(WOOD_FLOOR_COLOUR); }
         TileType::Fence => { glyph = rltk::to_cp437(FENCE_GLYPH); fg = RGB::named(FENCE_FG_COLOUR); bg = RGB::named(FENCE_COLOUR); }
-        TileType::Wall => { let x = idx as i32 % map.width; let y = idx as i32 / map.width; glyph = wall_glyph(&*map, x, y); fg = RGB::named(WALL_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
+        TileType::Wall => { let x = idx as i32 % map.width; let y = idx as i32 / map.width; glyph = wall_glyph(&*map, x, y, debug); fg = RGB::named(WALL_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
         TileType::DownStair => { glyph = rltk::to_cp437(DOWN_STAIR_GLYPH); fg = RGB::named(STAIR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
         TileType::UpStair => { glyph = rltk::to_cp437(UP_STAIR_GLYPH); fg = RGB::named(STAIR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
         TileType::Bridge => { glyph = rltk::to_cp437(BRIDGE_GLYPH); bg = RGB::named(BRIDGE_COLOUR); }
@@ -83,7 +89,7 @@ pub fn get_default_theme_renderables(idx: usize, map: &Map) -> (rltk::FontCharTy
 }
 
 #[rustfmt::skip]
-fn get_forest_theme_renderables(idx:usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
+fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB) {
     let glyph;
     #[allow(unused_assignments)]
     let mut fg = RGB::new();
@@ -94,55 +100,55 @@ fn get_forest_theme_renderables(idx:usize, map: &Map) -> (rltk::FontCharType, RG
         TileType::Wall => { glyph = rltk::to_cp437(FOREST_WALL_GLYPH); fg = RGB::named(FOREST_WALL_COLOUR); bg = RGB::named(GRASS_COLOUR) }
         TileType::Road => { glyph = rltk::to_cp437(ROAD_GLYPH); bg = RGB::named(ROAD_COLOUR); }
         TileType::ShallowWater => { glyph = rltk::to_cp437(SHALLOW_WATER_GLYPH); bg = RGB::named(SHALLOW_WATER_COLOUR); }
-        _ => { (glyph, fg, _) = get_default_theme_renderables(idx, map); bg = RGB::named(GRASS_COLOUR) }
+        _ => { (glyph, fg, _) = get_default_theme_renderables(idx, map, debug); bg = RGB::named(GRASS_COLOUR) }
     }
 
     (glyph, fg, bg)
 }
 
-fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
+fn is_revealed_and_wall(map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool {
     let idx = map.xy_idx(x, y);
-    map.tiles[idx] == TileType::Wall && map.revealed_tiles[idx]
+    map.tiles[idx] == TileType::Wall && (if debug.is_none() { map.revealed_tiles[idx] } else { true })
 }
 
-fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
+fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> rltk::FontCharType {
     if x < 1 || x > map.width - 2 || y < 1 || y > map.height - (2 as i32) {
         return 35;
     }
     let mut mask: u8 = 0;
     let diagonals_matter: Vec<u8> = vec![7, 11, 13, 14, 15];
 
-    if is_revealed_and_wall(map, x, y - 1) {
+    if is_revealed_and_wall(map, x, y - 1, debug) {
         // N
         mask += 1;
     }
-    if is_revealed_and_wall(map, x, y + 1) {
+    if is_revealed_and_wall(map, x, y + 1, debug) {
         // S
         mask += 2;
     }
-    if is_revealed_and_wall(map, x - 1, y) {
+    if is_revealed_and_wall(map, x - 1, y, debug) {
         // W
         mask += 4;
     }
-    if is_revealed_and_wall(map, x + 1, y) {
+    if is_revealed_and_wall(map, x + 1, y, debug) {
         // E
         mask += 8;
     }
 
     if diagonals_matter.contains(&mask) {
-        if is_revealed_and_wall(map, x + 1, y - 1) {
+        if is_revealed_and_wall(map, x + 1, y - 1, debug) {
             // Top right
             mask += 16;
         }
-        if is_revealed_and_wall(map, x - 1, y - 1) {
+        if is_revealed_and_wall(map, x - 1, y - 1, debug) {
             // Top left
             mask += 32;
         }
-        if is_revealed_and_wall(map, x + 1, y + 1) {
+        if is_revealed_and_wall(map, x + 1, y + 1, debug) {
             // Bottom right
             mask += 64;
         }
-        if is_revealed_and_wall(map, x - 1, y + 1) {
+        if is_revealed_and_wall(map, x - 1, y + 1, debug) {
             // Bottom left
             mask += 128;
         }

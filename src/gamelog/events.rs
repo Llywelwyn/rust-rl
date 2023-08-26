@@ -126,13 +126,9 @@ pub fn record_event(event: EVENT) {
         EVENT::IDENTIFIED(name) => {
             new_event = format!("Identified {}", name);
         }
-        EVENT::PLAYER_DIED(name) => {
-            if name == "you" {
-                new_event = format!("You died! Killed by... yourself.");
-            } else {
-                // TODO: Use correct article here - or don't include article at all.
-                new_event = format!("You died, killed by {}", name);
-            }
+        EVENT::PLAYER_DIED(str) => {
+            // Generating the String is handled in the death effect, to avoid passing the ecs here.
+            new_event = format!("{}", str);
         }
     }
 

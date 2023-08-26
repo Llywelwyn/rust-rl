@@ -165,7 +165,7 @@ fn draw_map(ecs: &World) -> String {
                     }
                 });
             } else {
-                glyph_u16 = crate::map::themes::get_tile_renderables_for_id(idx, &*map, None).0;
+                glyph_u16 = crate::map::themes::get_tile_renderables_for_id(idx, &*map, None, Some(true)).0;
             }
             let char = to_char((glyph_u16 & 0xff) as u8);
             result.push_str(&char.to_string());
