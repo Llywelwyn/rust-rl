@@ -320,7 +320,6 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 fn overmap_builder() -> BuilderChain {
     let mut builder = BuilderChain::new(true, 1, 69, 41, 0, "the world", 1);
     builder.start_with(PrefabBuilder::overmap());
-    builder.with(AreaStartingPosition::new(XStart::CENTRE, YStart::CENTRE));
     return builder;
 }
 

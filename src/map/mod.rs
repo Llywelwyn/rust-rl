@@ -8,7 +8,7 @@ pub use interval_spawning_system::try_spawn_interval;
 pub mod dungeon;
 pub use dungeon::{ level_transition, MasterDungeonMap };
 pub mod themes;
-use crate::data::visuals::MAX_COLOUR_OFFSET;
+use crate::data::visuals::{ BRIGHTEN_FG_COLOUR_BY, GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP };
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.
@@ -24,7 +24,7 @@ pub struct Map {
     pub visible_tiles: Vec<bool>,
     pub lit_tiles: Vec<bool>,
     pub telepath_tiles: Vec<bool>,
-    pub colour_offset: Vec<(i32, i32, i32)>,
+    pub colour_offset: Vec<((f32, f32, f32), (f32, f32, f32))>,
     pub additional_fg_offset: rltk::RGB,
     pub id: i32,
     pub name: String,
@@ -50,11 +50,11 @@ impl Map {
             visible_tiles: vec![false; map_tile_count],
             lit_tiles: vec![true; map_tile_count], // NYI: Light sources. Once those exist, we can set this to false.
             telepath_tiles: vec![false; map_tile_count],
-            colour_offset: vec![(0, 0, 0); map_tile_count],
+            colour_offset: vec![((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)); map_tile_count],
             additional_fg_offset: rltk::RGB::from_u8(
-                MAX_COLOUR_OFFSET as u8,
-                MAX_COLOUR_OFFSET as u8,
-                MAX_COLOUR_OFFSET as u8
+                BRIGHTEN_FG_COLOUR_BY as u8,
+                BRIGHTEN_FG_COLOUR_BY as u8,
+                BRIGHTEN_FG_COLOUR_BY as u8
             ),
             id: new_id,
             name: name.to_string(),
@@ -63,14 +63,19 @@ impl Map {
             view_blocked: HashSet::new(),
         };
 
-        const TWICE_OFFSET: i32 = MAX_COLOUR_OFFSET * 2;
         let mut rng = rltk::RandomNumberGenerator::new();
 
         for idx in 0..map.colour_offset.len() {
-            let red_roll: i32 = rng.roll_dice(1, TWICE_OFFSET) - MAX_COLOUR_OFFSET;
-            let blue_roll: i32 = rng.roll_dice(1, TWICE_OFFSET) - MAX_COLOUR_OFFSET;
-            let green_roll: i32 = rng.roll_dice(1, TWICE_OFFSET) - MAX_COLOUR_OFFSET;
-            map.colour_offset[idx] = (red_roll, green_roll, blue_roll);
+            map.colour_offset[idx].0 = (
+                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
+                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
+                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
+            );
+            map.colour_offset[idx].1 = (
+                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
+                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
+                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
+            );
         }
 
         return map;

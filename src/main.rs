@@ -628,7 +628,7 @@ fn main() -> rltk::BError {
         .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses14x16.png")
         .build()?;
     if config::CONFIG.visuals.with_scanlines {
-        context.with_post_scanlines(data::visuals::WITH_SCREEN_BURN);
+        context.with_post_scanlines(config::CONFIG.visuals.with_screen_burn);
     }
 
     let mut gs = State {

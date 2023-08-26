@@ -11,7 +11,7 @@ pub fn get_tile_renderables_for_id(
     other_pos: Option<Point>,
     debug: Option<bool>
 ) -> (rltk::FontCharType, RGB, RGB) {
-    let (glyph, mut fg, mut bg, offset_mod) = match map.id {
+    let (glyph, mut fg, mut bg, offsets, bg_main_col) = match map.id {
         3 => get_forest_theme_renderables(idx, map, debug),
         _ => get_default_theme_renderables(idx, map, debug),
     };
@@ -24,7 +24,7 @@ pub fn get_tile_renderables_for_id(
     }
 
     fg = fg.add(map.additional_fg_offset);
-    (fg, bg) = apply_colour_offset(fg, bg, map, idx, offset_mod);
+    (fg, bg) = apply_colour_offset(fg, bg, map, idx, offsets, bg_main_col);
     if CONFIG.visuals.with_scanlines && WITH_SCANLINES_BRIGHTEN_AMOUNT > 0.0 {
         (fg, bg) = brighten_by(fg, bg, WITH_SCANLINES_BRIGHTEN_AMOUNT);
     }
@@ -60,53 +60,55 @@ pub fn get_tile_renderables_for_id(
 }
 
 #[rustfmt::skip]
-pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB, (f32, f32, f32)) {
+pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB, (i32, i32, i32), bool) {
     let glyph: rltk::FontCharType;
     #[allow(unused_assignments)]
     let mut fg: RGB = RGB::new();
     #[allow(unused_assignments)]
     let mut bg: RGB = RGB::new();
-    let mut offset_mod: (f32, f32, f32) = (0.5, 0.2, 0.0);
+    let mut offsets: (i32, i32, i32) = (0, 0, 0);
+    let mut bg_main_col = true;
 
     match map.tiles[idx] {
-        TileType::Floor => { glyph = rltk::to_cp437(FLOOR_GLYPH); fg = RGB::named(FLOOR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
-        TileType::WoodFloor => { glyph = rltk::to_cp437(WOOD_FLOOR_GLYPH); bg = RGB::named(WOOD_FLOOR_COLOUR); }
-        TileType::Fence => { glyph = rltk::to_cp437(FENCE_GLYPH); fg = RGB::named(FENCE_FG_COLOUR); bg = RGB::named(FENCE_COLOUR); }
-        TileType::Wall => { let x = idx as i32 % map.width; let y = idx as i32 / map.width; glyph = wall_glyph(&*map, x, y, debug); fg = RGB::named(WALL_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
-        TileType::DownStair => { glyph = rltk::to_cp437(DOWN_STAIR_GLYPH); fg = RGB::named(STAIR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
-        TileType::UpStair => { glyph = rltk::to_cp437(UP_STAIR_GLYPH); fg = RGB::named(STAIR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); }
-        TileType::Bridge => { glyph = rltk::to_cp437(BRIDGE_GLYPH); bg = RGB::named(BRIDGE_COLOUR); }
-        TileType::Gravel => { glyph = rltk::to_cp437(GRAVEL_GLYPH); bg = RGB::named(GRAVEL_COLOUR); }
-        TileType::Road => { glyph = rltk::to_cp437(ROAD_GLYPH); bg = RGB::named(ROAD_COLOUR); }
-        TileType::Grass => { glyph = rltk::to_cp437(GRASS_GLYPH); bg = RGB::named(GRASS_COLOUR); }
-        TileType::Foliage => { glyph = rltk::to_cp437(FOLIAGE_GLYPH); bg = RGB::named(FOLIAGE_COLOUR); }
-        TileType::HeavyFoliage => { glyph = rltk::to_cp437(HEAVY_FOLIAGE_GLYPH); bg = RGB::named(HEAVY_FOLIAGE_COLOUR); }
-        TileType::Sand => { glyph = rltk::to_cp437(SAND_GLYPH); bg = RGB::named(SAND_COLOUR); }
-        TileType::ShallowWater => { glyph = rltk::to_cp437(SHALLOW_WATER_GLYPH); bg = RGB::named(SHALLOW_WATER_COLOUR); }
-        TileType::DeepWater => { glyph = rltk::to_cp437(DEEP_WATER_GLYPH); bg = RGB::named(DEEP_WATER_COLOUR); }
+        TileType::Floor => { glyph = rltk::to_cp437(FLOOR_GLYPH); fg = RGB::named(FLOOR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); offsets = FLOOR_OFFSETS; }
+        TileType::WoodFloor => { glyph = rltk::to_cp437(WOOD_FLOOR_GLYPH); bg = RGB::named(WOOD_FLOOR_COLOUR); offsets = WOOD_FLOOR_OFFSETS; }
+        TileType::Fence => { glyph = rltk::to_cp437(FENCE_GLYPH); fg = RGB::named(FENCE_FG_COLOUR); bg = RGB::named(FENCE_COLOUR); offsets = FENCE_OFFSETS; }
+        TileType::Wall => { let x = idx as i32 % map.width; let y = idx as i32 / map.width; glyph = wall_glyph(&*map, x, y, debug); fg = RGB::named(WALL_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); offsets = WALL_OFFSETS; bg_main_col = false; }
+        TileType::DownStair => { glyph = rltk::to_cp437(DOWN_STAIR_GLYPH); fg = RGB::named(STAIR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); offsets = STAIR_OFFSETS;}
+        TileType::UpStair => { glyph = rltk::to_cp437(UP_STAIR_GLYPH); fg = RGB::named(STAIR_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); offsets = STAIR_OFFSETS; }
+        TileType::Bridge => { glyph = rltk::to_cp437(BRIDGE_GLYPH); bg = RGB::named(BRIDGE_COLOUR); offsets = BRIDGE_OFFSETS; }
+        TileType::Gravel => { glyph = rltk::to_cp437(GRAVEL_GLYPH); bg = RGB::named(GRAVEL_COLOUR); offsets = GRAVEL_OFFSETS;}
+        TileType::Road => { glyph = rltk::to_cp437(ROAD_GLYPH); bg = RGB::named(ROAD_COLOUR); offsets = ROAD_OFFSETS;}
+        TileType::Grass => { glyph = rltk::to_cp437(GRASS_GLYPH); bg = RGB::named(GRASS_COLOUR); offsets = GRASS_OFFSETS; }
+        TileType::Foliage => { glyph = rltk::to_cp437(FOLIAGE_GLYPH); bg = RGB::named(FOLIAGE_COLOUR); offsets = FOLIAGE_OFFSETS; }
+        TileType::HeavyFoliage => { glyph = rltk::to_cp437(HEAVY_FOLIAGE_GLYPH); bg = RGB::named(HEAVY_FOLIAGE_COLOUR); offsets = HEAVY_FOLIAGE_OFFSETS; }
+        TileType::Sand => { glyph = rltk::to_cp437(SAND_GLYPH); bg = RGB::named(SAND_COLOUR); offsets = SAND_OFFSETS; }
+        TileType::ShallowWater => { glyph = rltk::to_cp437(SHALLOW_WATER_GLYPH); bg = RGB::named(SHALLOW_WATER_COLOUR); offsets = SHALLOW_WATER_OFFSETS; }
+        TileType::DeepWater => { glyph = rltk::to_cp437(DEEP_WATER_GLYPH); bg = RGB::named(DEEP_WATER_COLOUR); offsets = DEEP_WATER_OFFSETS; }
         TileType::Bars => { glyph = rltk::to_cp437(BARS_GLYPH); fg = RGB::named(BARS_COLOUR); bg = RGB::named(FLOOR_COLOUR); }
-        TileType::ImpassableMountain => { glyph = rltk::to_cp437(IMPASSABLE_MOUNTAIN_GLYPH); bg = RGB::named(IMPASSABLE_MOUNTAIN_COLOUR); fg = RGB::named((20, 20, 20)) }
+        TileType::ImpassableMountain => { glyph = rltk::to_cp437(IMPASSABLE_MOUNTAIN_GLYPH); bg = RGB::named(IMPASSABLE_MOUNTAIN_COLOUR); offsets = IMPASSABLE_MOUNTAIN_OFFSETS }
     }
-    return (glyph, fg, bg, offset_mod);
+    return (glyph, fg, bg, offsets, bg_main_col);
 }
 
 #[rustfmt::skip]
-fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB, (f32, f32, f32)) {
+fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB, (i32, i32, i32), bool) {
     let glyph;
     #[allow(unused_assignments)]
     let mut fg = RGB::new();
     #[allow(unused_assignments)]
     let mut bg = RGB::new();
-    let mut offset_mod: (f32, f32, f32) = (1.0, 1.0, 1.0);
+    let mut offsets: (i32, i32, i32) = (0, 0, 0);
+    let mut bg_main_col = true;
 
     match map.tiles[idx] {
         TileType::Wall => { glyph = rltk::to_cp437(FOREST_WALL_GLYPH); fg = RGB::named(FOREST_WALL_COLOUR); bg = RGB::named(GRASS_COLOUR) }
         TileType::Road => { glyph = rltk::to_cp437(ROAD_GLYPH); bg = RGB::named(ROAD_COLOUR); }
         TileType::ShallowWater => { glyph = rltk::to_cp437(SHALLOW_WATER_GLYPH); bg = RGB::named(SHALLOW_WATER_COLOUR); }
-        _ => { (glyph, fg, _, offset_mod) = get_default_theme_renderables(idx, map, debug); bg = RGB::named(GRASS_COLOUR) }
+        _ => { (glyph, fg, _, offsets, bg_main_col) = get_default_theme_renderables(idx, map, debug); bg = RGB::named(GRASS_COLOUR) }
     }
 
-    (glyph, fg, bg, offset_mod)
+    (glyph, fg, bg, offsets, bg_main_col)
 }
 
 fn is_revealed_and_wall(map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool {
@@ -251,17 +253,30 @@ fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> rltk::FontCharT
     }
 }
 
-fn apply_colour_offset(mut fg: RGB, mut bg: RGB, map: &Map, idx: usize, offset_mod: (f32, f32, f32)) -> (RGB, RGB) {
-    let mut offsets = map.colour_offset[idx];
-    let mut additional_fg_offset = map.additional_fg_offset;
-    offsets.0 = ((offsets.0 as f32) * offset_mod.0) as i32;
-    offsets.1 = ((offsets.1 as f32) * offset_mod.1) as i32;
-    offsets.2 = ((offsets.2 as f32) * offset_mod.2) as i32;
-    additional_fg_offset.r *= offset_mod.0;
-    additional_fg_offset.g *= offset_mod.1;
-    additional_fg_offset.b *= offset_mod.2;
-    fg = add_i32_offsets(fg.add(additional_fg_offset), offsets);
-    bg = add_i32_offsets(bg, offsets);
+fn apply_colour_offset(
+    mut fg: RGB,
+    mut bg: RGB,
+    map: &Map,
+    idx: usize,
+    offset: (i32, i32, i32),
+    bg_main_col: bool
+) -> (RGB, RGB) {
+    let offset_mod = map.colour_offset[idx];
+    let fg_offset = (
+        (offset.0 as f32) * offset_mod.0.0,
+        (offset.1 as f32) * offset_mod.0.1,
+        (offset.2 as f32) * offset_mod.0.2,
+    );
+    fg = add_i32_offsets(fg, fg_offset);
+    if bg_main_col {
+        let bg_offset = (
+            (offset.0 as f32) * offset_mod.1.0,
+            (offset.1 as f32) * offset_mod.1.1,
+            (offset.2 as f32) * offset_mod.1.2,
+        );
+        bg = add_i32_offsets(bg, bg_offset);
+    }
+
     return (fg, bg);
 }
 
@@ -272,7 +287,7 @@ fn apply_bloodstain_if_necessary(mut bg: RGB, map: &Map, idx: usize) -> RGB {
     return bg;
 }
 
-pub fn add_i32_offsets(rgb: RGB, offsets: (i32, i32, i32)) -> RGB {
+pub fn add_i32_offsets(rgb: RGB, offsets: (f32, f32, f32)) -> RGB {
     let r = rgb.r + (offsets.0 as f32) / 255.0;
     let g = rgb.g + (offsets.1 as f32) / 255.0;
     let b = rgb.b + (offsets.2 as f32) / 255.0;
