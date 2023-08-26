@@ -10,13 +10,14 @@ pub enum EVENT {
     BROKE_DOOR(i32),
     LOOKED_FOR_HELP(i32),
     KILLED(String),
+    PLAYER_DIED(String),
     DISCOVERED(String),
     IDENTIFIED(String),
 }
 
 impl EVENT {
     pub const COUNT_TURN: &str = "turns";
-    pub const COUNT_DEATH: &str = "deaths";
+    pub const COUNT_KILLED: &str = "killed";
     pub const COUNT_LEVEL: &str = "level";
     pub const COUNT_CHANGED_FLOOR: &str = "changed_floor";
     pub const COUNT_BROKE_DOOR: &str = "broke_door";

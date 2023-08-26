@@ -1165,13 +1165,13 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
         );
         y += 1;
     }
-    if crate::gamelog::get_event_count(EVENT::COUNT_DEATH) > 0 {
+    if crate::gamelog::get_event_count(EVENT::COUNT_KILLED) > 0 {
         ctx.print_color(
             x + 1,
             y,
             RGB::named(rltk::WHITE),
             RGB::named(rltk::BLACK),
-            format!("- slew {} other creature(s)", crate::gamelog::get_event_count(EVENT::COUNT_DEATH))
+            format!("- slew {} other creature(s)", crate::gamelog::get_event_count(EVENT::COUNT_KILLED))
         );
         y += 1;
     }

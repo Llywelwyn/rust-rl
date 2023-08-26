@@ -9,6 +9,7 @@ use crate::{
     Map,
     Player,
     Pools,
+    Name,
 };
 use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
 use crate::data::messages::LEVELUP_PLAYER;
@@ -139,12 +140,26 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     let mut xp_gain = 0;
     let mut pools = ecs.write_storage::<Pools>();
     let attributes = ecs.read_storage::<Attributes>();
+    let names = ecs.read_storage::<Name>();
+    let player = ecs.fetch::<Entity>();
     // If the target has a position, remove it from the SpatialMap.
     if let Some(pos) = targeting::entity_position(ecs, target) {
         crate::spatial::remove_entity(target, pos as usize);
     }
     // If the target was killed by a source, cont.
     if let Some(source) = effect.source {
+        // If the target was the player, game over, and record source of death.
+        if target == *player {
+            if let Some(src_name) = names.get(source) {
+                gamelog::record_event(EVENT::PLAYER_DIED(src_name.name.clone()));
+            }
+            return;
+        } else {
+            // If the player was the source, record the kill.
+            if let Some(tar_name) = names.get(target) {
+                gamelog::record_event(EVENT::KILLED(tar_name.name.clone()));
+            }
+        }
         // Calc XP value of target.
         if let Some(xp_value) = ecs.read_storage::<GrantsXP>().get(target) {
             xp_gain += xp_value.amount;

@@ -35,7 +35,6 @@ fn create_delayed_particles(ecs: &mut World, ctx: &Rltk) {
     let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
     let mut handled_particles: Vec<ParticleRequest> = Vec::new();
     for delayed_particle in particle_builder.delayed_requests.iter_mut() {
-        rltk::console::log(delayed_particle.delay);
         delayed_particle.delay -= ctx.frame_time_ms;
         if delayed_particle.delay < 0.0 {
             handled_particles.push(ParticleRequest {

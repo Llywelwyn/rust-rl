@@ -249,8 +249,12 @@ fn draw_events_list() -> String {
     for key in sorted_keys {
         if let Some(value) = lock.get(&key) {
             result.push_str(&format!("{:<4} | ", key));
-            for event in value.iter() {
-                result.push_str(&format!("{}", event));
+            for (i, event) in value.iter().enumerate() {
+                if i > 0 {
+                    result.push_str(&format!("; {}", event.to_lowercase()));
+                } else {
+                    result.push_str(&format!("{}", event));
+                }
             }
             result.push_str("\n");
         }

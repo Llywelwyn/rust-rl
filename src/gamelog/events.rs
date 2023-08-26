@@ -7,7 +7,13 @@ lazy_static! {
     static ref EVENT_COUNTER: Mutex<HashMap<String, i32>> = Mutex::new(HashMap::new());
     // A record of events that happened on a given turn. i.e. "Advanced to level 2".
     pub static ref EVENTS: Mutex<HashMap<u32, Vec<String>>> = Mutex::new(HashMap::new());
-    static ref VISITED: Mutex<HashSet<i32>> = Mutex::new(HashSet::new());
+    // A record of floors visited, and monsters killed. Used to determine if an event is significant.
+    static ref VISITED: Mutex<HashSet<i32>> = Mutex::new({
+        let mut set = HashSet::new();
+        set.insert(1);
+        set
+    });
+    static ref KILLED: Mutex<HashSet<String>> = Mutex::new(HashSet::new());
 }
 
 /// Makes a copy of event counts (FOR SERIALIZATION)
@@ -70,9 +76,15 @@ pub fn record_event(event: EVENT) {
             modify_event_count(EVENT::COUNT_TURN, n);
             significant_event = false;
         }
+        // If de-levelling is ever implemented, this needs refactoring (along with a lot of stuff).
         EVENT::LEVEL(n) => {
             modify_event_count(EVENT::COUNT_LEVEL, n);
-            new_event = format!("Advanced to level {}", n);
+            let new_lvl = get_event_count(EVENT::COUNT_LEVEL);
+            if new_lvl == 1 {
+                new_event = format!("You embarked on your first adventure!");
+            } else {
+                new_event = format!("Advanced to level {}", new_lvl);
+            }
         }
         EVENT::CHANGED_FLOOR(n) => {
             modify_event_count(EVENT::COUNT_CHANGED_FLOOR, 1);
@@ -80,7 +92,7 @@ pub fn record_event(event: EVENT) {
                 significant_event = false;
             } else {
                 VISITED.lock().unwrap().insert(n);
-                new_event = format!("Visited level {} for the first time", n);
+                new_event = format!("Visited floor {} for the first time", n);
             }
         }
         EVENT::KICKED_SOMETHING(n) => {
@@ -100,13 +112,27 @@ pub fn record_event(event: EVENT) {
             significant_event = false;
         }
         EVENT::KILLED(name) => {
-            new_event = format!("Killed {}", name);
+            modify_event_count(EVENT::COUNT_KILLED, 1);
+            if KILLED.lock().unwrap().contains(&name) {
+                significant_event = false;
+            } else {
+                KILLED.lock().unwrap().insert(name.clone());
+                new_event = format!("Killed your first {}", name);
+            }
         }
         EVENT::DISCOVERED(name) => {
             new_event = format!("Discovered {}", name);
         }
         EVENT::IDENTIFIED(name) => {
             new_event = format!("Identified {}", name);
+        }
+        EVENT::PLAYER_DIED(name) => {
+            if name == "you" {
+                new_event = format!("You died! Killed by... yourself.");
+            } else {
+                // TODO: Use correct article here - or don't include article at all.
+                new_event = format!("You died, killed by {}", name);
+            }
         }
     }
 
