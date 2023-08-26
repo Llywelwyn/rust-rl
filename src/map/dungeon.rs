@@ -202,11 +202,13 @@ pub fn level_transition(ecs: &mut World, new_id: i32, offset: i32) -> Option<Vec
 }
 
 fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32) {
-    let dungeon_master = ecs.read_resource::<MasterDungeonMap>();
+    let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
     // Unwrapping here panics if new_id isn't present. But this should
     // never be called without new_id being present by level_transition.
     let map = dungeon_master.get_map(new_id).unwrap();
     let mut worldmap_resource = ecs.write_resource::<Map>();
+    // Store new state of old map
+    dungeon_master.store_map(&worldmap_resource);
     let player_entity = ecs.fetch::<Entity>();
     // Find down stairs, place player
     let w = map.width;
@@ -254,8 +256,10 @@ fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
     }
     let mapgen_history = builder.build_data.history.clone();
     let player_start;
+    let old_map: Map;
     {
         let mut worldmap_resource = ecs.write_resource::<Map>();
+        old_map = worldmap_resource.clone();
         *worldmap_resource = builder.build_data.map.clone();
         // Unwrap so we get a CTD if there's no starting pos.
         player_start = builder.build_data.starting_position.as_mut().unwrap().clone();
@@ -285,6 +289,7 @@ fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
     }
     // Store newly minted map
     let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
+    dungeon_master.store_map(&old_map);
     dungeon_master.store_map(&builder.build_data.map);
     return mapgen_history;
 }
