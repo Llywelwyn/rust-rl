@@ -204,7 +204,7 @@ fn random_start_position(rng: &mut rltk::RandomNumberGenerator) -> (XStart, YSta
     (x, y)
 }
 
-fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain) {
+fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain, end: bool) {
     let build_roll = rng.roll_dice(1, 3);
     // Start with a room builder.
     match build_roll {
@@ -266,10 +266,12 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
     }
 
     // Decide where to put the exit - in a room or far away, anywhere.
-    let exit_roll = rng.roll_dice(1, 2);
-    match exit_roll {
-        1 => builder.with(RoomBasedStairs::new()),
-        _ => builder.with(DistantExit::new()),
+    if !end {
+        let exit_roll = rng.roll_dice(1, 2);
+        match exit_roll {
+            1 => builder.with(RoomBasedStairs::new()),
+            _ => builder.with(DistantExit::new()),
+        }
     }
 
     // Decide whether to spawn entities only in rooms, or with voronoi noise.
@@ -280,7 +282,7 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
     }
 }
 
-fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain) -> bool {
+fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain, end: bool) -> bool {
     // Pick an initial builder
     let builder_roll = rng.roll_dice(1, 16);
     let mut want_doors = true;
@@ -314,7 +316,9 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 
     // Place the exit and spawn mobs
     builder.with(VoronoiSpawning::new());
-    builder.with(DistantExit::new());
+    if !end {
+        builder.with(DistantExit::new());
+    }
 
     return want_doors;
 }
@@ -325,13 +329,21 @@ fn overmap_builder() -> BuilderChain {
     return builder;
 }
 
+pub enum BuildType {
+    Room = 1,
+    Shape = 2,
+    Any = 3,
+}
+
 pub fn random_builder(
     new_id: i32,
     rng: &mut rltk::RandomNumberGenerator,
     width: i32,
     height: i32,
     difficulty: i32,
-    initial_player_level: i32
+    initial_player_level: i32,
+    end: bool,
+    build_type: BuildType
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
     let mut builder = BuilderChain::new(
@@ -343,12 +355,20 @@ pub fn random_builder(
         NAME_DUNGEON_RANDOM,
         initial_player_level
     );
-    let type_roll = rng.roll_dice(1, 2);
     let mut want_doors = true;
-    match type_roll {
-        1 => random_room_builder(rng, &mut builder),
-        _ => {
-            want_doors = random_shape_builder(rng, &mut builder);
+    match build_type {
+        BuildType::Room => random_room_builder(rng, &mut builder, end),
+        BuildType::Shape => {
+            want_doors = random_shape_builder(rng, &mut builder, end);
+        }
+        BuildType::Any => {
+            let roll = rng.roll_dice(1, 2);
+            match roll {
+                1 => random_room_builder(rng, &mut builder, end),
+                _ => {
+                    want_doors = random_shape_builder(rng, &mut builder, end);
+                }
+            }
         }
     }
 
@@ -398,6 +418,8 @@ pub fn level_builder(
         ID_OVERMAP => overmap_builder(),
         ID_TOWN => town_builder(new_id, rng, width, height, 0, initial_player_level),
         ID_TOWN2 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
-        _ => random_builder(new_id, rng, width, height, difficulty, initial_player_level),
+        ID_TOWN3 => random_builder(new_id, rng, width, height, 2, initial_player_level, true, BuildType::Room),
+        ID_INFINITE => random_builder(new_id, rng, width, height, 3, initial_player_level, false, BuildType::Room),
+        _ => random_builder(new_id, rng, width, height, difficulty, initial_player_level, false, BuildType::Any),
     }
 }

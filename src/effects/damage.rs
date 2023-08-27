@@ -11,6 +11,8 @@ use crate::{
     Pools,
     Name,
     Blind,
+    HungerClock,
+    HungerState,
 };
 use crate::gui::with_article;
 use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
@@ -275,6 +277,16 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 // Roll for MANA gain this level
                 source_pools.mana.max += mana_gained;
                 source_pools.mana.current += mana_gained;
+            }
+        }
+    } else {
+        if target == *player {
+            if let Some(hc) = ecs.read_storage::<HungerClock>().get(target) {
+                if hc.state == HungerState::Starving {
+                    gamelog::record_event(EVENT::PLAYER_DIED("You starved to death!".to_string()));
+                }
+            } else {
+                gamelog::record_event(EVENT::PLAYER_DIED("You died from unknown causes!".to_string()));
             }
         }
     }

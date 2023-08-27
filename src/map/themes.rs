@@ -90,6 +90,7 @@ pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>)
         TileType::ImpassableMountain => { glyph = rltk::to_cp437(IMPASSABLE_MOUNTAIN_GLYPH); bg = RGB::named(IMPASSABLE_MOUNTAIN_COLOUR); offsets = IMPASSABLE_MOUNTAIN_OFFSETS }
         TileType::ToOvermap => { glyph = rltk::to_cp437(TO_OVERMAP_GLYPH); fg = RGB::named(TO_OVERMAP_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = false; }
         TileType::ToTown => { glyph = rltk::to_cp437(TO_TOWN_GLYPH); fg = RGB::named(TO_TOWN_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = false; }
+        TileType::ToInfinite => { glyph = rltk::to_cp437(TO_INFINITE_GLYPH); fg = RGB::named(TO_INFINITE_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = true; }
     }
     return (glyph, fg, bg, offsets, bg_main_col);
 }

@@ -218,6 +218,7 @@ fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32, from_ti
             TileType::ToOvermap => {
                 match worldmap_resource.id {
                     ID_TOWN => TileType::ToTown,
+                    ID_INFINITE => TileType::ToInfinite,
                     _ => panic!("Tried to transition to overmap from somewhere unaccounted for!"),
                 }
             }
@@ -278,6 +279,11 @@ fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
             if let Some(pos) = &builder.build_data.starting_position {
                 let up_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
                 builder.build_data.map.tiles[up_idx] = TileType::UpStair;
+            }
+        } else if old_map.overmap && !builder.build_data.map.overmap {
+            if let Some(pos) = &builder.build_data.starting_position {
+                let down_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
+                builder.build_data.map.tiles[down_idx] = TileType::ToOvermap;
             }
         }
         *worldmap_resource = builder.build_data.map.clone();

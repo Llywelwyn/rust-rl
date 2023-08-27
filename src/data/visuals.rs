@@ -82,3 +82,5 @@ pub const TO_OVERMAP_GLYPH: char = '<';
 pub const TO_OVERMAP_COLOUR: (u8, u8, u8) = (205, 127, 50);
 pub const TO_TOWN_GLYPH: char = 'o';
 pub const TO_TOWN_COLOUR: (u8, u8, u8) = (205, 127, 50);
+pub const TO_INFINITE_GLYPH: char = '*';
+pub const TO_INFINITE_COLOUR: (u8, u8, u8) = (205, 127, 50);

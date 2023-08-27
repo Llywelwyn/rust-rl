@@ -612,6 +612,9 @@ fn try_next_level(ecs: &mut World) -> (i32, Option<TileType>) {
         TileType::ToTown => {
             return (ID_TOWN, Some(this_tile));
         }
+        TileType::ToInfinite => {
+            return (ID_INFINITE, Some(this_tile));
+        }
         _ => {
             gamelog::Logger::new().append("You don't see a way down from here.").log();
             return (0, None);

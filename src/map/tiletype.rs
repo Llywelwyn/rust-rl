@@ -26,6 +26,7 @@ pub enum TileType {
     // To/From Overmap - ids are in src/data/ids.rs, are used in try_change_level() in src/player.rs
     ToOvermap,
     ToTown,
+    ToInfinite,
 }
 
 pub fn tile_walkable(tt: TileType) -> bool {

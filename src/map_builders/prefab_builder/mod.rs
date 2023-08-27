@@ -180,6 +180,9 @@ impl PrefabBuilder {
             '1' => {
                 build_data.map.tiles[idx] = TileType::ToTown;
             }
+            '2' => {
+                build_data.map.tiles[idx] = TileType::ToInfinite;
+            }
             _ => {
                 rltk::console::log(format!("Unknown glyph '{}' when loading overmap", ch as u8 as char));
             }
