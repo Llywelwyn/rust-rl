@@ -11,6 +11,7 @@ use super::{
     YStart,
 };
 use rltk::prelude::*;
+use crate::data::names::*;
 
 pub fn forest_builder(
     new_id: i32,
@@ -20,7 +21,15 @@ pub fn forest_builder(
     difficulty: i32,
     initial_player_level: i32
 ) -> BuilderChain {
-    let mut chain = BuilderChain::new(false, new_id, width, height, difficulty, "the woods", initial_player_level);
+    let mut chain = BuilderChain::new(
+        false,
+        new_id,
+        width,
+        height,
+        difficulty,
+        NAME_FOREST_BUILDER,
+        initial_player_level
+    );
     chain.start_with(CellularAutomataBuilder::new());
     chain.with(AreaStartingPosition::new(XStart::CENTRE, YStart::CENTRE));
     chain.with(CullUnreachable::new());

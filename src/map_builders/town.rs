@@ -1,5 +1,6 @@
 use super::{ BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType };
 use std::collections::HashSet;
+use crate::data::names::*;
 
 pub fn town_builder(
     new_id: i32,
@@ -10,7 +11,15 @@ pub fn town_builder(
     initial_player_level: i32
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building town (ID:{}, DIFF:{})", new_id, difficulty));
-    let mut chain = BuilderChain::new(false, new_id, width, height, difficulty, "the town", initial_player_level);
+    let mut chain = BuilderChain::new(
+        false,
+        new_id,
+        width,
+        height,
+        difficulty,
+        NAME_STARTER_TOWN,
+        initial_player_level
+    );
     chain.start_with(TownBuilder::new());
 
     return chain;
@@ -65,6 +74,8 @@ impl TownBuilder {
             x: build_data.width - 2,
             y: wall_gap_y,
         });
+        let overmap_entrance = build_data.map.xy_idx(build_data.width - 2, wall_gap_y);
+        build_data.map.tiles[overmap_entrance] = TileType::ToOvermap;
 
         build_data.take_snapshot();
     }

@@ -272,15 +272,12 @@ fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
     {
         let mut worldmap_resource = ecs.write_resource::<Map>();
         old_map = worldmap_resource.clone();
-        if !old_map.overmap {
+        // If there is zero overmap involvement, place an upstair where we ended up.
+        // Otherwise, this should be hand-placed.
+        if !old_map.overmap && !builder.build_data.map.overmap {
             if let Some(pos) = &builder.build_data.starting_position {
                 let up_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
                 builder.build_data.map.tiles[up_idx] = TileType::UpStair;
-            }
-        } else {
-            if let Some(pos) = &builder.build_data.starting_position {
-                let down_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
-                builder.build_data.map.tiles[down_idx] = TileType::ToOvermap;
             }
         }
         *worldmap_resource = builder.build_data.map.clone();

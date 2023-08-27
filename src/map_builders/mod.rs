@@ -37,6 +37,7 @@ use specs::prelude::*;
 use voronoi_spawning::VoronoiSpawning;
 use super::config::CONFIG;
 use super::data::ids::*;
+use super::data::names::*;
 //use wfc::WaveFunctionCollapseBuilder;
 mod room_exploder;
 use room_exploder::RoomExploder;
@@ -319,7 +320,7 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 }
 
 fn overmap_builder() -> BuilderChain {
-    let mut builder = BuilderChain::new(true, ID_OVERMAP, 69, 41, 0, "the world", 1);
+    let mut builder = BuilderChain::new(true, ID_OVERMAP, 69, 41, 0, NAME_OVERMAP, 1);
     builder.start_with(PrefabBuilder::overmap());
     return builder;
 }
@@ -333,7 +334,15 @@ pub fn random_builder(
     initial_player_level: i32
 ) -> BuilderChain {
     rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
-    let mut builder = BuilderChain::new(false, new_id, width, height, difficulty, "the dungeon", initial_player_level);
+    let mut builder = BuilderChain::new(
+        false,
+        new_id,
+        width,
+        height,
+        difficulty,
+        NAME_DUNGEON_RANDOM,
+        initial_player_level
+    );
     let type_roll = rng.roll_dice(1, 2);
     let mut want_doors = true;
     match type_roll {

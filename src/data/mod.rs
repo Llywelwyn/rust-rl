@@ -4,3 +4,4 @@ pub mod messages;
 pub mod char_create;
 pub mod events;
 pub mod ids;
+pub mod names;
