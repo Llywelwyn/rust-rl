@@ -1,4 +1,4 @@
-use super::{ BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType };
+use super::{ BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType, FillEdges };
 use std::collections::HashSet;
 use crate::data::names::*;
 
@@ -21,6 +21,7 @@ pub fn town_builder(
         initial_player_level
     );
     chain.start_with(TownBuilder::new());
+    chain.with(FillEdges::overmap_transition(new_id));
 
     return chain;
 }
@@ -74,8 +75,6 @@ impl TownBuilder {
             x: build_data.width - 2,
             y: wall_gap_y,
         });
-        let overmap_entrance = build_data.map.xy_idx(build_data.width - 2, wall_gap_y);
-        build_data.map.tiles[overmap_entrance] = TileType::ToOvermap(build_data.map.id);
 
         build_data.take_snapshot();
     }
