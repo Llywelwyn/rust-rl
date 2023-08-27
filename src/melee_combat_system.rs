@@ -23,6 +23,7 @@ use super::{
     ToHitBonus,
     WantsToMelee,
     WeaponAttribute,
+    config::CONFIG,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -88,7 +89,6 @@ impl<'a> System<'a> for MeleeCombatSystem {
         //  e.g. An attacker with +0 to-hit hitting a target with 0 AC:
         //       1d20 must be less than 10, 45% chance of a hit
 
-        const COMBAT_LOGGING: bool = true;
         let mut logger = gamelog::Logger::new();
         let mut something_to_log = false;
 
@@ -210,7 +210,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 let target_number = monster_v_player_bonus + armour_class_roll + attacker_bonuses;
 
                 let target_name = names.get(wants_melee.target).unwrap();
-                if COMBAT_LOGGING {
+                if CONFIG.logging.log_combat {
                     rltk::console::log(
                         format!(
                             "ATTACKLOG: {} *{}* {}: rolled ({}) 1d20 vs. {} ({} + {}AC + {}to-hit)",
@@ -248,7 +248,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     }
                     let mut damage = i32::max(0, base_damage + skill_damage_bonus + attribute_damage_bonus);
 
-                    if COMBAT_LOGGING {
+                    if CONFIG.logging.log_combat {
                         rltk::console::log(
                             format!(
                                 "ATTACKLOG: {} HIT for {} ({}[{}d{}]+{}[skill]+{}[attr])",
@@ -266,7 +266,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     if actual_armour_class < 0 {
                         let ac_damage_reduction = rng.roll_dice(1, -actual_armour_class);
                         damage = i32::min(1, damage - ac_damage_reduction);
-                        if COMBAT_LOGGING {
+                        if CONFIG.logging.log_combat {
                             rltk::console::log(
                                 format!(
                                     "ATTACKLOG: {} reduced their damage taken by {} (1dAC), and took {} hp damage.",
@@ -320,7 +320,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                             .log();
                     }
                 } else {
-                    if COMBAT_LOGGING {
+                    if CONFIG.logging.log_combat {
                         rltk::console::log(format!("ATTACKLOG: {} *MISSED*", &name.name));
                     }
 

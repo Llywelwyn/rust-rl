@@ -13,17 +13,18 @@ pub struct Config {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct LogConfig {
+    pub show_mapgen: bool,
+    pub log_combat: bool,
+    pub log_spawning: bool,
+    pub log_ticks: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct VisualConfig {
     pub with_scanlines: bool,
     pub with_screen_burn: bool,
     pub with_darken_by_distance: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct LogConfig {
-    pub show_mapgen: bool,
-    pub log_spawning: bool,
-    pub log_ticks: bool,
 }
 
 impl Default for Config {
@@ -31,6 +32,7 @@ impl Default for Config {
         Config {
             logging: LogConfig {
                 show_mapgen: false,
+                log_combat: false,
                 log_spawning: false,
                 log_ticks: false,
             },
