@@ -55,47 +55,4 @@ impl Logger {
     pub fn log(self) {
         return append_entry(self.fragments);
     }
-
-    /// Appends text in YELLOW to the current message logger.
-    #[allow(unused)]
-    pub fn npc_name<T: ToString>(mut self, text: T) -> Self {
-        let mut text_with_space = text.to_string();
-        text_with_space.push_str(" ");
-        self.fragments.push(LogFragment { colour: RGB::named(rltk::YELLOW), text: text_with_space });
-        return self;
-    }
-
-    /// Appends text in YELLOW to the current message logger, with no space.
-    pub fn npc_name_n<T: ToString>(mut self, text: T) -> Self {
-        self.fragments.push(LogFragment { colour: RGB::named(rltk::YELLOW), text: text.to_string() });
-        return self;
-    }
-
-    /// Appends text in CYAN to the current message logger.
-    pub fn item_name<T: ToString>(mut self, text: T) -> Self {
-        let mut text_with_space = text.to_string();
-        text_with_space.push_str(" ");
-        self.fragments.push(LogFragment { colour: RGB::named(rltk::CYAN), text: text_with_space });
-        return self;
-    }
-
-    /// Appends text in CYAN to the current message logger, with no space.
-    pub fn item_name_n<T: ToString>(mut self, text: T) -> Self {
-        self.fragments.push(LogFragment { colour: RGB::named(rltk::CYAN), text: text.to_string() });
-        return self;
-    }
-
-    /// Appends text in RED to the current message logger.
-    #[allow(dead_code)]
-    pub fn damage(mut self, damage: i32) -> Self {
-        self.fragments.push(LogFragment { colour: RGB::named(rltk::RED), text: format!("{} ", damage).to_string() });
-        return self;
-    }
-
-    /// Appends text in RED to the current message logger, with no space.
-    #[allow(dead_code)]
-    pub fn damage_n(mut self, damage: i32) -> Self {
-        self.fragments.push(LogFragment { colour: RGB::named(rltk::RED), text: format!("{}", damage).to_string() });
-        return self;
-    }
 }

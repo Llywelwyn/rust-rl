@@ -22,7 +22,12 @@ pub fn get_local_desc(id: i32) -> String {
 pub fn get_local_col(id: i32) -> RGB {
     let col = match id {
         ID_TOWN => TO_TOWN_COLOUR,
+        ID_OVERMAP => TO_OVERMAP_COLOUR,
         _ => (255, 255, 255),
     };
     return RGB::from_u8(col.0, col.1, col.2);
+}
+
+pub fn rgb_to_u8(col: RGB) -> (u8, u8, u8) {
+    return ((col.r * 255.0) as u8, (col.g * 255.0) as u8, (col.b * 255.0) as u8);
 }

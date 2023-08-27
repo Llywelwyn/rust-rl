@@ -1,4 +1,17 @@
-use super::{ gamelog, Blind, BlocksVisibility, Hidden, Map, Name, Player, Position, Telepath, Viewshed };
+use super::{
+    gamelog,
+    Blind,
+    BlocksVisibility,
+    Hidden,
+    Map,
+    Name,
+    Player,
+    Position,
+    Telepath,
+    Viewshed,
+    Renderable,
+    gui::renderable_colour,
+};
 use rltk::{ FieldOfViewAlg::SymmetricShadowcasting, Point };
 use specs::prelude::*;
 
@@ -19,6 +32,7 @@ impl<'a> System<'a> for VisibilitySystem {
         ReadStorage<'a, Name>,
         ReadStorage<'a, Blind>,
         ReadStorage<'a, BlocksVisibility>,
+        ReadStorage<'a, Renderable>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -34,6 +48,7 @@ impl<'a> System<'a> for VisibilitySystem {
             names,
             blind_entities,
             blocks_visibility,
+            renderables,
         ) = data;
 
         map.view_blocked.clear();
@@ -82,7 +97,9 @@ impl<'a> System<'a> for VisibilitySystem {
                                         gamelog::Logger
                                             ::new()
                                             .append("You spot a")
-                                            .item_name_n(&name.name)
+                                            .colour(renderable_colour(&renderables, e))
+                                            .append_n(&name.name)
+                                            .colour(rltk::WHITE)
                                             .period()
                                             .log();
                                     }

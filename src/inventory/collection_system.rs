@@ -1,6 +1,7 @@
 use crate::{
     gamelog,
     gui::obfuscate_name,
+    gui::item_colour,
     Beatitude,
     Charges,
     EquipmentChanged,
@@ -11,6 +12,7 @@ use crate::{
     ObfuscatedName,
     Position,
     WantsToPickupItem,
+    Renderable,
 };
 use specs::prelude::*;
 use crate::data::messages;
@@ -59,7 +61,8 @@ impl<'a> System<'a> for ItemCollectionSystem {
                 gamelog::Logger
                     ::new()
                     .append(messages::YOU_PICKUP_ITEM)
-                    .item_name_n(
+                    .colour(item_colour(pickup.item, &beatitudes))
+                    .append_n(
                         format!(
                             "{}",
                             obfuscate_name(
@@ -73,6 +76,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
                             ).0
                         )
                     )
+                    .colour(rltk::WHITE)
                     .period()
                     .log();
             }

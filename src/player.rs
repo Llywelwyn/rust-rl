@@ -2,7 +2,8 @@ use super::{
     effects::{ add_effect, EffectType, Targets },
     gamelog,
     gui::obfuscate_name_ecs,
-    gui::renderable_colour,
+    gui::renderable_colour_ecs,
+    gui::item_colour_ecs,
     raws::Reaction,
     Attributes,
     BlocksTile,
@@ -50,7 +51,6 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut doors = ecs.write_storage::<Door>();
     let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
-    let mut renderables = ecs.write_storage::<Renderable>();
     let names = ecs.read_storage::<Name>();
     let mut rng = ecs.write_resource::<RandomNumberGenerator>();
 
@@ -82,13 +82,28 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                 let door = doors.get_mut(potential_target);
                 if let Some(door) = door {
                     if door.open == true {
+                        let renderables = ecs.read_storage::<Renderable>();
                         if multiple_tile_content {
                             if let Some(name) = names.get(potential_target) {
-                                gamelog::Logger::new().append("The").item_name(&name.name).append("is blocked.").log();
+                                gamelog::Logger
+                                    ::new()
+                                    .append("The")
+                                    .colour(renderable_colour_ecs(ecs, potential_target))
+                                    .append(&name.name)
+                                    .colour(WHITE)
+                                    .append("is blocked.")
+                                    .log();
                             }
                         } else if rng.roll_dice(1, 6) + attributes.strength.bonus < 2 {
                             if let Some(name) = names.get(potential_target) {
-                                gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
+                                gamelog::Logger
+                                    ::new()
+                                    .append("The")
+                                    .colour(renderable_colour_ecs(ecs, potential_target))
+                                    .append(&name.name)
+                                    .colour(WHITE)
+                                    .append("resists!")
+                                    .log();
                             }
                         } else {
                             door.open = false;
@@ -98,10 +113,20 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             blocks_movement
                                 .insert(potential_target, BlocksTile {})
                                 .expect("Unable to insert BlocksTile.");
-                            let render_data = renderables.get_mut(potential_target).unwrap();
                             if let Some(name) = names.get(potential_target) {
-                                gamelog::Logger::new().append("You close the").item_name_n(&name.name).period().log();
+                                gamelog::Logger
+                                    ::new()
+                                    .append("You close the")
+                                    .colour(renderable_colour_ecs(ecs, potential_target))
+                                    .append_n(&name.name)
+                                    .colour(WHITE)
+                                    .period()
+                                    .log();
                             }
+                            //Re-get renderables as mutable
+                            std::mem::drop(renderables);
+                            let mut renderables = ecs.write_storage::<Renderable>();
+                            let render_data = renderables.get_mut(potential_target).unwrap();
                             render_data.glyph = rltk::to_cp437('+'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
@@ -138,7 +163,6 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut doors = ecs.write_storage::<Door>();
     let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
-    let mut renderables = ecs.write_storage::<Renderable>();
     let names = ecs.read_storage::<Name>();
     let mut rng = ecs.write_resource::<RandomNumberGenerator>();
 
@@ -166,18 +190,35 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                 let door = doors.get_mut(potential_target);
                 if let Some(door) = door {
                     if door.open == false {
+                        let renderables = ecs.read_storage::<Renderable>();
                         if rng.roll_dice(1, 6) + attributes.strength.bonus < 2 {
                             if let Some(name) = names.get(potential_target) {
-                                gamelog::Logger::new().append("The").item_name(&name.name).append("resists!").log();
+                                gamelog::Logger
+                                    ::new()
+                                    .append("The")
+                                    .colour(renderable_colour_ecs(ecs, potential_target))
+                                    .append(&name.name)
+                                    .colour(WHITE)
+                                    .append("resists!")
+                                    .log();
                             }
                         } else {
                             door.open = true;
                             blocks_visibility.remove(potential_target);
                             blocks_movement.remove(potential_target);
-                            let render_data = renderables.get_mut(potential_target).unwrap();
                             if let Some(name) = names.get(potential_target) {
-                                gamelog::Logger::new().append("You open the").item_name_n(&name.name).period().log();
+                                gamelog::Logger
+                                    ::new()
+                                    .append("You open the")
+                                    .colour(renderable_colour_ecs(ecs, potential_target))
+                                    .append_n(&name.name)
+                                    .colour(WHITE)
+                                    .period()
+                                    .log();
                             }
+                            std::mem::drop(renderables);
+                            let mut renderables = ecs.write_storage::<Renderable>();
+                            let render_data = renderables.get_mut(potential_target).unwrap();
                             render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
@@ -212,7 +253,6 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         let mut viewsheds = ecs.write_storage::<Viewshed>();
         let attributes = ecs.read_storage::<Attributes>();
         let map = ecs.fetch::<Map>();
-
         let entities = ecs.entities();
         let mut doors = ecs.write_storage::<Door>();
         let names = ecs.read_storage::<Name>();
@@ -245,10 +285,17 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                 } else {
                     let mut last_non_door_target: Option<Entity> = None;
                     let mut target_name = "thing";
+                    let mut colour = WHITE;
                     crate::spatial::for_each_tile_content_with_bool(destination_idx, |potential_target| {
                         if let Some(name) = names.get(potential_target) {
                             target_name = &name.name;
                         }
+                        let items = ecs.read_storage::<Item>();
+                        colour = if let Some(_) = items.get(potential_target) {
+                            item_colour_ecs(ecs, potential_target)
+                        } else {
+                            renderable_colour_ecs(ecs, potential_target)
+                        };
 
                         // If it's a door,
                         let door = doors.get_mut(potential_target);
@@ -262,7 +309,9 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                     gamelog::Logger
                                         ::new()
                                         .append("As you kick the")
-                                        .item_name_n(target_name)
+                                        .colour(colour)
+                                        .append_n(obfuscate_name_ecs(ecs, potential_target).0)
+                                        .colour(WHITE)
                                         .append(", it crashes open!")
                                         .log();
                                     something_was_destroyed = Some(potential_target);
@@ -274,7 +323,9 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                     gamelog::Logger
                                         ::new()
                                         .append("You kick the")
-                                        .item_name_n(target_name)
+                                        .colour(colour)
+                                        .append_n(obfuscate_name_ecs(ecs, potential_target).0)
+                                        .colour(WHITE)
                                         .period()
                                         .log();
                                     return false;
@@ -290,8 +341,15 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                         }
                         return true;
                     });
-                    if let Some(_) = last_non_door_target {
-                        gamelog::Logger::new().append("You kick the").item_name_n(target_name).period().log();
+                    if let Some(e) = last_non_door_target {
+                        gamelog::Logger
+                            ::new()
+                            .append("You kick the")
+                            .colour(colour)
+                            .append_n(obfuscate_name_ecs(ecs, e).0)
+                            .colour(WHITE)
+                            .period()
+                            .log();
                         let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
                         particle_builder.kick(pos.x + delta_x, pos.y + delta_y);
                         // Do something here if it's anything other than a door.
@@ -383,7 +441,19 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             if let Some(door) = door {
                 if door.open == false {
                     if let Some(name) = names.get(potential_target) {
-                        gamelog::Logger::new().append("The").item_name(&name.name).append("is in your way.").log();
+                        let colour = if let Some(_) = ecs.read_storage::<Item>().get(potential_target) {
+                            item_colour_ecs(ecs, potential_target)
+                        } else {
+                            renderable_colour_ecs(ecs, potential_target)
+                        };
+                        gamelog::Logger
+                            ::new()
+                            .append("The")
+                            .colour(colour)
+                            .append_n(&name.name)
+                            .colour(WHITE)
+                            .append("is in your way.")
+                            .log();
                     }
                     return Some(RunState::AwaitingInput);
                 }
@@ -402,12 +472,13 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             }
             let hidden = ecs.read_storage::<Hidden>();
             // Push every entity name in the pile to a vector of strings
-            let mut item_names: Vec<String> = Vec::new();
+            let mut seen_items: Vec<(String, (u8, u8, u8))> = Vec::new();
             let mut some = false;
             crate::spatial::for_each_tile_content(destination_idx, |entity| {
                 if !hidden.get(entity).is_some() && names.get(entity).is_some() {
                     let item_name = obfuscate_name_ecs(ecs, entity).0;
-                    item_names.push(item_name);
+                    let item_colour = item_colour_ecs(ecs, entity);
+                    seen_items.push((item_name, item_colour));
                     some = true;
                 }
             });
@@ -417,11 +488,11 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             // that it shouldn't matter.
             if some {
                 let mut logger = gamelog::Logger::new().append("You see a");
-                for i in 0..item_names.len() {
-                    if i > 0 && i < item_names.len() {
+                for i in 0..seen_items.len() {
+                    if i > 0 && i < seen_items.len() {
                         logger = logger.append(", a");
                     }
-                    logger = logger.item_name_n(&item_names[i]);
+                    logger = logger.colour(seen_items[i].1).append_n(&seen_items[i].0).colour(WHITE);
                 }
                 logger.period().log();
             }
@@ -448,11 +519,10 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
 
     for m in swap_entities.iter() {
         if let Some(name) = names.get(m.0) {
-            let renderables = ecs.read_storage::<Renderable>();
             gamelog::Logger
                 ::new()
                 .append("You swap places with the")
-                .colour(renderable_colour(&renderables, m.0))
+                .colour(renderable_colour_ecs(ecs, m.0))
                 .append_n(&name.name)
                 .colour(WHITE)
                 .period()

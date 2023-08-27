@@ -1,6 +1,7 @@
 use rltk::{ GameState, Point, RandomNumberGenerator, Rltk };
 use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
+use crate::data::ids::*;
 extern crate serde;
 
 pub mod camera;
@@ -175,7 +176,14 @@ impl State {
         map::dungeon::freeze_entities(&mut self.ecs);
         self.generate_world_map(id, dest_tile);
         let mapname = self.ecs.fetch::<Map>().name.clone();
-        gamelog::Logger::new().append("You head to").npc_name_n(&mapname).period().log();
+        gamelog::Logger
+            ::new()
+            .append("You head to")
+            .colour(rgb_to_u8(get_local_col(id)))
+            .append_n(&mapname)
+            .colour(rltk::WHITE)
+            .period()
+            .log();
         gamelog::record_event(EVENT::CHANGED_FLOOR(mapname));
     }
 
@@ -315,7 +323,7 @@ impl GameState for State {
                         let player = self.ecs.fetch::<Entity>();
                         let mut pools = self.ecs.write_storage::<Pools>();
                         let mut player_pools = pools.get_mut(*player).unwrap();
-                        gamelog::Logger::new().item_name("TOGGLED GOD MODE!").log();
+                        gamelog::Logger::new().append("TOGGLED GOD MODE!").log();
                         player_pools.god = !player_pools.god;
                         new_runstate = RunState::AwaitingInput;
                     }

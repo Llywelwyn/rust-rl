@@ -1,6 +1,7 @@
 use crate::{
     gamelog,
     gui::obfuscate_name,
+    gui::item_colour,
     Beatitude,
     Charges,
     EquipmentChanged,
@@ -67,7 +68,8 @@ impl<'a> System<'a> for ItemDropSystem {
                 gamelog::Logger
                     ::new()
                     .append(messages::YOU_DROP_ITEM)
-                    .item_name_n(
+                    .colour(item_colour(to_drop.item, &beatitudes))
+                    .append_n(
                         format!(
                             "{}",
                             obfuscate_name(
@@ -81,6 +83,7 @@ impl<'a> System<'a> for ItemDropSystem {
                             ).0
                         )
                     )
+                    .colour(rltk::WHITE)
                     .period()
                     .log();
             }

@@ -599,6 +599,15 @@ pub fn renderable_colour(renderables: &ReadStorage<Renderable>, entity: Entity) 
     };
 }
 
+/// Gets renderable colour as tuple of u8
+pub fn renderable_colour_ecs(ecs: &World, entity: Entity) -> (u8, u8, u8) {
+    return if let Some(renderable) = ecs.read_storage::<Renderable>().get(entity) {
+        ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8)
+    } else {
+        WHITE
+    };
+}
+
 pub fn item_colour_ecs(ecs: &World, item: Entity) -> (u8, u8, u8) {
     if let Some(beatitude) = ecs.read_storage::<Beatitude>().get(item) {
         if beatitude.known {
