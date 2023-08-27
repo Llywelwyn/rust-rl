@@ -23,23 +23,15 @@ pub enum TileType {
     // Stairs (changes floor)
     DownStair,
     UpStair,
+    // To/From Overmap - ids are in src/data/ids.rs, are used in try_change_level() in src/player.rs
+    ToOvermap,
+    ToTown,
 }
 
 pub fn tile_walkable(tt: TileType) -> bool {
     match tt {
-        | TileType::Floor
-        | TileType::WoodFloor
-        | TileType::Gravel
-        | TileType::Road
-        | TileType::Grass
-        | TileType::Foliage
-        | TileType::HeavyFoliage
-        | TileType::Sand
-        | TileType::ShallowWater
-        | TileType::Bridge
-        | TileType::DownStair
-        | TileType::UpStair => true,
-        _ => false,
+        TileType::ImpassableMountain | TileType::Wall | TileType::DeepWater | TileType::Fence | TileType::Bars => false,
+        _ => true,
     }
 }
 

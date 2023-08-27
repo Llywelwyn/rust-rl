@@ -35,6 +35,7 @@ use rltk::{ Point, RandomNumberGenerator, Rltk, VirtualKeyCode };
 use specs::prelude::*;
 use std::cmp::{ max, min };
 use crate::data::events::*;
+use crate::data::ids::*;
 
 pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
@@ -529,20 +530,28 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                 // id
                 VirtualKeyCode::Period => {
                     if ctx.shift {
-                        if !try_next_level(&mut gs.ecs) {
+                        let (id, from_tile) = try_next_level(&mut gs.ecs);
+                        if from_tile.is_none() {
                             return RunState::AwaitingInput;
+                        } else if id == ID_NEXT_LEVEL {
+                            return RunState::NextLevel;
                         }
-                        return RunState::NextLevel; // > to descend
+                        return RunState::GoToLevel(id, from_tile);
                     } else {
                         return skip_turn(&mut gs.ecs); // (Wait a turn)
                     }
                 }
                 VirtualKeyCode::Comma => {
                     if ctx.shift {
-                        if !try_previous_level(&mut gs.ecs) {
+                        let (id, from_tile) = try_prev_level(&mut gs.ecs);
+                        if from_tile.is_none() {
                             return RunState::AwaitingInput;
+                        } else if id == ID_PREVIOUS_LEVEL {
+                            return RunState::PreviousLevel;
                         }
-                        return RunState::PreviousLevel; // < to ascend
+                        return RunState::GoToLevel(id, from_tile);
+                    } else {
+                        return skip_turn(&mut gs.ecs); // (Wait a turn)
                     }
                 }
                 VirtualKeyCode::Slash => {
@@ -591,27 +600,41 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     return RunState::AwaitingInput;
 }
 
-pub fn try_next_level(ecs: &mut World) -> bool {
+fn try_next_level(ecs: &mut World) -> (i32, Option<TileType>) {
     let player_pos = ecs.fetch::<Point>();
     let map = ecs.fetch::<Map>();
     let player_idx = map.xy_idx(player_pos.x, player_pos.y);
-    if map.tiles[player_idx] == TileType::DownStair {
-        return true;
-    } else {
-        gamelog::Logger::new().append("You don't see a way down from here.").log();
-        return false;
+    let this_tile = map.tiles[player_idx];
+    match this_tile {
+        TileType::DownStair => {
+            return (ID_NEXT_LEVEL, Some(this_tile));
+        }
+        TileType::ToTown => {
+            return (ID_TOWN, Some(this_tile));
+        }
+        _ => {
+            gamelog::Logger::new().append("You don't see a way down from here.").log();
+            return (0, None);
+        }
     }
 }
 
-pub fn try_previous_level(ecs: &mut World) -> bool {
+fn try_prev_level(ecs: &mut World) -> (i32, Option<TileType>) {
     let player_pos = ecs.fetch::<Point>();
     let map = ecs.fetch::<Map>();
     let player_idx = map.xy_idx(player_pos.x, player_pos.y);
-    if map.tiles[player_idx] == TileType::UpStair {
-        return true;
-    } else {
-        gamelog::Logger::new().append("You don't see a way up from here.").log();
-        return false;
+    let this_tile = map.tiles[player_idx];
+    match this_tile {
+        TileType::UpStair => {
+            return (ID_PREVIOUS_LEVEL, Some(this_tile));
+        }
+        TileType::ToOvermap => {
+            return (ID_OVERMAP, Some(this_tile));
+        }
+        _ => {
+            gamelog::Logger::new().append("You don't see a way out from here.").log();
+            return (0, None);
+        }
     }
 }
 

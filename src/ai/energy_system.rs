@@ -1,5 +1,5 @@
 use crate::data::entity::*;
-use crate::{ Burden, BurdenLevel, Clock, Energy, Name, Position, RunState, TakingTurn };
+use crate::{ Burden, BurdenLevel, Clock, Energy, Name, Position, RunState, Map, TakingTurn };
 use rltk::prelude::*;
 use specs::prelude::*;
 use crate::config::CONFIG;
@@ -12,6 +12,7 @@ const TURN_COST: i32 = NORMAL_SPEED * TURN_COST_MULTIPLIER;
 impl<'a> System<'a> for EnergySystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
+        ReadExpect<'a, Map>,
         ReadStorage<'a, Clock>,
         WriteStorage<'a, Energy>,
         ReadStorage<'a, Burden>,
@@ -27,6 +28,7 @@ impl<'a> System<'a> for EnergySystem {
 
     fn run(&mut self, data: Self::SystemData) {
         let (
+            map,
             clock,
             mut energies,
             burdens,
@@ -62,15 +64,16 @@ impl<'a> System<'a> for EnergySystem {
         for (entity, energy, pos) in (&entities, &mut energies, &positions).join() {
             let burden_modifier = if let Some(burden) = burdens.get(entity) {
                 match burden.level {
-                    BurdenLevel::Burdened => 0.75,
-                    BurdenLevel::Strained => 0.5,
-                    BurdenLevel::Overloaded => 0.25,
+                    BurdenLevel::Burdened => SPEED_MOD_BURDENED,
+                    BurdenLevel::Strained => SPEED_MOD_STRAINED,
+                    BurdenLevel::Overloaded => SPEED_MOD_OVERLOADED,
                 }
             } else {
                 1.0
             };
+            let overmap_mod = if map.overmap { SPEED_MOD_OVERMAP_TRAVEL } else { 1.0 };
             // Every entity has a POTENTIAL equal to their speed.
-            let mut energy_potential: i32 = ((energy.speed as f32) * burden_modifier) as i32;
+            let mut energy_potential: i32 = ((energy.speed as f32) * burden_modifier * overmap_mod) as i32;
             // Increment current energy by NORMAL_SPEED for every
             // whole number of NORMAL_SPEEDS in their POTENTIAL.
             while energy_potential >= NORMAL_SPEED {

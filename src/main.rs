@@ -70,8 +70,9 @@ pub enum RunState {
     },
     SaveGame,
     GameOver,
-    NextLevel,
     PreviousLevel,
+    NextLevel,
+    GoToLevel(i32, Option<TileType>),
     HelpScreen,
     MagicMapReveal {
         row: i32,
@@ -89,12 +90,12 @@ pub struct State {
 }
 
 impl State {
-    fn generate_world_map(&mut self, new_id: i32, offset: i32) {
+    fn generate_world_map(&mut self, new_id: i32, offset: i32, from_tile: Option<TileType>) {
         // Visualisation stuff
         self.mapgen_index = 0;
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
-        let map_building_info = map::level_transition(&mut self.ecs, new_id, offset);
+        let map_building_info = map::level_transition(&mut self.ecs, new_id, offset, from_tile);
         if let Some(history) = map_building_info {
             self.mapgen_history = history;
         } else {
@@ -171,7 +172,17 @@ impl State {
         default_move_ai.run_now(&self.ecs);
     }
 
-    fn goto_level(&mut self, offset: i32) {
+    fn goto_id(&mut self, id: i32, from_tile: Option<TileType>) {
+        let current_id;
+        {
+            let worldmap_resource = self.ecs.fetch::<Map>();
+            current_id = worldmap_resource.id;
+        }
+        let offset = id - current_id;
+        self.goto_level(offset, from_tile);
+    }
+
+    fn goto_level(&mut self, offset: i32, from_tile: Option<TileType>) {
         // Build new map + place player
         let current_id;
         {
@@ -187,7 +198,7 @@ impl State {
         }
         // Freeze the current level
         map::dungeon::freeze_entities(&mut self.ecs);
-        self.generate_world_map(current_id + offset, offset);
+        self.generate_world_map(current_id + offset, offset, from_tile);
         let mapname = self.ecs.fetch::<Map>().name.clone();
         gamelog::Logger::new().append("You head to").npc_name_n(mapname).period().log();
     }
@@ -210,7 +221,7 @@ impl State {
         }
         // Replace map list
         self.ecs.insert(map::dungeon::MasterDungeonMap::new());
-        self.generate_world_map(1, 0);
+        self.generate_world_map(1, 0, None);
 
         gamelog::setup_log();
         gamelog::record_event(EVENT::LEVEL(1));
@@ -299,12 +310,12 @@ impl GameState for State {
                     }
                     gui::CheatMenuResult::NoResponse => {}
                     gui::CheatMenuResult::Ascend => {
-                        self.goto_level(-1);
+                        self.goto_level(-1, Some(TileType::UpStair));
                         self.mapgen_next_state = Some(RunState::PreRun);
                         new_runstate = RunState::MapGeneration;
                     }
                     gui::CheatMenuResult::Descend => {
-                        self.goto_level(1);
+                        self.goto_level(1, Some(TileType::DownStair));
                         self.mapgen_next_state = Some(RunState::PreRun);
                         new_runstate = RunState::MapGeneration;
                     }
@@ -524,12 +535,17 @@ impl GameState for State {
                 }
             }
             RunState::NextLevel => {
-                self.goto_level(1);
+                self.goto_level(1, Some(TileType::DownStair));
                 self.mapgen_next_state = Some(RunState::PreRun);
                 new_runstate = RunState::MapGeneration;
             }
             RunState::PreviousLevel => {
-                self.goto_level(-1);
+                self.goto_level(-1, Some(TileType::UpStair));
+                self.mapgen_next_state = Some(RunState::PreRun);
+                new_runstate = RunState::MapGeneration;
+            }
+            RunState::GoToLevel(id, from_tile) => {
+                self.goto_id(id, from_tile);
                 self.mapgen_next_state = Some(RunState::PreRun);
                 new_runstate = RunState::MapGeneration;
             }
@@ -734,7 +750,7 @@ fn main() -> rltk::BError {
 
     gamelog::setup_log();
     gamelog::record_event(EVENT::LEVEL(1));
-    gs.generate_world_map(1, 0);
+    gs.generate_world_map(1, 0, None);
 
     rltk::main_loop(context, gs)
 }

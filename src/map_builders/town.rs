@@ -61,6 +61,11 @@ impl TownBuilder {
         self.spawn_dockers(build_data, rng);
         self.spawn_townsfolk(build_data, rng, &mut available_building_tiles);
 
+        build_data.starting_position = Some(Position {
+            x: build_data.width - 2,
+            y: wall_gap_y,
+        });
+
         build_data.take_snapshot();
     }
 
@@ -186,11 +191,6 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator
     ) {
-        // Place player
-        build_data.starting_position = Some(Position {
-            x: building.0 + building.2 / 2,
-            y: building.1 + building.3 / 2,
-        });
         let player_idx = build_data.map.xy_idx(building.0 + building.2 / 2, building.1 + building.3 / 2);
 
         // Place other items

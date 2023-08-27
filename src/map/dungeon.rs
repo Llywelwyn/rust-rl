@@ -5,6 +5,7 @@ use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
 use std::collections::{ HashMap, HashSet };
 use crate::data::events::*;
+use crate::data::ids::*;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct MasterDungeonMap {
@@ -188,12 +189,12 @@ fn make_wand_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<Stri
     }
 }
 
-pub fn level_transition(ecs: &mut World, new_id: i32, offset: i32) -> Option<Vec<Map>> {
+pub fn level_transition(ecs: &mut World, new_id: i32, offset: i32, from_tile: Option<TileType>) -> Option<Vec<Map>> {
     // Obtain master
     let dungeon_master = ecs.read_resource::<MasterDungeonMap>();
     if dungeon_master.get_map(new_id).is_some() {
         std::mem::drop(dungeon_master);
-        transition_to_existing_map(ecs, new_id, offset);
+        transition_to_existing_map(ecs, new_id, offset, from_tile);
         return None;
     } else {
         std::mem::drop(dungeon_master);
@@ -201,20 +202,36 @@ pub fn level_transition(ecs: &mut World, new_id: i32, offset: i32) -> Option<Vec
     }
 }
 
-fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32) {
+fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32, from_tile: Option<TileType>) {
     let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
     // Unwrapping here panics if new_id isn't present. But this should
     // never be called without new_id being present by level_transition.
     let map = dungeon_master.get_map(new_id).unwrap();
     let mut worldmap_resource = ecs.write_resource::<Map>();
-    // Store new state of old map
-    dungeon_master.store_map(&worldmap_resource);
     let player_entity = ecs.fetch::<Entity>();
     // Find down stairs, place player
+    let dest_tile = if from_tile.is_some() {
+        match from_tile.unwrap() {
+            TileType::UpStair => TileType::DownStair,
+            TileType::DownStair => TileType::UpStair,
+            TileType::ToTown => TileType::ToOvermap,
+            TileType::ToOvermap => {
+                match worldmap_resource.id {
+                    ID_TOWN => TileType::ToTown,
+                    _ => panic!("Tried to transition to overmap from somewhere unaccounted for!"),
+                }
+            }
+            _ => if offset < 0 { TileType::DownStair } else { TileType::UpStair }
+        }
+    } else if offset < 0 {
+        TileType::DownStair
+    } else {
+        TileType::UpStair
+    };
+
     let w = map.width;
-    let stair_type = if offset < 0 { TileType::DownStair } else { TileType::UpStair };
     for (idx, tt) in map.tiles.iter().enumerate() {
-        if *tt == stair_type {
+        if *tt == dest_tile {
             let mut player_position = ecs.write_resource::<Point>();
             *player_position = Point::new((idx as i32) % w, (idx as i32) / w);
             let mut position_components = ecs.write_storage::<Position>();
@@ -225,6 +242,7 @@ fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32) {
             }
         }
     }
+    dungeon_master.store_map(&worldmap_resource);
     *worldmap_resource = map;
     // Dirtify viewsheds (forces refresh)
     let mut viewshed_components = ecs.write_storage::<Viewshed>();
@@ -248,18 +266,23 @@ fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
     let mut builder = map_builders::level_builder(new_id, &mut rng, 100, 50, player_level);
     builder.build_map(&mut rng);
     std::mem::drop(rng);
-    if new_id > 1 {
-        if let Some(pos) = &builder.build_data.starting_position {
-            let up_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
-            builder.build_data.map.tiles[up_idx] = TileType::UpStair;
-        }
-    }
     let mapgen_history = builder.build_data.history.clone();
     let player_start;
     let old_map: Map;
     {
         let mut worldmap_resource = ecs.write_resource::<Map>();
         old_map = worldmap_resource.clone();
+        if !old_map.overmap {
+            if let Some(pos) = &builder.build_data.starting_position {
+                let up_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
+                builder.build_data.map.tiles[up_idx] = TileType::UpStair;
+            }
+        } else {
+            if let Some(pos) = &builder.build_data.starting_position {
+                let down_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
+                builder.build_data.map.tiles[down_idx] = TileType::ToOvermap;
+            }
+        }
         *worldmap_resource = builder.build_data.map.clone();
         // Unwrap so we get a CTD if there's no starting pos.
         player_start = builder.build_data.starting_position.as_mut().unwrap().clone();

@@ -177,6 +177,9 @@ impl PrefabBuilder {
             '^' => {
                 build_data.map.tiles[idx] = TileType::ImpassableMountain;
             }
+            '1' => {
+                build_data.map.tiles[idx] = TileType::ToTown;
+            }
             _ => {
                 rltk::console::log(format!("Unknown glyph '{}' when loading overmap", ch as u8 as char));
             }

@@ -36,6 +36,7 @@ use common::*;
 use specs::prelude::*;
 use voronoi_spawning::VoronoiSpawning;
 use super::config::CONFIG;
+use super::data::ids::*;
 //use wfc::WaveFunctionCollapseBuilder;
 mod room_exploder;
 use room_exploder::RoomExploder;
@@ -318,7 +319,7 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 }
 
 fn overmap_builder() -> BuilderChain {
-    let mut builder = BuilderChain::new(true, 1, 69, 41, 0, "the world", 1);
+    let mut builder = BuilderChain::new(true, ID_OVERMAP, 69, 41, 0, "the world", 1);
     builder.start_with(PrefabBuilder::overmap());
     return builder;
 }
@@ -385,9 +386,9 @@ pub fn level_builder(
     // TODO: With difficulty and ID/depth decoupled, this can be used for branches later.
     let difficulty = new_id;
     match new_id {
-        1 => overmap_builder(),
-        2 => town_builder(new_id, rng, width, height, 0, initial_player_level),
-        3 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
+        ID_OVERMAP => overmap_builder(),
+        ID_TOWN => town_builder(new_id, rng, width, height, 0, initial_player_level),
+        ID_TOWN2 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
         _ => random_builder(new_id, rng, width, height, difficulty, initial_player_level),
     }
 }

@@ -1,6 +1,7 @@
 use super::{ Map, Point, TileType };
 use crate::data::visuals::*;
 use crate::config::CONFIG;
+use crate::data::ids::*;
 use rltk::prelude::*;
 use std::ops::{ Add, Mul };
 
@@ -12,7 +13,7 @@ pub fn get_tile_renderables_for_id(
     debug: Option<bool>
 ) -> (rltk::FontCharType, RGB, RGB) {
     let (glyph, mut fg, mut bg, offsets, bg_main_col) = match map.id {
-        3 => get_forest_theme_renderables(idx, map, debug),
+        ID_TOWN2 => get_forest_theme_renderables(idx, map, debug),
         _ => get_default_theme_renderables(idx, map, debug),
     };
 
@@ -87,6 +88,8 @@ pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>)
         TileType::DeepWater => { glyph = rltk::to_cp437(DEEP_WATER_GLYPH); bg = RGB::named(DEEP_WATER_COLOUR); offsets = DEEP_WATER_OFFSETS; }
         TileType::Bars => { glyph = rltk::to_cp437(BARS_GLYPH); fg = RGB::named(BARS_COLOUR); bg = RGB::named(FLOOR_COLOUR); }
         TileType::ImpassableMountain => { glyph = rltk::to_cp437(IMPASSABLE_MOUNTAIN_GLYPH); bg = RGB::named(IMPASSABLE_MOUNTAIN_COLOUR); offsets = IMPASSABLE_MOUNTAIN_OFFSETS }
+        TileType::ToOvermap => { glyph = rltk::to_cp437(TO_OVERMAP_GLYPH); fg = RGB::named(TO_OVERMAP_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = false; }
+        TileType::ToTown => { glyph = rltk::to_cp437(TO_TOWN_GLYPH); fg = RGB::named(TO_TOWN_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = false; }
     }
     return (glyph, fg, bg, offsets, bg_main_col);
 }

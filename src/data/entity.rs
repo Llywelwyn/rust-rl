@@ -1,6 +1,10 @@
 pub const DEFAULT_VIEWSHED_STANDARD: i32 = 16; //       Standard viewshed radius for almost all entities.
 pub const CARRY_CAPACITY_PER_STRENGTH: i32 = 8; //      How much weight can be carried per point of strength.
 pub const NORMAL_SPEED: i32 = 12; //                    Normal speed for almost all entities.
+pub const SPEED_MOD_BURDENED: f32 = 0.75;
+pub const SPEED_MOD_STRAINED: f32 = 0.5;
+pub const SPEED_MOD_OVERLOADED: f32 = 0.25;
+pub const SPEED_MOD_OVERMAP_TRAVEL: f32 = 0.33;
 pub const TURN_COST_MULTIPLIER: i32 = 4; //             How many ticks for NORMAL_SPEED to get a turn.
 pub const ATTR_BONUS_0: i32 = 10; //                    At this value, the attribute bonus is 0.
 pub const ATTR_NEEDED_PER_POINT: i32 = 2; //            How many points +- ATTR_BONUS_0 are needed per +- 1 bonus.
