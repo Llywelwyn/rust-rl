@@ -112,7 +112,7 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
         };
         player_inventory
             .entry(unique_item)
-            .and_modify(|(e, count)| {
+            .and_modify(|(_e, count)| {
                 *count += 1;
             })
             .or_insert((entity, 1));

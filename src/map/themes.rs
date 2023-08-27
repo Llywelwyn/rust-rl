@@ -116,7 +116,7 @@ fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (r
         TileType::Wall => { glyph = rltk::to_cp437(FOREST_WALL_GLYPH); fg = RGB::named(FOREST_WALL_COLOUR); bg = RGB::named(GRASS_COLOUR); offsets = GRASS_OFFSETS; }
         TileType::Road => { glyph = rltk::to_cp437(ROAD_GLYPH); bg = RGB::named(ROAD_COLOUR); }
         TileType::ShallowWater => { glyph = rltk::to_cp437(SHALLOW_WATER_GLYPH); bg = RGB::named(SHALLOW_WATER_COLOUR); offsets = SHALLOW_WATER_OFFSETS; }
-        _ => { (glyph, fg, _, (offsets, bg_offsets)) = get_default_theme_renderables(idx, map, debug); bg = RGB::named(GRASS_COLOUR); bg_offsets = GRASS_OFFSETS; }
+        _ => { (glyph, fg, _, (offsets, _)) = get_default_theme_renderables(idx, map, debug); bg = RGB::named(GRASS_COLOUR); bg_offsets = GRASS_OFFSETS; }
     }
     if bg_offsets == (-1, -1, -1) {
         bg_offsets = offsets;
@@ -319,10 +319,11 @@ fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
         (distance - START_DARKEN_AT_N_TILES) /
         ((crate::data::entity::DEFAULT_VIEWSHED_STANDARD as f32) - START_DARKEN_AT_N_TILES);
     let interp_factor = interp_factor.max(0.0).min(1.0); // Clamp [0-1]
-    return (
+    let result =
         1.0 -
-        interp_factor * (1.0 - (if CONFIG.visuals.with_scanlines { MAX_DARKENING_IF_SCANLINES } else { MAX_DARKENING }))
-    );
+        interp_factor *
+            (1.0 - (if CONFIG.visuals.with_scanlines { MAX_DARKENING_IF_SCANLINES } else { MAX_DARKENING }));
+    return result;
 }
 
 fn brighten_by(mut fg: RGB, mut bg: RGB, amount: f32) -> (RGB, RGB) {

@@ -5,7 +5,6 @@ use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
 use std::collections::{ HashMap, HashSet };
 use crate::data::events::*;
-use crate::data::ids::*;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct MasterDungeonMap {

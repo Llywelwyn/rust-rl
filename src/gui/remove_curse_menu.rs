@@ -95,7 +95,7 @@ pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<E
         };
         player_inventory
             .entry(unique_item)
-            .and_modify(|(e, count)| {
+            .and_modify(|(_e, count)| {
                 *count += 1;
             })
             .or_insert((entity, 1));

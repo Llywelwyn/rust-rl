@@ -463,7 +463,7 @@ pub fn print_options(inventory: &PlayerInventory, mut x: i32, mut y: i32, ctx: &
 
 pub fn get_max_inventory_width(inventory: &PlayerInventory) -> i32 {
     let mut width: i32 = 0;
-    for (item, (e, count)) in inventory {
+    for (item, (_e, count)) in inventory {
         let mut this_width = item.display_name.singular.len() as i32;
         // Clean this up. It should use consts.
         this_width += 4; // The spaces before and after the character to select this item, etc.
@@ -749,7 +749,7 @@ pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
         };
         player_inventory
             .entry(unique_item)
-            .and_modify(|(e, count)| {
+            .and_modify(|(_e, count)| {
                 *count += 1;
             })
             .or_insert((entity, 1));
