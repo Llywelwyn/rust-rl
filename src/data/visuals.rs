@@ -19,6 +19,7 @@ pub const LONG_PARTICLE_LIFETIME: f32 = 300.0;
 pub const BLOODSTAIN_COLOUR: (u8, u8, u8) = (153, 0, 0);
 // DEFAULT THEME
 pub const DEFAULT_BG_COLOUR: (u8, u8, u8) = (29, 50, 50);
+pub const DEFAULT_BG_OFFSETS: (i32, i32, i32) = (5, 5, 5);
 pub const WALL_COLOUR: (u8, u8, u8) = (229, 191, 94);
 pub const WALL_OFFSETS: (i32, i32, i32) = (48, 48, 48);
 pub const FLOOR_COLOUR: (u8, u8, u8) = (25, 204, 122);

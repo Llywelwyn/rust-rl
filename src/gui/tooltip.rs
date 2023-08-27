@@ -1,4 +1,6 @@
 use super::{ camera::get_screen_bounds, Attributes, Hidden, Map, Name, Pools, Position, Renderable, Rltk, World, RGB };
+use crate::TileType;
+use crate::data::ids::*;
 use rltk::prelude::*;
 use specs::prelude::*;
 
@@ -70,6 +72,17 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     }
 
     let mut tooltips: Vec<Tooltip> = Vec::new();
+    
+    match map.tiles[map.xy_idx(mouse_pos_adjusted.0, mouse_pos_adjusted.1)] {
+        TileType::ToLocal(n) => {
+            let name = get_local_desc(n);
+            let mut tip = Tooltip::new();
+            tip.add(format!("You see {}.", name), get_local_col(n));
+            tooltips.push(tip);
+        }
+        _ => {}
+    }
+
     for (entity, position, renderable, _name, _hidden) in (&entities, &positions, &renderables, &names, !&hidden).join() {
         if position.x == mouse_pos_adjusted.0 && position.y == mouse_pos_adjusted.1 {
             let mut tip = Tooltip::new();
@@ -129,7 +142,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     let arrow;
     let arrow_x;
     let arrow_y = mouse_pos.1;
-    if mouse_pos.0 < 35 {
+    if mouse_pos.0 > 35 {
         // Render to the left
         arrow = to_cp437('→');
         arrow_x = mouse_pos.0 - 1;
@@ -151,7 +164,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     }
 
     for t in tooltips.iter() {
-        let x = if mouse_pos.0 < 35 {
+        let x = if mouse_pos.0 > 35 {
             mouse_pos.0 - (1 + t.width())
         } else {
             mouse_pos.0 + (1 + 1)

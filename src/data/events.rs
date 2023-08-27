@@ -4,7 +4,7 @@ use serde::{ Deserialize, Serialize };
 pub enum EVENT {
     TURN(i32),
     LEVEL(i32),
-    CHANGED_FLOOR(i32),
+    CHANGED_FLOOR(String),
     PLAYER_CONFUSED(i32),
     KICKED_SOMETHING(i32),
     BROKE_DOOR(i32),

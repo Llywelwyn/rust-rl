@@ -171,17 +171,12 @@ impl State {
     }
 
     fn goto_id(&mut self, id: i32, dest_tile: TileType) {
-        let current_id;
-        {
-            let worldmap_resource = self.ecs.fetch::<Map>();
-            current_id = worldmap_resource.id;
-        }
         // Freeze curr level
         map::dungeon::freeze_entities(&mut self.ecs);
         self.generate_world_map(id, dest_tile);
         let mapname = self.ecs.fetch::<Map>().name.clone();
-        gamelog::Logger::new().append("You head to").npc_name_n(mapname).period().log();
-        gamelog::record_event(EVENT::CHANGED_FLOOR(id));
+        gamelog::Logger::new().append("You head to").npc_name_n(&mapname).period().log();
+        gamelog::record_event(EVENT::CHANGED_FLOOR(mapname));
     }
 
     fn game_over_cleanup(&mut self) {

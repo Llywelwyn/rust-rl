@@ -439,6 +439,9 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             let mut ppos = ecs.write_resource::<Point>();
             ppos.x = pos.x;
             ppos.y = pos.y;
+            if map.tiles[new_idx] == TileType::ToOvermap(map.id) {
+                return RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(map.id));
+            }
             return RunState::Ticking;
         }
     }

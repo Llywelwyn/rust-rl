@@ -1,6 +1,7 @@
 use std::collections::{ HashSet, HashMap };
 use std::sync::Mutex;
 use crate::data::events::EVENT;
+use crate::data::names::*;
 
 lazy_static! {
     /// A count of each event that has happened over the run. i.e. "turns", "descended", "ascended"
@@ -8,9 +9,9 @@ lazy_static! {
     // A record of events that happened on a given turn. i.e. "Advanced to level 2".
     pub static ref EVENTS: Mutex<HashMap<u32, Vec<String>>> = Mutex::new(HashMap::new());
     // A record of floors visited, and monsters killed. Used to determine if an event is significant.
-    static ref VISITED: Mutex<HashSet<i32>> = Mutex::new({
+    static ref VISITED: Mutex<HashSet<String>> = Mutex::new({
         let mut set = HashSet::new();
-        set.insert(1);
+        set.insert(NAME_OVERMAP.to_string());
         set
     });
     static ref KILLED: Mutex<HashSet<String>> = Mutex::new(HashSet::new());
@@ -91,8 +92,8 @@ pub fn record_event(event: EVENT) {
             if VISITED.lock().unwrap().contains(&n) {
                 significant_event = false;
             } else {
-                VISITED.lock().unwrap().insert(n);
-                new_event = format!("Visited floor {} for the first time", n);
+                VISITED.lock().unwrap().insert(n.clone());
+                new_event = format!("Visited {} for the first time", n);
             }
         }
         EVENT::KICKED_SOMETHING(n) => {
