@@ -189,59 +189,54 @@ fn make_wand_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<Stri
     }
 }
 
-pub fn level_transition(ecs: &mut World, new_id: i32, offset: i32, from_tile: Option<TileType>) -> Option<Vec<Map>> {
+pub fn level_transition(ecs: &mut World, new_id: i32, dest_tile: TileType) -> Option<Vec<Map>> {
     // Obtain master
     let dungeon_master = ecs.read_resource::<MasterDungeonMap>();
     if dungeon_master.get_map(new_id).is_some() {
         std::mem::drop(dungeon_master);
-        transition_to_existing_map(ecs, new_id, offset, from_tile);
+        transition_to_existing_map(ecs, new_id, dest_tile);
         return None;
     } else {
         std::mem::drop(dungeon_master);
-        return Some(transition_to_new_map(ecs, new_id));
+        return Some(transition_to_new_map(ecs, new_id, dest_tile));
     }
 }
 
-fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32, from_tile: Option<TileType>) {
+fn transition_to_existing_map(ecs: &mut World, new_id: i32, dest_tile: TileType) {
     let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
     // Unwrapping here panics if new_id isn't present. But this should
     // never be called without new_id being present by level_transition.
     let map = dungeon_master.get_map(new_id).unwrap();
     let mut worldmap_resource = ecs.write_resource::<Map>();
     let player_entity = ecs.fetch::<Entity>();
-    // Find down stairs, place player
-    let dest_tile = if from_tile.is_some() {
-        match from_tile.unwrap() {
-            TileType::UpStair => TileType::DownStair,
-            TileType::DownStair => TileType::UpStair,
-            TileType::ToTown => TileType::ToOvermap,
-            TileType::ToOvermap => {
-                match worldmap_resource.id {
-                    ID_TOWN => TileType::ToTown,
-                    ID_INFINITE => TileType::ToInfinite,
-                    _ => panic!("Tried to transition to overmap from somewhere unaccounted for!"),
-                }
-            }
-            _ => if offset < 0 { TileType::DownStair } else { TileType::UpStair }
-        }
-    } else if offset < 0 {
-        TileType::DownStair
-    } else {
-        TileType::UpStair
-    };
 
     let w = map.width;
+    let mut possible_destinations: Vec<usize> = Vec::new();
     for (idx, tt) in map.tiles.iter().enumerate() {
         if *tt == dest_tile {
-            let mut player_position = ecs.write_resource::<Point>();
-            *player_position = Point::new((idx as i32) % w, (idx as i32) / w);
-            let mut position_components = ecs.write_storage::<Position>();
-            let player_pos_component = position_components.get_mut(*player_entity);
-            if let Some(player_pos_component) = player_pos_component {
-                player_pos_component.x = (idx as i32) % w;
-                player_pos_component.y = (idx as i32) / w;
-            }
+            possible_destinations.push(idx);
         }
+    }
+    if possible_destinations.is_empty() {
+        console::log("WARNING: No destination tiles found on map transition.");
+        match dest_tile {
+            TileType::DownStair => console::log("DESTINATION: DownStair"),
+            TileType::UpStair => console::log("DESTINATION: UpStair"),
+            TileType::ToOvermap(id) => console::log(format!("DESTINATION: ToOvermap({})", id)),
+            TileType::ToLocal(id) => console::log(format!("DESTINATION: ToLocal({})", id)),
+            _ => console::log("DESTINATION: Unknown"),
+        }
+        possible_destinations.push(((map.width * map.height) as usize) / 2); // Centre of map
+    }
+    let mut rng = ecs.write_resource::<rltk::RandomNumberGenerator>();
+    let idx = possible_destinations[(rng.roll_dice(1, possible_destinations.len() as i32) as usize) - 1];
+    let mut player_position = ecs.write_resource::<Point>();
+    *player_position = Point::new((idx as i32) % w, (idx as i32) / w);
+    let mut position_components = ecs.write_storage::<Position>();
+    let player_pos_component = position_components.get_mut(*player_entity);
+    if let Some(player_pos_component) = player_pos_component {
+        player_pos_component.x = (idx as i32) % w;
+        player_pos_component.y = (idx as i32) / w;
     }
     dungeon_master.store_map(&worldmap_resource);
     *worldmap_resource = map;
@@ -258,7 +253,7 @@ fn transition_to_existing_map(ecs: &mut World, new_id: i32, offset: i32, from_ti
     }
 }
 
-fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
+fn transition_to_new_map(ecs: &mut World, new_id: i32, _dest_tile: TileType) -> Vec<Map> {
     let mut rng = ecs.write_resource::<rltk::RandomNumberGenerator>();
     // Might need this to fallback to 1, but if player
     // level isn't found at all, there's a bigger concern
@@ -279,11 +274,6 @@ fn transition_to_new_map(ecs: &mut World, new_id: i32) -> Vec<Map> {
             if let Some(pos) = &builder.build_data.starting_position {
                 let up_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
                 builder.build_data.map.tiles[up_idx] = TileType::UpStair;
-            }
-        } else if old_map.overmap && !builder.build_data.map.overmap {
-            if let Some(pos) = &builder.build_data.starting_position {
-                let down_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
-                builder.build_data.map.tiles[down_idx] = TileType::ToOvermap;
             }
         }
         *worldmap_resource = builder.build_data.map.clone();

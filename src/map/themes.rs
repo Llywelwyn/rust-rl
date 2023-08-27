@@ -88,9 +88,8 @@ pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>)
         TileType::DeepWater => { glyph = rltk::to_cp437(DEEP_WATER_GLYPH); bg = RGB::named(DEEP_WATER_COLOUR); offsets = DEEP_WATER_OFFSETS; }
         TileType::Bars => { glyph = rltk::to_cp437(BARS_GLYPH); fg = RGB::named(BARS_COLOUR); bg = RGB::named(FLOOR_COLOUR); }
         TileType::ImpassableMountain => { glyph = rltk::to_cp437(IMPASSABLE_MOUNTAIN_GLYPH); bg = RGB::named(IMPASSABLE_MOUNTAIN_COLOUR); offsets = IMPASSABLE_MOUNTAIN_OFFSETS }
-        TileType::ToOvermap => { glyph = rltk::to_cp437(TO_OVERMAP_GLYPH); fg = RGB::named(TO_OVERMAP_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = false; }
-        TileType::ToTown => { glyph = rltk::to_cp437(TO_TOWN_GLYPH); fg = RGB::named(TO_TOWN_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = false; }
-        TileType::ToInfinite => { glyph = rltk::to_cp437(TO_INFINITE_GLYPH); fg = RGB::named(TO_INFINITE_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = true; }
+        TileType::ToOvermap(_) => { glyph = rltk::to_cp437(TO_OVERMAP_GLYPH); fg = RGB::named(TO_OVERMAP_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = false; }
+        TileType::ToLocal(_) => { glyph = rltk::to_cp437(TO_TOWN_GLYPH); fg = RGB::named(TO_TOWN_COLOUR); bg = RGB::named(DEFAULT_BG_COLOUR); bg_main_col = false; }
     }
     return (glyph, fg, bg, offsets, bg_main_col);
 }

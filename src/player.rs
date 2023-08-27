@@ -29,6 +29,8 @@ use super::{
     Viewshed,
     WantsToMelee,
     WantsToPickupItem,
+    get_dest,
+    Destination,
 };
 use rltk::prelude::*;
 use rltk::{ Point, RandomNumberGenerator, Rltk, VirtualKeyCode };
@@ -530,26 +532,33 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                 // id
                 VirtualKeyCode::Period => {
                     if ctx.shift {
-                        let (id, from_tile) = try_next_level(&mut gs.ecs);
-                        if from_tile.is_none() {
-                            return RunState::AwaitingInput;
-                        } else if id == ID_NEXT_LEVEL {
-                            return RunState::NextLevel;
-                        }
-                        return RunState::GoToLevel(id, from_tile);
+                        let dest = try_change_level(&mut gs.ecs, false);
+                        let curr_map_id = gs.ecs.fetch::<Map>().id;
+                        return match dest {
+                            // If we have no destination, do nothing.
+                            Destination::None => RunState::AwaitingInput,
+                            // If we want to go to the next level, go to the up-stair tile of id + 1.
+                            Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
+                            // If we want to go to the previous level, go to the down-stair tile of id - 1.
+                            Destination::PreviousLevel => RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
+                            Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
+                            Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
+                        };
                     } else {
                         return skip_turn(&mut gs.ecs); // (Wait a turn)
                     }
                 }
                 VirtualKeyCode::Comma => {
                     if ctx.shift {
-                        let (id, from_tile) = try_prev_level(&mut gs.ecs);
-                        if from_tile.is_none() {
-                            return RunState::AwaitingInput;
-                        } else if id == ID_PREVIOUS_LEVEL {
-                            return RunState::PreviousLevel;
-                        }
-                        return RunState::GoToLevel(id, from_tile);
+                        let dest = try_change_level(&mut gs.ecs, true);
+                        let curr_map_id = gs.ecs.fetch::<Map>().id;
+                        return match dest {
+                            Destination::None => RunState::AwaitingInput,
+                            Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
+                            Destination::PreviousLevel => RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
+                            Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
+                            Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
+                        };
                     } else {
                         return skip_turn(&mut gs.ecs); // (Wait a turn)
                     }
@@ -600,45 +609,12 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     return RunState::AwaitingInput;
 }
 
-fn try_next_level(ecs: &mut World) -> (i32, Option<TileType>) {
+fn try_change_level(ecs: &mut World, backtracking: bool) -> Destination {
     let player_pos = ecs.fetch::<Point>();
     let map = ecs.fetch::<Map>();
     let player_idx = map.xy_idx(player_pos.x, player_pos.y);
     let this_tile = map.tiles[player_idx];
-    match this_tile {
-        TileType::DownStair => {
-            return (ID_NEXT_LEVEL, Some(this_tile));
-        }
-        TileType::ToTown => {
-            return (ID_TOWN, Some(this_tile));
-        }
-        TileType::ToInfinite => {
-            return (ID_INFINITE, Some(this_tile));
-        }
-        _ => {
-            gamelog::Logger::new().append("You don't see a way down from here.").log();
-            return (0, None);
-        }
-    }
-}
-
-fn try_prev_level(ecs: &mut World) -> (i32, Option<TileType>) {
-    let player_pos = ecs.fetch::<Point>();
-    let map = ecs.fetch::<Map>();
-    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
-    let this_tile = map.tiles[player_idx];
-    match this_tile {
-        TileType::UpStair => {
-            return (ID_PREVIOUS_LEVEL, Some(this_tile));
-        }
-        TileType::ToOvermap => {
-            return (ID_OVERMAP, Some(this_tile));
-        }
-        _ => {
-            gamelog::Logger::new().append("You don't see a way out from here.").log();
-            return (0, None);
-        }
-    }
+    return get_dest(this_tile, backtracking);
 }
 
 fn skip_turn(ecs: &mut World) -> RunState {

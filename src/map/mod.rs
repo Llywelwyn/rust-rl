@@ -2,7 +2,7 @@ use rltk::{ Algorithm2D, BaseMap, Point };
 use serde::{ Deserialize, Serialize };
 use std::collections::HashSet;
 mod tiletype;
-pub use tiletype::{ tile_cost, tile_opaque, tile_walkable, TileType };
+pub use tiletype::{ tile_cost, tile_opaque, tile_walkable, TileType, get_dest, Destination };
 mod interval_spawning_system;
 pub use interval_spawning_system::try_spawn_interval;
 pub mod dungeon;

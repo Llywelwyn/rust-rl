@@ -75,7 +75,7 @@ impl TownBuilder {
             y: wall_gap_y,
         });
         let overmap_entrance = build_data.map.xy_idx(build_data.width - 2, wall_gap_y);
-        build_data.map.tiles[overmap_entrance] = TileType::ToOvermap;
+        build_data.map.tiles[overmap_entrance] = TileType::ToOvermap(build_data.map.id);
 
         build_data.take_snapshot();
     }

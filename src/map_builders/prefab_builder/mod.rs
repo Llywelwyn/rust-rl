@@ -4,6 +4,7 @@ pub mod prefab_levels;
 pub mod prefab_sections;
 pub mod prefab_vaults;
 use std::collections::HashSet;
+use crate::data::ids::*;
 
 #[derive(PartialEq, Copy, Clone)]
 #[allow(dead_code)]
@@ -178,10 +179,10 @@ impl PrefabBuilder {
                 build_data.map.tiles[idx] = TileType::ImpassableMountain;
             }
             '1' => {
-                build_data.map.tiles[idx] = TileType::ToTown;
+                build_data.map.tiles[idx] = TileType::ToLocal(ID_TOWN);
             }
             '2' => {
-                build_data.map.tiles[idx] = TileType::ToInfinite;
+                build_data.map.tiles[idx] = TileType::ToLocal(ID_INFINITE);
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph '{}' when loading overmap", ch as u8 as char));
