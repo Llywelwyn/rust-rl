@@ -328,6 +328,7 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 fn overmap_builder() -> BuilderChain {
     let mut builder = BuilderChain::new(true, ID_OVERMAP, 69, 41, 0, NAME_OVERMAP, 1);
     builder.start_with(PrefabBuilder::overmap());
+    builder.with(Foliage::percent(TileType::Grass, 30));
     return builder;
 }
 
