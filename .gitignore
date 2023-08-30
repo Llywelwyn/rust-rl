@@ -6,6 +6,7 @@ docs/gifs/*
 .vscode/*
 .rustfmt.toml
 .prettierignore
+.prettierrc.json
 
 # Save files, morgue files
 savegame.json
