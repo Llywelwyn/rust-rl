@@ -4,7 +4,7 @@ use std::collections::{ HashSet, HashMap };
 mod tiletype;
 pub use tiletype::{ tile_cost, tile_opaque, tile_walkable, TileType, get_dest, Destination };
 mod interval_spawning_system;
-pub use interval_spawning_system::try_spawn_interval;
+pub use interval_spawning_system::{ maybe_map_message, try_spawn_interval };
 pub mod dungeon;
 pub use dungeon::{ level_transition, MasterDungeonMap };
 pub mod themes;
@@ -30,6 +30,7 @@ pub struct Map {
     pub name: String,
     pub short_name: String,
     pub depth: i32,
+    pub messages: HashSet<String>,
     pub difficulty: i32,
     pub bloodstains: HashMap<usize, RGB>,
     pub view_blocked: HashSet<usize>,
@@ -70,6 +71,7 @@ impl Map {
             id: new_id,
             name: name.to_string(),
             short_name: short_name.to_string(),
+            messages: HashSet::new(),
             depth: depth,
             difficulty: difficulty,
             bloodstains: HashMap::new(),

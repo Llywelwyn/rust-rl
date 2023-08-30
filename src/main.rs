@@ -273,6 +273,7 @@ impl GameState for State {
                     self.run_systems();
                     self.ecs.maintain();
                     try_spawn_interval(&mut self.ecs);
+                    maybe_map_message(&mut self.ecs);
                     match *self.ecs.fetch::<RunState>() {
                         RunState::AwaitingInput => {
                             new_runstate = RunState::AwaitingInput;

@@ -1,5 +1,6 @@
 use super::{ BuilderMap, MetaMapBuilder, Rect, TileType };
 use crate::tile_walkable;
+use crate::data::messages::{ FEATURE_TREANTS, FEATURE_BARRACKS_GOBLIN, FEATURE_BARRACKS_KOBOLD, FEATURE_BARRACKS_ORC };
 use crate::raws;
 use rltk::RandomNumberGenerator;
 
@@ -59,6 +60,7 @@ impl ThemeRooms {
                 }
             }
         }
+        build_data.map.messages.insert(FEATURE_TREANTS.to_string());
     }
 
     fn place_barracks(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap, room: &Rect) {
@@ -75,9 +77,18 @@ impl ThemeRooms {
 
         let mut needs_captain = if rng.roll_dice(1, 3) == 1 { false } else { true };
         let (captain, squad) = match rng.roll_dice(1, 4) {
-            1 => ("goblin_chieftain", "squad_goblin"),
-            2 => ("kobold_captain", "squad_kobold"),
-            _ => ("orc_captain", "squad_orc"),
+            1 => {
+                build_data.map.messages.insert(FEATURE_BARRACKS_GOBLIN.to_string());
+                ("goblin_chieftain", "squad_goblin")
+            }
+            2 => {
+                build_data.map.messages.insert(FEATURE_BARRACKS_KOBOLD.to_string());
+                ("kobold_captain", "squad_kobold")
+            }
+            _ => {
+                build_data.map.messages.insert(FEATURE_BARRACKS_ORC.to_string());
+                ("orc_captain", "squad_orc")
+            }
         };
         for idx in possible {
             if idx % 2 == 0 && rng.roll_dice(1, 2) == 1 {

@@ -3,6 +3,33 @@ use specs::prelude::*;
 use crate::data::events::*;
 
 const TRY_SPAWN_CHANCE: i32 = 70;
+const FEATURE_MESSAGE_CHANCE: i32 = 110;
+
+pub fn maybe_map_message(ecs: &mut World) {
+    let mut maybe_message = false;
+    let map = ecs.fetch::<Map>();
+    if map.messages.is_empty() {
+        return;
+    }
+    // Scope for borrow checker (ECS)
+    {
+        let clock = ecs.read_storage::<Clock>();
+        let turns = ecs.read_storage::<TakingTurn>();
+        let mut rng = ecs.write_resource::<rltk::RandomNumberGenerator>();
+        for (_c, _t) in (&clock, &turns).join() {
+            if rng.roll_dice(1, FEATURE_MESSAGE_CHANCE) == 1 {
+                maybe_message = true;
+            }
+        }
+    }
+    if maybe_message {
+        let mut logger = gamelog::Logger::new();
+        for message in map.messages.clone() {
+            logger = logger.append(message);
+        }
+        logger.log();
+    }
+}
 
 pub fn try_spawn_interval(ecs: &mut World) {
     let mut try_spawn = false;

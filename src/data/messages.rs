@@ -43,3 +43,9 @@ pub const PLAYER_DIED_ADDENDUM_LAST: &str = ", and ";
 pub const STATUS_CONFUSED_STRING: &str = "confused";
 pub const STATUS_BLIND_STRING: &str = "blinded";
 // Results in something like: "You died! You were killed by a kobold captain, whilst confused."
+
+// Dungeon features
+pub const FEATURE_TREANTS: &str = "You feel an unusual freshness in the air.";
+pub const FEATURE_BARRACKS_GOBLIN: &str = "You hear an order being barked, and ignored.";
+pub const FEATURE_BARRACKS_KOBOLD: &str = "You hear someone being reprimanded for disobedience.";
+pub const FEATURE_BARRACKS_ORC: &str = "You hear someone barking orders.";
