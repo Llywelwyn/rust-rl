@@ -80,6 +80,12 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk, xy: Option<(i32, i32)>) {
             tip.add(format!("You see {}.", name), get_local_col(n));
             tooltips.push(tip);
         }
+        TileType::ToOvermap(n) => {
+            let name = get_local_desc(n);
+            let mut tip = Tooltip::new();
+            tip.add(format!("You see an exit from {}.", name), get_local_col(n));
+            tooltips.push(tip);
+        }
         _ => {}
     }
 

@@ -35,6 +35,7 @@ use super::{
     get_local_col,
 };
 use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
+use crate::data::visuals::{ TARGETING_LINE_COL, TARGETING_CURSOR_COL, TARGETING_AOE_COL, TARGETING_VALID_COL };
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
@@ -959,7 +960,7 @@ pub fn ranged_target(
                 let screen_x = idx.x - min_x;
                 let screen_y = idx.y - min_y;
                 if screen_x > 1 && screen_x < max_x - min_x - 1 && screen_y > 1 && screen_y < max_y - min_y - 1 {
-                    ctx.set_bg(screen_x + x_offset, screen_y + y_offset, RGB::named(rltk::BLUE));
+                    ctx.set_bg(screen_x + x_offset, screen_y + y_offset, TARGETING_VALID_COL);
                     available_cells.push(idx);
                 }
             }
@@ -987,6 +988,23 @@ pub fn ranged_target(
     }
     let mut result = (TargetResult::NoResponse { x, y }, None);
     if valid_target {
+        let path = rltk::line2d(
+            LineAlg::Bresenham,
+            Point::new(player_pos.x, player_pos.y),
+            Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)
+        );
+        for (i, point) in path.iter().enumerate() {
+            if i == 0 || i == path.len() - 1 {
+                continue;
+            }
+            ctx.set(
+                point.x + x_offset - min_x,
+                point.y + y_offset - min_y,
+                RGB::named(TARGETING_LINE_COL),
+                RGB::named(TARGETING_VALID_COL),
+                to_cp437('~')
+            );
+        }
         if aoe > 0 {
             // We adjust for camera position when getting FOV, but then we need to adjust back
             // when iterating through the tiles themselves, by taking away min_x/min_y.
@@ -997,10 +1015,20 @@ pub fn ranged_target(
             );
             blast_tiles.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
             for tile in blast_tiles.iter() {
-                ctx.set_bg(tile.x - min_x + x_offset, tile.y - min_y + y_offset, RGB::named(rltk::DARKCYAN));
+                let bg = if available_cells.contains(&tile) {
+                    let col1 = TARGETING_AOE_COL;
+                    let col2 = TARGETING_VALID_COL;
+                    ((col1.0 + col2.0) / 2, (col1.1 + col2.1) / 2, (col1.2 + col2.2) / 2)
+                } else {
+                    let col1 = TARGETING_AOE_COL;
+                    let col2 = BLACK;
+                    ((col1.0 + col2.0) / 2, (col1.1 + col2.1) / 2, (col1.2 + col2.2) / 2)
+                };
+                ctx.set_bg(tile.x - min_x + x_offset, tile.y - min_y + y_offset, bg);
             }
         }
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::CYAN));
+
+        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(TARGETING_CURSOR_COL));
         result = match ctx.key {
             None => result,
             Some(key) =>

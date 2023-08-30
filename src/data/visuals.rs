@@ -15,6 +15,11 @@ pub const SHORT_PARTICLE_LIFETIME: f32 = 100.0; // in ms
 pub const DEFAULT_PARTICLE_LIFETIME: f32 = 200.0;
 pub const LONG_PARTICLE_LIFETIME: f32 = 300.0;
 
+pub const TARGETING_CURSOR_COL: (u8, u8, u8) = rltk::GOLDENROD;
+pub const TARGETING_LINE_COL: (u8, u8, u8) = rltk::LIGHTGOLDENROD;
+pub const TARGETING_AOE_COL: (u8, u8, u8) = (20, 20, 20);
+pub const TARGETING_VALID_COL: (u8, u8, u8) = (10, 10, 10);
+
 // THEMES
 pub const BLOODSTAIN_COLOUR: (u8, u8, u8) = (153, 0, 0);
 // DEFAULT THEME
