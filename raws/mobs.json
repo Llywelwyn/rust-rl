@@ -414,7 +414,7 @@
     {
         "id": "ogre",
         "name": "ogre",
-        "renderable": { "glyph": "O", "fg": "#00FF00", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "O", "fg": "#10570d", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 5,
         "bac": 5,
