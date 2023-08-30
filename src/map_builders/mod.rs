@@ -67,6 +67,8 @@ mod forest;
 use forest::forest_builder;
 mod foliage;
 use foliage::Foliage;
+mod room_themer;
+use room_themer::{ Theme, ThemeRooms };
 
 // Shared data to be passed around build chain
 pub struct BuilderMap {
@@ -284,6 +286,8 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
         1 => builder.with(RoomBasedSpawner::new()),
         _ => builder.with(VoronoiSpawning::new()),
     }
+
+    builder.with(ThemeRooms::grass(10));
 }
 
 fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain, end: bool) -> bool {

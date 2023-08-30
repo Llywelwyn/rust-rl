@@ -46,5 +46,6 @@ Complex example, with negative AC:
 - At worst (AC rolls a 14), the monster must roll less than -1 to hit you. Impossible.
 - It rolls a 9, and your AC rolls a 2. 9 is less than 11 (10 + 3 - 2), so it hits.
 - It rolls 1d8 for damage, and gets a 6.
+bloodstains: if starts on bloodied tile, remove blood + heal, gain xp, grow (little dog -> dog), etc.
 - You have negative AC, so you roll 1d14 for damage reduction, and get an 8.
 - The total damage is 6 - 8 = -2, but damage can't be negative, so you take 1 point of damage.

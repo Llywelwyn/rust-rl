@@ -32,7 +32,9 @@ pub enum EffectType {
     Confusion {
         turns: i32,
     },
-    Bloodstain,
+    Bloodstain {
+        colour: RGB,
+    },
     Particle {
         glyph: FontCharType,
         fg: RGB,
@@ -134,7 +136,6 @@ fn affect_tile(ecs: &mut World, effect: &EffectSpawner, target: usize) {
     }
 
     match &effect.effect_type {
-        EffectType::Bloodstain => damage::bloodstain(ecs, target),
         EffectType::Particle { .. } => particles::particle_to_tile(ecs, target as i32, &effect),
         _ => {}
     }
@@ -158,9 +159,9 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
         EffectType::Damage { .. } => damage::inflict_damage(ecs, effect, target),
         EffectType::Healing { .. } => damage::heal_damage(ecs, effect, target),
         EffectType::Confusion { .. } => damage::add_confusion(ecs, effect, target),
-        EffectType::Bloodstain { .. } => {
+        EffectType::Bloodstain { colour } => {
             if let Some(pos) = targeting::entity_position(ecs, target) {
-                damage::bloodstain(ecs, pos)
+                damage::bloodstain(ecs, pos, *colour);
             }
         }
         EffectType::Particle { .. } => {

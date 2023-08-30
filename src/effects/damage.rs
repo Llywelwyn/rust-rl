@@ -13,6 +13,7 @@ use crate::{
     Blind,
     HungerClock,
     HungerState,
+    Bleeds,
 };
 use crate::gui::with_article;
 use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
@@ -28,7 +29,10 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
         if !target_pool.god {
             if let EffectType::Damage { amount } = damage.effect_type {
                 target_pool.hit_points.current -= amount;
-                add_effect(None, EffectType::Bloodstain, Targets::Entity { target });
+                let bleeders = ecs.read_storage::<Bleeds>();
+                if let Some(bleeds) = bleeders.get(target) {
+                    add_effect(None, EffectType::Bloodstain { colour: bleeds.colour }, Targets::Entity { target });
+                }
                 add_effect(
                     None,
                     EffectType::Particle {
@@ -85,44 +89,61 @@ pub fn add_confusion(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     }
 }
 
-pub fn bloodstain(ecs: &mut World, target: usize) {
+pub fn bloodstain(ecs: &mut World, target: usize, colour: RGB) {
     let mut map = ecs.fetch_mut::<Map>();
     // If the current tile isn't bloody, bloody it.
-    if !map.bloodstains.contains(&target) {
-        map.bloodstains.insert(target);
+    if !map.bloodstains.contains_key(&target) {
+        map.bloodstains.insert(target, colour);
         return;
     }
-    let mut spread: i32 = target as i32;
-    let mut attempts: i32 = 0;
-    // Otherwise, roll to move one tile in any direction.
-    // If this tile isn't bloody, bloody it. If not, loop.
-    loop {
-        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        attempts += 1;
-        spread = match rng.roll_dice(1, 8) {
-            1 => spread + 1,
-            2 => spread - 1,
-            3 => spread + 1 + map.width,
-            4 => spread - 1 + map.width,
-            5 => spread + 1 - map.width,
-            6 => spread - 1 - map.width,
-            7 => spread + map.width,
-            _ => spread - map.width,
-        };
-        // - If we're in bounds and the tile is unbloodied, bloody it and return.
-        // - If we ever leave bounds, return.
-        // - Roll a dice on each failed attempt, with an increasing change to return (soft-capping max spread)
-        if spread > 0 && spread < map.height * map.width {
-            if !map.bloodstains.contains(&(spread as usize)) {
-                map.bloodstains.insert(spread as usize);
+    if map.bloodstains.get(&target).unwrap() == &colour {
+        let mut spread: i32 = target as i32;
+        let mut attempts: i32 = 0;
+        // Otherwise, roll to move one tile in any direction.
+        // If this tile isn't bloody, bloody it. If not, loop.
+        loop {
+            let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+            attempts += 1;
+            spread = match rng.roll_dice(1, 8) {
+                1 => spread + 1,
+                2 => spread - 1,
+                3 => spread + 1 + map.width,
+                4 => spread - 1 + map.width,
+                5 => spread + 1 - map.width,
+                6 => spread - 1 - map.width,
+                7 => spread + map.width,
+                _ => spread - map.width,
+            };
+            // - If we're in bounds and the tile is unbloodied, bloody it and return.
+            // - If we ever leave bounds, return.
+            // - Roll a dice on each failed attempt, with an increasing change to return (soft-capping max spread)
+            if spread > 0 && spread < map.height * map.width {
+                if !map.bloodstains.contains_key(&(spread as usize)) {
+                    map.bloodstains.insert(spread as usize, colour);
+                    return;
+                }
+                // If bloodied with the same colour, return
+                if map.bloodstains.get(&(spread as usize)).unwrap() == &colour {
+                    if rng.roll_dice(1, 10 - attempts) == 1 {
+                        return;
+                    }
+                    // If bloodied but a *different* colour, lerp this blood and current blood.
+                } else {
+                    let new_col = map.bloodstains
+                        .get(&(spread as usize))
+                        .unwrap()
+                        .lerp(colour, 0.5);
+                    map.bloodstains.insert(spread as usize, new_col);
+                }
+            } else {
                 return;
             }
-            if rng.roll_dice(1, 10 - attempts) == 1 {
-                return;
-            }
-        } else {
-            return;
         }
+    } else {
+        let curr_blood = map.bloodstains.get(&target).unwrap();
+        let new_colour = curr_blood.lerp(colour, 0.5);
+        map.bloodstains.insert(target, new_colour);
+        return;
     }
 }
 

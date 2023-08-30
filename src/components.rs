@@ -47,6 +47,11 @@ pub struct Renderable {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Bleeds {
+    pub colour: RGB,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Player {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

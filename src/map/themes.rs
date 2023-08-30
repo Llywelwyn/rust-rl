@@ -287,8 +287,8 @@ fn apply_colour_offset(mut rgb: RGB, map: &Map, idx: usize, offset: (i32, i32, i
 }
 
 fn apply_bloodstain_if_necessary(mut bg: RGB, map: &Map, idx: usize) -> RGB {
-    if map.bloodstains.contains(&idx) {
-        bg = bg.add(RGB::named(BLOODSTAIN_COLOUR));
+    if map.bloodstains.contains_key(&idx) {
+        bg = bg.add(map.bloodstains[&idx]);
     }
     return bg;
 }

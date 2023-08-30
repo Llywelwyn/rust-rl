@@ -33,6 +33,7 @@ use super::{
     WantsToPickupItem,
     get_dest,
     Destination,
+    Bleeds,
 };
 use rltk::prelude::*;
 use rltk::{ Point, RandomNumberGenerator, Rltk, VirtualKeyCode };

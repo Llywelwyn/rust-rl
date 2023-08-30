@@ -414,7 +414,7 @@
     {
         "id": "ogre",
         "name": "ogre",
-        "renderable": { "glyph": "O", "fg": "#10570d", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "O", "fg": "#10A70d", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 5,
         "bac": 5,
@@ -426,11 +426,11 @@
     {
         "id": "treant_small",
         "name": "treant sapling",
-        "renderable": { "glyph": "♠️", "fg": "#00FF00", "bg": "#000000", "order": 1 },
-        "flags": ["LARGE_GROUP"],
+        "renderable": { "glyph": "♠️", "fg": "#10570d", "bg": "#000000", "order": 1 },
+        "flags": ["LARGE_GROUP", "GREEN_BLOOD"],
         "level": 2,
         "bac": 12,
-        "speed": 4,
+        "speed": 12,
         "vision_range": 16,
         "attacks": [{ "name": "lashes", "hit_bonus": 4, "damage": "1d8" }],
         "loot": { "table": "scrolls", "chance": 0.05 }

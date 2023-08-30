@@ -4,6 +4,7 @@ use crate::gamesystem::*;
 use crate::gui::Ancestry;
 use crate::random_table::RandomTable;
 use crate::config::CONFIG;
+use crate::data::visuals::BLOODSTAIN_COLOUR;
 use regex::Regex;
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -91,6 +92,8 @@ macro_rules! apply_flags {
                 "STATIC" => $eb = $eb.with(MoveMode { mode: Movement::Static }),
                 "RANDOM_PATH" => $eb = $eb.with(MoveMode { mode: Movement::RandomWaypoint { path: None } }),
                 // --- RANDOM MOB ATTRIBUTES ---
+                "GREEN_BLOOD" => $eb = $eb.with(Bleeds { colour: RGB::named((0, 153, 0)) }),
+                "BLUE_BLOOD" => $eb = $eb.with(Bleeds { colour: RGB::named((0, 0, 153)) }),
                 "SMALL_GROUP" => {} // These flags are for region spawning,
                 "LARGE_GROUP" => {} // and don't need to apply a component.
                 "MULTIATTACK" => $eb = $eb.with(MultiAttack {}),
@@ -386,6 +389,7 @@ pub fn spawn_named_mob(
         eb = eb.with(BlocksTile {});
         eb = eb.with(Faction { name: "hostile".to_string() });
         eb = eb.with(MoveMode { mode: Movement::Random });
+        eb = eb.with(Bleeds { colour: RGB::named(BLOODSTAIN_COLOUR) });
         let mut xp_value = 1;
         let mut has_mind = true;
         if let Some(flags) = &mob_template.flags {

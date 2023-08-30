@@ -1,6 +1,6 @@
-use rltk::{ Algorithm2D, BaseMap, Point };
+use rltk::prelude::*;
 use serde::{ Deserialize, Serialize };
-use std::collections::HashSet;
+use std::collections::{ HashSet, HashMap };
 mod tiletype;
 pub use tiletype::{ tile_cost, tile_opaque, tile_walkable, TileType, get_dest, Destination };
 mod interval_spawning_system;
@@ -25,13 +25,13 @@ pub struct Map {
     pub lit_tiles: Vec<bool>,
     pub telepath_tiles: Vec<bool>,
     pub colour_offset: Vec<((f32, f32, f32), (f32, f32, f32))>,
-    pub additional_fg_offset: rltk::RGB,
+    pub additional_fg_offset: RGB,
     pub id: i32,
     pub name: String,
     pub short_name: String,
     pub depth: i32,
     pub difficulty: i32,
-    pub bloodstains: HashSet<usize>,
+    pub bloodstains: HashMap<usize, RGB>,
     pub view_blocked: HashSet<usize>,
 }
 
@@ -72,7 +72,7 @@ impl Map {
             short_name: short_name.to_string(),
             depth: depth,
             difficulty: difficulty,
-            bloodstains: HashSet::new(),
+            bloodstains: HashMap::new(),
             view_blocked: HashSet::new(),
         };
 

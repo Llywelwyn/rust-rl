@@ -32,6 +32,8 @@ use crate::{
     GrantsSpell,
     KnownSpell,
     KnownSpells,
+    Position,
+    Viewshed,
 };
 use crate::data::messages::*;
 use rltk::prelude::*;
@@ -219,30 +221,37 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
                 continue;
             }
             let renderables = ecs.read_storage::<Renderable>();
+            let positions = ecs.read_storage::<Position>();
+            let target_pos = positions.get(target).unwrap_or(&(Position { x: 0, y: 0 }));
+            let viewsheds = ecs.read_storage::<Viewshed>();
+            let player_viewshed = viewsheds.get(*ecs.fetch::<Entity>()).unwrap();
             if ecs.read_storage::<Player>().get(target).is_some() {
                 logger = logger
                     .colour(renderable_colour(&renderables, target))
                     .append("You")
                     .colour(WHITE)
                     .append(DAMAGE_PLAYER_HIT);
-            } else if ecs.read_storage::<Item>().get(target).is_some() {
-                if ecs.read_storage::<Destructible>().get(target).is_some() {
+                event.log = true;
+            } else if player_viewshed.visible_tiles.contains(&Point::new(target_pos.x, target_pos.y)) {
+                if ecs.read_storage::<Item>().get(target).is_some() {
+                    if ecs.read_storage::<Destructible>().get(target).is_some() {
+                        logger = logger
+                            .append("The")
+                            .colour(renderable_colour(&renderables, target))
+                            .append(obfuscate_name_ecs(ecs, target).0)
+                            .colour(WHITE)
+                            .append(DAMAGE_ITEM_HIT);
+                    }
+                } else {
                     logger = logger
                         .append("The")
                         .colour(renderable_colour(&renderables, target))
                         .append(obfuscate_name_ecs(ecs, target).0)
                         .colour(WHITE)
-                        .append(DAMAGE_ITEM_HIT);
+                        .append(DAMAGE_OTHER_HIT);
                 }
-            } else {
-                logger = logger
-                    .append("The")
-                    .colour(renderable_colour(&renderables, target))
-                    .append(obfuscate_name_ecs(ecs, target).0)
-                    .colour(WHITE)
-                    .append(DAMAGE_OTHER_HIT);
+                event.log = true;
             }
-            event.log = true;
         }
         return (logger, true);
     }

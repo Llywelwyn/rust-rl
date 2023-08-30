@@ -24,8 +24,10 @@ use super::{
     TileType,
     Viewshed,
     BlocksTile,
+    Bleeds,
 };
 use crate::data::entity;
+use crate::data::visuals::BLOODSTAIN_COLOUR;
 use crate::gamesystem::*;
 use rltk::{ RandomNumberGenerator, RGB };
 use specs::prelude::*;
@@ -51,6 +53,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             bg: RGB::named(rltk::BLACK),
             render_order: 0,
         })
+        .with(Bleeds { colour: RGB::named(BLOODSTAIN_COLOUR) })
         .with(Player {})
         .with(Mind {})
         .with(Faction { name: "player".to_string() })
