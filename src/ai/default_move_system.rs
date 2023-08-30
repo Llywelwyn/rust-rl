@@ -110,6 +110,19 @@ impl<'a> System<'a> for DefaultAI {
                                     is_telepath.dirty = true;
                                 }
                                 path.remove(0);
+                            } else {
+                                // If the path is blocked, recalculate a new path to the same waypoint.
+                                let path = rltk::a_star_search(
+                                    map.xy_idx(pos.x, pos.y) as i32,
+                                    map.xy_idx(
+                                        (path[path.len() - 1] as i32) % map.width,
+                                        (path[path.len() - 1] as i32) / map.width
+                                    ) as i32,
+                                    &mut *map
+                                );
+                                if path.success && path.steps.len() > 1 {
+                                    move_mode.mode = Movement::RandomWaypoint { path: Some(path.steps) };
+                                }
                             }
                         } else {
                             move_mode.mode = Movement::RandomWaypoint { path: None };
