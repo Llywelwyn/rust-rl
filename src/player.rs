@@ -4,6 +4,7 @@ use super::{
     gui::obfuscate_name_ecs,
     gui::renderable_colour_ecs,
     gui::item_colour_ecs,
+    camera::get_screen_bounds,
     raws::Reaction,
     Attributes,
     BlocksTile,
@@ -671,6 +672,12 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                 }
                 VirtualKeyCode::Escape => {
                     return RunState::SaveGame;
+                }
+                VirtualKeyCode::X => {
+                    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(&gs.ecs, ctx);
+                    let ppos = gs.ecs.fetch::<Point>();
+                    let (x, y) = (ppos.x + x_offset - min_x, ppos.y + y_offset - min_y);
+                    return RunState::Farlook { x, y };
                 }
                 _ => {
                     return RunState::AwaitingInput;

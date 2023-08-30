@@ -42,7 +42,7 @@ impl Tooltip {
 }
 
 #[rustfmt::skip]
-pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
+pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk, xy: Option<(i32, i32)>) {
     let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
@@ -54,7 +54,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     let entities = ecs.entities();
     let player_entity = ecs.fetch::<Entity>();
 
-    let mouse_pos = ctx.mouse_pos();
+    let mouse_pos = if xy.is_none() { ctx.mouse_pos() } else { xy.unwrap() };
     let mut mouse_pos_adjusted = mouse_pos;
     mouse_pos_adjusted.0 += min_x - x_offset;
     mouse_pos_adjusted.1 += min_y - y_offset;

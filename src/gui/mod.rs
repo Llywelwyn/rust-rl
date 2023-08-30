@@ -48,6 +48,8 @@ pub use identify_menu::*;
 mod tooltip;
 pub use cheat_menu::*;
 use crate::data::events::*;
+mod farlook;
+pub use farlook::*;
 
 /// Gives a popup box with a message and a title, and waits for a keypress.
 #[allow(unused)]
@@ -338,7 +340,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     ctx.draw_hollow_box(0, 9, 70, 42, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Camera box
     ctx.draw_hollow_box(0, 52, 70, 3, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Stats box
     ctx.draw_hollow_box(71, 0, 33, 55, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Side box
-    tooltip::draw_tooltips(ecs, ctx);
+    tooltip::draw_tooltips(ecs, ctx, None);
 }
 
 pub fn get_input_direction(
@@ -680,7 +682,7 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     y += 1;
     ctx.print(x, y, "o open   c close");
     y += 1;
-    ctx.print(x, y, "f force");
+    ctx.print(x, y, "f force  x farlook");
     y += 2;
     ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "MOUSE CONTROL");
     y += 2;

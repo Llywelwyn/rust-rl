@@ -78,6 +78,10 @@ pub enum RunState {
         cursed: bool,
     }, // Animates magic mapping effect
     MapGeneration,
+    Farlook {
+        x: i32,
+        y: i32,
+    },
 }
 
 pub struct State {
@@ -283,6 +287,17 @@ impl GameState for State {
                         _ => {
                             new_runstate = RunState::Ticking;
                         }
+                    }
+                }
+            }
+            RunState::Farlook { .. } => {
+                let result = gui::show_farlook(self, ctx);
+                match result {
+                    gui::FarlookResult::NoResponse { x, y } => {
+                        new_runstate = RunState::Farlook { x, y };
+                    }
+                    gui::FarlookResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
                     }
                 }
             }
