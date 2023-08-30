@@ -23,6 +23,7 @@ use super::{
     Skills,
     TileType,
     Viewshed,
+    BlocksTile,
 };
 use crate::data::entity;
 use crate::gamesystem::*;
@@ -43,6 +44,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     let player = ecs
         .create_entity()
         .with(Position { x: player_x, y: player_y })
+        .with(BlocksTile {})
         .with(Renderable {
             glyph: rltk::to_cp437('@'),
             fg: RGB::named(rltk::YELLOW),

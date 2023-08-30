@@ -246,28 +246,26 @@ impl GameState for State {
                 new_runstate = RunState::AwaitingInput;
             }
             RunState::AwaitingInput => {
-                while particle_system::check_queue(&self.ecs) {
-                    // We refresh the index, and run anything that might
-                    // still be in the queue, just to make 100% sure that
-                    // there are no lingering effects from the last tick.
-                    self.refresh_indexes();
-                    effects::run_effects_queue(&mut self.ecs);
-                    // Sanity-checking that the player actually *should*
-                    // be taking a turn before giving them one. If they
-                    // don't have a turn component, go back to ticking.
-                    let mut can_act = false;
-                    {
-                        let player_entity = self.ecs.fetch::<Entity>();
-                        let turns = self.ecs.read_storage::<TakingTurn>();
-                        if let Some(_) = turns.get(*player_entity) {
-                            can_act = true;
-                        }
+                // We refresh the index, and run anything that might
+                // still be in the queue, just to make 100% sure that
+                // there are no lingering effects from the last tick.
+                self.refresh_indexes();
+                effects::run_effects_queue(&mut self.ecs);
+                // Sanity-checking that the player actually *should*
+                // be taking a turn before giving them one. If they
+                // don't have a turn component, go back to ticking.
+                let mut can_act = false;
+                {
+                    let player_entity = self.ecs.fetch::<Entity>();
+                    let turns = self.ecs.read_storage::<TakingTurn>();
+                    if let Some(_) = turns.get(*player_entity) {
+                        can_act = true;
                     }
-                    if can_act {
-                        new_runstate = player_input(self, ctx);
-                    } else {
-                        new_runstate = RunState::Ticking;
-                    }
+                }
+                if can_act {
+                    new_runstate = player_input(self, ctx);
+                } else {
+                    new_runstate = RunState::Ticking;
                 }
             }
             RunState::Ticking => {
