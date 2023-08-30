@@ -12,7 +12,9 @@ pub fn get_tile_renderables_for_id(
     other_pos: Option<Point>,
     debug: Option<bool>
 ) -> (rltk::FontCharType, RGB, RGB) {
-    let (glyph, mut fg, mut bg, offsets) = match map.id {
+    let coloured_bg = CONFIG.visuals.use_coloured_tile_bg;
+
+    let (glyph, mut fg, mut bg, fg_offset, bg_offset) = match map.id {
         ID_TOWN2 => get_forest_theme_renderables(idx, map, debug),
         _ => get_default_theme_renderables(idx, map, debug),
     };
@@ -27,14 +29,18 @@ pub fn get_tile_renderables_for_id(
         same_col = true;
     }
 
-    if same_col {
+    if same_col && coloured_bg {
         fg = fg.add(map.additional_fg_offset);
     }
-    (fg, bg) = apply_colour_offset(fg, bg, map, idx, offsets);
-    if CONFIG.visuals.with_scanlines && WITH_SCANLINES_BRIGHTEN_AMOUNT > 0.0 {
-        (fg, bg) = brighten_by(fg, bg, WITH_SCANLINES_BRIGHTEN_AMOUNT);
+    if CONFIG.visuals.add_colour_variance {
+        fg = apply_colour_offset(fg, map, idx, fg_offset, true);
+        bg = if coloured_bg { apply_colour_offset(bg, map, idx, bg_offset, false) } else { bg };
     }
-    bg = apply_bloodstain_if_necessary(bg, map, idx);
+
+    if CONFIG.visuals.with_scanlines && WITH_SCANLINES_BRIGHTEN_AMOUNT > 0.0 {
+        fg = brighten_by(fg, WITH_SCANLINES_BRIGHTEN_AMOUNT);
+        bg = if coloured_bg { brighten_by(bg, WITH_SCANLINES_BRIGHTEN_AMOUNT) } else { bg };
+    }
     let (mut multiplier, mut nonvisible, mut darken) = (1.0, false, false);
     if !map.visible_tiles[idx] {
         multiplier = if CONFIG.visuals.with_scanlines {
@@ -60,13 +66,19 @@ pub fn get_tile_renderables_for_id(
         darken = true;
     }
     if nonvisible || darken {
-        (fg, bg) = (fg.mul(multiplier), bg.mul(multiplier));
+        fg = fg.mul(multiplier);
+        bg = if coloured_bg { bg.mul(multiplier) } else { bg };
     }
+    if !CONFIG.visuals.use_coloured_tile_bg {
+        bg = RGB::named(BLACK);
+    }
+    bg = apply_bloodstain_if_necessary(bg, map, idx);
+
     return (glyph, fg, bg);
 }
 
 #[rustfmt::skip]
-pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB, ((i32, i32, i32), (i32, i32, i32))) {
+pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB, (i32, i32, i32), (i32, i32, i32)) {
     let glyph: rltk::FontCharType;
     #[allow(unused_assignments)]
     let mut fg: RGB = RGB::new();
@@ -99,11 +111,11 @@ pub fn get_default_theme_renderables(idx: usize, map: &Map, debug: Option<bool>)
     if bg_offsets == (-1, -1, -1) {
         bg_offsets = offsets;
     }
-    return (glyph, fg, bg, (offsets, bg_offsets));
+    return (glyph, fg, bg, offsets, bg_offsets);
 }
 
 #[rustfmt::skip]
-fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB, ((i32, i32, i32), (i32, i32, i32))) {
+fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (rltk::FontCharType, RGB, RGB, (i32, i32, i32), (i32, i32, i32)) {
     let glyph;
     #[allow(unused_assignments)]
     let mut fg = RGB::new();
@@ -116,12 +128,12 @@ fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (r
         TileType::Wall => { glyph = rltk::to_cp437(FOREST_WALL_GLYPH); fg = RGB::named(FOREST_WALL_COLOUR); bg = RGB::named(GRASS_COLOUR); offsets = GRASS_OFFSETS; }
         TileType::Road => { glyph = rltk::to_cp437(ROAD_GLYPH); bg = RGB::named(ROAD_COLOUR); }
         TileType::ShallowWater => { glyph = rltk::to_cp437(SHALLOW_WATER_GLYPH); bg = RGB::named(SHALLOW_WATER_COLOUR); offsets = SHALLOW_WATER_OFFSETS; }
-        _ => { (glyph, fg, _, (offsets, _)) = get_default_theme_renderables(idx, map, debug); bg = RGB::named(GRASS_COLOUR); bg_offsets = GRASS_OFFSETS; }
+        _ => { (glyph, fg, _, offsets, _) = get_default_theme_renderables(idx, map, debug); bg = RGB::named(GRASS_COLOUR); bg_offsets = GRASS_OFFSETS; }
     }
     if bg_offsets == (-1, -1, -1) {
         bg_offsets = offsets;
     }
-    return (glyph, fg, bg, (offsets, bg_offsets));
+    return (glyph, fg, bg, offsets, bg_offsets);
 }
 
 fn is_revealed_and_wall(map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool {
@@ -130,9 +142,10 @@ fn is_revealed_and_wall(map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool 
 }
 
 fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> rltk::FontCharType {
-    if x < 1 || x > map.width - 2 || y < 1 || y > map.height - (2 as i32) {
+    if x < 1 || x > map.width - 2 || y < 1 || y > map.height - (2 as i32) || !CONFIG.visuals.use_bitset_walls {
         return 35;
     }
+
     let mut mask: u8 = 0;
     let diagonals_matter: Vec<u8> = vec![7, 11, 13, 14, 15];
 
@@ -266,28 +279,11 @@ fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> rltk::FontCharT
     }
 }
 
-fn apply_colour_offset(
-    mut fg: RGB,
-    mut bg: RGB,
-    map: &Map,
-    idx: usize,
-    offset: ((i32, i32, i32), (i32, i32, i32))
-) -> (RGB, RGB) {
-    let offset_mod = map.colour_offset[idx];
-    let fg_offset = (
-        (offset.0.0 as f32) * offset_mod.0.0,
-        (offset.0.1 as f32) * offset_mod.0.1,
-        (offset.0.2 as f32) * offset_mod.0.2,
-    );
-    fg = add_i32_offsets(fg, fg_offset);
-    let bg_offset = (
-        (offset.1.0 as f32) * offset_mod.1.0,
-        (offset.1.1 as f32) * offset_mod.1.1,
-        (offset.1.2 as f32) * offset_mod.1.2,
-    );
-    bg = add_i32_offsets(bg, bg_offset);
-
-    return (fg, bg);
+fn apply_colour_offset(mut rgb: RGB, map: &Map, idx: usize, offset: (i32, i32, i32), fg: bool) -> RGB {
+    let offset_mod = if fg { map.colour_offset[idx].0 } else { map.colour_offset[idx].1 };
+    let offset = ((offset.0 as f32) * offset_mod.0, (offset.1 as f32) * offset_mod.1, (offset.2 as f32) * offset_mod.2);
+    rgb = add_i32_offsets(rgb, offset);
+    return rgb;
 }
 
 fn apply_bloodstain_if_necessary(mut bg: RGB, map: &Map, idx: usize) -> RGB {
@@ -326,8 +322,7 @@ fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
     return result;
 }
 
-fn brighten_by(mut fg: RGB, mut bg: RGB, amount: f32) -> (RGB, RGB) {
-    fg = fg.add(RGB::from_f32(amount, amount, amount));
-    bg = bg.add(RGB::from_f32(amount, amount, amount));
-    return (fg, bg);
+fn brighten_by(mut rgb: RGB, amount: f32) -> RGB {
+    rgb = rgb.add(RGB::from_f32(amount, amount, amount));
+    return rgb;
 }

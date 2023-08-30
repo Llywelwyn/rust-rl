@@ -25,6 +25,9 @@ pub struct VisualConfig {
     pub with_scanlines: bool,
     pub with_screen_burn: bool,
     pub with_darken_by_distance: bool,
+    pub use_bitset_walls: bool,
+    pub use_coloured_tile_bg: bool,
+    pub add_colour_variance: bool,
 }
 
 impl Default for Config {
@@ -40,6 +43,9 @@ impl Default for Config {
                 with_scanlines: false,
                 with_screen_burn: false,
                 with_darken_by_distance: true,
+                use_bitset_walls: true,
+                use_coloured_tile_bg: true,
+                add_colour_variance: true,
             },
         }
     }
@@ -107,6 +113,9 @@ impl Section for VisualConfig {
             apply_bool_value!(self, section, missing, with_scanlines);
             apply_bool_value!(self, section, missing, with_screen_burn);
             apply_bool_value!(self, section, missing, with_darken_by_distance);
+            apply_bool_value!(self, section, missing, use_bitset_walls);
+            apply_bool_value!(self, section, missing, use_coloured_tile_bg);
+            apply_bool_value!(self, section, missing, add_colour_variance);
             missing
         } else {
             true
