@@ -112,6 +112,26 @@
         ]
     },
     {
+        "id": "squad_goblin",
+        "table": [
+            { "id": "goblin",                   "weight": 3,    "difficulty": 1}
+        ]
+    },
+    {
+        "id": "squad_kobold",
+        "table": [
+            { "id": "kobold",                  "weight": 3,    "difficulty": 1},
+            { "id": "kobold_large",            "weight": 2,    "difficulty": 2}
+        ]
+    },
+    {
+        "id": "squad_orc",
+        "table": [
+            { "id": "orc",                     "weight": 2,    "difficulty": 2},
+            { "id": "orc_hill",                "weight": 1,    "difficulty": 4}
+        ]
+    },
+    {
         "id": "traps",
         "table": [
             { "id": "trap_bear",                "weight": 2,    "difficulty": 1},

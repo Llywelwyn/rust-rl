@@ -287,7 +287,8 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
         _ => builder.with(VoronoiSpawning::new()),
     }
 
-    builder.with(ThemeRooms::grass(12));
+    builder.with(ThemeRooms::grass(12)); // 12% chance of an overgrown treant room.
+    builder.with(ThemeRooms::barracks(5)); // 5% chance of a squad barracks.
 }
 
 fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain, end: bool) -> bool {

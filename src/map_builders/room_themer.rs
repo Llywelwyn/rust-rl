@@ -1,10 +1,11 @@
 use super::{ BuilderMap, MetaMapBuilder, Rect, TileType };
 use crate::tile_walkable;
+use crate::raws;
 use rltk::RandomNumberGenerator;
 
 pub enum Theme {
     Grass,
-    Forest,
+    Barrack,
 }
 
 pub struct ThemeRooms {
@@ -23,8 +24,8 @@ impl ThemeRooms {
     pub fn grass(percent: i32) -> Box<ThemeRooms> {
         return Box::new(ThemeRooms { theme: Theme::Grass, percent });
     }
-    pub fn forest(percent: i32) -> Box<ThemeRooms> {
-        return Box::new(ThemeRooms { theme: Theme::Forest, percent });
+    pub fn barracks(percent: i32) -> Box<ThemeRooms> {
+        return Box::new(ThemeRooms { theme: Theme::Barrack, percent });
     }
 
     fn grassify(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap, room: &Rect) {
@@ -60,6 +61,39 @@ impl ThemeRooms {
         }
     }
 
+    fn place_barracks(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap, room: &Rect) {
+        let mut possible: Vec<usize> = Vec::new();
+        let (x1, x2, y1, y2) = (room.x1 + 1, room.x2 - 1, room.y1 + 1, room.y2 - 1);
+        for x in x1..x2 {
+            for y in y1..y2 {
+                let idx = build_data.map.xy_idx(x, y);
+                if tile_walkable(build_data.map.tiles[idx]) && build_data.map.tiles[idx] != TileType::DownStair {
+                    possible.push(idx);
+                }
+            }
+        }
+
+        let mut needs_captain = if rng.roll_dice(1, 3) == 1 { false } else { true };
+        let (captain, squad) = match rng.roll_dice(1, 4) {
+            1 => ("goblin_chieftain", "squad_goblin"),
+            2 => ("kobold_captain", "squad_kobold"),
+            _ => ("orc_captain", "squad_orc"),
+        };
+        for idx in possible {
+            if idx % 2 == 0 && rng.roll_dice(1, 2) == 1 {
+                build_data.spawn_list.push((idx, "prop_bed".to_string()));
+            } else if rng.roll_dice(1, 5) == 1 {
+                let mob = if needs_captain {
+                    captain.to_string()
+                } else {
+                    raws::table_by_name(&raws::RAWS.lock().unwrap(), squad, None).roll(rng)
+                };
+                needs_captain = false;
+                build_data.spawn_list.push((idx, mob));
+            }
+        }
+    }
+
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         let rooms: Vec<Rect>;
         if let Some(rooms_builder) = &build_data.rooms {
@@ -72,6 +106,7 @@ impl ThemeRooms {
             if rng.roll_dice(1, 100) < self.percent {
                 match self.theme {
                     Theme::Grass => self.grassify(rng, build_data, room),
+                    Theme::Barrack => self.place_barracks(rng, build_data, room),
                     _ => {}
                 }
                 build_data.take_snapshot();
