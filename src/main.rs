@@ -263,7 +263,8 @@ impl GameState for State {
                     }
                 }
                 if can_act {
-                    new_runstate = player_input(self, ctx);
+                    let on_overmap = self.ecs.fetch::<Map>().overmap;
+                    new_runstate = player_input(self, ctx, on_overmap);
                 } else {
                     new_runstate = RunState::Ticking;
                 }

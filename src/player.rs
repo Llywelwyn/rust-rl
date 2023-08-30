@@ -586,7 +586,7 @@ fn get_item(ecs: &mut World) -> RunState {
     }
 }
 
-pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
+pub fn player_input(gs: &mut State, ctx: &mut Rltk, on_overmap: bool) -> RunState {
     match ctx.key {
         None => {
             return RunState::AwaitingInput;
@@ -662,13 +662,19 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
 
                 // Items
                 VirtualKeyCode::C => {
-                    return RunState::ActionWithDirection { function: try_door };
+                    if !on_overmap {
+                        return RunState::ActionWithDirection { function: try_door };
+                    }
                 }
                 VirtualKeyCode::O => {
-                    return RunState::ActionWithDirection { function: open };
+                    if !on_overmap {
+                        return RunState::ActionWithDirection { function: open };
+                    }
                 }
                 VirtualKeyCode::F => {
-                    return RunState::ActionWithDirection { function: kick };
+                    if !on_overmap {
+                        return RunState::ActionWithDirection { function: kick };
+                    }
                 }
                 VirtualKeyCode::G => {
                     return get_item(&mut gs.ecs);

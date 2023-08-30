@@ -772,13 +772,14 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
 
     let (x_offset, y_offset) = (1, 10);
 
-    ctx.print_color(
-        1 + x_offset,
-        1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+    let on_overmap = gs.ecs.fetch::<Map>().overmap;
+    let message = if !on_overmap {
         "Interact with what item? [aA-zZ][Esc.]"
-    );
+    } else {
+        "You can't use items on the overmap [Esc.]"
+    };
+
+    ctx.print_color(1 + x_offset, 1 + y_offset, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), message);
 
     let x = 1 + x_offset;
     let y = 3 + y_offset;
@@ -794,15 +795,19 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
                 _ => {
                     let selection = letter_to_option::letter_to_option(key, ctx.shift);
                     if selection > -1 && selection < (count as i32) {
-                        return (
-                            ItemMenuResult::Selected,
-                            Some(
-                                player_inventory
-                                    .iter()
-                                    .nth(selection as usize)
-                                    .unwrap().1.0
-                            ),
-                        );
+                        if on_overmap {
+                            gamelog::Logger::new().append("You can't use items on the overmap.").log();
+                        } else {
+                            return (
+                                ItemMenuResult::Selected,
+                                Some(
+                                    player_inventory
+                                        .iter()
+                                        .nth(selection as usize)
+                                        .unwrap().1.0
+                                ),
+                            );
+                        }
                     }
                     (ItemMenuResult::NoResponse, None)
                 }
@@ -816,13 +821,10 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
 
     let (x_offset, y_offset) = (1, 10);
 
-    ctx.print_color(
-        1 + x_offset,
-        1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
-        "Drop what? [aA-zZ][Esc.]"
-    );
+    let on_overmap = gs.ecs.fetch::<Map>().overmap;
+    let message = if !on_overmap { "Drop what? [aA-zZ][Esc.]" } else { "You can't drop items on the overmap [Esc.]" };
+
+    ctx.print_color(1 + x_offset, 1 + y_offset, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), message);
 
     let x = 1 + x_offset;
     let y = 3 + y_offset;
@@ -838,15 +840,19 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
                 _ => {
                     let selection = rltk::letter_to_option(key);
                     if selection > -1 && selection < (count as i32) {
-                        return (
-                            ItemMenuResult::Selected,
-                            Some(
-                                player_inventory
-                                    .iter()
-                                    .nth(selection as usize)
-                                    .unwrap().1.0
-                            ),
-                        );
+                        if on_overmap {
+                            gamelog::Logger::new().append("You can't drop items on the overmap.").log();
+                        } else {
+                            return (
+                                ItemMenuResult::Selected,
+                                Some(
+                                    player_inventory
+                                        .iter()
+                                        .nth(selection as usize)
+                                        .unwrap().1.0
+                                ),
+                            );
+                        }
                     }
                     (ItemMenuResult::NoResponse, None)
                 }
