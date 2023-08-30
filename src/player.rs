@@ -483,12 +483,27 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                     some = true;
                 }
             });
+            match map.tiles[destination_idx] {
+                TileType::ToLocal(id) => {
+                    let name = get_local_desc(id);
+                    let colour = rgb_to_u8(get_local_col(id));
+                    gamelog::Logger
+                        ::new()
+                        .append("You see")
+                        .colour(colour)
+                        .append_n(&name)
+                        .colour(WHITE)
+                        .period()
+                        .log();
+                }
+                _ => {}
+            }
             // If some names were found, append. Logger = logger is necessary
             // makes logger called a mutable self. It's not the most efficient
             // but it happens infrequently enough (once per player turn at most)
             // that it shouldn't matter.
             if some {
-                let mut logger = gamelog::Logger::new().append("You see a");
+                let mut logger = gamelog::Logger::new().append("You see");
                 for i in 0..seen_items.len() {
                     if i > 0 && i < seen_items.len() {
                         logger = logger.append(", a");
