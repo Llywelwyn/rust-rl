@@ -42,9 +42,9 @@ pub fn tile_opaque(tt: TileType) -> bool {
 }
 pub fn tile_cost(tt: TileType) -> f32 {
     match tt {
-        TileType::Road => 0.5,
-        TileType::Grass => 1.1,
-        TileType::ShallowWater => 1.3,
+        TileType::Road => 0.75,
+        TileType::Grass => 1.2,
+        TileType::ShallowWater => 1.5,
         _ => 1.0,
     }
 }

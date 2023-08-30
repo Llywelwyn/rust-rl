@@ -29,6 +29,8 @@ pub fn forest_builder(
         height,
         difficulty,
         NAME_FOREST_BUILDER,
+        SHORTNAME_FOREST_BUILDER,
+        0,
         initial_player_level
     );
     chain.start_with(CellularAutomataBuilder::floor(TileType::Grass));

@@ -107,6 +107,8 @@ impl BuilderChain {
         height: i32,
         difficulty: i32,
         name: S,
+        short_name: S,
+        depth: i32,
         initial_player_level: i32
     ) -> BuilderChain {
         BuilderChain {
@@ -114,7 +116,7 @@ impl BuilderChain {
             builders: Vec::new(),
             build_data: BuilderMap {
                 spawn_list: Vec::new(),
-                map: Map::new(overmap, new_id, width, height, difficulty, name),
+                map: Map::new(overmap, new_id, width, height, difficulty, name, short_name, depth),
                 starting_position: None,
                 rooms: None,
                 corridors: None,
@@ -326,7 +328,7 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 }
 
 fn overmap_builder() -> BuilderChain {
-    let mut builder = BuilderChain::new(true, ID_OVERMAP, 69, 41, 0, NAME_OVERMAP, 1);
+    let mut builder = BuilderChain::new(true, ID_OVERMAP, 69, 41, 0, NAME_OVERMAP, SHORTNAME_OVERMAP, 0, 1);
     builder.start_with(PrefabBuilder::overmap());
     builder.with(Foliage::percent(TileType::Grass, 30));
     return builder;
@@ -344,6 +346,7 @@ pub fn random_builder(
     width: i32,
     height: i32,
     difficulty: i32,
+    depth: i32,
     initial_player_level: i32,
     end: bool,
     build_type: BuildType
@@ -356,6 +359,8 @@ pub fn random_builder(
         height,
         difficulty,
         NAME_DUNGEON_RANDOM,
+        SHORTNAME_DUNGEON_RANDOM,
+        depth,
         initial_player_level
     );
     let mut want_doors = true;
@@ -421,8 +426,19 @@ pub fn level_builder(
         ID_OVERMAP => overmap_builder(),
         ID_TOWN => town_builder(new_id, rng, width, height, 0, initial_player_level),
         ID_TOWN2 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
-        ID_TOWN3 => random_builder(new_id, rng, width, height, 2, initial_player_level, true, BuildType::Room),
-        ID_INFINITE => random_builder(new_id, rng, width, height, 3, initial_player_level, false, BuildType::Room),
-        _ => random_builder(new_id, rng, width, height, difficulty, initial_player_level, false, BuildType::Any),
+        ID_TOWN3 => random_builder(new_id, rng, width, height, 2, 1, initial_player_level, true, BuildType::Room),
+        _ if new_id >= ID_INFINITE =>
+            random_builder(
+                new_id,
+                rng,
+                width,
+                height,
+                difficulty,
+                new_id - ID_INFINITE + 1,
+                initial_player_level,
+                false,
+                BuildType::Room
+            ),
+        _ => random_builder(new_id, rng, width, height, difficulty, 404, initial_player_level, false, BuildType::Room),
     }
 }

@@ -32,6 +32,7 @@ use super::{
     State,
     Viewshed,
     BUC,
+    get_local_col,
 };
 use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
 use rltk::prelude::*;
@@ -323,17 +324,12 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
 
     // Render id
     let map = ecs.fetch::<Map>();
-    let id = format!("D{}", map.id);
-    ctx.print_color_right(70, 54, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &id);
+    let id = if map.depth > 0 { format!("{}{}", map.short_name, map.depth) } else { format!("{}", map.short_name) };
+    ctx.print_color_right(70, 54, get_local_col(map.id), RGB::named(rltk::BLACK), &id);
 
     // Render turn
-    ctx.print_color_right(
-        64,
-        54,
-        RGB::named(rltk::YELLOW),
-        RGB::named(rltk::BLACK),
-        &format!("T{}", crate::gamelog::get_event_count(EVENT::COUNT_TURN))
-    );
+    let turns = crate::gamelog::get_event_count(EVENT::COUNT_TURN);
+    ctx.print_color_right(69 - id.len(), 54, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &format!("T{}", turns));
 
     // Boxes and tooltips last, so they draw over everything else.
     ctx.draw_hollow_box(0, 0, 70, 8, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Log box

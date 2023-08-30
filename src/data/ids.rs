@@ -22,6 +22,7 @@ pub fn get_local_desc(id: i32) -> String {
 pub fn get_local_col(id: i32) -> RGB {
     let col = match id {
         ID_TOWN => TO_TOWN_COLOUR,
+        ID_TOWN2 => GRASS_COLOUR,
         ID_OVERMAP => TO_OVERMAP_COLOUR,
         _ => (255, 255, 255),
     };

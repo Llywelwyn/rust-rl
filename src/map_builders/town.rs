@@ -18,6 +18,8 @@ pub fn town_builder(
         height,
         difficulty,
         NAME_STARTER_TOWN,
+        SHORTNAME_STARTER_TOWN,
+        0,
         initial_player_level
     );
     chain.start_with(TownBuilder::new());

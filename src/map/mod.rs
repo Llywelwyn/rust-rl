@@ -28,6 +28,8 @@ pub struct Map {
     pub additional_fg_offset: rltk::RGB,
     pub id: i32,
     pub name: String,
+    pub short_name: String,
+    pub depth: i32,
     pub difficulty: i32,
     pub bloodstains: HashSet<usize>,
     pub view_blocked: HashSet<usize>,
@@ -38,7 +40,16 @@ impl Map {
         (y as usize) * (self.width as usize) + (x as usize)
     }
 
-    pub fn new<S: ToString>(overmap: bool, new_id: i32, width: i32, height: i32, difficulty: i32, name: S) -> Map {
+    pub fn new<S: ToString>(
+        overmap: bool,
+        new_id: i32,
+        width: i32,
+        height: i32,
+        difficulty: i32,
+        name: S,
+        short_name: S,
+        depth: i32
+    ) -> Map {
         let map_tile_count = (width * height) as usize;
         crate::spatial::set_size(map_tile_count);
         let mut map = Map {
@@ -58,6 +69,8 @@ impl Map {
             ),
             id: new_id,
             name: name.to_string(),
+            short_name: short_name.to_string(),
+            depth: depth,
             difficulty: difficulty,
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
