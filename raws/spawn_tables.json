@@ -85,6 +85,7 @@
             { "id": "fox",                      "weight": 1,    "difficulty": 1},
             { "id": "jackal",                   "weight": 4,    "difficulty": 1},
             { "id": "deer_little",              "weight": 1,    "difficulty": 1},
+            { "id": "treant_small",             "weight": 1,    "difficulty": 1},
             { "id": "zombie_kobold",            "weight": 1,    "difficulty": 1}, 
             { "id": "zombie_gnome",             "weight": 1,    "difficulty": 2}, 
             { "id": "kobold_large",             "weight": 1,    "difficulty": 2}, 

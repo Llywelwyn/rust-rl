@@ -422,5 +422,17 @@
         "vision_range": 16,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "2d5" }],
         "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "treant_small",
+        "name": "treant sapling",
+        "renderable": { "glyph": "♠️", "fg": "#00FF00", "bg": "#000000", "order": 1 },
+        "flags": ["LARGE_GROUP"],
+        "level": 2,
+        "bac": 12,
+        "speed": 4,
+        "vision_range": 16,
+        "attacks": [{ "name": "lashes", "hit_bonus": 4, "damage": "1d8" }],
+        "loot": { "table": "scrolls", "chance": 0.05 }
     }
 ]
