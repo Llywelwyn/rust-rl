@@ -430,7 +430,7 @@
         "flags": ["LARGE_GROUP", "GREEN_BLOOD"],
         "level": 2,
         "bac": 12,
-        "speed": 12,
+        "speed": 3,
         "vision_range": 16,
         "attacks": [{ "name": "lashes", "hit_bonus": 4, "damage": "1d8" }],
         "loot": { "table": "scrolls", "chance": 0.05 }

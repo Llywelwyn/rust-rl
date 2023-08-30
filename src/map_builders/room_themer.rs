@@ -38,7 +38,8 @@ impl ThemeRooms {
                 let idx = build_data.map.xy_idx(x, y);
                 if tile_walkable(build_data.map.tiles[idx]) && build_data.map.tiles[idx] != TileType::DownStair {
                     let tar = if x < room.x1 || x > room.x2 || y < room.y1 || y > room.y2 { 45 } else { 90 };
-                    if rng.roll_dice(1, 100) <= tar {
+                    let roll = rng.roll_dice(1, 100);
+                    if roll <= tar {
                         match rng.roll_dice(1, 6) {
                             1..=4 => {
                                 build_data.map.tiles[idx] = TileType::Grass;
@@ -48,8 +49,10 @@ impl ThemeRooms {
                             }
                             _ => {
                                 build_data.map.tiles[idx] = TileType::HeavyFoliage;
-                                build_data.spawn_list.push((idx, "treant_small".to_string()));
                             }
+                        }
+                        if roll < 5 {
+                            build_data.spawn_list.push((idx, "treant_small".to_string()));
                         }
                     }
                 }
