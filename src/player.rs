@@ -632,8 +632,6 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                             Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
                             Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
                         };
-                    } else {
-                        return skip_turn(&mut gs.ecs); // (Wait a turn)
                     }
                 }
                 VirtualKeyCode::Slash => {
