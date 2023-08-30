@@ -8,9 +8,7 @@ check out the page in the header for the wasm version, pick [a release of your c
 
 ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/b05e4f0b-2062-4abe-9fee-c679f9ef420d)
 
-this year for roguelikedev does the complete tutorial, i'm following along with thebracket's [_roguelike tutorial - in rust_](https://bfnightly.bracketproductions.com). for most of the 8 weeks, i'll probably just be working through the content rather than diverging too much into doing my own thing, since it's lengthy and i'd rather finish in time. that said, the ultimate aim here is to strip out the vast majority of the existing entities and replace them with my own, using the systems and components from the tutorial as a jumping-off point for something of my own making.
-
-i'll try to remember to update the web version on my page at the end of every week
+this year for roguelikedev does the complete tutorial, i followed along with thebracket's [_roguelike tutorial - in rust_](https://bfnightly.bracketproductions.com). the notes i made during the sprint are being kept below for posterity - further changes since then are noted in [changelog.txt](https://github.com/Llywelwyn/rust-rl/blob/9150ed39e45bee536060cdc769d274e639021012/changelog.txt), and in the release notes.
 
 ---
 
