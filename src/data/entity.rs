@@ -1,5 +1,5 @@
 pub const DEFAULT_VIEWSHED_STANDARD: i32 = 16; //       Standard viewshed radius for almost all entities.
-pub const CARRY_CAPACITY_PER_STRENGTH: i32 = 8; //      How much weight can be carried per point of strength.
+pub const CARRY_CAPACITY_PER_STRENGTH: i32 = 5; //      How much weight can be carried per point of strength.
 pub const NORMAL_SPEED: i32 = 12; //                    Normal speed for almost all entities.
 pub const SPEED_MOD_BURDENED: f32 = 0.75;
 pub const SPEED_MOD_STRAINED: f32 = 0.5;
