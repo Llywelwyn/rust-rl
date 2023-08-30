@@ -9,6 +9,7 @@ use super::{
     VoronoiSpawning,
     XStart,
     YStart,
+    Foliage,
 };
 use rltk::prelude::*;
 use crate::data::names::*;
@@ -30,13 +31,15 @@ pub fn forest_builder(
         NAME_FOREST_BUILDER,
         initial_player_level
     );
-    chain.start_with(CellularAutomataBuilder::new());
+    chain.start_with(CellularAutomataBuilder::floor(TileType::Grass));
+    // Change ~30% of the floor to some sort of foliage.
     chain.with(AreaStartingPosition::new(XStart::CENTRE, YStart::CENTRE));
     chain.with(CullUnreachable::new());
     chain.with(AreaStartingPosition::new(XStart::LEFT, YStart::CENTRE));
     // Setup an exit and spawn mobs
     chain.with(VoronoiSpawning::new());
     chain.with(RoadExit::new());
+    chain.with(Foliage::percent(TileType::Grass, 30));
     return chain;
 }
 
@@ -117,9 +120,9 @@ impl RoadExit {
         let stream_idx = build_data.map.xy_idx(stream_x, stream_y) as usize;
         let stream = a_star_search(stairs_idx, stream_idx, &mut build_data.map);
         for tile in stream.steps.iter() {
-            if build_data.map.tiles[*tile as usize] == TileType::Floor {
-                build_data.map.tiles[*tile as usize] = TileType::ShallowWater;
-            }
+            // Maybe only turn grass to water here, and turn the road into a bridge.
+            // i.e. if build_data.map.tiles[*tile as usize] == TileType::Grass
+            build_data.map.tiles[*tile as usize] = TileType::ShallowWater;
         }
         build_data.map.tiles[stairs_idx] = TileType::DownStair;
         build_data.take_snapshot();

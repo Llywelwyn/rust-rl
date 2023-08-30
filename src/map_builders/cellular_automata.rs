@@ -1,7 +1,9 @@
 use super::{ BuilderMap, InitialMapBuilder, MetaMapBuilder, TileType };
 use rltk::RandomNumberGenerator;
 
-pub struct CellularAutomataBuilder {}
+pub struct CellularAutomataBuilder {
+    floor_tile: TileType,
+}
 
 impl InitialMapBuilder for CellularAutomataBuilder {
     #[allow(dead_code)]
@@ -20,7 +22,10 @@ impl MetaMapBuilder for CellularAutomataBuilder {
 impl CellularAutomataBuilder {
     #[allow(dead_code)]
     pub fn new() -> Box<CellularAutomataBuilder> {
-        Box::new(CellularAutomataBuilder {})
+        Box::new(CellularAutomataBuilder { floor_tile: TileType::Floor })
+    }
+    pub fn floor(floor_tile: TileType) -> Box<CellularAutomataBuilder> {
+        Box::new(CellularAutomataBuilder { floor_tile })
     }
 
     #[allow(clippy::map_entry)]
@@ -80,7 +85,7 @@ impl CellularAutomataBuilder {
                 if neighbors > 4 || neighbors == 0 {
                     newtiles[idx] = TileType::Wall;
                 } else {
-                    newtiles[idx] = TileType::Floor;
+                    newtiles[idx] = self.floor_tile;
                 }
             }
         }

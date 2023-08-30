@@ -65,6 +65,8 @@ mod town;
 use town::town_builder;
 mod forest;
 use forest::forest_builder;
+mod foliage;
+use foliage::Foliage;
 
 // Shared data to be passed around build chain
 pub struct BuilderMap {
