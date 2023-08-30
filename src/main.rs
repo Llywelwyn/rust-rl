@@ -269,7 +269,7 @@ impl GameState for State {
                 }
             }
             RunState::Ticking => {
-                while new_runstate == RunState::Ticking {
+                while new_runstate == RunState::Ticking && particle_system::check_queue(&self.ecs) {
                     self.run_systems();
                     self.ecs.maintain();
                     try_spawn_interval(&mut self.ecs);

@@ -31,6 +31,14 @@ fn cull_dead_particles(ecs: &mut World, ctx: &Rltk) {
     }
 }
 
+pub fn check_queue(ecs: &World) -> bool {
+    let particle_builder = ecs.read_resource::<ParticleBuilder>();
+    if particle_builder.delayed_requests.is_empty() && particle_builder.requests.is_empty() {
+        return true;
+    }
+    return false;
+}
+
 fn create_delayed_particles(ecs: &mut World, ctx: &Rltk) {
     let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
     let mut handled_particles: Vec<ParticleRequest> = Vec::new();
