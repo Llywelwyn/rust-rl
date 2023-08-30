@@ -53,6 +53,8 @@ pub enum RunState {
     ShowDropItem,
     ShowRemoveItem,
     ShowTargeting {
+        x: i32,
+        y: i32,
         range: i32,
         item: Entity,
         aoe: i32,
@@ -358,14 +360,23 @@ impl GameState for State {
                         if let Some(ranged_item) = ranged_item {
                             let is_aoe = self.ecs.read_storage::<AOE>();
                             let aoe_item = is_aoe.get(item_entity);
+                            let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(
+                                &self.ecs,
+                                ctx
+                            );
+                            let ppos = self.ecs.fetch::<Point>();
                             if let Some(aoe_item) = aoe_item {
                                 new_runstate = RunState::ShowTargeting {
+                                    x: ppos.x + x_offset - min_x,
+                                    y: ppos.y + y_offset - min_y,
                                     range: ranged_item.range,
                                     item: item_entity,
                                     aoe: aoe_item.radius,
                                 };
                             } else {
                                 new_runstate = RunState::ShowTargeting {
+                                    x: ppos.x + x_offset - min_x,
+                                    y: ppos.y + y_offset - min_y,
                                     range: ranged_item.range,
                                     item: item_entity,
                                     aoe: 0,
@@ -415,14 +426,16 @@ impl GameState for State {
                     }
                 }
             }
-            RunState::ShowTargeting { range, item, aoe } => {
-                let result = gui::ranged_target(self, ctx, range, aoe);
+            RunState::ShowTargeting { x, y, range, item, aoe } => {
+                let result = gui::ranged_target(self, ctx, x, y, range, aoe);
                 match result.0 {
-                    gui::ItemMenuResult::Cancel => {
+                    gui::TargetResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;
                     }
-                    gui::ItemMenuResult::NoResponse => {}
-                    gui::ItemMenuResult::Selected => {
+                    gui::TargetResult::NoResponse { x, y } => {
+                        new_runstate = RunState::ShowTargeting { x, y, range, item, aoe };
+                    }
+                    gui::TargetResult::Selected => {
                         let mut intent = self.ecs.write_storage::<WantsToUseItem>();
                         intent
                             .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item, target: result.1 })

@@ -921,7 +921,24 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     }
 }
 
-pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (ItemMenuResult, Option<Point>) {
+#[derive(PartialEq, Copy, Clone)]
+pub enum TargetResult {
+    Cancel,
+    NoResponse {
+        x: i32,
+        y: i32,
+    },
+    Selected,
+}
+
+pub fn ranged_target(
+    gs: &mut State,
+    ctx: &mut Rltk,
+    x: i32,
+    y: i32,
+    range: i32,
+    aoe: i32
+) -> (TargetResult, Option<Point>) {
     let (min_x, max_x, min_y, max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs, ctx);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
@@ -952,11 +969,16 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
             }
         }
     } else {
-        return (ItemMenuResult::Cancel, None);
+        return (TargetResult::Cancel, None);
     }
 
     // Draw mouse cursor
-    let mouse_pos = ctx.mouse_pos();
+    let mouse_pos = (x, y);
+    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs, ctx);
+    let (screen_x, screen_y) = (69, 41);
+    let x = x.clamp(x_offset, x_offset - 1 + (screen_x as i32));
+    let y = y.clamp(y_offset, y_offset - 1 + (screen_y as i32));
+
     let mut mouse_pos_adjusted = mouse_pos;
     mouse_pos_adjusted.0 += min_x - x_offset;
     mouse_pos_adjusted.1 += min_y - y_offset;
@@ -967,6 +989,7 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
             valid_target = true;
         }
     }
+    let mut result = (TargetResult::NoResponse { x, y }, None);
     if valid_target {
         if aoe > 0 {
             // We adjust for camera position when getting FOV, but then we need to adjust back
@@ -982,17 +1005,37 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32, aoe: i32) -> (I
             }
         }
         ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::CYAN));
-        if ctx.left_click {
-            return (ItemMenuResult::Selected, Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)));
-        }
+        result = match ctx.key {
+            None => result,
+            Some(key) =>
+                match key {
+                    VirtualKeyCode::Return => {
+                        return (TargetResult::Selected, Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)));
+                    }
+                    _ => result,
+                }
+        };
     } else {
         ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::RED));
-        if ctx.left_click {
-            return (ItemMenuResult::Cancel, None);
-        }
     }
 
-    (ItemMenuResult::NoResponse, None)
+    result = match ctx.key {
+        None => result,
+        Some(key) =>
+            match key {
+                VirtualKeyCode::Escape => (TargetResult::Cancel, None),
+                VirtualKeyCode::Numpad9 => (TargetResult::NoResponse { x: x + 1, y: y - 1 }, None),
+                VirtualKeyCode::Numpad7 => (TargetResult::NoResponse { x: x - 1, y: y - 1 }, None),
+                VirtualKeyCode::Numpad6 => (TargetResult::NoResponse { x: x + 1, y }, None),
+                VirtualKeyCode::Numpad4 => (TargetResult::NoResponse { x: x - 1, y }, None),
+                VirtualKeyCode::Numpad8 => (TargetResult::NoResponse { x, y: y - 1 }, None),
+                VirtualKeyCode::Numpad3 => (TargetResult::NoResponse { x: x + 1, y: y + 1 }, None),
+                VirtualKeyCode::Numpad2 => (TargetResult::NoResponse { x, y: y + 1 }, None),
+                VirtualKeyCode::Numpad1 => (TargetResult::NoResponse { x: x - 1, y: y + 1 }, None),
+                _ => result,
+            }
+    };
+    return result;
 }
 
 #[derive(PartialEq, Copy, Clone)]
