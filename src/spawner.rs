@@ -127,8 +127,7 @@ pub fn spawn_region(
     let num_items = match rng.roll_dice(1, 20) {
         1..=2 => 1, // 10% chance of spawning 1 item
         3 => 2, // 5% chance of spawning 2 items
-        4 => 3, // 5% chance of spawning 3 items
-        _ => 0, // 80% chance of spawning nothing
+        _ => 0, // 85% chance of spawning nothing
     };
     let num_traps = match rng.roll_dice(1, 20) {
         1 => 1, // 5% chance of spawning 1 trap
