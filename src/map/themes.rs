@@ -138,11 +138,18 @@ fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (r
 
 fn is_revealed_and_wall(map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool {
     let idx = map.xy_idx(x, y);
-    map.tiles[idx] == TileType::Wall && (if debug.is_none() { map.revealed_tiles[idx] } else { true })
+    map.tiles[idx] == TileType::Wall &&
+        (if debug.is_none() { map.revealed_tiles[idx] } else { true })
 }
 
 fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> rltk::FontCharType {
-    if x < 1 || x > map.width - 2 || y < 1 || y > map.height - (2 as i32) || !CONFIG.visuals.use_bitset_walls {
+    if
+        x < 1 ||
+        x > map.width - 2 ||
+        y < 1 ||
+        y > map.height - (2 as i32) ||
+        !CONFIG.visuals.use_bitset_walls
+    {
         return 35;
     }
 
@@ -279,9 +286,19 @@ fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> rltk::FontCharT
     }
 }
 
-fn apply_colour_offset(mut rgb: RGB, map: &Map, idx: usize, offset: (i32, i32, i32), fg: bool) -> RGB {
+fn apply_colour_offset(
+    mut rgb: RGB,
+    map: &Map,
+    idx: usize,
+    offset: (i32, i32, i32),
+    fg: bool
+) -> RGB {
     let offset_mod = if fg { map.colour_offset[idx].0 } else { map.colour_offset[idx].1 };
-    let offset = ((offset.0 as f32) * offset_mod.0, (offset.1 as f32) * offset_mod.1, (offset.2 as f32) * offset_mod.2);
+    let offset = (
+        (offset.0 as f32) * offset_mod.0,
+        (offset.1 as f32) * offset_mod.1,
+        (offset.2 as f32) * offset_mod.2,
+    );
     rgb = add_i32_offsets(rgb, offset);
     return rgb;
 }
@@ -318,7 +335,12 @@ fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
     let result =
         1.0 -
         interp_factor *
-            (1.0 - (if CONFIG.visuals.with_scanlines { MAX_DARKENING_IF_SCANLINES } else { MAX_DARKENING }));
+            (1.0 -
+                (if CONFIG.visuals.with_scanlines {
+                    MAX_DARKENING_IF_SCANLINES
+                } else {
+                    MAX_DARKENING
+                }));
     return result;
 }
 

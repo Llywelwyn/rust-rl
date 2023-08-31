@@ -33,7 +33,6 @@ use super::{
     WantsToPickupItem,
     get_dest,
     Destination,
-    Bleeds,
 };
 use rltk::prelude::*;
 use rltk::{ Point, RandomNumberGenerator, Rltk, VirtualKeyCode };
@@ -59,7 +58,12 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
     let mut door_pos: Option<Point> = None;
 
-    for (_entity, _player, pos, attributes) in (&entities, &mut players, &mut positions, &attributes).join() {
+    for (_entity, _player, pos, attributes) in (
+        &entities,
+        &mut players,
+        &mut positions,
+        &attributes,
+    ).join() {
         let delta_x = i;
         let delta_y = j;
 
@@ -171,7 +175,12 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
     let mut door_pos: Option<Point> = None;
 
-    for (_entity, _player, pos, attributes) in (&entities, &mut players, &mut positions, &attributes).join() {
+    for (_entity, _player, pos, attributes) in (
+        &entities,
+        &mut players,
+        &mut positions,
+        &attributes,
+    ).join() {
         let delta_x = i;
         let delta_y = j;
 
@@ -260,7 +269,12 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         let names = ecs.read_storage::<Name>();
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
 
-        for (entity, _player, pos, attributes) in (&entities, &mut players, &mut positions, &attributes).join() {
+        for (entity, _player, pos, attributes) in (
+            &entities,
+            &mut players,
+            &mut positions,
+            &attributes,
+        ).join() {
             let delta_x = i;
             let delta_y = j;
 
@@ -276,8 +290,15 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
 
                 if !crate::spatial::has_tile_content(destination_idx) {
                     if rng.roll_dice(1, 20) == 20 {
-                        add_effect(None, EffectType::Damage { amount: 1 }, Targets::Entity { target: entity });
-                        gamelog::Logger::new().append("Ouch! You kick the open air, and pull something.").log();
+                        add_effect(
+                            None,
+                            EffectType::Damage { amount: 1 },
+                            Targets::Entity { target: entity }
+                        );
+                        gamelog::Logger
+                            ::new()
+                            .append("Ouch! You kick the open air, and pull something.")
+                            .log();
                         break;
                     } else {
                         // If there's nothing at all, just kick the air and waste a turn.
@@ -288,61 +309,75 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                     let mut last_non_door_target: Option<Entity> = None;
                     let mut target_name = "thing";
                     let mut colour = WHITE;
-                    crate::spatial::for_each_tile_content_with_bool(destination_idx, |potential_target| {
-                        if let Some(name) = names.get(potential_target) {
-                            target_name = &name.name;
-                        }
-                        let items = ecs.read_storage::<Item>();
-                        colour = if let Some(_) = items.get(potential_target) {
-                            item_colour_ecs(ecs, potential_target)
-                        } else {
-                            renderable_colour_ecs(ecs, potential_target)
-                        };
+                    crate::spatial::for_each_tile_content_with_bool(
+                        destination_idx,
+                        |potential_target| {
+                            if let Some(name) = names.get(potential_target) {
+                                target_name = &name.name;
+                            }
+                            let items = ecs.read_storage::<Item>();
+                            colour = if let Some(_) = items.get(potential_target) {
+                                item_colour_ecs(ecs, potential_target)
+                            } else {
+                                renderable_colour_ecs(ecs, potential_target)
+                            };
 
-                        // If it's a door,
-                        let door = doors.get_mut(potential_target);
-                        if let Some(door) = door {
-                            // If the door is closed,
-                            if door.open == false {
-                                let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
-                                particle_builder.kick(pos.x + delta_x, pos.y + delta_y);
-                                // ~33% chance of breaking it down + str
-                                if rng.roll_dice(1, 10) + attributes.strength.bonus > 6 {
-                                    gamelog::Logger
-                                        ::new()
-                                        .append("As you kick the")
-                                        .colour(colour)
-                                        .append_n(obfuscate_name_ecs(ecs, potential_target).0)
-                                        .colour(WHITE)
-                                        .append(", it crashes open!")
-                                        .log();
-                                    something_was_destroyed = Some(potential_target);
-                                    destroyed_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
-                                    gamelog::record_event(EVENT::BROKE_DOOR(1));
-                                    return false;
-                                    // 66% chance of just kicking it.
-                                } else {
-                                    gamelog::Logger
-                                        ::new()
-                                        .append("You kick the")
-                                        .colour(colour)
-                                        .append_n(obfuscate_name_ecs(ecs, potential_target).0)
-                                        .colour(WHITE)
-                                        .period()
-                                        .log();
+                            // If it's a door,
+                            let door = doors.get_mut(potential_target);
+                            if let Some(door) = door {
+                                // If the door is closed,
+                                if door.open == false {
+                                    add_effect(
+                                        None,
+                                        EffectType::Particle {
+                                            glyph: to_cp437('‼'),
+                                            fg: RGB::named(CHOCOLATE),
+                                            bg: RGB::named(BLACK),
+                                            lifespan: 150.0,
+                                            delay: 0.0,
+                                        },
+                                        Targets::Entity { target: potential_target }
+                                    );
+                                    // ~33% chance of breaking it down + str
+                                    if rng.roll_dice(1, 10) + attributes.strength.bonus > 6 {
+                                        gamelog::Logger
+                                            ::new()
+                                            .append("As you kick the")
+                                            .colour(colour)
+                                            .append_n(obfuscate_name_ecs(ecs, potential_target).0)
+                                            .colour(WHITE)
+                                            .append(", it crashes open!")
+                                            .log();
+                                        something_was_destroyed = Some(potential_target);
+                                        destroyed_pos = Some(
+                                            Point::new(pos.x + delta_x, pos.y + delta_y)
+                                        );
+                                        gamelog::record_event(EVENT::BROKE_DOOR(1));
+                                        return false;
+                                        // 66% chance of just kicking it.
+                                    } else {
+                                        gamelog::Logger
+                                            ::new()
+                                            .append("You kick the")
+                                            .colour(colour)
+                                            .append_n(obfuscate_name_ecs(ecs, potential_target).0)
+                                            .colour(WHITE)
+                                            .period()
+                                            .log();
+                                        return false;
+                                    }
+                                    // If the door is open and there's nothing else on the tile,
+                                } else if crate::spatial::length(destination_idx) == 1 {
+                                    // Just kick the air.
+                                    gamelog::Logger::new().append("You kick the open air.").log();
                                     return false;
                                 }
-                                // If the door is open and there's nothing else on the tile,
-                            } else if crate::spatial::length(destination_idx) == 1 {
-                                // Just kick the air.
-                                gamelog::Logger::new().append("You kick the open air.").log();
-                                return false;
+                            } else {
+                                last_non_door_target = Some(potential_target);
                             }
-                        } else {
-                            last_non_door_target = Some(potential_target);
+                            return true;
                         }
-                        return true;
-                    });
+                    );
                     if let Some(e) = last_non_door_target {
                         gamelog::Logger
                             ::new()
@@ -352,8 +387,17 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                             .colour(WHITE)
                             .period()
                             .log();
-                        let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
-                        particle_builder.kick(pos.x + delta_x, pos.y + delta_y);
+                        add_effect(
+                            None,
+                            EffectType::Particle {
+                                glyph: to_cp437('‼'),
+                                fg: RGB::named(CHOCOLATE),
+                                bg: RGB::named(BLACK),
+                                lifespan: 150.0,
+                                delay: 0.0,
+                            },
+                            Targets::Entity { target: e }
+                        );
                         // Do something here if it's anything other than a door.
                         break;
                     }
@@ -393,7 +437,12 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     let mut swap_entities: Vec<(Entity, i32, i32)> = Vec::new();
     let mut result: Option<RunState>;
 
-    for (entity, _player, pos, viewshed) in (&entities, &mut players, &mut positions, &mut viewsheds).join() {
+    for (entity, _player, pos, viewshed) in (
+        &entities,
+        &mut players,
+        &mut positions,
+        &mut viewsheds,
+    ).join() {
         if
             pos.x + delta_x < 0 ||
             pos.x + delta_x > map.width - 1 ||
@@ -404,64 +453,69 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
         }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
-        result = crate::spatial::for_each_tile_content_with_runstate(destination_idx, |potential_target| {
-            let mut hostile = true;
-            if pools.get(potential_target).is_some() {
-                // We get the reaction of the target to this entity --
-                // i.e. in reverse to usual. We want to know if the target
-                //      is hostile to us. If it isn't, we can swap places.
-                let result = crate::raws::get_reactions(
-                    potential_target,
-                    entity,
-                    &factions,
-                    &ancestries,
-                    &crate::raws::RAWS.lock().unwrap()
-                );
-                if result != Reaction::Attack {
-                    hostile = false;
-                }
-            }
-            if !hostile {
-                swap_entities.push((potential_target, pos.x, pos.y));
-                pos.x = min(map.width - 1, max(0, pos.x + delta_x));
-                pos.y = min(map.height - 1, max(0, pos.y + delta_y));
-                entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
-                viewshed.dirty = true;
-                let mut ppos = ecs.write_resource::<Point>();
-                ppos.x = pos.x;
-                ppos.y = pos.y;
-            } else {
-                let target = pools.get(potential_target);
-                if let Some(_target) = target {
-                    wants_to_melee
-                        .insert(entity, WantsToMelee { target: potential_target })
-                        .expect("Add target failed.");
-                    return Some(RunState::Ticking);
-                }
-            }
-            let door = doors.get_mut(potential_target);
-            if let Some(door) = door {
-                if door.open == false {
-                    if let Some(name) = names.get(potential_target) {
-                        let colour = if let Some(_) = ecs.read_storage::<Item>().get(potential_target) {
-                            item_colour_ecs(ecs, potential_target)
-                        } else {
-                            renderable_colour_ecs(ecs, potential_target)
-                        };
-                        gamelog::Logger
-                            ::new()
-                            .append("The")
-                            .colour(colour)
-                            .append_n(&name.name)
-                            .colour(WHITE)
-                            .append("is in your way.")
-                            .log();
+        result = crate::spatial::for_each_tile_content_with_runstate(
+            destination_idx,
+            |potential_target| {
+                let mut hostile = true;
+                if pools.get(potential_target).is_some() {
+                    // We get the reaction of the target to this entity --
+                    // i.e. in reverse to usual. We want to know if the target
+                    //      is hostile to us. If it isn't, we can swap places.
+                    let result = crate::raws::get_reactions(
+                        potential_target,
+                        entity,
+                        &factions,
+                        &ancestries,
+                        &crate::raws::RAWS.lock().unwrap()
+                    );
+                    if result != Reaction::Attack {
+                        hostile = false;
                     }
-                    return Some(RunState::AwaitingInput);
                 }
+                if !hostile {
+                    swap_entities.push((potential_target, pos.x, pos.y));
+                    pos.x = min(map.width - 1, max(0, pos.x + delta_x));
+                    pos.y = min(map.height - 1, max(0, pos.y + delta_y));
+                    entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
+                    viewshed.dirty = true;
+                    let mut ppos = ecs.write_resource::<Point>();
+                    ppos.x = pos.x;
+                    ppos.y = pos.y;
+                } else {
+                    let target = pools.get(potential_target);
+                    if let Some(_target) = target {
+                        wants_to_melee
+                            .insert(entity, WantsToMelee { target: potential_target })
+                            .expect("Add target failed.");
+                        return Some(RunState::Ticking);
+                    }
+                }
+                let door = doors.get_mut(potential_target);
+                if let Some(door) = door {
+                    if door.open == false {
+                        if let Some(name) = names.get(potential_target) {
+                            let colour = if
+                                let Some(_) = ecs.read_storage::<Item>().get(potential_target)
+                            {
+                                item_colour_ecs(ecs, potential_target)
+                            } else {
+                                renderable_colour_ecs(ecs, potential_target)
+                            };
+                            gamelog::Logger
+                                ::new()
+                                .append("The")
+                                .colour(colour)
+                                .append_n(&name.name)
+                                .colour(WHITE)
+                                .append("is in your way.")
+                                .log();
+                        }
+                        return Some(RunState::AwaitingInput);
+                    }
+                }
+                return None;
             }
-            return None;
-        });
+        );
 
         if result.is_some() {
             return result.unwrap();
@@ -509,7 +563,10 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                     if i > 0 && i < seen_items.len() {
                         logger = logger.append(", a");
                     }
-                    logger = logger.colour(seen_items[i].1).append_n(&seen_items[i].0).colour(WHITE);
+                    logger = logger
+                        .colour(seen_items[i].1)
+                        .append_n(&seen_items[i].0)
+                        .colour(WHITE);
                 }
                 logger.period().log();
             }
@@ -628,11 +685,15 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, on_overmap: bool) -> RunStat
                             // If we have no destination, do nothing.
                             Destination::None => RunState::AwaitingInput,
                             // If we want to go to the next level, go to the up-stair tile of id + 1.
-                            Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
+                            Destination::NextLevel =>
+                                RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
                             // If we want to go to the previous level, go to the down-stair tile of id - 1.
-                            Destination::PreviousLevel => RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
-                            Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
-                            Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
+                            Destination::PreviousLevel =>
+                                RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
+                            Destination::ToLocal(id) =>
+                                RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
+                            Destination::ToOvermap(id) =>
+                                RunState::GoToLevel(id, TileType::ToOvermap(id)),
                         };
                     } else {
                         return skip_turn(&mut gs.ecs); // (Wait a turn)
@@ -644,10 +705,14 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, on_overmap: bool) -> RunStat
                         let curr_map_id = gs.ecs.fetch::<Map>().id;
                         return match dest {
                             Destination::None => RunState::AwaitingInput,
-                            Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
-                            Destination::PreviousLevel => RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
-                            Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
-                            Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
+                            Destination::NextLevel =>
+                                RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
+                            Destination::PreviousLevel =>
+                                RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
+                            Destination::ToLocal(id) =>
+                                RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
+                            Destination::ToOvermap(id) =>
+                                RunState::GoToLevel(id, TileType::ToOvermap(id)),
                         };
                     }
                 }
@@ -696,7 +761,10 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, on_overmap: bool) -> RunStat
                     return RunState::SaveGame;
                 }
                 VirtualKeyCode::X => {
-                    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(&gs.ecs, ctx);
+                    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(
+                        &gs.ecs,
+                        ctx
+                    );
                     let ppos = gs.ecs.fetch::<Point>();
                     let (x, y) = (ppos.x + x_offset - min_x, ppos.y + y_offset - min_y);
                     return RunState::Farlook { x, y };
