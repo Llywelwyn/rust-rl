@@ -1,7 +1,13 @@
 use super::components::*;
 use specs::error::NoError;
 use specs::prelude::*;
-use specs::saveload::{ DeserializeComponents, MarkedBuilder, SerializeComponents, SimpleMarker, SimpleMarkerAllocator };
+use specs::saveload::{
+    DeserializeComponents,
+    MarkedBuilder,
+    SerializeComponents,
+    SimpleMarker,
+    SimpleMarkerAllocator,
+};
 use std::fs;
 use std::fs::File;
 use std::path::Path;
@@ -58,6 +64,7 @@ pub fn save_game(ecs: &mut World) {
             ArmourClassBonus,
             Attributes,
             Beatitude,
+            Bleeds,
             Blind,
             BlocksTile,
             BlocksVisibility,
@@ -187,6 +194,7 @@ pub fn load_game(ecs: &mut World) {
             ArmourClassBonus,
             Attributes,
             Beatitude,
+            Bleeds,
             Blind,
             BlocksTile,
             BlocksVisibility,
