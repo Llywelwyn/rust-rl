@@ -27,12 +27,12 @@ use super::{
     Prop,
     Renderable,
     RunState,
+    states::state::*,
     Skill,
     Skills,
-    State,
     Viewshed,
     BUC,
-    get_local_col,
+    data::ids::get_local_col,
 };
 use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
 use crate::data::visuals::{ TARGETING_LINE_COL, TARGETING_CURSOR_COL, TARGETING_AOE_COL, TARGETING_VALID_COL };

@@ -7,7 +7,7 @@ use super::{
     ItemMenuResult,
     UniqueInventoryItem,
 };
-use crate::{ gamelog, Beatitude, Entity, Equipped, InBackpack, Item, Name, Renderable, State, BUC };
+use crate::{ gamelog, Beatitude, Entity, Equipped, InBackpack, Item, Name, Renderable, states::state::*, BUC };
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;

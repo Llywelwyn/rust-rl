@@ -19,7 +19,7 @@ use crate::{
     Name,
     ObfuscatedName,
     Renderable,
-    State,
+    states::state::*,
 };
 use rltk::prelude::*;
 use specs::prelude::*;

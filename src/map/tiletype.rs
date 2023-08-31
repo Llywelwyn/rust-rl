@@ -1,6 +1,6 @@
 use serde::{ Deserialize, Serialize };
 
-#[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum TileType {
     // Walls (opaque)
     ImpassableMountain,

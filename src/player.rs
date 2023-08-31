@@ -25,7 +25,7 @@ use super::{
     Position,
     Renderable,
     RunState,
-    State,
+    states::state::*,
     Telepath,
     TileType,
     Viewshed,

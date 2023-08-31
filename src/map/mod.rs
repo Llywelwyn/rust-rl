@@ -8,7 +8,7 @@ pub use interval_spawning_system::{ maybe_map_message, try_spawn_interval };
 pub mod dungeon;
 pub use dungeon::{ level_transition, MasterDungeonMap };
 pub mod themes;
-use crate::data::visuals::{ BRIGHTEN_FG_COLOUR_BY, GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP };
+use super::data::visuals::{ BRIGHTEN_FG_COLOUR_BY, GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP };
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.
