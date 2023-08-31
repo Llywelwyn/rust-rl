@@ -416,14 +416,7 @@ fn get_starting_inventory(
         Class::Rogue => {
             starting_food = ROGUE_STARTING_FOOD;
             equipped = vec![ROGUE_STARTING_WEAPON.to_string(), ROGUE_STARTING_ARMOUR.to_string()];
-            carried = vec![
-                "equip_dagger".to_string(),
-                "equip_dagger".to_string(),
-                "scroll_confusion".to_string(),
-                "scroll_confusion".to_string(),
-                "scroll_confusion".to_string(),
-                "scroll_confusion".to_string()
-            ];
+            carried = vec!["equip_dagger".to_string(), "equip_dagger".to_string()];
         }
         Class::Wizard => {
             starting_food = WIZARD_STARTING_FOOD;
