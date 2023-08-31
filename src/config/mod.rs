@@ -69,7 +69,11 @@ impl Config {
                 return config;
             }
         }
-        Config::default()
+        let config = Config::default();
+        if let Err(write_err) = config.save_to_file(filename) {
+            console::log(format!("Error writing config: {:?}", write_err));
+        }
+        return config;
     }
     pub fn save_to_file(&self, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
         let toml_string = toml::to_string(self)?;
