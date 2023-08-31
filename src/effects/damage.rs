@@ -90,12 +90,6 @@ pub fn heal_damage(ecs: &mut World, heal: &EffectSpawner, target: Entity) {
 
 pub fn add_confusion(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let EffectType::Confusion { turns } = &effect.effect_type {
-        let name = if let Some(name) = ecs.read_storage::<Name>().get(target) {
-            name.name.clone()
-        } else {
-            "Something".to_string()
-        };
-        console::log(format!("adding confusion to: {}", name));
         ecs.write_storage::<Confusion>()
             .insert(target, Confusion { turns: *turns })
             .expect("Unable to insert Confusion");
