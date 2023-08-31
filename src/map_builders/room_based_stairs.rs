@@ -1,5 +1,5 @@
 use super::{ BuilderMap, MetaMapBuilder, TileType };
-use rltk::RandomNumberGenerator;
+use rltk::prelude::*;
 
 pub struct RoomBasedStairs {}
 
@@ -17,8 +17,8 @@ impl RoomBasedStairs {
 
     fn build(&mut self, _rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         if let Some(rooms) = &build_data.rooms {
-            let stairs_position = rooms[rooms.len() - 1].centre();
-            let stairs_idx = build_data.map.xy_idx(stairs_position.0, stairs_position.1);
+            let stairs_position = rooms[rooms.len() - 1].center();
+            let stairs_idx = build_data.map.xy_idx(stairs_position.x, stairs_position.y);
             build_data.map.tiles[stairs_idx] = TileType::DownStair;
             build_data.take_snapshot();
         } else {

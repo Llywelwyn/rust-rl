@@ -210,7 +210,11 @@ fn random_start_position(rng: &mut rltk::RandomNumberGenerator) -> (XStart, YSta
     (x, y)
 }
 
-fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain, end: bool) {
+fn random_room_builder(
+    rng: &mut rltk::RandomNumberGenerator,
+    builder: &mut BuilderChain,
+    end: bool
+) {
     let build_roll = rng.roll_dice(1, 3);
     // Start with a room builder.
     match build_roll {
@@ -287,11 +291,15 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
         _ => builder.with(VoronoiSpawning::new()),
     }
 
-    builder.with(ThemeRooms::grass(12)); // 12% chance of an overgrown treant room.
-    builder.with(ThemeRooms::barracks(5)); // 5% chance of a squad barracks.
+    builder.with(ThemeRooms::grass(5, 5 * 5)); // 5% chance of an overgrown treant room. Must be 5*5 tiles minimum.
+    builder.with(ThemeRooms::barracks(5, 6 * 6)); // 5% chance of a squad barracks. Must be 6*6 tiles minimum.
 }
 
-fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut BuilderChain, end: bool) -> bool {
+fn random_shape_builder(
+    rng: &mut rltk::RandomNumberGenerator,
+    builder: &mut BuilderChain,
+    end: bool
+) -> bool {
     // Pick an initial builder
     let builder_roll = rng.roll_dice(1, 16);
     let mut want_doors = true;
@@ -312,7 +320,10 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
         11 => builder.start_with(DLABuilder::insectoid()),
         12 => builder.start_with(VoronoiBuilder::pythagoras()),
         13 => builder.start_with(VoronoiBuilder::manhattan()),
-        _ => builder.start_with(PrefabBuilder::constant(prefab_builder::prefab_levels::WFC_POPULATED)),
+        _ =>
+            builder.start_with(
+                PrefabBuilder::constant(prefab_builder::prefab_levels::WFC_POPULATED)
+            ),
     }
 
     // 'Select' the centre by placing a starting position, and cull everywhere unreachable.
@@ -333,7 +344,17 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 }
 
 fn overmap_builder() -> BuilderChain {
-    let mut builder = BuilderChain::new(true, ID_OVERMAP, 69, 41, 0, NAME_OVERMAP, SHORTNAME_OVERMAP, 0, 1);
+    let mut builder = BuilderChain::new(
+        true,
+        ID_OVERMAP,
+        69,
+        41,
+        0,
+        NAME_OVERMAP,
+        SHORTNAME_OVERMAP,
+        0,
+        1
+    );
     builder.start_with(PrefabBuilder::overmap());
     builder.with(Foliage::percent(TileType::Grass, 30));
     return builder;
@@ -431,7 +452,18 @@ pub fn level_builder(
         ID_OVERMAP => overmap_builder(),
         ID_TOWN => town_builder(new_id, rng, width, height, 0, initial_player_level),
         ID_TOWN2 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
-        ID_TOWN3 => random_builder(new_id, rng, width, height, 2, 1, initial_player_level, true, BuildType::Room),
+        ID_TOWN3 =>
+            random_builder(
+                new_id,
+                rng,
+                width,
+                height,
+                2,
+                1,
+                initial_player_level,
+                true,
+                BuildType::Room
+            ),
         _ if new_id >= ID_INFINITE =>
             random_builder(
                 new_id,
@@ -444,6 +476,17 @@ pub fn level_builder(
                 false,
                 BuildType::Room
             ),
-        _ => random_builder(new_id, rng, width, height, difficulty, 404, initial_player_level, false, BuildType::Room),
+        _ =>
+            random_builder(
+                new_id,
+                rng,
+                width,
+                height,
+                difficulty,
+                404,
+                initial_player_level,
+                false,
+                BuildType::Room
+            ),
     }
 }

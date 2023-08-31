@@ -21,7 +21,7 @@ impl BspDungeonBuilder {
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         let mut rooms: Vec<Rect> = Vec::new();
         self.rects.clear();
-        self.rects.push(Rect::new(2, 2, build_data.map.width - 5, build_data.map.height - 5)); // Start with a single map-sized rectangle
+        self.rects.push(Rect::with_size(2, 2, build_data.map.width - 5, build_data.map.height - 5)); // Start with a single map-sized rectangle
         let first_room = self.rects[0];
         self.add_subrects(first_room); // Divide the first room
 
@@ -49,10 +49,12 @@ impl BspDungeonBuilder {
         let half_width = i32::max(width / 2, 1);
         let half_height = i32::max(height / 2, 1);
 
-        self.rects.push(Rect::new(rect.x1, rect.y1, half_width, half_height));
-        self.rects.push(Rect::new(rect.x1, rect.y1 + half_height, half_width, half_height));
-        self.rects.push(Rect::new(rect.x1 + half_width, rect.y1, half_width, half_height));
-        self.rects.push(Rect::new(rect.x1 + half_width, rect.y1 + half_height, half_width, half_height));
+        self.rects.push(Rect::with_size(rect.x1, rect.y1, half_width, half_height));
+        self.rects.push(Rect::with_size(rect.x1, rect.y1 + half_height, half_width, half_height));
+        self.rects.push(Rect::with_size(rect.x1 + half_width, rect.y1, half_width, half_height));
+        self.rects.push(
+            Rect::with_size(rect.x1 + half_width, rect.y1 + half_height, half_width, half_height)
+        );
     }
 
     fn get_random_rect(&mut self, rng: &mut RandomNumberGenerator) -> Rect {

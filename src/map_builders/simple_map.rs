@@ -24,7 +24,11 @@ impl SimpleMapBuilder {
         if let Some(room_params) = room_params {
             (max_rooms, min_size, max_size) = (room_params.0, room_params.1, room_params.2);
         } else {
-            (max_rooms, min_size, max_size) = (DEFAULT_MAX_ROOMS, DEFAULT_MIN_SIZE, DEFAULT_MAX_SIZE);
+            (max_rooms, min_size, max_size) = (
+                DEFAULT_MAX_ROOMS,
+                DEFAULT_MIN_SIZE,
+                DEFAULT_MAX_SIZE,
+            );
         }
 
         Box::new(SimpleMapBuilder { room_params: (max_rooms, min_size, max_size) })
@@ -38,7 +42,7 @@ impl SimpleMapBuilder {
             let h = rng.range(self.room_params.1, self.room_params.2);
             let x = rng.roll_dice(1, build_data.map.width - w - 1) - 1;
             let y = rng.roll_dice(1, build_data.map.height - h - 1) - 1;
-            let new_room = Rect::new(x, y, w, h);
+            let new_room = Rect::with_size(x, y, w, h);
             let mut ok = true;
             for other_room in rooms.iter() {
                 if new_room.intersect(other_room) {

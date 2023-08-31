@@ -13,7 +13,6 @@ pub mod components;
 pub mod raws;
 pub mod map;
 pub mod player;
-pub mod rect;
 pub mod gamelog;
 pub mod gui;
 pub mod map_builders;
@@ -39,7 +38,6 @@ pub mod states;
 
 pub use components::*;
 use particle_system::ParticleBuilder;
-pub use rect::Rect;
 pub use map::*;
 pub use states::runstate::RunState;
 pub use states::state::State;
