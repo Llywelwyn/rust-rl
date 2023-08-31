@@ -22,6 +22,7 @@ use super::{
     Skill,
     Skills,
     TileType,
+    tile_walkable,
     Viewshed,
     BlocksTile,
     Bleeds,
@@ -42,7 +43,10 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     skills.skills.insert(Skill::Magic, 0);
     let (int, con) = (10, 10);
     // We only create the player once, so create the Clock here for counting turns too.
-    ecs.create_entity().with(Clock {}).with(Energy { current: 0, speed: entity::NORMAL_SPEED }).build();
+    ecs.create_entity()
+        .with(Clock {})
+        .with(Energy { current: 0, speed: entity::NORMAL_SPEED })
+        .build();
     let player = ecs
         .create_entity()
         .with(Position { x: player_x, y: player_y })
@@ -57,7 +61,11 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Player {})
         .with(Mind {})
         .with(Faction { name: "player".to_string() })
-        .with(Viewshed { visible_tiles: Vec::new(), range: entity::DEFAULT_VIEWSHED_STANDARD, dirty: true })
+        .with(Viewshed {
+            visible_tiles: Vec::new(),
+            range: entity::DEFAULT_VIEWSHED_STANDARD,
+            dirty: true,
+        })
         .with(Name { name: "you".to_string(), plural: "you".to_string() })
         .with(HungerClock { state: HungerState::Satiated, duration: 1200 })
         .with(Attributes {
@@ -102,7 +110,7 @@ pub fn spawn_room(
         for y in room.y1 + 1..room.y2 {
             for x in room.x1 + 1..room.x2 {
                 let idx = map.xy_idx(x, y);
-                if map.tiles[idx] == TileType::Floor {
+                if tile_walkable(map.tiles[idx]) {
                     possible_targets.push(idx);
                 }
             }
@@ -209,14 +217,22 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
 
 // 3 scrolls : 3 potions : 1 equipment : 1 wand?
 fn item_category_table() -> RandomTable {
-    return RandomTable::new().add("equipment", 20).add("food", 20).add("potion", 16).add("scroll", 16).add("wand", 4);
+    return RandomTable::new()
+        .add("equipment", 20)
+        .add("food", 20)
+        .add("potion", 16)
+        .add("scroll", 16)
+        .add("wand", 4);
 }
 
 fn debug_table() -> RandomTable {
     return RandomTable::new().add("debug", 1);
 }
 
-fn get_random_item_category(rng: &mut RandomNumberGenerator, difficulty: Option<i32>) -> RandomTable {
+fn get_random_item_category(
+    rng: &mut RandomNumberGenerator,
+    difficulty: Option<i32>
+) -> RandomTable {
     let item_category = item_category_table().roll(rng);
     match item_category.as_ref() {
         "equipment" => {

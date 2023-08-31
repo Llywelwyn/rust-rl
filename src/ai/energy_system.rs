@@ -1,5 +1,16 @@
 use crate::data::entity::*;
-use crate::{ Burden, BurdenLevel, Clock, Energy, Name, Position, RunState, Map, TakingTurn };
+use crate::{
+    Burden,
+    BurdenLevel,
+    Clock,
+    Energy,
+    Name,
+    Position,
+    RunState,
+    Map,
+    TakingTurn,
+    Confusion,
+};
 use rltk::prelude::*;
 use specs::prelude::*;
 use crate::config::CONFIG;
@@ -24,6 +35,7 @@ impl<'a> System<'a> for EnergySystem {
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Name>,
         ReadExpect<'a, Point>,
+        ReadStorage<'a, Confusion>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -40,6 +52,7 @@ impl<'a> System<'a> for EnergySystem {
             player,
             names,
             player_pos,
+            confusion,
         ) = data;
         // If not ticking, do nothing.
         if *runstate != RunState::Ticking {
@@ -51,17 +64,29 @@ impl<'a> System<'a> for EnergySystem {
         for (entity, _clock, energy) in (&entities, &clock, &mut energies).join() {
             energy.current += NORMAL_SPEED;
             if energy.current >= TURN_COST {
-                turns.insert(entity, TakingTurn {}).expect("Unable to insert turn for turn counter.");
+                turns
+                    .insert(entity, TakingTurn {})
+                    .expect("Unable to insert turn for turn counter.");
                 energy.current -= TURN_COST;
                 crate::gamelog::record_event(EVENT::TURN(1));
                 // Handle spawning mobs each turn
                 if CONFIG.logging.log_ticks {
-                    console::log(format!("===== TURN {} =====", crate::gamelog::get_event_count(EVENT::COUNT_TURN)));
+                    console::log(
+                        format!(
+                            "===== TURN {} =====",
+                            crate::gamelog::get_event_count(EVENT::COUNT_TURN)
+                        )
+                    );
                 }
             }
         }
         // EVERYTHING ELSE
-        for (entity, energy, pos) in (&entities, &mut energies, &positions).join() {
+        for (entity, energy, pos, _c) in (
+            &entities,
+            &mut energies,
+            &positions,
+            !&confusion,
+        ).join() {
             let burden_modifier = if let Some(burden) = burdens.get(entity) {
                 match burden.level {
                     BurdenLevel::Burdened => SPEED_MOD_BURDENED,
@@ -73,7 +98,9 @@ impl<'a> System<'a> for EnergySystem {
             };
             let overmap_mod = if map.overmap { SPEED_MOD_OVERMAP_TRAVEL } else { 1.0 };
             // Every entity has a POTENTIAL equal to their speed.
-            let mut energy_potential: i32 = ((energy.speed as f32) * burden_modifier * overmap_mod) as i32;
+            let mut energy_potential: i32 = ((energy.speed as f32) *
+                burden_modifier *
+                overmap_mod) as i32;
             // Increment current energy by NORMAL_SPEED for every
             // whole number of NORMAL_SPEEDS in their POTENTIAL.
             while energy_potential >= NORMAL_SPEED {
@@ -99,7 +126,10 @@ impl<'a> System<'a> for EnergySystem {
                 if entity == *player {
                     *runstate = RunState::AwaitingInput;
                 } else {
-                    let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, Point::new(pos.x, pos.y));
+                    let distance = rltk::DistanceAlg::Pythagoras.distance2d(
+                        *player_pos,
+                        Point::new(pos.x, pos.y)
+                    );
                     if distance > 20.0 {
                         my_turn = false;
                     }
@@ -107,9 +137,17 @@ impl<'a> System<'a> for EnergySystem {
                 if my_turn {
                     turns.insert(entity, TakingTurn {}).expect("Unable to insert turn.");
                     if CONFIG.logging.log_ticks {
-                        let name = if let Some(name) = names.get(entity) { &name.name } else { "Unknown entity" };
+                        let name = if let Some(name) = names.get(entity) {
+                            &name.name
+                        } else {
+                            "Unknown entity"
+                        };
                         console::log(
-                            format!("ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].", name, energy.current)
+                            format!(
+                                "ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].",
+                                name,
+                                energy.current
+                            )
                         );
                     }
                 }

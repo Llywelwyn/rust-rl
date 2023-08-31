@@ -31,7 +31,11 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
                 target_pool.hit_points.current -= amount;
                 let bleeders = ecs.read_storage::<Bleeds>();
                 if let Some(bleeds) = bleeders.get(target) {
-                    add_effect(None, EffectType::Bloodstain { colour: bleeds.colour }, Targets::Entity { target });
+                    add_effect(
+                        None,
+                        EffectType::Bloodstain { colour: bleeds.colour },
+                        Targets::Entity { target }
+                    );
                 }
                 add_effect(
                     None,
@@ -60,7 +64,10 @@ pub fn heal_damage(ecs: &mut World, heal: &EffectSpawner, target: Entity) {
     if let Some(pool) = pools.get_mut(target) {
         if let EffectType::Healing { amount, increment_max } = &heal.effect_type {
             let before = pool.hit_points.current;
-            pool.hit_points.current = i32::min(pool.hit_points.max, pool.hit_points.current + amount);
+            pool.hit_points.current = i32::min(
+                pool.hit_points.max,
+                pool.hit_points.current + amount
+            );
             if pool.hit_points.current - before < *amount && *increment_max {
                 // If the heal was not fully effective, and healing source was noncursed, increase max HP by 1.
                 pool.hit_points.max += 1;
@@ -83,6 +90,12 @@ pub fn heal_damage(ecs: &mut World, heal: &EffectSpawner, target: Entity) {
 
 pub fn add_confusion(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let EffectType::Confusion { turns } = &effect.effect_type {
+        let name = if let Some(name) = ecs.read_storage::<Name>().get(target) {
+            name.name.clone()
+        } else {
+            "Something".to_string()
+        };
+        console::log(format!("adding confusion to: {}", name));
         ecs.write_storage::<Confusion>()
             .insert(target, Confusion { turns: *turns })
             .expect("Unable to insert Confusion");
@@ -168,7 +181,9 @@ fn get_death_message(ecs: &World, source: Entity) -> String {
     if source == *player {
         result.push_str(format!("{}", PLAYER_DIED_SUICIDE).as_str());
     } else if let Some(name) = ecs.read_storage::<Name>().get(source) {
-        result.push_str(format!("{} {}", PLAYER_DIED_NAMED_ATTACKER, with_article(name.name.clone())).as_str());
+        result.push_str(
+            format!("{} {}", PLAYER_DIED_NAMED_ATTACKER, with_article(name.name.clone())).as_str()
+        );
     } else {
         result.push_str(format!("{}", PLAYER_DIED_UNKNOWN).as_str());
     }
@@ -238,7 +253,12 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 // If it was the PLAYER that levelled up:
                 if ecs.read_storage::<Player>().get(source).is_some() {
                     gamelog::record_event(EVENT::LEVEL(1));
-                    gamelog::Logger::new().append(LEVELUP_PLAYER).append_n(source_pools.level).append("!").log();
+                    gamelog::Logger
+                        ::new()
+                        .append(LEVELUP_PLAYER)
+                        .append_n(source_pools.level)
+                        .append("!")
+                        .log();
                     let player_pos = ecs.fetch::<Point>();
                     let map = ecs.fetch_mut::<Map>();
                     for i in 0..5 {
@@ -264,7 +284,12 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                                         lifespan: LONG_PARTICLE_LIFETIME,
                                         delay: (i as f32) * 100.0,
                                     },
-                                    Targets::Tile { target: map.xy_idx(player_pos.x + (i - 2), player_pos.y - i) }
+                                    Targets::Tile {
+                                        target: map.xy_idx(
+                                            player_pos.x + (i - 2),
+                                            player_pos.y - i
+                                        ),
+                                    }
                                 );
                                 add_effect(
                                     None,
@@ -275,7 +300,12 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                                         lifespan: LONG_PARTICLE_LIFETIME,
                                         delay: (i as f32) * 100.0,
                                     },
-                                    Targets::Tile { target: map.xy_idx(player_pos.x - (i - 2), player_pos.y - i) }
+                                    Targets::Tile {
+                                        target: map.xy_idx(
+                                            player_pos.x - (i - 2),
+                                            player_pos.y - i
+                                        ),
+                                    }
                                 );
                             }
                         }
@@ -307,7 +337,9 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                     gamelog::record_event(EVENT::PLAYER_DIED("You starved to death!".to_string()));
                 }
             } else {
-                gamelog::record_event(EVENT::PLAYER_DIED("You died from unknown causes!".to_string()));
+                gamelog::record_event(
+                    EVENT::PLAYER_DIED("You died from unknown causes!".to_string())
+                );
             }
         }
     }

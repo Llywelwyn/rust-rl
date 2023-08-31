@@ -39,9 +39,9 @@ pub fn forest_builder(
     chain.with(CullUnreachable::new());
     chain.with(AreaStartingPosition::new(XStart::LEFT, YStart::CENTRE));
     // Setup an exit and spawn mobs
-    chain.with(VoronoiSpawning::new());
     chain.with(RoadExit::new());
     chain.with(Foliage::percent(TileType::Grass, 30));
+    chain.with(VoronoiSpawning::new());
     return chain;
 }
 
@@ -66,7 +66,10 @@ impl RoadExit {
                 available_floors.push((
                     idx,
                     DistanceAlg::PythagorasSquared.distance2d(
-                        Point::new((idx as i32) % build_data.map.width, (idx as i32) / build_data.map.width),
+                        Point::new(
+                            (idx as i32) % build_data.map.width,
+                            (idx as i32) / build_data.map.width
+                        ),
                         Point::new(seed_x, seed_y)
                     ),
                 ));
@@ -94,7 +97,11 @@ impl RoadExit {
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         let starting_pos = build_data.starting_position.as_ref().unwrap().clone();
         let start_idx = build_data.map.xy_idx(starting_pos.x, starting_pos.y);
-        let (end_x, end_y) = self.find_exit(build_data, build_data.map.width - 2, build_data.height / 2);
+        let (end_x, end_y) = self.find_exit(
+            build_data,
+            build_data.map.width - 2,
+            build_data.height / 2
+        );
         let end_idx = build_data.map.xy_idx(end_x, end_y);
         build_data.map.populate_blocked();
 

@@ -1,4 +1,5 @@
 use super::{ BuilderMap, MetaMapBuilder, TileType };
+use crate::tile_walkable;
 use rltk::RandomNumberGenerator;
 
 pub struct CullUnreachable {}
@@ -28,7 +29,7 @@ impl CullUnreachable {
             1000.0
         );
         for (i, tile) in build_data.map.tiles.iter_mut().enumerate() {
-            if *tile == TileType::Floor {
+            if tile_walkable(*tile) {
                 let distance_to_start = dijkstra_map.map[i];
                 // We can't get to this tile - so we'll make it a wall
                 if distance_to_start == std::f32::MAX {

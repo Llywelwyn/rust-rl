@@ -1,4 +1,5 @@
 use super::{ spawner, BuilderMap, MetaMapBuilder, TileType };
+use crate::tile_walkable;
 use rltk::RandomNumberGenerator;
 use std::collections::HashMap;
 
@@ -27,7 +28,7 @@ impl VoronoiSpawning {
         for y in 1..build_data.map.height - 1 {
             for x in 1..build_data.map.width - 1 {
                 let idx = build_data.map.xy_idx(x, y);
-                if build_data.map.tiles[idx] == TileType::Floor {
+                if tile_walkable(build_data.map.tiles[idx]) {
                     let cell_value_f = noise.get_noise(x as f32, y as f32) * 10240.0;
                     let cell_value = cell_value_f as i32;
 

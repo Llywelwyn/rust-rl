@@ -1,4 +1,5 @@
 use super::{ BuilderMap, MetaMapBuilder, TileType };
+use crate::tile_walkable;
 use rltk::RandomNumberGenerator;
 
 pub struct DistantExit {}
@@ -29,7 +30,7 @@ impl DistantExit {
         );
         let mut exit_tile = (0, 0.0f32);
         for (i, tile) in build_data.map.tiles.iter_mut().enumerate() {
-            if *tile == TileType::Floor {
+            if tile_walkable(*tile) {
                 let distance_to_start = dijkstra_map.map[i];
                 if distance_to_start != std::f32::MAX {
                     // If it is further away than our current exit candidate, move the exit

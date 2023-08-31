@@ -1,4 +1,12 @@
-use super::{ gamesystem::attr_bonus, gamesystem::get_attribute_rolls, Attributes, Pools, Renderable, RunState, State };
+use super::{
+    gamesystem::attr_bonus,
+    gamesystem::get_attribute_rolls,
+    Attributes,
+    Pools,
+    Renderable,
+    RunState,
+    State,
+};
 use crate::data::entity;
 use crate::data::char_create::*;
 use crate::{
@@ -248,7 +256,9 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
     let player_skills = if let Some(skills) = skills.get_mut(*player) {
         skills
     } else {
-        skills.insert(*player, Skills { skills: HashMap::new() }).expect("Unable to insert skills component");
+        skills
+            .insert(*player, Skills { skills: HashMap::new() })
+            .expect("Unable to insert skills component");
         skills.get_mut(*player).unwrap()
     };
     let mut ancestries = ecs.write_storage::<HasAncestry>();
@@ -277,11 +287,18 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                 .expect("Unable to insert renderable component");
             let mut telepaths = ecs.write_storage::<Telepath>();
             telepaths
-                .insert(*player, Telepath { telepath_tiles: Vec::new(), range: ELF_TELEPATH_RANGE, dirty: true })
+                .insert(*player, Telepath {
+                    telepath_tiles: Vec::new(),
+                    range: ELF_TELEPATH_RANGE,
+                    dirty: true,
+                })
                 .expect("Unable to insert telepath component");
             let mut speeds = ecs.write_storage::<Energy>();
             speeds
-                .insert(*player, Energy { current: 0, speed: entity::NORMAL_SPEED + ELF_SPEED_BONUS })
+                .insert(*player, Energy {
+                    current: 0,
+                    speed: entity::NORMAL_SPEED + ELF_SPEED_BONUS,
+                })
                 .expect("Unable to insert energy component");
         }
         Ancestry::Catfolk => {
@@ -295,7 +312,10 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                 .expect("Unable to insert renderable component");
             let mut speeds = ecs.write_storage::<Energy>();
             speeds
-                .insert(*player, Energy { current: 0, speed: entity::NORMAL_SPEED + CATFOLK_SPEED_BONUS })
+                .insert(*player, Energy {
+                    current: 0,
+                    speed: entity::NORMAL_SPEED + CATFOLK_SPEED_BONUS,
+                })
                 .expect("Unable to insert energy component");
         }
         _ => {}
@@ -334,8 +354,14 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
         let mut pools = ecs.write_storage::<Pools>();
         pools
             .insert(player, Pools {
-                hit_points: Pool { current: 8 + attr_bonus(con), max: entity::STANDARD_HIT_DIE + attr_bonus(con) },
-                mana: Pool { current: 1 + attr_bonus(int), max: entity::MINIMUM_MANA_PLAYER + attr_bonus(int) },
+                hit_points: Pool {
+                    current: 8 + attr_bonus(con),
+                    max: entity::STANDARD_HIT_DIE + attr_bonus(con),
+                },
+                mana: Pool {
+                    current: 1 + attr_bonus(int),
+                    max: entity::MINIMUM_MANA_PLAYER + attr_bonus(int),
+                },
                 xp: 0,
                 level: 1,
                 bac: entity::STANDARD_BAC,
@@ -371,7 +397,10 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
     }
 }
 
-fn get_starting_inventory(class: Class, rng: &mut RandomNumberGenerator) -> (Vec<String>, Vec<String>) {
+fn get_starting_inventory(
+    class: Class,
+    rng: &mut RandomNumberGenerator
+) -> (Vec<String>, Vec<String>) {
     let mut equipped: Vec<String> = Vec::new();
     let mut carried: Vec<String> = Vec::new();
     let starting_food: &str;
@@ -387,13 +416,32 @@ fn get_starting_inventory(class: Class, rng: &mut RandomNumberGenerator) -> (Vec
         Class::Rogue => {
             starting_food = ROGUE_STARTING_FOOD;
             equipped = vec![ROGUE_STARTING_WEAPON.to_string(), ROGUE_STARTING_ARMOUR.to_string()];
-            carried = vec!["equip_dagger".to_string(), "equip_dagger".to_string()];
+            carried = vec![
+                "equip_dagger".to_string(),
+                "equip_dagger".to_string(),
+                "scroll_confusion".to_string(),
+                "scroll_confusion".to_string(),
+                "scroll_confusion".to_string(),
+                "scroll_confusion".to_string()
+            ];
         }
         Class::Wizard => {
             starting_food = WIZARD_STARTING_FOOD;
             equipped = vec![WIZARD_STARTING_WEAPON.to_string(), WIZARD_STARTING_ARMOUR.to_string()];
-            pick_random_table_item(rng, &mut carried, "scrolls", WIZARD_SCROLL_AMOUNT, Some(WIZARD_MAX_SCROLL_LVL));
-            pick_random_table_item(rng, &mut carried, "potions", WIZARD_POTION_AMOUNT, Some(WIZARD_MAX_SCROLL_LVL));
+            pick_random_table_item(
+                rng,
+                &mut carried,
+                "scrolls",
+                WIZARD_SCROLL_AMOUNT,
+                Some(WIZARD_MAX_SCROLL_LVL)
+            );
+            pick_random_table_item(
+                rng,
+                &mut carried,
+                "potions",
+                WIZARD_POTION_AMOUNT,
+                Some(WIZARD_MAX_SCROLL_LVL)
+            );
         }
         Class::Villager => {
             starting_food = VILLAGER_STARTING_FOOD;

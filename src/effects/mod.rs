@@ -121,9 +121,11 @@ fn target_applicator(ecs: &mut World, effect: &EffectSpawner) {
     // Otherwise, just match the effect and enact it directly.
     match &effect.target {
         Targets::Tile { target } => affect_tile(ecs, effect, *target),
-        Targets::TileList { targets } => targets.iter().for_each(|target| affect_tile(ecs, effect, *target)),
+        Targets::TileList { targets } =>
+            targets.iter().for_each(|target| affect_tile(ecs, effect, *target)),
         Targets::Entity { target } => affect_entity(ecs, effect, *target),
-        Targets::EntityList { targets } => targets.iter().for_each(|target| affect_entity(ecs, effect, *target)),
+        Targets::EntityList { targets } =>
+            targets.iter().for_each(|target| affect_entity(ecs, effect, *target)),
     }
 }
 

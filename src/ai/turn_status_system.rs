@@ -7,6 +7,8 @@ use crate::{
     Name,
     Renderable,
     TakingTurn,
+    Item,
+    Prop,
 };
 use rltk::prelude::*;
 use specs::prelude::*;
@@ -24,10 +26,22 @@ impl<'a> System<'a> for TurnStatusSystem {
         ReadStorage<'a, Name>,
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Renderable>,
+        ReadStorage<'a, Item>,
+        ReadStorage<'a, Prop>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut turns, clock, mut confusion, entities, names, player_entity, renderables) = data;
+        let (
+            mut turns,
+            clock,
+            mut confusion,
+            entities,
+            names,
+            player_entity,
+            renderables,
+            items,
+            props,
+        ) = data;
         let mut clock_tick = false;
         for (_e, _c, _t) in (&entities, &clock, &turns).join() {
             clock_tick = true;
@@ -39,7 +53,13 @@ impl<'a> System<'a> for TurnStatusSystem {
         let mut log = false;
         let mut not_my_turn: Vec<Entity> = Vec::new();
         let mut not_confused: Vec<Entity> = Vec::new();
-        for (entity, _turn, confused, name) in (&entities, &mut turns, &mut confusion, &names).join() {
+        for (entity, confused, name, _i, _p) in (
+            &entities,
+            &mut confusion,
+            &names,
+            !&items,
+            !&props,
+        ).join() {
             confused.turns -= 1;
             if confused.turns < 1 {
                 not_confused.push(entity);

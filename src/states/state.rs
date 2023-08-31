@@ -94,7 +94,7 @@ impl State {
         let mut encumbrance_system = ai::EncumbranceSystem {}; // Must run first, as it affects energy regen.
         let mut energy = ai::EnergySystem {}; // Figures out who deserves a turn.
         let mut regen_system = ai::RegenSystem {}; // Restores HP on appropriate clock ticks.
-        let mut turn_status_system = ai::TurnStatusSystem {}; // Ticks stasuses. Should anyone now lose their turn? i.e. confusion
+        let mut turn_status_system = ai::TurnStatusSystem {}; // Ticks statuses. Should anyone now lose their turn? i.e. confusion
         let mut quip_system = ai::QuipSystem {}; // Quipping is "free". It doesn't use up a turn.
         let mut adjacent_ai = ai::AdjacentAI {}; // AdjacentAI -> DefaultAI are all exclusive. If one acts, the entity's turn is over.
         let mut visible_ai = ai::VisibleAI {};
@@ -300,10 +300,8 @@ impl GameState for State {
                         if let Some(ranged_item) = ranged_item {
                             let is_aoe = self.ecs.read_storage::<AOE>();
                             let aoe_item = is_aoe.get(item_entity);
-                            let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(
-                                &self.ecs,
-                                ctx
-                            );
+                            let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) =
+                                camera::get_screen_bounds(&self.ecs, ctx);
                             let ppos = self.ecs.fetch::<Point>();
                             if let Some(aoe_item) = aoe_item {
                                 new_runstate = RunState::ShowTargeting {
@@ -325,7 +323,10 @@ impl GameState for State {
                         } else {
                             let mut intent = self.ecs.write_storage::<WantsToUseItem>();
                             intent
-                                .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item: item_entity, target: None })
+                                .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem {
+                                    item: item_entity,
+                                    target: None,
+                                })
                                 .expect("Unable to insert intent.");
                             new_runstate = RunState::Ticking;
                         }
@@ -343,7 +344,9 @@ impl GameState for State {
                         let item_entity = result.1.unwrap();
                         let mut intent = self.ecs.write_storage::<WantsToDropItem>();
                         intent
-                            .insert(*self.ecs.fetch::<Entity>(), WantsToDropItem { item: item_entity })
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToDropItem {
+                                item: item_entity,
+                            })
                             .expect("Unable to insert intent");
                         new_runstate = RunState::Ticking;
                     }
@@ -360,7 +363,9 @@ impl GameState for State {
                         let item_entity = result.1.unwrap();
                         let mut intent = self.ecs.write_storage::<WantsToRemoveItem>();
                         intent
-                            .insert(*self.ecs.fetch::<Entity>(), WantsToRemoveItem { item: item_entity })
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToRemoveItem {
+                                item: item_entity,
+                            })
                             .expect("Unable to insert intent");
                         new_runstate = RunState::Ticking;
                     }
@@ -378,7 +383,10 @@ impl GameState for State {
                     gui::TargetResult::Selected => {
                         let mut intent = self.ecs.write_storage::<WantsToUseItem>();
                         intent
-                            .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem { item, target: result.1 })
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem {
+                                item,
+                                target: result.1,
+                            })
                             .expect("Unable to insert intent.");
                         new_runstate = RunState::Ticking;
                     }
@@ -414,7 +422,11 @@ impl GameState for State {
                             let mut dm = self.ecs.fetch_mut::<MasterDungeonMap>();
                             dm.identified_items.insert(name.name.clone());
                         }
-                        if let Some(beatitude) = self.ecs.write_storage::<Beatitude>().get_mut(item_entity) {
+                        if
+                            let Some(beatitude) = self.ecs
+                                .write_storage::<Beatitude>()
+                                .get_mut(item_entity)
+                        {
                             beatitude.known = true;
                         }
                         new_runstate = RunState::Ticking;
@@ -457,7 +469,9 @@ impl GameState for State {
                     }
                     gui::CharCreateResult::Selected { ancestry, class } => {
                         if ancestry == gui::Ancestry::NULL {
-                            new_runstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
+                            new_runstate = RunState::MainMenu {
+                                menu_selection: gui::MainMenuSelection::NewGame,
+                            };
                         } else {
                             gui::setup_player_ancestry(&mut self.ecs, ancestry);
                             gui::setup_player_class(&mut self.ecs, class, ancestry);
@@ -468,7 +482,9 @@ impl GameState for State {
             }
             RunState::SaveGame => {
                 saveload_system::save_game(&mut self.ecs);
-                new_runstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::LoadGame };
+                new_runstate = RunState::MainMenu {
+                    menu_selection: gui::MainMenuSelection::LoadGame,
+                };
             }
             RunState::GameOver => {
                 let result = gui::game_over(ctx);
