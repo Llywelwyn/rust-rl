@@ -1,6 +1,7 @@
 use super::{
     gamesystem::attr_bonus,
     gamesystem::get_attribute_rolls,
+    gamesystem::mana_at_level,
     Attributes,
     Pools,
     Renderable,
@@ -352,6 +353,7 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
             .expect("Unable to insert attributes component");
 
         let mut pools = ecs.write_storage::<Pools>();
+        let starting_mp = mana_at_level(&mut rng, int, 1);
         pools
             .insert(player, Pools {
                 hit_points: Pool {
@@ -359,8 +361,8 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
                     max: entity::STANDARD_HIT_DIE + attr_bonus(con),
                 },
                 mana: Pool {
-                    current: 1 + attr_bonus(int),
-                    max: entity::MINIMUM_MANA_PLAYER + attr_bonus(int),
+                    current: starting_mp,
+                    max: starting_mp,
                 },
                 xp: 0,
                 level: 1,
