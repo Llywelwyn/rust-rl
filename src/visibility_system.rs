@@ -11,6 +11,7 @@ use super::{
     Viewshed,
     Renderable,
     gui::renderable_colour,
+    tile_blocks_telepathy,
 };
 use rltk::{ FieldOfViewAlg::SymmetricShadowcasting, Point };
 use specs::prelude::*;
@@ -73,7 +74,8 @@ impl<'a> System<'a> for VisibilitySystem {
                         p.y >= 0 &&
                         p.y < map.height &&
                         (map.lit_tiles[map.xy_idx(p.x, p.y)] == true ||
-                            rltk::DistanceAlg::Pythagoras.distance2d(Point::new(p.x, p.y), origin) < 1.5)
+                            rltk::DistanceAlg::Pythagoras.distance2d(Point::new(p.x, p.y), origin) <
+                                1.5)
                 });
 
                 // If this is the player, reveal what they can see
@@ -119,8 +121,10 @@ impl<'a> System<'a> for VisibilitySystem {
                 if let Some(_is_blind) = blind_entities.get(ent) {
                     range *= BLIND_TELEPATHY_RANGE_MULTIPLIER;
                 }
-                telepath.telepath_tiles = fast_fov(pos.x, pos.y, range);
-                telepath.telepath_tiles.retain(|p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height);
+                telepath.telepath_tiles = fast_fov(pos.x, pos.y, range, &map);
+                telepath.telepath_tiles.retain(
+                    |p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height
+                );
 
                 // If this is the player, reveal what they can see
                 let _p: Option<&Player> = player.get(ent);
@@ -138,7 +142,7 @@ impl<'a> System<'a> for VisibilitySystem {
     }
 }
 
-pub fn fast_fov(p_x: i32, p_y: i32, r: i32) -> Vec<Point> {
+pub fn fast_fov(p_x: i32, p_y: i32, r: i32, map: &WriteExpect<Map>) -> Vec<Point> {
     let mut visible_tiles: Vec<Point> = Vec::new();
 
     let mut i = 0;
@@ -149,7 +153,17 @@ pub fn fast_fov(p_x: i32, p_y: i32, r: i32) -> Vec<Point> {
         let mut ox: f32 = (p_x as f32) + (0.5 as f32);
         let mut oy: f32 = (p_y as f32) + (0.5 as f32);
         for _i in 0..r {
-            visible_tiles.push(Point::new(ox as i32, oy as i32));
+            let (ox_i32, oy_i32) = (ox as i32, oy as i32);
+            visible_tiles.push(Point::new(ox_i32, oy_i32));
+            if
+                ox_i32 >= 0 &&
+                ox_i32 < map.width &&
+                oy_i32 >= 0 &&
+                oy_i32 < map.height &&
+                tile_blocks_telepathy(map.tiles[map.xy_idx(ox_i32, oy_i32)])
+            {
+                break;
+            }
             ox += x;
             oy += y;
         }

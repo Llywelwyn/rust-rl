@@ -29,7 +29,11 @@ pub enum TileType {
 }
 pub fn tile_walkable(tt: TileType) -> bool {
     match tt {
-        TileType::ImpassableMountain | TileType::Wall | TileType::DeepWater | TileType::Fence | TileType::Bars => false,
+        | TileType::ImpassableMountain
+        | TileType::Wall
+        | TileType::DeepWater
+        | TileType::Fence
+        | TileType::Bars => false,
         _ => true,
     }
 }
@@ -37,6 +41,11 @@ pub fn tile_opaque(tt: TileType) -> bool {
     match tt {
         TileType::ImpassableMountain => true,
         TileType::Wall => true,
+        _ => false,
+    }
+}
+pub fn tile_blocks_telepathy(tt: TileType) -> bool {
+    match tt {
         _ => false,
     }
 }

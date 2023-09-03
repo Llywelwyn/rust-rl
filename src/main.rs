@@ -3,7 +3,7 @@ use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use rltk::prelude::*;
 
-const DISPLAYWIDTH: i32 = 105;
+const DISPLAYWIDTH: i32 = 100;
 const DISPLAYHEIGHT: i32 = 56;
 
 fn main() -> rltk::BError {
