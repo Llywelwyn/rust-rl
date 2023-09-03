@@ -505,7 +505,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                                 ::new()
                                 .append("The")
                                 .colour(colour)
-                                .append_n(&name.name)
+                                .append(&name.name)
                                 .colour(WHITE)
                                 .append("is in your way.")
                                 .log();
