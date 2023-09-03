@@ -8,23 +8,29 @@ const DISPLAYHEIGHT: i32 = 56;
 
 fn main() -> rltk::BError {
     // Embedded resources for use in wasm build
-    const CURSES_16_16_BYTES: &[u8] = include_bytes!("../resources/nagidal24x24.png");
-    const ISHMERIA_8_16_BYTES: &[u8] = include_bytes!("../resources/curses12x24.png");
+    const MAIN_22_20_BYTES: &[u8] = include_bytes!("../resources/nagidal22x20_centred.png");
+    const TEXT_11_20_BYTES: &[u8] = include_bytes!("../resources/curses11x20.png");
+    const SINGLE_1_1_BYTES: &[u8] = include_bytes!("../resources/healthbar22x2.png");
     rltk::embedding::EMBED
         .lock()
-        .add_resource("resources/nagidal24x24.png".to_string(), CURSES_16_16_BYTES);
+        .add_resource("resources/nagidal22x20_centred.png".to_string(), MAIN_22_20_BYTES);
     rltk::embedding::EMBED
         .lock()
-        .add_resource("resources/curses12x24.png".to_string(), ISHMERIA_8_16_BYTES);
+        .add_resource("resources/curses11x20.png".to_string(), TEXT_11_20_BYTES);
+    rltk::embedding::EMBED
+        .lock()
+        .add_resource("resources/healthbar22x2.png".to_string(), SINGLE_1_1_BYTES);
 
     let mut context = RltkBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
-        .with_font("nagidal24x24.png", 24, 24)
-        .with_font("curses12x24.png", 12, 24)
-        .with_tile_dimensions(24, 24)
-        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "nagidal24x24.png")
-        .with_sparse_console(DISPLAYWIDTH * 2, DISPLAYHEIGHT, "curses12x24.png")
+        .with_font("nagidal22x20_centred.png", 22, 20)
+        .with_font("curses11x20.png", 11, 20)
+        .with_font("healthbar22x2.png", 1, 1)
+        .with_tile_dimensions(22, 20)
+        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "nagidal22x20_centred.png")
+        .with_sparse_console(DISPLAYWIDTH * 2, DISPLAYHEIGHT, "curses11x20.png")
+        .with_sparse_console(DISPLAYWIDTH * 22, DISPLAYHEIGHT * 20, "healthbar22x2.png")
         .build()?;
     if config::CONFIG.visuals.with_scanlines {
         context.with_post_scanlines(config::CONFIG.visuals.with_screen_burn);

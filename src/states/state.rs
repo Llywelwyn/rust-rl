@@ -164,6 +164,8 @@ impl GameState for State {
             new_runstate = *runstate;
         }
         // Clear screen
+        ctx.set_active_console(2);
+        ctx.cls();
         ctx.set_active_console(1);
         ctx.cls();
         ctx.set_active_console(0);
@@ -562,6 +564,8 @@ impl GameState for State {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 if self.mapgen_history.len() != 0 {
+                    ctx.set_active_console(2);
+                    ctx.cls();
                     ctx.set_active_console(1);
                     ctx.cls();
                     ctx.set_active_console(0);

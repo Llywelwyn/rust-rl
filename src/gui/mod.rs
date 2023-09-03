@@ -84,7 +84,8 @@ pub fn draw_lerping_bar(
     n: i32,
     max: i32,
     full_colour: RGB,
-    empty_colour: RGB
+    empty_colour: RGB,
+    with_text: bool
 ) {
     let percent = (n as f32) / (max as f32);
     let fill_width = (percent * (width as f32)) as i32;
@@ -92,15 +93,15 @@ pub fn draw_lerping_bar(
     let fg = RGB::named(rltk::BLACK);
     for x in 0..width {
         if x <= fill_width {
-            ctx.print_color(sx + x, sy, fg, bg, " ");
-        } else {
-            ctx.print_color(sx + x, sy, RGB::named(rltk::BLACK), RGB::named(rltk::BLACK), " ");
+            ctx.set(sx + x, sy, fg, bg, to_cp437(' '));
         }
     }
-    ctx.print(sx - 1, sy, "[");
-    let health = format!("{}/{}", n, max);
-    ctx.print_color(sx + 1, sy, fg, bg, health);
-    ctx.print(sx + width, sy, "]");
+    if with_text {
+        ctx.print(sx - 1, sy, "[");
+        let health = format!("{}/{}", n, max);
+        ctx.print_color(sx + 1, sy, fg, bg, health);
+        ctx.print(sx + width, sy, "]");
+    }
 }
 
 pub const TEXT_FONT_MOD: i32 = 2;
@@ -130,7 +131,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             stats.hit_points.current,
             stats.hit_points.max,
             RGB::from_u8(0, 255, 0),
-            RGB::from_u8(255, 0, 0)
+            RGB::from_u8(255, 0, 0),
+            true
         );
         draw_lerping_bar(
             ctx,
@@ -140,7 +142,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             stats.mana.current,
             stats.mana.max,
             RGB::named(rltk::BLUE),
-            RGB::named(rltk::BLACK)
+            RGB::named(rltk::BLACK),
+            true
         );
         // Draw AC
         let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
@@ -422,7 +425,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                     &format!("{}", index)
                 );
                 ctx.print_color(
-                    (VIEWPORT_W + 3) * TEXT_FONT_MOD + 1,
+                    (VIEWPORT_W + 3) * TEXT_FONT_MOD + 2,
                     y,
                     RGB::named(CYAN),
                     RGB::named(BLACK),
@@ -496,7 +499,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                     entity.3
                 );
                 ctx.print_color(
-                    (VIEWPORT_W + 3) * TEXT_FONT_MOD + 1,
+                    (VIEWPORT_W + 3) * TEXT_FONT_MOD + 2,
                     y,
                     entity.1,
                     RGB::named(rltk::BLACK),

@@ -39,18 +39,35 @@ impl<'a> System<'a> for ApproachAI {
             &turns,
         ).join() {
             turn_done.push(entity);
-            let target_idxs = if let Some(paths) = get_adjacent_unblocked(&map, approach.idx as usize) {
+            let target_idxs = if
+                let Some(paths) = get_adjacent_unblocked(&map, approach.idx as usize)
+            {
                 paths
             } else {
                 continue;
             };
             let mut path: Option<NavigationPath> = None;
+            let mut curr_abs_diff = 100;
             let idx = map.xy_idx(pos.x, pos.y);
             for tar_idx in target_idxs {
                 let potential_path = rltk::a_star_search(idx, tar_idx, &mut *map);
                 if potential_path.success && potential_path.steps.len() > 1 {
-                    if path.is_none() || potential_path.steps.len() < path.as_ref().unwrap().steps.len() {
+                    if
+                        path.is_none() ||
+                        potential_path.steps.len() < path.as_ref().unwrap().steps.len()
+                    {
                         path = Some(potential_path);
+                        let (x1, y1) = (pos.x, pos.y);
+                        let (x2, y2) = ((tar_idx as i32) % map.width, (tar_idx as i32) / map.width);
+                        curr_abs_diff = i32::abs(x2 - x1) + i32::abs(y2 - y1);
+                    } else if potential_path.steps.len() == path.as_ref().unwrap().steps.len() {
+                        let (x1, y1) = (pos.x, pos.y);
+                        let (x2, y2) = ((tar_idx as i32) % map.width, (tar_idx as i32) / map.width);
+                        let abs_diff = i32::abs(x2 - x1) + i32::abs(y2 - y1);
+                        if abs_diff < curr_abs_diff {
+                            path = Some(potential_path);
+                            curr_abs_diff = abs_diff;
+                        }
                     }
                 }
             }

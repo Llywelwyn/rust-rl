@@ -1,4 +1,4 @@
-use super::{ Hidden, Map, Mind, Position, Prop, Renderable };
+use super::{ Hidden, Map, Mind, Position, Prop, Renderable, Pools };
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
@@ -70,6 +70,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
     {
         let positions = ecs.read_storage::<Position>();
         let renderables = ecs.read_storage::<Renderable>();
+        let pools = ecs.read_storage::<Pools>();
         let minds = ecs.read_storage::<Mind>();
         let hidden = ecs.read_storage::<Hidden>();
         let props = ecs.write_storage::<Prop>();
@@ -126,6 +127,23 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                         bg,
                         render.glyph
                     );
+                    if let Some(pool) = pools.get(*ent) {
+                        if pool.hit_points.current < pool.hit_points.max {
+                            ctx.set_active_console(2);
+                            crate::gui::draw_lerping_bar(
+                                ctx,
+                                (entity_offset_x + x_offset) * 22 + 2,
+                                (entity_offset_y + y_offset) * 20 - 2,
+                                18,
+                                pool.hit_points.current,
+                                pool.hit_points.max,
+                                RGB::named(GREEN),
+                                RGB::named(RED),
+                                false
+                            );
+                            ctx.set_active_console(0);
+                        }
+                    }
                 }
             }
         }
