@@ -4,7 +4,7 @@ use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use rltk::prelude::*;
 
 const DISPLAYWIDTH: i32 = 72;
-const DISPLAYHEIGHT: i32 = 56;
+const DISPLAYHEIGHT: i32 = 40;
 
 fn main() -> rltk::BError {
     // Embedded resources for use in wasm build
