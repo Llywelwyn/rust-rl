@@ -28,6 +28,7 @@ fn main() -> rltk::BError {
         .with_font("curses11x20.png", 11, 20)
         .with_font("healthbar22x2.png", 1, 1)
         .with_tile_dimensions(22, 20)
+        .with_gutter(2)
         .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "nagidal22x20_centred.png")
         .with_sparse_console(DISPLAYWIDTH * 2, DISPLAYHEIGHT, "curses11x20.png")
         .with_sparse_console(DISPLAYWIDTH * 22, DISPLAYHEIGHT * 20, "healthbar22x2.png")
