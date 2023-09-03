@@ -18,9 +18,9 @@ jobs:
       - name: Build, bind WASM
         run: |
           cargo build --release --target wasm32-unknown-unknown
-          wasm-bindgen target\wasm32-unknown-unknown\release\rust-rl.wasm --out-dir wasm --no-modules --no-typescript
-          cp wasm\rust-rl_bg.wasm web\
-          cp wasm\rust-rl.js web\
+          wasm-bindgen target/wasm32-unknown-unknown/release/rust-rl.wasm --out-dir wasm --no-modules --no-typescript
+          cp wasm/rust-rl_bg.wasm web/
+          cp wasm/rust-rl.js web/
       - name: Publish web\ to gh-pages
         env:
           GITHUB_TOKEN: ${{ github.token }}
