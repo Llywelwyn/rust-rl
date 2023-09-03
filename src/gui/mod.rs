@@ -85,21 +85,24 @@ pub fn draw_lerping_bar(
     max: i32,
     full_colour: RGB,
     empty_colour: RGB,
-    with_text: bool
+    with_text: bool,
+    with_bg: bool
 ) {
     let percent = (n as f32) / (max as f32);
     let fill_width = (percent * (width as f32)) as i32;
     let bg = empty_colour.lerp(full_colour, percent);
-    let fg = RGB::named(rltk::BLACK);
+    let black = RGB::named(rltk::BLACK);
     for x in 0..width {
         if x <= fill_width {
-            ctx.set(sx + x, sy, fg, bg, to_cp437(' '));
+            ctx.print_color(sx + x, sy, black, bg, ' ');
+        } else if with_bg {
+            ctx.print_color(sx + x, sy, black, black, ' ');
         }
     }
     if with_text {
         ctx.print(sx - 1, sy, "[");
         let health = format!("{}/{}", n, max);
-        ctx.print_color(sx + 1, sy, fg, bg, health);
+        ctx.print_color(sx + 1, sy, black, bg, health);
         ctx.print(sx + width, sy, "]");
     }
 }
@@ -126,23 +129,25 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         draw_lerping_bar(
             ctx,
             2 * TEXT_FONT_MOD,
-            53 * TEXT_FONT_MOD,
-            22,
+            53,
+            22 * TEXT_FONT_MOD,
             stats.hit_points.current,
             stats.hit_points.max,
             RGB::from_u8(0, 255, 0),
             RGB::from_u8(255, 0, 0),
+            true,
             true
         );
         draw_lerping_bar(
             ctx,
             2 * TEXT_FONT_MOD,
-            54 * TEXT_FONT_MOD,
-            22,
+            54,
+            22 * TEXT_FONT_MOD,
             stats.mana.current,
             stats.mana.max,
             RGB::named(rltk::BLUE),
             RGB::named(rltk::BLACK),
+            true,
             true
         );
         // Draw AC

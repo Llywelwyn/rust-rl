@@ -1,7 +1,7 @@
 // POST-PROCESSING
 pub const WITH_DARKEN_BY_DISTANCE: bool = true; // If further away tiles should get darkened, instead of a harsh transition to non-visible.
-pub const VIEWPORT_W: i32 = 40;
-pub const VIEWPORT_H: i32 = 30;
+pub const VIEWPORT_W: i32 = 69;
+pub const VIEWPORT_H: i32 = 41;
 
 pub const BRIGHTEN_FG_COLOUR_BY: i32 = 16;
 pub const GLOBAL_OFFSET_MIN_CLAMP: f32 = -0.5;

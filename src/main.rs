@@ -3,20 +3,20 @@ use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use rltk::prelude::*;
 
-const DISPLAYWIDTH: i32 = 72;
-const DISPLAYHEIGHT: i32 = 40;
+const DISPLAYWIDTH: i32 = 105;
+const DISPLAYHEIGHT: i32 = 56;
 
 fn main() -> rltk::BError {
     // Embedded resources for use in wasm build
-    const MAIN_22_20_BYTES: &[u8] = include_bytes!("../resources/nagidal22x20_centred.png");
-    const TEXT_11_20_BYTES: &[u8] = include_bytes!("../resources/curses11x20.png");
+    const CURSES_16_16_BYTES: &[u8] = include_bytes!("../resources/curses16x16.png");
+    const CURSES_8_16_BYTES: &[u8] = include_bytes!("../resources/curses8x16.png");
     const SINGLE_1_1_BYTES: &[u8] = include_bytes!("../resources/healthbar22x2.png");
     rltk::embedding::EMBED
         .lock()
-        .add_resource("resources/nagidal22x20_centred.png".to_string(), MAIN_22_20_BYTES);
+        .add_resource("resources/curses16x16.png".to_string(), CURSES_16_16_BYTES);
     rltk::embedding::EMBED
         .lock()
-        .add_resource("resources/curses11x20.png".to_string(), TEXT_11_20_BYTES);
+        .add_resource("resources/curses8x16.png".to_string(), CURSES_8_16_BYTES);
     rltk::embedding::EMBED
         .lock()
         .add_resource("resources/healthbar22x2.png".to_string(), SINGLE_1_1_BYTES);
@@ -24,14 +24,14 @@ fn main() -> rltk::BError {
     let mut context = RltkBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
-        .with_font("nagidal22x20_centred.png", 22, 20)
-        .with_font("curses11x20.png", 11, 20)
+        .with_font("curses16x16.png", 16, 16)
+        .with_font("curses8x16.png", 8, 16)
         .with_font("healthbar22x2.png", 1, 1)
-        .with_tile_dimensions(22, 20)
+        .with_tile_dimensions(16, 16)
         .with_gutter(2)
-        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "nagidal22x20_centred.png")
-        .with_sparse_console(DISPLAYWIDTH * 2, DISPLAYHEIGHT, "curses11x20.png")
-        .with_sparse_console(DISPLAYWIDTH * 22, DISPLAYHEIGHT * 20, "healthbar22x2.png")
+        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses16x16.png")
+        .with_sparse_console(DISPLAYWIDTH * 2, DISPLAYHEIGHT, "curses8x16.png")
+        .with_sparse_console(DISPLAYWIDTH * 16, DISPLAYHEIGHT * 16, "healthbar22x2.png")
         .build()?;
     if config::CONFIG.visuals.with_scanlines {
         context.with_post_scanlines(config::CONFIG.visuals.with_screen_burn);

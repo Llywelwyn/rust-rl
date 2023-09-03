@@ -1,4 +1,16 @@
-use super::{ camera::get_screen_bounds, Attributes, Hidden, Map, Name, Pools, Position, Renderable, Rltk, World, RGB };
+use super::{
+    camera::get_screen_bounds,
+    Attributes,
+    Hidden,
+    Map,
+    Name,
+    Pools,
+    Position,
+    Renderable,
+    Rltk,
+    World,
+    RGB,
+};
 use crate::TileType;
 use crate::data::ids::*;
 use rltk::prelude::*;
@@ -34,10 +46,19 @@ impl Tooltip {
         return (self.lines.len() as i32) + 2i32;
     }
     fn render(&self, ctx: &mut Rltk, x: i32, y: i32) {
-        ctx.draw_box(x, y, self.width() - 1, self.height() - 1, RGB::named(WHITE), RGB::named(BLACK));
+        ctx.set_active_console(1);
+        ctx.draw_box(
+            x,
+            y,
+            self.width() - 1,
+            self.height() - 1,
+            RGB::named(WHITE),
+            RGB::named(BLACK)
+        );
         for (i, s) in self.lines.iter().enumerate() {
             ctx.print_color(x + 1, y + (i as i32) + 1, s.1, RGB::named(BLACK), &s.0);
         }
+        ctx.set_active_console(0);
     }
 }
 
@@ -151,13 +172,15 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk, xy: Option<(i32, i32)>) {
     if mouse_pos.0 > 35 {
         // Render to the left
         arrow = to_cp437('→');
-        arrow_x = mouse_pos.0 - 1;
+        arrow_x = mouse_pos.0 * 2 - 1;
     } else {
         // Render to the right
         arrow = to_cp437('←');
-        arrow_x = mouse_pos.0 + 1;
+        arrow_x = (mouse_pos.0 + 1) * 2;
     }
+    ctx.set_active_console(1);
     ctx.set(arrow_x, arrow_y, white, RGB::named(rltk::BLACK), arrow);
+    ctx.set_active_console(0);
 
     let mut total_height = 0;
     for t in tooltips.iter() {
@@ -171,9 +194,9 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk, xy: Option<(i32, i32)>) {
 
     for t in tooltips.iter() {
         let x = if mouse_pos.0 > 35 {
-            mouse_pos.0 - (1 + t.width())
+            (mouse_pos.0 * 2) - (1 + t.width())
         } else {
-            mouse_pos.0 + (1 + 1)
+            (mouse_pos.0 * 2) + 2 + 1
         };
         t.render(ctx, x, y);
         y += t.height();

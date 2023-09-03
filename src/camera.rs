@@ -132,13 +132,14 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                             ctx.set_active_console(2);
                             crate::gui::draw_lerping_bar(
                                 ctx,
-                                (entity_offset_x + x_offset) * 22 + 2,
-                                (entity_offset_y + y_offset) * 20 - 2,
-                                18,
+                                (entity_offset_x + x_offset) * 16 + 2,
+                                (entity_offset_y + y_offset) * 16 - 1,
+                                14,
                                 pool.hit_points.current,
                                 pool.hit_points.max,
                                 RGB::named(GREEN),
                                 RGB::named(RED),
+                                false,
                                 false
                             );
                             ctx.set_active_console(0);
