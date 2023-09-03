@@ -3,22 +3,28 @@ use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use rltk::prelude::*;
 
-const DISPLAYWIDTH: i32 = 105;
+const DISPLAYWIDTH: i32 = 72;
 const DISPLAYHEIGHT: i32 = 56;
 
 fn main() -> rltk::BError {
     // Embedded resources for use in wasm build
-    const CURSES_14_16_BYTES: &[u8] = include_bytes!("../resources/curses14x16.png");
-    rltk::embedding::EMBED.lock().add_resource("resources/curses14x16.png".to_string(), CURSES_14_16_BYTES);
-
-    //rltk::link_resource!(CURSES14X16, "../resources/curses_14x16.png");
+    const CURSES_16_16_BYTES: &[u8] = include_bytes!("../resources/nagidal24x24.png");
+    const ISHMERIA_8_16_BYTES: &[u8] = include_bytes!("../resources/curses12x24.png");
+    rltk::embedding::EMBED
+        .lock()
+        .add_resource("resources/nagidal24x24.png".to_string(), CURSES_16_16_BYTES);
+    rltk::embedding::EMBED
+        .lock()
+        .add_resource("resources/curses12x24.png".to_string(), ISHMERIA_8_16_BYTES);
 
     let mut context = RltkBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
-        .with_font("curses14x16.png", 14, 16)
-        .with_tile_dimensions(14, 16)
-        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses14x16.png")
+        .with_font("nagidal24x24.png", 24, 24)
+        .with_font("curses12x24.png", 12, 24)
+        .with_tile_dimensions(24, 24)
+        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "nagidal24x24.png")
+        .with_sparse_console(DISPLAYWIDTH * 2, DISPLAYHEIGHT, "curses12x24.png")
         .build()?;
     if config::CONFIG.visuals.with_scanlines {
         context.with_post_scanlines(config::CONFIG.visuals.with_screen_burn);
@@ -26,7 +32,9 @@ fn main() -> rltk::BError {
 
     let mut gs = State {
         ecs: World::new(),
-        mapgen_next_state: Some(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame }),
+        mapgen_next_state: Some(RunState::MainMenu {
+            menu_selection: gui::MainMenuSelection::NewGame,
+        }),
         mapgen_index: 0,
         mapgen_history: Vec::new(),
         mapgen_timer: 0.0,

@@ -164,6 +164,9 @@ impl GameState for State {
             new_runstate = *runstate;
         }
         // Clear screen
+        ctx.set_active_console(1);
+        ctx.cls();
+        ctx.set_active_console(0);
         ctx.cls();
         particle_system::particle_ticker(&mut self.ecs, ctx);
 
@@ -559,6 +562,9 @@ impl GameState for State {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 if self.mapgen_history.len() != 0 {
+                    ctx.set_active_console(1);
+                    ctx.cls();
+                    ctx.set_active_console(0);
                     ctx.cls();
                     camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
 

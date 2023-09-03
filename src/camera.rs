@@ -2,13 +2,14 @@ use super::{ Hidden, Map, Mind, Position, Prop, Renderable };
 use rltk::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
+use super::data::visuals::{ VIEWPORT_W, VIEWPORT_H };
 
 const SHOW_BOUNDARIES: bool = false;
 
 pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
     let map = ecs.fetch::<Map>();
-    let (x_chars, y_chars, mut x_offset, mut y_offset) = (69, 41, 1, 10);
+    let (x_chars, y_chars, mut x_offset, mut y_offset) = (VIEWPORT_W, VIEWPORT_H, 1, 10);
 
     let centre_x = (x_chars / 2) as i32;
     let centre_y = (y_chars / 2) as i32;
@@ -52,7 +53,13 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                     ctx.set(x + x_offset, y + y_offset, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
-                ctx.set(x + x_offset, y + y_offset, RGB::named(DARKSLATEGRAY), RGB::named(BLACK), rltk::to_cp437('#'));
+                ctx.set(
+                    x + x_offset,
+                    y + y_offset,
+                    RGB::named(DARKSLATEGRAY),
+                    RGB::named(BLACK),
+                    rltk::to_cp437('#')
+                );
             }
             x += 1;
         }
@@ -112,7 +119,13 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                     }
                 }
                 if draw {
-                    ctx.set(entity_offset_x + x_offset, entity_offset_y + y_offset, fg, bg, render.glyph);
+                    ctx.set(
+                        entity_offset_x + x_offset,
+                        entity_offset_y + y_offset,
+                        fg,
+                        bg,
+                        render.glyph
+                    );
                 }
             }
         }
@@ -141,7 +154,12 @@ pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
             if tx >= 0 && tx < map_width && ty >= 0 && ty < map_height {
                 let idx = map.xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
-                    let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(idx, &*map, None, None);
+                    let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(
+                        idx,
+                        &*map,
+                        None,
+                        None
+                    );
                     ctx.set(x, y, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {

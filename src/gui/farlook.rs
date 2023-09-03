@@ -23,7 +23,7 @@ pub fn show_farlook(gs: &mut State, ctx: &mut Rltk) -> FarlookResult {
     );
 
     if let RunState::Farlook { x, y } = *runstate {
-        let (screen_x, screen_y) = (69, 41);
+        let (screen_x, screen_y) = (40, 30);
         let x = x.clamp(x_offset, x_offset - 1 + (screen_x as i32));
         let y = y.clamp(y_offset, y_offset - 1 + (screen_y as i32));
 

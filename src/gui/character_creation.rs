@@ -112,6 +112,7 @@ pub enum CharCreateResult {
 
 /// Handles the player character creation screen.
 pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
+    ctx.set_active_console(1);
     let runstate = gs.ecs.fetch::<RunState>();
 
     let mut x = 2;
@@ -245,6 +246,7 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
                 }
         }
     }
+    ctx.set_active_console(0);
     return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class: Class::Fighter };
 }
 
