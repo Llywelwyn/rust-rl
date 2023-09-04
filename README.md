@@ -1,4 +1,4 @@
-## a roguelike in rust, playable @ [llywelwyn.github.io](https://llywelwyn.github.io/)
+## a roguelike in rust, playable @ [llyw.co.uk/rl/](https://llyw.co.uk/rl/)
 
 #### using _rltk/bracket-lib_, and _specs_
 
