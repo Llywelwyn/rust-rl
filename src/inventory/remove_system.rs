@@ -11,7 +11,7 @@ use crate::{
     WantsToRemoveItem,
     BUC,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::data::messages;
 
@@ -99,7 +99,9 @@ impl<'a> System<'a> for ItemRemoveSystem {
                         .log();
                 }
             }
-            backpack.insert(to_remove.item, InBackpack { owner: entity }).expect("Unable to insert backpack");
+            backpack
+                .insert(to_remove.item, InBackpack { owner: entity })
+                .expect("Unable to insert backpack");
         }
 
         wants_remove.clear();

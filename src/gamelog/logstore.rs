@@ -1,5 +1,5 @@
 use super::{ events, LogFragment, Logger };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use std::sync::Mutex;
 
 lazy_static! {
@@ -19,7 +19,13 @@ pub fn clear_log() {
     LOG.lock().unwrap().clear();
 }
 
-pub fn print_log(console: &mut Box<dyn Console>, pos: Point, _descending: bool, len: usize, maximum_len: i32) {
+pub fn print_log(
+    console: &mut Box<dyn Console>,
+    pos: Point,
+    _descending: bool,
+    len: usize,
+    maximum_len: i32
+) {
     let mut y = pos.y;
     let mut x = pos.x;
     // Reverse the log, take the number we want to show, and iterate through them
@@ -61,7 +67,13 @@ pub fn print_log(console: &mut Box<dyn Console>, pos: Point, _descending: bool, 
                     }
                     // Stay within bounds
                     if y > pos.y - (len as i32) {
-                        console.print_color(x, y, frag.colour.into(), RGB::named(rltk::BLACK).into(), part);
+                        console.print_color(
+                            x,
+                            y,
+                            frag.colour.into(),
+                            RGB::named(BLACK).into(),
+                            part
+                        );
                     }
                     x += part.len() as i32;
                 }
@@ -80,7 +92,7 @@ pub fn setup_log() {
 
     Logger::new()
         .append("Welcome!")
-        .colour(rltk::CYAN)
+        .colour(CYAN)
         .append_n("Press [?] at any time to view controls")
         .period()
         .log();

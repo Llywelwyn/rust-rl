@@ -10,7 +10,7 @@ use crate::{
     Item,
     Prop,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::data::events::*;
 

@@ -12,7 +12,8 @@ use super::{
     Renderable,
     gui::renderable_colour,
 };
-use rltk::{ FieldOfViewAlg::SymmetricShadowcasting, Point };
+use bracket_lib::prelude::*;
+use bracket_lib::pathfinding::FieldOfViewAlg::SymmetricShadowcasting;
 use specs::prelude::*;
 
 pub struct VisibilitySystem {}
@@ -22,7 +23,7 @@ const BLIND_TELEPATHY_RANGE_MULTIPLIER: i32 = 3;
 impl<'a> System<'a> for VisibilitySystem {
     type SystemData = (
         WriteExpect<'a, Map>,
-        WriteExpect<'a, rltk::RandomNumberGenerator>,
+        WriteExpect<'a, RandomNumberGenerator>,
         Entities<'a>,
         WriteStorage<'a, Viewshed>,
         WriteStorage<'a, Telepath>,
@@ -73,7 +74,7 @@ impl<'a> System<'a> for VisibilitySystem {
                         p.y >= 0 &&
                         p.y < map.height &&
                         (map.lit_tiles[map.xy_idx(p.x, p.y)] == true ||
-                            rltk::DistanceAlg::Pythagoras.distance2d(Point::new(p.x, p.y), origin) < 1.5)
+                            DistanceAlg::Pythagoras.distance2d(Point::new(p.x, p.y), origin) < 1.5)
                 });
 
                 // If this is the player, reveal what they can see
@@ -99,7 +100,7 @@ impl<'a> System<'a> for VisibilitySystem {
                                             .append("You spot a")
                                             .colour(renderable_colour(&renderables, e))
                                             .append_n(&name.name)
-                                            .colour(rltk::WHITE)
+                                            .colour(WHITE)
                                             .period()
                                             .log();
                                     }
@@ -120,7 +121,9 @@ impl<'a> System<'a> for VisibilitySystem {
                     range *= BLIND_TELEPATHY_RANGE_MULTIPLIER;
                 }
                 telepath.telepath_tiles = fast_fov(pos.x, pos.y, range);
-                telepath.telepath_tiles.retain(|p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height);
+                telepath.telepath_tiles.retain(
+                    |p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height
+                );
 
                 // If this is the player, reveal what they can see
                 let _p: Option<&Player> = player.get(ent);

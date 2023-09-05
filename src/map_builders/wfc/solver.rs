@@ -1,5 +1,6 @@
-use super::{Map, MapChunk};
+use super::{ Map, MapChunk };
 use std::collections::HashSet;
+use bracket_lib::prelude::*;
 
 pub struct Solver {
     constraints: Vec<MapChunk>,
@@ -16,7 +17,7 @@ impl Solver {
         let chunks_x = (map.width / chunk_size) as usize;
         let chunks_y = (map.height / chunk_size) as usize;
         let mut remaining: Vec<(usize, i32)> = Vec::new();
-        for i in 0..(chunks_x * chunks_y) {
+        for i in 0..chunks_x * chunks_y {
             remaining.push((i, 0));
         }
 
@@ -32,7 +33,7 @@ impl Solver {
     }
 
     fn chunk_idx(&self, x: usize, y: usize) -> usize {
-        return ((y * self.chunks_x) + x) as usize;
+        return (y * self.chunks_x + x) as usize;
     }
 
     fn count_neighbours(&self, chunk_x: usize, chunk_y: usize) -> i32 {
@@ -99,8 +100,11 @@ impl Solver {
         self.remaining = remain_copy;
 
         // Pick a random chunk we haven't dealt with yet and get its index, remove from remaining list
-        let remaining_index =
-            if !neighbours_exist { (rng.roll_dice(1, self.remaining.len() as i32) - 1) as usize } else { 0usize };
+        let remaining_index = if !neighbours_exist {
+            (rng.roll_dice(1, self.remaining.len() as i32) - 1) as usize
+        } else {
+            0usize
+        };
         let chunk_index = self.remaining[remaining_index].0;
         self.remaining.remove(remaining_index);
 
@@ -158,10 +162,10 @@ impl Solver {
             // There is nothing nearby, so we can have anything!
             let new_chunk_idx = (rng.roll_dice(1, self.constraints.len() as i32) - 1) as usize;
             self.chunks[chunk_index] = Some(new_chunk_idx);
-            let left_x = chunk_x as i32 * self.chunk_size as i32;
-            let right_x = (chunk_x as i32 + 1) * self.chunk_size as i32;
-            let top_y = chunk_y as i32 * self.chunk_size as i32;
-            let bottom_y = (chunk_y as i32 + 1) * self.chunk_size as i32;
+            let left_x = (chunk_x as i32) * (self.chunk_size as i32);
+            let right_x = ((chunk_x as i32) + 1) * (self.chunk_size as i32);
+            let top_y = (chunk_y as i32) * (self.chunk_size as i32);
+            let bottom_y = ((chunk_y as i32) + 1) * (self.chunk_size as i32);
 
             let mut i: usize = 0;
             for y in top_y..bottom_y {
@@ -195,18 +199,21 @@ impl Solver {
             }
 
             if possible_options.is_empty() {
-                rltk::console::log("Oh no! It's not possible!");
+                console::log("Oh no! It's not possible!");
                 self.possible = false;
                 return true;
             } else {
-                let new_chunk_idx =
-                    if possible_options.len() == 1 { 0 } else { rng.roll_dice(1, possible_options.len() as i32) - 1 };
+                let new_chunk_idx = if possible_options.len() == 1 {
+                    0
+                } else {
+                    rng.roll_dice(1, possible_options.len() as i32) - 1
+                };
 
                 self.chunks[chunk_index] = Some(new_chunk_idx as usize);
-                let left_x = chunk_x as i32 * self.chunk_size as i32;
-                let right_x = (chunk_x as i32 + 1) * self.chunk_size as i32;
-                let top_y = chunk_y as i32 * self.chunk_size as i32;
-                let bottom_y = (chunk_y as i32 + 1) * self.chunk_size as i32;
+                let left_x = (chunk_x as i32) * (self.chunk_size as i32);
+                let right_x = ((chunk_x as i32) + 1) * (self.chunk_size as i32);
+                let top_y = (chunk_y as i32) * (self.chunk_size as i32);
+                let bottom_y = ((chunk_y as i32) + 1) * (self.chunk_size as i32);
 
                 let mut i: usize = 0;
                 for y in top_y..bottom_y {

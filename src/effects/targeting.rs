@@ -1,5 +1,5 @@
 use crate::{ Equipped, InBackpack, Map, Position };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub fn entity_position(ecs: &World, target: Entity) -> Option<usize> {
@@ -10,8 +10,8 @@ pub fn entity_position(ecs: &World, target: Entity) -> Option<usize> {
     return None;
 }
 
-pub fn aoe_tiles(map: &Map, target: rltk::Point, radius: i32) -> Vec<usize> {
-    let mut blast_tiles = rltk::field_of_view(target, radius, &*map);
+pub fn aoe_tiles(map: &Map, target: Point, radius: i32) -> Vec<usize> {
+    let mut blast_tiles = field_of_view(target, radius, &*map);
     blast_tiles.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
     let mut result = Vec::new();
     for t in blast_tiles.iter() {

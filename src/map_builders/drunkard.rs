@@ -1,5 +1,5 @@
 use super::{ paint, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, Symmetry, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 #[derive(PartialEq, Copy, Clone)]
 #[allow(dead_code)]
@@ -22,14 +22,14 @@ pub struct DrunkardsWalkBuilder {
 
 impl InitialMapBuilder for DrunkardsWalkBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
 
 impl MetaMapBuilder for DrunkardsWalkBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
@@ -107,7 +107,10 @@ impl DrunkardsWalkBuilder {
 
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         // Set a central starting point
-        let starting_position = Position { x: build_data.map.width / 2, y: build_data.map.height / 2 };
+        let starting_position = Position {
+            x: build_data.map.width / 2,
+            y: build_data.map.height / 2,
+        };
         let start_idx = build_data.map.xy_idx(starting_position.x, starting_position.y);
         build_data.map.tiles[start_idx] = TileType::Floor;
 
@@ -144,7 +147,13 @@ impl DrunkardsWalkBuilder {
                 if build_data.map.tiles[drunk_idx] == TileType::Wall {
                     did_something = true;
                 }
-                paint(&mut build_data.map, self.settings.symmetry, self.settings.brush_size, drunk_x, drunk_y);
+                paint(
+                    &mut build_data.map,
+                    self.settings.symmetry,
+                    self.settings.brush_size,
+                    drunk_x,
+                    drunk_y
+                );
                 build_data.map.tiles[drunk_idx] = TileType::DownStair;
 
                 let stagger_direction = rng.roll_dice(1, 4);

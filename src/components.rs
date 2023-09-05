@@ -1,6 +1,6 @@
 use crate::gui::Ancestry;
 use crate::gui::Class;
-use rltk::RGB;
+use bracket_lib::prelude::*;
 use serde::{ Deserialize, Serialize };
 use specs::error::NoError;
 use specs::prelude::*;
@@ -40,7 +40,7 @@ pub struct OtherLevelPosition {
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Renderable {
-    pub glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
     pub fg: RGB,
     pub bg: RGB,
     pub render_order: i32,
@@ -104,14 +104,14 @@ pub struct Mind {}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Viewshed {
-    pub visible_tiles: Vec<rltk::Point>,
+    pub visible_tiles: Vec<Point>,
     pub range: i32,
     pub dirty: bool,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Telepath {
-    pub telepath_tiles: Vec<rltk::Point>,
+    pub telepath_tiles: Vec<Point>,
     pub range: i32,
     pub dirty: bool,
 }
@@ -417,7 +417,7 @@ pub struct WantsToRemoveItem {
 #[derive(Component, Debug, ConvertSaveload)]
 pub struct WantsToUseItem {
     pub item: Entity,
-    pub target: Option<rltk::Point>,
+    pub target: Option<Point>,
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -446,8 +446,8 @@ pub struct Charges {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleLine {
-    pub glyph: rltk::FontCharType,
-    pub tail_glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
+    pub tail_glyph: FontCharType,
     pub colour: RGB,
     pub lifetime_ms: f32,
     pub trail_colour: RGB,
@@ -456,16 +456,16 @@ pub struct SpawnParticleLine {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleSimple {
-    pub glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
     pub colour: RGB,
     pub lifetime_ms: f32,
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleBurst {
-    pub glyph: rltk::FontCharType,
-    pub head_glyph: rltk::FontCharType,
-    pub tail_glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
+    pub head_glyph: FontCharType,
+    pub tail_glyph: FontCharType,
     pub colour: RGB,
     pub lerp: RGB,
     pub lifetime_ms: f32,

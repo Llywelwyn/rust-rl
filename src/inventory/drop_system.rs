@@ -15,6 +15,7 @@ use crate::{
 };
 use specs::prelude::*;
 use crate::data::messages;
+use bracket_lib::prelude::*;
 
 pub struct ItemDropSystem {}
 
@@ -52,7 +53,9 @@ impl<'a> System<'a> for ItemDropSystem {
         ) = data;
 
         for (entity, to_drop) in (&entities, &wants_drop).join() {
-            equipment_changed.insert(entity, EquipmentChanged {}).expect("Unable to insert EquipmentChanged.");
+            equipment_changed
+                .insert(entity, EquipmentChanged {})
+                .expect("Unable to insert EquipmentChanged.");
             let mut dropper_pos: Position = Position { x: 0, y: 0 };
             {
                 let dropped_pos = positions.get(entity).unwrap();
@@ -83,7 +86,7 @@ impl<'a> System<'a> for ItemDropSystem {
                             ).0
                         )
                     )
-                    .colour(rltk::WHITE)
+                    .colour(WHITE)
                     .period()
                     .log();
             }

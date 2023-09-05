@@ -11,7 +11,7 @@ use super::{
     Renderable,
     AOE,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub struct TriggerSystem {}
@@ -30,7 +30,8 @@ impl<'a> System<'a> for TriggerSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (map, mut entity_moved, position, entry_trigger, names, entities, aoes, renderables) = data;
+        let (map, mut entity_moved, position, entry_trigger, names, entities, aoes, renderables) =
+            data;
         for (entity, mut _entity_moved, pos) in (&entities, &mut entity_moved, &position).join() {
             let idx = map.xy_idx(pos.x, pos.y);
             crate::spatial::for_each_tile_content(idx, |entity_id| {
@@ -51,15 +52,21 @@ impl<'a> System<'a> for TriggerSystem {
                                         .log();
                                 }
                             }
-                            add_effect(Some(entity_id), EffectType::TriggerFire { trigger: entity_id }, if
-                                let Some(aoe) = aoes.get(entity_id)
-                            {
-                                Targets::TileList {
-                                    targets: aoe_tiles(&*map, Point::new(pos.x, pos.y), aoe.radius),
+                            add_effect(
+                                Some(entity_id),
+                                EffectType::TriggerFire { trigger: entity_id },
+                                if let Some(aoe) = aoes.get(entity_id) {
+                                    Targets::TileList {
+                                        targets: aoe_tiles(
+                                            &*map,
+                                            Point::new(pos.x, pos.y),
+                                            aoe.radius
+                                        ),
+                                    }
+                                } else {
+                                    Targets::Tile { target: idx }
                                 }
-                            } else {
-                                Targets::Tile { target: idx }
-                            });
+                            );
                         }
                     }
                 }

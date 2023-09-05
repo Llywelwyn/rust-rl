@@ -1,6 +1,6 @@
 use super::{ BuilderMap, MetaMapBuilder, TileType };
 use crate::tile_walkable;
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct FillEdges {
     fill_with: TileType,
@@ -9,7 +9,7 @@ pub struct FillEdges {
 
 impl MetaMapBuilder for FillEdges {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.fill_edges(rng, build_data);
     }
 }

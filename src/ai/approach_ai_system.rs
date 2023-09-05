@@ -1,5 +1,5 @@
 use crate::{ EntityMoved, Map, Position, TakingTurn, Telepath, Viewshed, WantsToApproach };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub struct ApproachAI {}
@@ -39,7 +39,9 @@ impl<'a> System<'a> for ApproachAI {
             &turns,
         ).join() {
             turn_done.push(entity);
-            let target_idxs = if let Some(paths) = get_adjacent_unblocked(&map, approach.idx as usize) {
+            let target_idxs = if
+                let Some(paths) = get_adjacent_unblocked(&map, approach.idx as usize)
+            {
                 paths
             } else {
                 continue;
@@ -47,9 +49,12 @@ impl<'a> System<'a> for ApproachAI {
             let mut path: Option<NavigationPath> = None;
             let idx = map.xy_idx(pos.x, pos.y);
             for tar_idx in target_idxs {
-                let potential_path = rltk::a_star_search(idx, tar_idx, &mut *map);
+                let potential_path = a_star_search(idx, tar_idx, &mut *map);
                 if potential_path.success && potential_path.steps.len() > 1 {
-                    if path.is_none() || potential_path.steps.len() < path.as_ref().unwrap().steps.len() {
+                    if
+                        path.is_none() ||
+                        potential_path.steps.len() < path.as_ref().unwrap().steps.len()
+                    {
                         path = Some(potential_path);
                     }
                 }

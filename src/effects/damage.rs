@@ -20,7 +20,7 @@ use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
 use crate::data::messages::LEVELUP_PLAYER;
 use crate::data::events::*;
 use crate::data::messages::*;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {

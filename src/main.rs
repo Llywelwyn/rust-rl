@@ -1,19 +1,19 @@
 use rust_rl::*;
 use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 
 const DISPLAYWIDTH: i32 = 105;
 const DISPLAYHEIGHT: i32 = 56;
 
-fn main() -> rltk::BError {
+fn main() -> BError {
     // Embedded resources for use in wasm build
     const CURSES_14_16_BYTES: &[u8] = include_bytes!("../resources/curses14x16.png");
-    rltk::embedding::EMBED.lock().add_resource("resources/curses14x16.png".to_string(), CURSES_14_16_BYTES);
+    EMBED.lock().add_resource("resources/curses14x16.png".to_string(), CURSES_14_16_BYTES);
 
-    //rltk::link_resource!(CURSES14X16, "../resources/curses_14x16.png");
+    //link_resource!(CURSES14X16, "../resources/curses_14x16.png");
 
-    let mut context = RltkBuilder::new()
+    let mut context = BTermBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
         .with_font("curses14x16.png", 14, 16)
@@ -26,7 +26,9 @@ fn main() -> rltk::BError {
 
     let mut gs = State {
         ecs: World::new(),
-        mapgen_next_state: Some(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame }),
+        mapgen_next_state: Some(RunState::MainMenu {
+            menu_selection: gui::MainMenuSelection::NewGame,
+        }),
         mapgen_index: 0,
         mapgen_history: Vec::new(),
         mapgen_timer: 0.0,
@@ -115,7 +117,7 @@ fn main() -> rltk::BError {
     raws::load_raws();
 
     // Insert calls
-    gs.ecs.insert(rltk::RandomNumberGenerator::new());
+    gs.ecs.insert(RandomNumberGenerator::new());
     gs.ecs.insert(map::MasterDungeonMap::new()); // Master map list
     gs.ecs.insert(Map::new(true, 1, 64, 64, 0, "New Map", "N", 0)); // Map
     gs.ecs.insert(Point::new(0, 0)); // Player pos
@@ -130,5 +132,5 @@ fn main() -> rltk::BError {
     gamelog::record_event(data::events::EVENT::LEVEL(1));
     gs.generate_world_map(1, TileType::Floor);
 
-    rltk::main_loop(context, gs)
+    main_loop(context, gs)
 }

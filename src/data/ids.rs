@@ -1,6 +1,6 @@
 use super::names::*;
 use super::visuals::*;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 
 pub const ID_OVERMAP: i32 = 1;
 

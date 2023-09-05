@@ -11,12 +11,12 @@ use super::{
     YStart,
     Foliage,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use crate::data::names::*;
 
 pub fn forest_builder(
     new_id: i32,
-    _rng: &mut rltk::RandomNumberGenerator,
+    _rng: &mut RandomNumberGenerator,
     width: i32,
     height: i32,
     difficulty: i32,

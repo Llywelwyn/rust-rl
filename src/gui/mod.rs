@@ -35,8 +35,13 @@ use super::{
     data::ids::get_local_col,
 };
 use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
-use crate::data::visuals::{ TARGETING_LINE_COL, TARGETING_CURSOR_COL, TARGETING_AOE_COL, TARGETING_VALID_COL };
-use rltk::prelude::*;
+use crate::data::visuals::{
+    TARGETING_LINE_COL,
+    TARGETING_CURSOR_COL,
+    TARGETING_AOE_COL,
+    TARGETING_VALID_COL,
+};
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
 mod character_creation;
@@ -55,9 +60,9 @@ pub use farlook::*;
 
 /// Gives a popup box with a message and a title, and waits for a keypress.
 #[allow(unused)]
-pub fn yes_no(ctx: &mut Rltk, question: String) -> Option<bool> {
-    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), question);
-    ctx.print_color_centered(17, RGB::named(rltk::CYAN), RGB::named(rltk::BLACK), "(y)es or (n)o");
+pub fn yes_no(ctx: &mut BTerm, question: String) -> Option<bool> {
+    ctx.print_color_centered(15, RGB::named(YELLOW), RGB::named(BLACK), question);
+    ctx.print_color_centered(17, RGB::named(CYAN), RGB::named(BLACK), "(y)es or (n)o");
     match ctx.key {
         None => None,
         Some(key) =>
@@ -70,7 +75,7 @@ pub fn yes_no(ctx: &mut Rltk, question: String) -> Option<bool> {
 }
 
 pub fn draw_lerping_bar(
-    ctx: &mut Rltk,
+    ctx: &mut BTerm,
     sx: i32,
     sy: i32,
     width: i32,
@@ -82,12 +87,12 @@ pub fn draw_lerping_bar(
     let percent = (n as f32) / (max as f32);
     let fill_width = (percent * (width as f32)) as i32;
     let bg = empty_colour.lerp(full_colour, percent);
-    let fg = RGB::named(rltk::BLACK);
+    let fg = RGB::named(BLACK);
     for x in 0..width {
         if x <= fill_width {
             ctx.print_color(sx + x, sy, fg, bg, " ");
         } else {
-            ctx.print_color(sx + x, sy, RGB::named(rltk::BLACK), RGB::named(rltk::BLACK), " ");
+            ctx.print_color(sx + x, sy, RGB::named(BLACK), RGB::named(BLACK), " ");
         }
     }
     ctx.print(sx - 1, sy, "[");
@@ -96,7 +101,7 @@ pub fn draw_lerping_bar(
     ctx.print(sx + width, sy, "]");
 }
 
-pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
+pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     // Render stats
     let pools = ecs.read_storage::<Pools>();
     let attributes = ecs.read_storage::<Attributes>();
@@ -104,7 +109,13 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     let hunger = ecs.read_storage::<HungerClock>();
     let burden = ecs.read_storage::<Burden>();
     let skills = ecs.read_storage::<Skills>();
-    for (_player, stats, attributes, hunger, skills) in (&players, &pools, &attributes, &hunger, &skills).join() {
+    for (_player, stats, attributes, hunger, skills) in (
+        &players,
+        &pools,
+        &attributes,
+        &hunger,
+        &skills,
+    ).join() {
         // Draw hp/mana bars
         draw_lerping_bar(
             ctx,
@@ -123,8 +134,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             22,
             stats.mana.current,
             stats.mana.max,
-            RGB::named(rltk::BLUE),
-            RGB::named(rltk::BLACK)
+            RGB::named(BLUE),
+            RGB::named(BLACK)
         );
         // Draw AC
         let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
@@ -137,70 +148,131 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                 armour_ac_bonus += ac.amount;
             }
         }
-        let armour_class = stats.bac - attributes.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus;
-        ctx.print_color(26, 53, RGB::named(rltk::PINK), RGB::named(rltk::BLACK), "AC");
-        ctx.print_color(28, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), armour_class);
+        let armour_class =
+            stats.bac - attributes.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus;
+        ctx.print_color(26, 53, RGB::named(PINK), RGB::named(BLACK), "AC");
+        ctx.print_color(28, 53, RGB::named(WHITE), RGB::named(BLACK), armour_class);
         // Draw level
         ctx.print_color(
             26,
             54,
-            RGB::named(rltk::WHITE),
-            RGB::named(rltk::BLACK),
+            RGB::named(WHITE),
+            RGB::named(BLACK),
             format!("XP{}/{}", stats.level, stats.xp)
         );
         // Draw attributes
         let x = 38;
-        ctx.print_color(x, 53, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "STR");
-        ctx.print_color(x + 3, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.strength.base);
-        ctx.print_color(x + 7, 53, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "DEX");
-        ctx.print_color(x + 10, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.dexterity.base);
-        ctx.print_color(x + 14, 53, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "CON");
-        ctx.print_color(x + 17, 53, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.constitution.base);
-        ctx.print_color(x, 54, RGB::named(rltk::CYAN), RGB::named(rltk::BLACK), "INT");
-        ctx.print_color(x + 3, 54, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.intelligence.base);
-        ctx.print_color(x + 7, 54, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "WIS");
-        ctx.print_color(x + 10, 54, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.wisdom.base);
-        ctx.print_color(x + 14, 54, RGB::named(rltk::PURPLE), RGB::named(rltk::BLACK), "CHA");
-        ctx.print_color(x + 17, 54, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), attributes.charisma.base);
+        ctx.print_color(x, 53, RGB::named(RED), RGB::named(BLACK), "STR");
+        ctx.print_color(x + 3, 53, RGB::named(WHITE), RGB::named(BLACK), attributes.strength.base);
+        ctx.print_color(x + 7, 53, RGB::named(GREEN), RGB::named(BLACK), "DEX");
+        ctx.print_color(
+            x + 10,
+            53,
+            RGB::named(WHITE),
+            RGB::named(BLACK),
+            attributes.dexterity.base
+        );
+        ctx.print_color(x + 14, 53, RGB::named(ORANGE), RGB::named(BLACK), "CON");
+        ctx.print_color(
+            x + 17,
+            53,
+            RGB::named(WHITE),
+            RGB::named(BLACK),
+            attributes.constitution.base
+        );
+        ctx.print_color(x, 54, RGB::named(CYAN), RGB::named(BLACK), "INT");
+        ctx.print_color(
+            x + 3,
+            54,
+            RGB::named(WHITE),
+            RGB::named(BLACK),
+            attributes.intelligence.base
+        );
+        ctx.print_color(x + 7, 54, RGB::named(YELLOW), RGB::named(BLACK), "WIS");
+        ctx.print_color(x + 10, 54, RGB::named(WHITE), RGB::named(BLACK), attributes.wisdom.base);
+        ctx.print_color(x + 14, 54, RGB::named(PURPLE), RGB::named(BLACK), "CHA");
+        ctx.print_color(x + 17, 54, RGB::named(WHITE), RGB::named(BLACK), attributes.charisma.base);
         // Draw hunger
         match hunger.state {
             HungerState::Satiated => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Satiated");
+                ctx.print_color_right(
+                    70,
+                    53,
+                    get_hunger_colour(hunger.state),
+                    RGB::named(BLACK),
+                    "Satiated"
+                );
             }
             HungerState::Normal => {}
             HungerState::Hungry => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Hungry");
+                ctx.print_color_right(
+                    70,
+                    53,
+                    get_hunger_colour(hunger.state),
+                    RGB::named(BLACK),
+                    "Hungry"
+                );
             }
             HungerState::Weak => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Weak");
+                ctx.print_color_right(
+                    70,
+                    53,
+                    get_hunger_colour(hunger.state),
+                    RGB::named(BLACK),
+                    "Weak"
+                );
             }
             HungerState::Fainting => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Fainting");
+                ctx.print_color_right(
+                    70,
+                    53,
+                    get_hunger_colour(hunger.state),
+                    RGB::named(BLACK),
+                    "Fainting"
+                );
             }
             HungerState::Starving => {
-                ctx.print_color_right(70, 53, get_hunger_colour(hunger.state), RGB::named(rltk::BLACK), "Starving");
+                ctx.print_color_right(
+                    70,
+                    53,
+                    get_hunger_colour(hunger.state),
+                    RGB::named(BLACK),
+                    "Starving"
+                );
             }
         }
         // Burden
         if let Some(burden) = burden.get(*player_entity) {
             match burden.level {
                 crate::BurdenLevel::Burdened => {
-                    ctx.print_color_right(70, 50, RGB::named(rltk::BROWN1), RGB::named(rltk::BLACK), "Burdened");
+                    ctx.print_color_right(
+                        70,
+                        50,
+                        RGB::named(BROWN1),
+                        RGB::named(BLACK),
+                        "Burdened"
+                    );
                 }
                 crate::BurdenLevel::Strained => {
-                    ctx.print_color_right(70, 50, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Strained");
+                    ctx.print_color_right(
+                        70,
+                        50,
+                        RGB::named(ORANGE),
+                        RGB::named(BLACK),
+                        "Strained"
+                    );
                 }
                 crate::BurdenLevel::Overloaded => {
-                    ctx.print_color_right(70, 50, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Overloaded");
+                    ctx.print_color_right(70, 50, RGB::named(RED), RGB::named(BLACK), "Overloaded");
                 }
             }
         }
         if stats.god {
-            ctx.print_color(20, 20, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "--- GODMODE: ON ---");
+            ctx.print_color(20, 20, RGB::named(YELLOW), RGB::named(BLACK), "--- GODMODE: ON ---");
         }
         // Draw equipment
         let renderables = ecs.read_storage::<Renderable>();
-        let mut equipment: Vec<(String, RGB, RGB, rltk::FontCharType)> = Vec::new();
+        let mut equipment: Vec<(String, RGB, RGB, FontCharType)> = Vec::new();
         let entities = ecs.entities();
         for (entity, _equipped, renderable) in (&entities, &equipped, &renderables)
             .join()
@@ -214,30 +286,37 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         }
         let mut y = 1;
         if !equipment.is_empty() {
-            ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Equipment");
+            ctx.print_color(72, y, RGB::named(BLACK), RGB::named(WHITE), "Equipment");
             let mut j = 0;
             for item in equipment {
                 y += 1;
-                ctx.set(72, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + (j as rltk::FontCharType));
+                ctx.set(72, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + (j as FontCharType));
                 j += 1;
-                ctx.set(74, y, item.2, RGB::named(rltk::BLACK), item.3);
-                ctx.print_color(76, y, item.1, RGB::named(rltk::BLACK), &item.0);
-                ctx.print_color(76 + &item.0.len() + 1, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "(worn)");
+                ctx.set(74, y, item.2, RGB::named(BLACK), item.3);
+                ctx.print_color(76, y, item.1, RGB::named(BLACK), &item.0);
+                ctx.print_color(
+                    76 + &item.0.len() + 1,
+                    y,
+                    RGB::named(WHITE),
+                    RGB::named(BLACK),
+                    "(worn)"
+                );
             }
             y += 2;
         }
 
         // Draw consumables
-        ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "Backpack");
+        ctx.print_color(72, y, RGB::named(BLACK), RGB::named(WHITE), "Backpack");
         ctx.print_color(
             81,
             y,
-            RGB::named(rltk::WHITE),
-            RGB::named(rltk::BLACK),
+            RGB::named(WHITE),
+            RGB::named(BLACK),
             &format!(
                 "[{:.1}/{} lbs]",
                 stats.weight,
-                (attributes.strength.base + attributes.strength.modifiers) * CARRY_CAPACITY_PER_STRENGTH
+                (attributes.strength.base + attributes.strength.modifiers) *
+                    CARRY_CAPACITY_PER_STRENGTH
             )
         );
         y += 1;
@@ -252,7 +331,13 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
             y += 1;
             let mut index = 1;
             for spell in known_spells.list.iter() {
-                ctx.print_color(72, y, RGB::named(YELLOW), RGB::named(BLACK), &format!("{}", index));
+                ctx.print_color(
+                    72,
+                    y,
+                    RGB::named(YELLOW),
+                    RGB::named(BLACK),
+                    &format!("{}", index)
+                );
                 ctx.print_color(
                     74,
                     y,
@@ -296,7 +381,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                     let (render_fg, glyph) = if let Some(renderable) = renderables.get(entity) {
                         (renderable.fg, renderable.glyph)
                     } else {
-                        (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
+                        (RGB::named(WHITE), to_cp437('-'))
                     };
                     seen_entities.push((
                         obfuscate_name_ecs(ecs, entity).0,
@@ -311,38 +396,54 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
 
         if !seen_entities.is_empty() {
             y += 1;
-            ctx.print_color(72, y, RGB::named(rltk::BLACK), RGB::named(rltk::WHITE), "In View");
+            ctx.print_color(72, y, RGB::named(BLACK), RGB::named(WHITE), "In View");
             for entity in seen_entities {
                 y += 1;
-                ctx.set(72, y, entity.2, RGB::named(rltk::BLACK), entity.3);
-                ctx.print_color(74, y, entity.1, RGB::named(rltk::BLACK), entity.0);
+                ctx.set(72, y, entity.2, RGB::named(BLACK), entity.3);
+                ctx.print_color(74, y, entity.1, RGB::named(BLACK), entity.0);
             }
         }
     }
 
     // Render the message log at [1, 7], ascending, with 7 lines and a max width of 68.
-    gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console, Point::new(1, 7), false, 7, 68);
+    gamelog::print_log(
+        &mut BACKEND_INTERNAL.lock().consoles[0].console,
+        Point::new(1, 7),
+        false,
+        7,
+        68
+    );
 
     // Render id
     let map = ecs.fetch::<Map>();
-    let id = if map.depth > 0 { format!("{}{}", map.short_name, map.depth) } else { format!("{}", map.short_name) };
-    ctx.print_color_right(70, 54, get_local_col(map.id), RGB::named(rltk::BLACK), &id);
+    let id = if map.depth > 0 {
+        format!("{}{}", map.short_name, map.depth)
+    } else {
+        format!("{}", map.short_name)
+    };
+    ctx.print_color_right(70, 54, get_local_col(map.id), RGB::named(BLACK), &id);
 
     // Render turn
     let turns = crate::gamelog::get_event_count(EVENT::COUNT_TURN);
-    ctx.print_color_right(69 - id.len(), 54, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &format!("T{}", turns));
+    ctx.print_color_right(
+        69 - id.len(),
+        54,
+        RGB::named(YELLOW),
+        RGB::named(BLACK),
+        &format!("T{}", turns)
+    );
 
     // Boxes and tooltips last, so they draw over everything else.
-    ctx.draw_hollow_box(0, 0, 70, 8, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Log box
-    ctx.draw_hollow_box(0, 9, 70, 42, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Camera box
-    ctx.draw_hollow_box(0, 52, 70, 3, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Stats box
-    ctx.draw_hollow_box(71, 0, 33, 55, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)); // Side box
+    ctx.draw_hollow_box(0, 0, 70, 8, RGB::named(WHITE), RGB::named(BLACK)); // Log box
+    ctx.draw_hollow_box(0, 9, 70, 42, RGB::named(WHITE), RGB::named(BLACK)); // Camera box
+    ctx.draw_hollow_box(0, 52, 70, 3, RGB::named(WHITE), RGB::named(BLACK)); // Stats box
+    ctx.draw_hollow_box(71, 0, 33, 55, RGB::named(WHITE), RGB::named(BLACK)); // Side box
     tooltip::draw_tooltips(ecs, ctx, None);
 }
 
 pub fn get_input_direction(
     ecs: &mut World,
-    ctx: &mut Rltk,
+    ctx: &mut BTerm,
     function: fn(i: i32, j: i32, ecs: &mut World) -> RunState
 ) -> RunState {
     let (_, _, _, _, x_offset, y_offset) = camera::get_screen_bounds(ecs, ctx);
@@ -350,8 +451,8 @@ pub fn get_input_direction(
     ctx.print_color(
         1 + x_offset,
         1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(WHITE),
+        RGB::named(BLACK),
         "In what direction? [0-9]/[YUHJKLBN]"
     );
     match ctx.key {
@@ -403,7 +504,12 @@ pub enum ItemMenuResult {
     Selected,
 }
 
-pub fn print_options(inventory: &PlayerInventory, mut x: i32, mut y: i32, ctx: &mut Rltk) -> (i32, i32) {
+pub fn print_options(
+    inventory: &PlayerInventory,
+    mut x: i32,
+    mut y: i32,
+    ctx: &mut BTerm
+) -> (i32, i32) {
     let mut j = 0;
     let initial_x: i32 = x;
     let mut width: i32 = -1;
@@ -411,44 +517,46 @@ pub fn print_options(inventory: &PlayerInventory, mut x: i32, mut y: i32, ctx: &
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
         if j < 26 {
-            ctx.set(x, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + (j as rltk::FontCharType));
+            ctx.set(x, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + (j as FontCharType));
         } else {
             // If we somehow have more than 26, start using capitals
-            ctx.set(x, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 65 - 26 + (j as rltk::FontCharType));
+            ctx.set(x, y, RGB::named(YELLOW), RGB::named(BLACK), 65 - 26 + (j as FontCharType));
         }
 
         x += 2;
         let fg = RGB::from_u8(item.renderables.0, item.renderables.1, item.renderables.2);
-        ctx.set(x, y, fg, RGB::named(rltk::BLACK), item.glyph);
+        ctx.set(x, y, fg, RGB::named(BLACK), item.glyph);
         x += 2;
 
         let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
         if item_count > &1 {
             // If more than one, print the number and pluralise
             // i.e. (a) 3 daggers
-            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item_count);
+            ctx.print_color(x, y, fg, RGB::named(BLACK), item_count);
             x += 2;
-            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.plural.to_string());
+            ctx.print_color(x, y, fg, RGB::named(BLACK), item.display_name.plural.to_string());
             let this_width = x - initial_x + (item.display_name.plural.len() as i32);
             width = if width > this_width { width } else { this_width };
         } else {
             if item.display_name.singular.to_lowercase().ends_with("s") {
-                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "some");
+                ctx.print_color(x, y, fg, RGB::named(BLACK), "some");
                 x += 5;
             } else if
-                ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.to_lowercase().starts_with(v))
+                ['a', 'e', 'i', 'o', 'u']
+                    .iter()
+                    .any(|&v| item.display_name.singular.to_lowercase().starts_with(v))
             {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
-                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "an");
+                ctx.print_color(x, y, fg, RGB::named(BLACK), "an");
                 x += 3;
             } else {
                 // If one and not a vowel, print 'a'
                 // i.e. (a) a dagger
-                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "a");
+                ctx.print_color(x, y, fg, RGB::named(BLACK), "a");
                 x += 2;
             }
-            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item.display_name.singular.to_string());
+            ctx.print_color(x, y, fg, RGB::named(BLACK), item.display_name.singular.to_string());
             let this_width = x - initial_x + (item.display_name.singular.len() as i32);
             width = if width > this_width { width } else { this_width };
         }
@@ -469,7 +577,9 @@ pub fn get_max_inventory_width(inventory: &PlayerInventory) -> i32 {
         if count <= &1 {
             if item.display_name.singular == item.display_name.plural {
                 this_width += 4; // "some".len
-            } else if ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.starts_with(v)) {
+            } else if
+                ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.starts_with(v))
+            {
                 this_width += 2; // "an".len
             } else {
                 this_width += 1; // "a".len
@@ -492,7 +602,10 @@ pub fn obfuscate_name(
     dm: &MasterDungeonMap,
     wand: Option<&ReadStorage<Charges>>
 ) -> (String, String) {
-    let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
+    let (mut singular, mut plural) = (
+        "nameless item (bug)".to_string(),
+        "nameless items (bug)".to_string(),
+    );
     if let Some(name) = names.get(item) {
         if magic_items.get(item).is_some() {
             if dm.identified_items.contains(&name.name) {
@@ -510,7 +623,10 @@ pub fn obfuscate_name(
             } else if let Some(obfuscated) = obfuscated_names.get(item) {
                 (singular, plural) = (obfuscated.name.clone(), obfuscated.plural.clone());
             } else {
-                (singular, plural) = ("unid magic item".to_string(), "unid magic items".to_string());
+                (singular, plural) = (
+                    "unid magic item".to_string(),
+                    "unid magic items".to_string(),
+                );
             }
         } else {
             (singular, plural) = (name.name.clone(), name.plural.clone());
@@ -534,7 +650,10 @@ pub fn obfuscate_name(
 
 // Outside the ECS
 pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
-    let (mut singular, mut plural) = ("nameless item (bug)".to_string(), "nameless items (bug)".to_string());
+    let (mut singular, mut plural) = (
+        "nameless item (bug)".to_string(),
+        "nameless items (bug)".to_string(),
+    );
     if let Some(name) = ecs.read_storage::<Name>().get(item) {
         if ecs.read_storage::<MagicItem>().get(item).is_some() {
             let dm = ecs.fetch::<MasterDungeonMap>();
@@ -550,7 +669,10 @@ pub fn obfuscate_name_ecs(ecs: &World, item: Entity) -> (String, String) {
             } else if let Some(obfuscated) = ecs.read_storage::<ObfuscatedName>().get(item) {
                 (singular, plural) = (obfuscated.name.clone(), obfuscated.plural.clone());
             } else {
-                (singular, plural) = ("unid magic item".to_string(), "unid magic items".to_string());
+                (singular, plural) = (
+                    "unid magic item".to_string(),
+                    "unid magic items".to_string(),
+                );
             }
         } else {
             (singular, plural) = (name.name.clone(), name.plural.clone());
@@ -592,7 +714,11 @@ pub fn unobf_name_ecs(ecs: &World, item: Entity) -> (String, String) {
 /// Gets renderable colour as tuple of u8
 pub fn renderable_colour(renderables: &ReadStorage<Renderable>, entity: Entity) -> (u8, u8, u8) {
     return if let Some(renderable) = renderables.get(entity) {
-        ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8)
+        (
+            (renderable.fg.r * 255.0) as u8,
+            (renderable.fg.g * 255.0) as u8,
+            (renderable.fg.b * 255.0) as u8,
+        )
     } else {
         WHITE
     };
@@ -601,7 +727,11 @@ pub fn renderable_colour(renderables: &ReadStorage<Renderable>, entity: Entity) 
 /// Gets renderable colour as tuple of u8
 pub fn renderable_colour_ecs(ecs: &World, entity: Entity) -> (u8, u8, u8) {
     return if let Some(renderable) = ecs.read_storage::<Renderable>().get(entity) {
-        ((renderable.fg.r * 255.0) as u8, (renderable.fg.g * 255.0) as u8, (renderable.fg.b * 255.0) as u8)
+        (
+            (renderable.fg.r * 255.0) as u8,
+            (renderable.fg.g * 255.0) as u8,
+            (renderable.fg.b * 255.0) as u8,
+        )
     } else {
         WHITE
     };
@@ -653,17 +783,17 @@ pub fn item_colour(item: Entity, beatitudes: &ReadStorage<Beatitude>) -> (u8, u8
     return WHITE;
 }
 
-pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
+pub fn show_help(ctx: &mut BTerm) -> YesNoResult {
     let mut x = 3;
     let mut y = 12;
     let height = 22;
     let width = 25;
-    ctx.draw_box(x, y, width, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    ctx.print_color(x + 3, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), " Controls ");
-    ctx.print_color(x + 3, y + height, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), " ESC/? to close ");
+    ctx.draw_box(x, y, width, height, RGB::named(WHITE), RGB::named(BLACK));
+    ctx.print_color(x + 3, y, RGB::named(YELLOW), RGB::named(BLACK), " Controls ");
+    ctx.print_color(x + 3, y + height, RGB::named(YELLOW), RGB::named(BLACK), " ESC/? to close ");
     x += 2;
     y += 2;
-    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "MOVE COMMANDS");
+    ctx.print_color(x, y, RGB::named(GREEN), RGB::named(BLACK), "MOVE COMMANDS");
     y += 2;
     ctx.print(x, y, "y k u   7 8 9   > down");
     ctx.print(x, y + 1, " \\|/     \\|/");
@@ -671,7 +801,7 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     ctx.print(x, y + 3, " /|\\     /|\\");
     ctx.print(x, y + 4, "b j n   1 2 3   . wait");
     y += 7;
-    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "OBJECT INTERACTION");
+    ctx.print_color(x, y, RGB::named(GREEN), RGB::named(BLACK), "OBJECT INTERACTION");
     y += 2;
     ctx.print(x, y, "g get    d drop");
     y += 1;
@@ -681,7 +811,7 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     y += 1;
     ctx.print(x, y, "f force  x farlook");
     y += 2;
-    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "MOUSE CONTROL");
+    ctx.print_color(x, y, RGB::named(GREEN), RGB::named(BLACK), "MOUSE CONTROL");
     y += 2;
     ctx.print(x, y, "hover for tooltips");
 
@@ -766,7 +896,7 @@ pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
     return player_inventory;
 }
 
-pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
     let player_inventory = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
 
@@ -779,12 +909,12 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
         "You can't use items on the overmap [Esc.]"
     };
 
-    ctx.print_color(1 + x_offset, 1 + y_offset, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), message);
+    ctx.print_color(1 + x_offset, 1 + y_offset, RGB::named(WHITE), RGB::named(BLACK), message);
 
     let x = 1 + x_offset;
     let y = 3 + y_offset;
     let width = get_max_inventory_width(&player_inventory);
-    ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
     print_options(&player_inventory, x + 1, y + 1, ctx);
 
     match ctx.key {
@@ -796,7 +926,10 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
                     let selection = letter_to_option::letter_to_option(key, ctx.shift);
                     if selection > -1 && selection < (count as i32) {
                         if on_overmap {
-                            gamelog::Logger::new().append("You can't use items on the overmap.").log();
+                            gamelog::Logger
+                                ::new()
+                                .append("You can't use items on the overmap.")
+                                .log();
                         } else {
                             return (
                                 ItemMenuResult::Selected,
@@ -815,21 +948,25 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     }
 }
 
-pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
     let player_inventory = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
 
     let (x_offset, y_offset) = (1, 10);
 
     let on_overmap = gs.ecs.fetch::<Map>().overmap;
-    let message = if !on_overmap { "Drop what? [aA-zZ][Esc.]" } else { "You can't drop items on the overmap [Esc.]" };
+    let message = if !on_overmap {
+        "Drop what? [aA-zZ][Esc.]"
+    } else {
+        "You can't drop items on the overmap [Esc.]"
+    };
 
-    ctx.print_color(1 + x_offset, 1 + y_offset, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), message);
+    ctx.print_color(1 + x_offset, 1 + y_offset, RGB::named(WHITE), RGB::named(BLACK), message);
 
     let x = 1 + x_offset;
     let y = 3 + y_offset;
     let width = get_max_inventory_width(&player_inventory);
-    ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
     print_options(&player_inventory, x + 1, y + 1, ctx);
 
     match ctx.key {
@@ -838,10 +975,13 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = rltk::letter_to_option(key);
+                    let selection = letter_to_option(key);
                     if selection > -1 && selection < (count as i32) {
                         if on_overmap {
-                            gamelog::Logger::new().append("You can't drop items on the overmap.").log();
+                            gamelog::Logger
+                                ::new()
+                                .append("You can't drop items on the overmap.")
+                                .log();
                         } else {
                             return (
                                 ItemMenuResult::Selected,
@@ -860,7 +1000,7 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     }
 }
 
-pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn remove_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let backpack = gs.ecs.read_storage::<Equipped>();
     let entities = gs.ecs.entities();
@@ -872,14 +1012,16 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     ctx.print_color(
         1 + x_offset,
         1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(WHITE),
+        RGB::named(BLACK),
         "Unequip what? [aA-zZ][Esc.]"
     );
 
     let mut equippable: Vec<(Entity, String)> = Vec::new();
     let mut width = 2;
-    for (entity, _pack) in (&entities, &backpack).join().filter(|item| item.1.owner == *player_entity) {
+    for (entity, _pack) in (&entities, &backpack)
+        .join()
+        .filter(|item| item.1.owner == *player_entity) {
         let this_name = &obfuscate_name_ecs(&gs.ecs, entity).0;
         let this_width = 5 + this_name.len();
         width = if width > this_width { width } else { this_width };
@@ -889,7 +1031,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     let x = 1 + x_offset;
     let mut y = 3 + y_offset;
 
-    ctx.draw_box(x, y, width, (count + 1) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_box(x, y, width, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
     y += 1;
 
     let mut j = 0;
@@ -898,12 +1040,12 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
         let (mut fg, glyph) = if let Some(renderable) = renderables.get(*e) {
             (renderable.fg, renderable.glyph)
         } else {
-            (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
+            (RGB::named(WHITE), to_cp437('-'))
         };
-        ctx.set(x + 1, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + (j as rltk::FontCharType));
-        ctx.set(x + 3, y, fg, RGB::named(rltk::BLACK), glyph);
+        ctx.set(x + 1, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + (j as FontCharType));
+        ctx.set(x + 3, y, fg, RGB::named(BLACK), glyph);
         fg = RGB::named(item_colour_ecs(&gs.ecs, *e));
-        ctx.print_color(x + 5, y, fg, RGB::named(rltk::BLACK), name);
+        ctx.print_color(x + 5, y, fg, RGB::named(BLACK), name);
         y += 1;
         j += 1;
     }
@@ -914,7 +1056,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = rltk::letter_to_option(key);
+                    let selection = letter_to_option(key);
                     if selection > -1 && selection < (count as i32) {
                         return (ItemMenuResult::Selected, Some(equippable[selection as usize].0));
                     }
@@ -936,7 +1078,7 @@ pub enum TargetResult {
 
 pub fn ranged_target(
     gs: &mut State,
-    ctx: &mut Rltk,
+    ctx: &mut BTerm,
     x: i32,
     y: i32,
     range: i32,
@@ -950,8 +1092,8 @@ pub fn ranged_target(
     ctx.print_color(
         1 + x_offset,
         1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(WHITE),
+        RGB::named(BLACK),
         "Targeting which tile? [mouse input]"
     );
 
@@ -961,11 +1103,16 @@ pub fn ranged_target(
     if let Some(visible) = visible {
         // We have a viewshed
         for idx in visible.visible_tiles.iter() {
-            let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
+            let distance = DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
             if distance <= (range as f32) {
                 let screen_x = idx.x - min_x;
                 let screen_y = idx.y - min_y;
-                if screen_x > 1 && screen_x < max_x - min_x - 1 && screen_y > 1 && screen_y < max_y - min_y - 1 {
+                if
+                    screen_x > 1 &&
+                    screen_x < max_x - min_x - 1 &&
+                    screen_y > 1 &&
+                    screen_y < max_y - min_y - 1
+                {
                     ctx.set_bg(screen_x + x_offset, screen_y + y_offset, TARGETING_VALID_COL);
                     available_cells.push(idx);
                 }
@@ -977,7 +1124,10 @@ pub fn ranged_target(
 
     // Draw mouse cursor
     let mouse_pos = (x, y);
-    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs, ctx);
+    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(
+        &gs.ecs,
+        ctx
+    );
     let (screen_x, screen_y) = (69, 41);
     let x = x.clamp(x_offset, x_offset - 1 + (screen_x as i32));
     let y = y.clamp(y_offset, y_offset - 1 + (screen_y as i32));
@@ -994,7 +1144,7 @@ pub fn ranged_target(
     }
     let mut result = (TargetResult::NoResponse { x, y }, None);
     if valid_target {
-        let path = rltk::line2d(
+        let path = line2d(
             LineAlg::Bresenham,
             Point::new(player_pos.x, player_pos.y),
             Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)
@@ -1014,12 +1164,14 @@ pub fn ranged_target(
         if aoe > 0 {
             // We adjust for camera position when getting FOV, but then we need to adjust back
             // when iterating through the tiles themselves, by taking away min_x/min_y.
-            let mut blast_tiles = rltk::field_of_view(
+            let mut blast_tiles = field_of_view(
                 Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1),
                 aoe,
                 &*map
             );
-            blast_tiles.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
+            blast_tiles.retain(
+                |p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1
+            );
             for tile in blast_tiles.iter() {
                 let bg = if available_cells.contains(&tile) {
                     let col1 = TARGETING_AOE_COL;
@@ -1040,13 +1192,16 @@ pub fn ranged_target(
             Some(key) =>
                 match key {
                     VirtualKeyCode::Return => {
-                        return (TargetResult::Selected, Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)));
+                        return (
+                            TargetResult::Selected,
+                            Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)),
+                        );
                     }
                     _ => result,
                 }
         };
     } else {
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::RED));
+        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(RED));
     }
 
     result = match ctx.key {
@@ -1085,7 +1240,7 @@ pub enum MainMenuResult {
     },
 }
 
-pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
+pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
     let save_exists = super::saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
     let assets = gs.ecs.fetch::<RexAssets>();
@@ -1099,34 +1254,34 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
         height -= 1;
     }
 
-    ctx.draw_box_double(x, y - 4, 13, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    ctx.print_color(x + 3, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "RUST-RL!");
+    ctx.draw_box_double(x, y - 4, 13, height, RGB::named(WHITE), RGB::named(BLACK));
+    ctx.print_color(x + 3, y - 2, RGB::named(YELLOW), RGB::named(BLACK), "RUST-RL!");
 
     if let RunState::MainMenu { menu_selection: selection } = *runstate {
         if save_exists {
             if selection == MainMenuSelection::LoadGame {
-                ctx.print_color(x + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "[");
-                ctx.print_color(x + 3, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "continue");
-                ctx.print_color(x + 11, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "]");
+                ctx.print_color(x + 2, y, RGB::named(YELLOW), RGB::named(BLACK), "[");
+                ctx.print_color(x + 3, y, RGB::named(GREEN), RGB::named(BLACK), "continue");
+                ctx.print_color(x + 11, y, RGB::named(YELLOW), RGB::named(BLACK), "]");
             } else {
-                ctx.print_color(x + 3, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "continue");
+                ctx.print_color(x + 3, y, RGB::named(WHITE), RGB::named(BLACK), "continue");
             }
             y += 1;
         }
         if selection == MainMenuSelection::NewGame {
-            ctx.print_color(x + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "[");
-            ctx.print_color(x + 3, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "new game");
-            ctx.print_color(x + 11, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "]");
+            ctx.print_color(x + 2, y, RGB::named(YELLOW), RGB::named(BLACK), "[");
+            ctx.print_color(x + 3, y, RGB::named(GREEN), RGB::named(BLACK), "new game");
+            ctx.print_color(x + 11, y, RGB::named(YELLOW), RGB::named(BLACK), "]");
         } else {
-            ctx.print_color(x + 3, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "new game");
+            ctx.print_color(x + 3, y, RGB::named(WHITE), RGB::named(BLACK), "new game");
         }
         y += 1;
         if selection == MainMenuSelection::Quit {
-            ctx.print_color(x + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "[");
-            ctx.print_color(x + 3, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "goodbye!");
-            ctx.print_color(x + 11, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "]");
+            ctx.print_color(x + 2, y, RGB::named(YELLOW), RGB::named(BLACK), "[");
+            ctx.print_color(x + 3, y, RGB::named(GREEN), RGB::named(BLACK), "goodbye!");
+            ctx.print_color(x + 11, y, RGB::named(YELLOW), RGB::named(BLACK), "]");
         } else {
-            ctx.print_color(x + 5, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "quit");
+            ctx.print_color(x + 5, y, RGB::named(WHITE), RGB::named(BLACK), "quit");
         }
 
         match ctx.key {
@@ -1142,7 +1297,9 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
                         return MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame };
                     }
                     VirtualKeyCode::L => {
-                        return MainMenuResult::NoSelection { selected: MainMenuSelection::LoadGame };
+                        return MainMenuResult::NoSelection {
+                            selected: MainMenuSelection::LoadGame,
+                        };
                     }
                     VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
                         let mut new_selection;
@@ -1199,18 +1356,18 @@ pub enum YesNoResult {
     No,
 }
 
-pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
+pub fn game_over(ctx: &mut BTerm) -> YesNoResult {
     let mut x = 3;
     let mut y = 12;
     let width = 45;
     let height = 20;
-    ctx.draw_box(x, y, width, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    ctx.print_color(x + 3, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "You died!");
+    ctx.draw_box(x, y, width, height, RGB::named(WHITE), RGB::named(BLACK));
+    ctx.print_color(x + 3, y, RGB::named(YELLOW), RGB::named(BLACK), "You died!");
     ctx.print_color(
         x + 3,
         y + height,
-        RGB::named(rltk::YELLOW),
-        RGB::named(rltk::BLACK),
+        RGB::named(YELLOW),
+        RGB::named(BLACK),
         " Write a morgue file? [y/n] "
     );
     x += 2;
@@ -1218,20 +1375,23 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
     ctx.print_color(
         x,
         y,
-        RGB::named(rltk::GREEN),
-        RGB::named(rltk::BLACK),
+        RGB::named(GREEN),
+        RGB::named(BLACK),
         format!("You survived for {} turns.", crate::gamelog::get_event_count(EVENT::COUNT_TURN))
     );
     y += 2;
-    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), format!("And in the process, you"));
+    ctx.print_color(x, y, RGB::named(GREEN), RGB::named(BLACK), format!("And in the process, you"));
     y += 1;
     if crate::gamelog::get_event_count(EVENT::COUNT_CHANGED_FLOOR) > 0 {
         ctx.print_color(
             x + 1,
             y,
-            RGB::named(rltk::WHITE),
-            RGB::named(rltk::BLACK),
-            format!("- changed floor {} times", crate::gamelog::get_event_count(EVENT::COUNT_CHANGED_FLOOR))
+            RGB::named(WHITE),
+            RGB::named(BLACK),
+            format!(
+                "- changed floor {} times",
+                crate::gamelog::get_event_count(EVENT::COUNT_CHANGED_FLOOR)
+            )
         );
         y += 1;
     }
@@ -1239,8 +1399,8 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
         ctx.print_color(
             x + 1,
             y,
-            RGB::named(rltk::WHITE),
-            RGB::named(rltk::BLACK),
+            RGB::named(WHITE),
+            RGB::named(BLACK),
             format!(
                 "- kicked {} time(s), breaking {} object(s)",
                 crate::gamelog::get_event_count(EVENT::COUNT_KICK),
@@ -1253,9 +1413,12 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
         ctx.print_color(
             x + 1,
             y,
-            RGB::named(rltk::WHITE),
-            RGB::named(rltk::BLACK),
-            format!("- slew {} other creature(s)", crate::gamelog::get_event_count(EVENT::COUNT_KILLED))
+            RGB::named(WHITE),
+            RGB::named(BLACK),
+            format!(
+                "- slew {} other creature(s)",
+                crate::gamelog::get_event_count(EVENT::COUNT_KILLED)
+            )
         );
         y += 1;
     }
@@ -1263,9 +1426,12 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
         ctx.print_color(
             x + 1,
             y,
-            RGB::named(rltk::WHITE),
-            RGB::named(rltk::BLACK),
-            format!("- forgot the controls {} time(s)", crate::gamelog::get_event_count(EVENT::COUNT_LOOKED_FOR_HELP))
+            RGB::named(WHITE),
+            RGB::named(BLACK),
+            format!(
+                "- forgot the controls {} time(s)",
+                crate::gamelog::get_event_count(EVENT::COUNT_LOOKED_FOR_HELP)
+            )
         );
     }
 

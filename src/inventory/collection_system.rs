@@ -12,10 +12,10 @@ use crate::{
     ObfuscatedName,
     Position,
     WantsToPickupItem,
-    Renderable,
 };
 use specs::prelude::*;
 use crate::data::messages;
+use bracket_lib::prelude::*;
 
 pub struct ItemCollectionSystem {}
 
@@ -52,7 +52,9 @@ impl<'a> System<'a> for ItemCollectionSystem {
 
         for pickup in wants_pickup.join() {
             positions.remove(pickup.item);
-            backpack.insert(pickup.item, InBackpack { owner: pickup.collected_by }).expect("Unable to pickup item.");
+            backpack
+                .insert(pickup.item, InBackpack { owner: pickup.collected_by })
+                .expect("Unable to pickup item.");
             equipment_changed
                 .insert(pickup.collected_by, EquipmentChanged {})
                 .expect("Unable to insert EquipmentChanged.");
@@ -76,7 +78,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
                             ).0
                         )
                     )
-                    .colour(rltk::WHITE)
+                    .colour(WHITE)
                     .period()
                     .log();
             }

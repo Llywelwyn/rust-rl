@@ -1,10 +1,10 @@
 use super::{ paint, BuilderMap, MetaMapBuilder, Rect, Symmetry, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct RoomExploder {}
 
 impl MetaMapBuilder for RoomExploder {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }

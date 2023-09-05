@@ -1,5 +1,12 @@
-use super::{ effects::{ add_effect, EffectType, Targets }, gamelog, Clock, HungerClock, HungerState, TakingTurn };
-use rltk::prelude::*;
+use super::{
+    effects::{ add_effect, EffectType, Targets },
+    gamelog,
+    Clock,
+    HungerClock,
+    HungerState,
+    TakingTurn,
+};
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::config::CONFIG;
 
@@ -69,11 +76,18 @@ impl<'a> System<'a> for HungerSystem {
             let initial_state = hunger_clock.state;
             hunger_clock.state = get_hunger_state(hunger_clock.duration);
             if hunger_clock.state == HungerState::Starving {
-                add_effect(None, EffectType::Damage { amount: 1 }, Targets::Entity { target: entity });
+                add_effect(
+                    None,
+                    EffectType::Damage { amount: 1 },
+                    Targets::Entity { target: entity }
+                );
             }
             if CONFIG.logging.log_ticks && entity == *player_entity {
-                rltk::console::log(
-                    format!("HUNGER SYSTEM: Ticked for player entity. [clock: {}]", hunger_clock.duration)
+                console::log(
+                    format!(
+                        "HUNGER SYSTEM: Ticked for player entity. [clock: {}]",
+                        hunger_clock.duration
+                    )
                 );
             }
             if hunger_clock.state == initial_state {

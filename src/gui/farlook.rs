@@ -1,5 +1,5 @@
 use super::{ State, RunState, tooltip::draw_tooltips, camera::get_screen_bounds };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum FarlookResult {
@@ -10,7 +10,7 @@ pub enum FarlookResult {
     Cancel,
 }
 
-pub fn show_farlook(gs: &mut State, ctx: &mut Rltk) -> FarlookResult {
+pub fn show_farlook(gs: &mut State, ctx: &mut BTerm) -> FarlookResult {
     let runstate = gs.ecs.fetch::<RunState>();
     let (_min_x, _max_x, _min_y, _max_y, x_offset, y_offset) = get_screen_bounds(&gs.ecs, ctx);
 
@@ -27,7 +27,7 @@ pub fn show_farlook(gs: &mut State, ctx: &mut Rltk) -> FarlookResult {
         let x = x.clamp(x_offset, x_offset - 1 + (screen_x as i32));
         let y = y.clamp(y_offset, y_offset - 1 + (screen_y as i32));
 
-        ctx.set(x, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437('X'));
+        ctx.set(x, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437('X'));
         draw_tooltips(&gs.ecs, ctx, Some((x, y)));
 
         return match ctx.key {

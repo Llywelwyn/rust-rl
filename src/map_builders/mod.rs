@@ -1,4 +1,6 @@
 use super::{ spawner, Map, Position, Rect, TileType };
+use bracket_lib::prelude::*;
+
 mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod bsp_interior;
@@ -143,7 +145,7 @@ impl BuilderChain {
         self.builders.push(metabuilder);
     }
 
-    pub fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator) {
+    pub fn build_map(&mut self, rng: &mut RandomNumberGenerator) {
         match &mut self.starter {
             None => panic!("Cannot run a map builder chain without a starting build system"),
             Some(starter) => {
@@ -165,20 +167,20 @@ impl BuilderChain {
             spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
         }
         if CONFIG.logging.log_spawning {
-            rltk::console::log(format!("DEBUGINFO: SPAWNED ENTITIES = {:?}", spawned_entities));
+            console::log(format!("DEBUGINFO: SPAWNED ENTITIES = {:?}", spawned_entities));
         }
     }
 }
 
 pub trait InitialMapBuilder {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap);
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap);
 }
 
 pub trait MetaMapBuilder {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap);
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap);
 }
 
-fn random_start_position(rng: &mut rltk::RandomNumberGenerator) -> (XStart, YStart) {
+fn random_start_position(rng: &mut RandomNumberGenerator) -> (XStart, YStart) {
     let x;
     let xroll = rng.roll_dice(1, 3);
     match xroll {
@@ -210,11 +212,7 @@ fn random_start_position(rng: &mut rltk::RandomNumberGenerator) -> (XStart, YSta
     (x, y)
 }
 
-fn random_room_builder(
-    rng: &mut rltk::RandomNumberGenerator,
-    builder: &mut BuilderChain,
-    end: bool
-) {
+fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderChain, end: bool) {
     let build_roll = rng.roll_dice(1, 3);
     // Start with a room builder.
     match build_roll {
@@ -296,7 +294,7 @@ fn random_room_builder(
 }
 
 fn random_shape_builder(
-    rng: &mut rltk::RandomNumberGenerator,
+    rng: &mut RandomNumberGenerator,
     builder: &mut BuilderChain,
     end: bool
 ) -> bool {
@@ -368,7 +366,7 @@ pub enum BuildType {
 
 pub fn random_builder(
     new_id: i32,
-    rng: &mut rltk::RandomNumberGenerator,
+    rng: &mut RandomNumberGenerator,
     width: i32,
     height: i32,
     difficulty: i32,
@@ -377,7 +375,7 @@ pub fn random_builder(
     end: bool,
     build_type: BuildType
 ) -> BuilderChain {
-    rltk::console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
+    console::log(format!("DEBUGINFO: Building random (ID:{}, DIFF:{})", new_id, difficulty));
     let mut builder = BuilderChain::new(
         false,
         new_id,
@@ -441,7 +439,7 @@ pub fn random_builder(
 
 pub fn level_builder(
     new_id: i32,
-    rng: &mut rltk::RandomNumberGenerator,
+    rng: &mut RandomNumberGenerator,
     width: i32,
     height: i32,
     initial_player_level: i32

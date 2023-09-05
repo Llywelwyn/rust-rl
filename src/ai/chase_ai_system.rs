@@ -1,5 +1,5 @@
 use crate::{ Chasing, EntityMoved, Map, Position, TakingTurn, Telepath, Viewshed };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::HashMap;
 use super::approach_ai_system::get_adjacent_unblocked;
@@ -26,8 +26,16 @@ impl<'a> System<'a> for ChaseAI {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut turns, mut chasing, mut positions, mut map, mut viewsheds, mut telepaths, mut entity_moved, entities) =
-            data;
+        let (
+            mut turns,
+            mut chasing,
+            mut positions,
+            mut map,
+            mut viewsheds,
+            mut telepaths,
+            mut entity_moved,
+            entities,
+        ) = data;
         let mut targets: HashMap<Entity, (i32, i32)> = HashMap::new();
         let mut end_chase: Vec<Entity> = Vec::new();
         // For every chasing entity with a turn, look for a valid target position,
@@ -67,9 +75,12 @@ impl<'a> System<'a> for ChaseAI {
             let mut path: Option<NavigationPath> = None;
             let idx = map.xy_idx(pos.x, pos.y);
             for tar_idx in target_idxs {
-                let potential_path = rltk::a_star_search(idx, tar_idx, &mut *map);
+                let potential_path = a_star_search(idx, tar_idx, &mut *map);
                 if potential_path.success && potential_path.steps.len() > 1 {
-                    if path.is_none() || potential_path.steps.len() < path.as_ref().unwrap().steps.len() {
+                    if
+                        path.is_none() ||
+                        potential_path.steps.len() < path.as_ref().unwrap().steps.len()
+                    {
                         path = Some(potential_path);
                     }
                 }

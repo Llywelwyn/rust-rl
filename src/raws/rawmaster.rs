@@ -6,7 +6,7 @@ use crate::random_table::RandomTable;
 use crate::config::CONFIG;
 use crate::data::visuals::BLOODSTAIN_COLOUR;
 use regex::Regex;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use specs::saveload::{ MarkedBuilder, SimpleMarker };
 use std::collections::{ HashMap, HashSet };
@@ -98,7 +98,7 @@ macro_rules! apply_flags {
                 "LARGE_GROUP" => {} // and don't need to apply a component.
                 "MULTIATTACK" => $eb = $eb.with(MultiAttack {}),
                 "BLIND" => $eb = $eb.with(Blind {}),
-                _ => rltk::console::log(format!("Unrecognised flag: {}", flag.as_str())),
+                _ => console::log(format!("Unrecognised flag: {}", flag.as_str())),
             }
         }
     };
@@ -203,13 +203,13 @@ impl RawMaster {
 /// Checks a string against a HashSet, logging if a duplicate is found.
 fn check_for_duplicate_entries(used_names: &HashSet<String>, id: &String) {
     if used_names.contains(id) {
-        rltk::console::log(format!("DEBUGINFO: Duplicate ID found in raws [{}]", id));
+        console::log(format!("DEBUGINFO: Duplicate ID found in raws [{}]", id));
     }
 }
 /// Checks a string against a HashSet, logging if the string isn't found.
 fn check_for_unspecified_entity(used_names: &HashSet<String>, id: &String) {
     if !used_names.contains(id) {
-        rltk::console::log(format!("DEBUGINFO: Table references unspecified entity [{}]", id));
+        console::log(format!("DEBUGINFO: Table references unspecified entity [{}]", id));
     }
 }
 
@@ -266,8 +266,14 @@ pub fn spawn_named_item(
         // -- DROP EVERYTHING THAT INVOLVES THE ECS BEFORE THIS POINT ---
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
-        eb = eb.with(Name { name: item_template.name.name.clone(), plural: item_template.name.plural.clone() });
-        eb = eb.with(Item { weight: item_template.weight.unwrap_or(0.0), value: item_template.value.unwrap_or(0.0) });
+        eb = eb.with(Name {
+            name: item_template.name.name.clone(),
+            plural: item_template.name.plural.clone(),
+        });
+        eb = eb.with(Item {
+            weight: item_template.weight.unwrap_or(0.0),
+            value: item_template.value.unwrap_or(0.0),
+        });
         eb = spawn_position(pos, eb, key, raws);
 
         if let Some(renderable) = &item_template.renderable {
@@ -379,7 +385,11 @@ pub fn spawn_named_mob(
         eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
         eb = spawn_position(pos, eb, key, raws);
         eb = eb.with(Name { name: mob_template.name.clone(), plural: mob_template.name.clone() });
-        eb = eb.with(Viewshed { visible_tiles: Vec::new(), range: mob_template.vision_range as i32, dirty: true });
+        eb = eb.with(Viewshed {
+            visible_tiles: Vec::new(),
+            range: mob_template.vision_range as i32,
+            dirty: true,
+        });
         if let Some(telepath) = &mob_template.telepathy_range {
             eb = eb.with(Telepath { telepath_tiles: Vec::new(), range: *telepath, dirty: true });
         }
@@ -447,7 +457,11 @@ pub fn spawn_named_mob(
         let speed = if mob_template.speed.is_some() { mob_template.speed.unwrap() } else { 12 };
         eb = eb.with(Energy { current: 0, speed: speed });
 
-        let base_mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 0 };
+        let base_mob_level = if mob_template.level.is_some() {
+            mob_template.level.unwrap()
+        } else {
+            0
+        };
         let mut mob_level = base_mob_level;
         // If the level difficulty is smaller than the mob's base level, subtract 1;
         // else, if the level difficulty is larger, add one-fifth of the difference
@@ -464,7 +478,7 @@ pub fn spawn_named_mob(
         mob_level = i32::min(mob_level, (1.5 * (base_mob_level as f32)).trunc() as i32);
 
         // Should really use existing RNG here
-        let mut rng = rltk::RandomNumberGenerator::new();
+        let mut rng = RandomNumberGenerator::new();
         let mob_hp = npc_hp_at_level(&mut rng, mob_con, mob_level);
         let mob_mana = mana_at_level(&mut rng, mob_int, mob_level);
         let mob_bac = if mob_template.bac.is_some() { mob_template.bac.unwrap() } else { 10 };
@@ -497,7 +511,7 @@ pub fn spawn_named_mob(
                         skills.skills.insert(Skill::Magic, *sk.1);
                     }
                     _ => {
-                        rltk::console::log(format!("Unknown skill referenced: [{}]", sk.0));
+                        console::log(format!("Unknown skill referenced: [{}]", sk.0));
                     }
                 }
             }
@@ -548,7 +562,7 @@ pub fn spawn_named_mob(
         }
 
         if CONFIG.logging.log_spawning {
-            rltk::console::log(
+            console::log(
                 format!(
                     "SPAWNLOG: {} ({}HP, {}MANA, {}BAC) spawned at level {} ({}[base], {}[map difficulty], {}[player level]), worth {} XP",
                     &mob_template.name,
@@ -569,7 +583,14 @@ pub fn spawn_named_mob(
         // Build entity, then check for anything they're wearing
         if let Some(wielding) = &mob_template.equipped {
             for tag in wielding.iter() {
-                spawn_named_entity(raws, ecs, tag, None, SpawnType::Equipped { by: new_mob }, map_difficulty);
+                spawn_named_entity(
+                    raws,
+                    ecs,
+                    tag,
+                    None,
+                    SpawnType::Equipped { by: new_mob },
+                    map_difficulty
+                );
             }
         }
 
@@ -578,7 +599,12 @@ pub fn spawn_named_mob(
     None
 }
 
-pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_prop(
+    raws: &RawMaster,
+    ecs: &mut World,
+    key: &str,
+    pos: SpawnType
+) -> Option<Entity> {
     if raws.prop_index.contains_key(key) {
         // ENTITY BUILDER PREP
         let prop_template = &raws.raws.props[raws.prop_index[key]];
@@ -610,7 +636,12 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     None
 }
 
-fn spawn_position<'a>(pos: SpawnType, new_entity: EntityBuilder<'a>, tag: &str, raws: &RawMaster) -> EntityBuilder<'a> {
+fn spawn_position<'a>(
+    pos: SpawnType,
+    new_entity: EntityBuilder<'a>,
+    tag: &str,
+    raws: &RawMaster
+) -> EntityBuilder<'a> {
     let mut eb = new_entity;
 
     match pos {
@@ -629,11 +660,13 @@ fn spawn_position<'a>(pos: SpawnType, new_entity: EntityBuilder<'a>, tag: &str, 
     eb
 }
 
-fn get_renderable_component(renderable: &super::item_structs::Renderable) -> crate::components::Renderable {
+fn get_renderable_component(
+    renderable: &super::item_structs::Renderable
+) -> crate::components::Renderable {
     crate::components::Renderable {
-        glyph: rltk::to_cp437(renderable.glyph.chars().next().unwrap()),
-        fg: rltk::RGB::from_hex(&renderable.fg).expect("Invalid RGB"),
-        bg: rltk::RGB::from_hex(&renderable.bg).expect("Invalid RGB"),
+        glyph: to_cp437(renderable.glyph.chars().next().unwrap()),
+        fg: RGB::from_hex(&renderable.fg).expect("Invalid RGB"),
+        bg: RGB::from_hex(&renderable.bg).expect("Invalid RGB"),
         render_order: renderable.order,
     }
 }
@@ -668,7 +701,7 @@ pub fn table_by_name(raws: &RawMaster, key: &str, optional_difficulty: Option<i3
             return rt;
         }
     }
-    rltk::console::log(
+    console::log(
         format!(
             "DEBUGINFO: Something went wrong when trying to spawn {} @ map difficulty {} [upper bound: {}, lower bound: {}]. Returned debug entry.",
             key,
@@ -741,7 +774,11 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
     panic!("Trying to equip {}, but it has no slot tag.", tag);
 }
 
-pub fn roll_on_loot_table(raws: &RawMaster, rng: &mut RandomNumberGenerator, key: &str) -> Option<String> {
+pub fn roll_on_loot_table(
+    raws: &RawMaster,
+    rng: &mut RandomNumberGenerator,
+    key: &str
+) -> Option<String> {
     if raws.loot_index.contains_key(key) {
         console::log(format!("DEBUGINFO: Rolling on loot table: {}", key));
         let mut rt = RandomTable::new();
@@ -792,7 +829,11 @@ pub fn get_mob_spawn_type(raws: &RawMaster, key: &str) -> SpawnsAs {
     return SpawnsAs::Single;
 }
 
-pub fn get_mob_spawn_amount(rng: &mut RandomNumberGenerator, spawn_type: &SpawnsAs, player_level: i32) -> i32 {
+pub fn get_mob_spawn_amount(
+    rng: &mut RandomNumberGenerator,
+    spawn_type: &SpawnsAs,
+    player_level: i32
+) -> i32 {
     let n = match spawn_type {
         // Single mobs always spawn alone.
         SpawnsAs::Single => 1,
@@ -893,7 +934,11 @@ pub fn faction_reaction(this_faction: &str, other_faction: &str, raws: &RawMaste
     return Reaction::Ignore;
 }
 
-pub fn ancestry_reaction(this_ancestry: Ancestry, other_ancestry: Ancestry, raws: &RawMaster) -> Option<Reaction> {
+pub fn ancestry_reaction(
+    this_ancestry: Ancestry,
+    other_ancestry: Ancestry,
+    raws: &RawMaster
+) -> Option<Reaction> {
     if this_ancestry == other_ancestry {
         return Some(Reaction::Ignore);
     } else {

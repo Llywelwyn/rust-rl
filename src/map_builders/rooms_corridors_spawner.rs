@@ -1,10 +1,10 @@
 use super::{ spawner, BuilderMap, MetaMapBuilder };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct CorridorSpawner {}
 
 impl MetaMapBuilder for CorridorSpawner {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }

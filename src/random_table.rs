@@ -1,4 +1,4 @@
-use rltk::RandomNumberGenerator;
+use bracket_lib::random::RandomNumberGenerator;
 
 // FIXME: note to self,
 // passing around strings here is super inefficient, so this is

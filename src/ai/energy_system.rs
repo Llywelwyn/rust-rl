@@ -11,7 +11,7 @@ use crate::{
     TakingTurn,
     Confusion,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::config::CONFIG;
 use crate::data::events::*;
@@ -126,7 +126,7 @@ impl<'a> System<'a> for EnergySystem {
                 if entity == *player {
                     *runstate = RunState::AwaitingInput;
                 } else {
-                    let distance = rltk::DistanceAlg::Pythagoras.distance2d(
+                    let distance = DistanceAlg::Pythagoras.distance2d(
                         *player_pos,
                         Point::new(pos.x, pos.y)
                     );

@@ -1,12 +1,12 @@
 use super::{ draw_corridor, BuilderMap, MetaMapBuilder, Rect };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 use std::collections::HashSet;
 
 pub struct NearestCorridors {}
 
 impl MetaMapBuilder for NearestCorridors {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.corridors(rng, build_data);
     }
 }
@@ -30,12 +30,12 @@ impl NearestCorridors {
         for (i, room) in rooms.iter().enumerate() {
             let mut room_distance: Vec<(usize, f32)> = Vec::new();
             let room_centre = room.center();
-            let room_centre_pt = rltk::Point::new(room_centre.x, room_centre.y);
+            let room_centre_pt = Point::new(room_centre.x, room_centre.y);
             for (j, other_room) in rooms.iter().enumerate() {
                 if i != j && !connected.contains(&j) {
                     let other_centre = other_room.center();
-                    let other_centre_pt = rltk::Point::new(other_centre.x, other_centre.y);
-                    let distance = rltk::DistanceAlg::Pythagoras.distance2d(
+                    let other_centre_pt = Point::new(other_centre.x, other_centre.y);
+                    let distance = DistanceAlg::Pythagoras.distance2d(
                         room_centre_pt,
                         other_centre_pt
                     );

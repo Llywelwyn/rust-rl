@@ -17,6 +17,7 @@ use crate::{
 };
 use specs::prelude::*;
 use crate::data::messages;
+use bracket_lib::prelude::*;
 
 pub struct ItemEquipSystem {}
 
@@ -66,7 +67,11 @@ impl<'a> System<'a> for ItemEquipSystem {
                 // Remove any items target has in item's slot
                 let mut can_equip = true;
                 let mut to_unequip: Vec<Entity> = Vec::new();
-                for (item_entity, already_equipped, _name) in (&entities, &equipped, &names).join() {
+                for (item_entity, already_equipped, _name) in (
+                    &entities,
+                    &equipped,
+                    &names,
+                ).join() {
                     if already_equipped.owner == target && already_equipped.slot == target_slot {
                         if let Some(beatitude) = beatitudes.get(item_entity) {
                             if beatitude.buc == BUC::Cursed {
@@ -85,7 +90,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                                             None
                                         ).0
                                     )
-                                    .colour(rltk::WHITE)
+                                    .colour(WHITE)
                                     .append("!");
                                 identified_beatitude
                                     .insert(item_entity, IdentifiedBeatitude {})
@@ -101,15 +106,25 @@ impl<'a> System<'a> for ItemEquipSystem {
                 }
                 for item in to_unequip.iter() {
                     equipped.remove(*item);
-                    backpack.insert(*item, InBackpack { owner: target }).expect("Unable to insert backpack");
+                    backpack
+                        .insert(*item, InBackpack { owner: target })
+                        .expect("Unable to insert backpack");
                     if target == *player_entity {
                         logger = logger
                             .append(messages::YOU_REMOVE_ITEM)
                             .colour(item_colour(*item, &beatitudes))
                             .append_n(
-                                obfuscate_name(*item, &names, &magic_items, &obfuscated_names, &beatitudes, &dm, None).0
+                                obfuscate_name(
+                                    *item,
+                                    &names,
+                                    &magic_items,
+                                    &obfuscated_names,
+                                    &beatitudes,
+                                    &dm,
+                                    None
+                                ).0
                             )
-                            .colour(rltk::WHITE)
+                            .colour(WHITE)
                             .period();
                     }
                 }
@@ -134,7 +149,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                                 None
                             ).0
                         )
-                        .colour(rltk::WHITE)
+                        .colour(WHITE)
                         .period();
                     logger.log();
                     identified_items

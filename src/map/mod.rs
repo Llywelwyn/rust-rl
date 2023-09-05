@@ -1,4 +1,4 @@
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use serde::{ Deserialize, Serialize };
 use std::collections::{ HashSet, HashMap };
 mod tiletype;
@@ -8,7 +8,11 @@ pub use interval_spawning_system::{ maybe_map_message, try_spawn_interval };
 pub mod dungeon;
 pub use dungeon::{ level_transition, MasterDungeonMap };
 pub mod themes;
-use super::data::visuals::{ BRIGHTEN_FG_COLOUR_BY, GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP };
+use super::data::visuals::{
+    BRIGHTEN_FG_COLOUR_BY,
+    GLOBAL_OFFSET_MIN_CLAMP,
+    GLOBAL_OFFSET_MAX_CLAMP,
+};
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.
@@ -63,7 +67,7 @@ impl Map {
             lit_tiles: vec![true; map_tile_count], // NYI: Light sources. Once those exist, we can set this to false.
             telepath_tiles: vec![false; map_tile_count],
             colour_offset: vec![((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)); map_tile_count],
-            additional_fg_offset: rltk::RGB::from_u8(
+            additional_fg_offset: RGB::from_u8(
                 BRIGHTEN_FG_COLOUR_BY as u8,
                 BRIGHTEN_FG_COLOUR_BY as u8,
                 BRIGHTEN_FG_COLOUR_BY as u8
@@ -78,7 +82,7 @@ impl Map {
             view_blocked: HashSet::new(),
         };
 
-        let mut rng = rltk::RandomNumberGenerator::new();
+        let mut rng = RandomNumberGenerator::new();
 
         for idx in 0..map.colour_offset.len() {
             map.colour_offset[idx].0 = (
@@ -134,12 +138,12 @@ impl BaseMap for Map {
         let w = self.width as usize;
         let p1 = Point::new(idx1 % w, idx1 / w);
         let p2 = Point::new(idx2 % w, idx2 / w);
-        rltk::DistanceAlg::Pythagoras.distance2d(p1, p2)
+        DistanceAlg::Pythagoras.distance2d(p1, p2)
     }
 
     /// Evaluate every possible exit from a given tile in a cardinal direction, and return it as a vector.
-    fn get_available_exits(&self, idx: usize) -> rltk::SmallVec<[(usize, f32); 10]> {
-        let mut exits = rltk::SmallVec::new();
+    fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
+        let mut exits = SmallVec::new();
         let x = (idx as i32) % self.width;
         let y = (idx as i32) / self.width;
         let w = self.width as usize;

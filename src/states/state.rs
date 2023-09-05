@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use super::runstate::RunState;
 use crate::map::*;
 use crate::hunger_system;
@@ -125,7 +125,7 @@ impl State {
             .append("You head to")
             .colour(rgb_to_u8(get_local_col(id)))
             .append_n(&mapname)
-            .colour(rltk::WHITE)
+            .colour(WHITE)
             .period()
             .log();
         gamelog::record_event(EVENT::CHANGED_FLOOR(mapname));
@@ -157,7 +157,7 @@ impl State {
 }
 
 impl GameState for State {
-    fn tick(&mut self, ctx: &mut Rltk) {
+    fn tick(&mut self, ctx: &mut BTerm) {
         let mut new_runstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
@@ -581,6 +581,6 @@ impl GameState for State {
 
         damage_system::delete_the_dead(&mut self.ecs);
 
-        let _ = rltk::render_draw_buffer(ctx);
+        let _ = render_draw_buffer(ctx);
     }
 }

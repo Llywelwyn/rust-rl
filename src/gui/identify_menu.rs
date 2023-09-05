@@ -21,12 +21,12 @@ use crate::{
     Renderable,
     states::state::*,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
 
 /// Handles the Identify menu.
-pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn identify(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let equipped = gs.ecs.read_storage::<Equipped>();
     let backpack = gs.ecs.read_storage::<InBackpack>();
@@ -58,7 +58,8 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
             }
             // If not obfuscated, or already identified, return false.
             if
-                (!obfuscated.get(*item_entity).is_some() || dm.identified_items.contains(&n.name)) &&
+                (!obfuscated.get(*item_entity).is_some() ||
+                    dm.identified_items.contains(&n.name)) &&
                 beatitudes
                     .get(*item_entity)
                     .map(|beatitude| beatitude.known)
@@ -93,7 +94,9 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
     let mut player_inventory: super::PlayerInventory = BTreeMap::new();
     for (entity, _i, renderable, name) in build_identify_iterator() {
         let (singular, plural) = obfuscate_name_ecs(&gs.ecs, entity);
-        let beatitude_status = if let Some(beatitude) = gs.ecs.read_storage::<Beatitude>().get(entity) {
+        let beatitude_status = if
+            let Some(beatitude) = gs.ecs.read_storage::<Beatitude>().get(entity)
+        {
             match beatitude.buc {
                 BUC::Blessed => 1,
                 BUC::Uncursed => 2,
@@ -125,8 +128,8 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
     ctx.print_color(
         1 + x_offset,
         1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(WHITE),
+        RGB::named(BLACK),
         "Identify which item? [aA-zZ][Esc.]"
     );
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
@@ -138,7 +141,7 @@ pub fn identify(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = rltk::letter_to_option(key);
+                    let selection = letter_to_option(key);
                     if selection > -1 && selection < (count as i32) {
                         let item = player_inventory
                             .iter()

@@ -19,7 +19,6 @@ use super::{
     Item,
     Map,
     Name,
-    ParticleBuilder,
     Player,
     Pools,
     Position,
@@ -34,8 +33,7 @@ use super::{
     get_dest,
     Destination,
 };
-use rltk::prelude::*;
-use rltk::{ Point, RandomNumberGenerator, Rltk, VirtualKeyCode };
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{ max, min };
 use crate::data::events::*;
@@ -133,7 +131,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             std::mem::drop(renderables);
                             let mut renderables = ecs.write_storage::<Renderable>();
                             let render_data = renderables.get_mut(potential_target).unwrap();
-                            render_data.glyph = rltk::to_cp437('+'); // Nethack open door, maybe just use '/' instead.
+                            render_data.glyph = to_cp437('+'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
                         result = RunState::Ticking;
@@ -230,7 +228,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                             std::mem::drop(renderables);
                             let mut renderables = ecs.write_storage::<Renderable>();
                             let render_data = renderables.get_mut(potential_target).unwrap();
-                            render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
+                            render_data.glyph = to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
                         result = RunState::Ticking;
@@ -643,7 +641,7 @@ fn get_item(ecs: &mut World) -> RunState {
     }
 }
 
-pub fn player_input(gs: &mut State, ctx: &mut Rltk, on_overmap: bool) -> RunState {
+pub fn player_input(gs: &mut State, ctx: &mut BTerm, on_overmap: bool) -> RunState {
     match ctx.key {
         None => {
             return RunState::AwaitingInput;
@@ -878,7 +876,7 @@ pub fn auto_explore(ecs: &mut World) {
         }
     }
 
-    let path = rltk::a_star_search(map.xy_idx(player_pos.x, player_pos.y), unexplored_tile.0, &*map);
+    let path = a_star_search(map.xy_idx(player_pos.x, player_pos.y), unexplored_tile.0, &*map);
     if path.success && path.steps.len() > 1 {
         let mut idx = map.xy_idx(player_pos.x, player_pos.y);
         map.blocked[idx] = false;

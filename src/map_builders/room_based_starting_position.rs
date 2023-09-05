@@ -1,10 +1,10 @@
 use super::{ BuilderMap, MetaMapBuilder, Position };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct RoomBasedStartingPosition {}
 
 impl MetaMapBuilder for RoomBasedStartingPosition {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
