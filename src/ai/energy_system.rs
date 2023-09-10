@@ -87,16 +87,8 @@ impl<'a> System<'a> for EnergySystem {
             &positions,
             !&confusion,
         ).join() {
-            let burden_modifier = if let Some(burden) = burdens.get(entity) {
-                match burden.level {
-                    BurdenLevel::Burdened => SPEED_MOD_BURDENED,
-                    BurdenLevel::Strained => SPEED_MOD_STRAINED,
-                    BurdenLevel::Overloaded => SPEED_MOD_OVERLOADED,
-                }
-            } else {
-                1.0
-            };
-            let overmap_mod = if map.overmap { SPEED_MOD_OVERMAP_TRAVEL } else { 1.0 };
+            let burden_modifier = get_burden_modifier(&burdens, entity);
+            let overmap_mod = get_overmap_modifier(&map);
             // Every entity has a POTENTIAL equal to their speed.
             let mut energy_potential: i32 = ((energy.speed as f32) *
                 burden_modifier *
@@ -121,37 +113,52 @@ impl<'a> System<'a> for EnergySystem {
             // has enough energy, they take a turn and decrement their energy
             // by TURN_COST. If the current entity is the player, await input.
             if energy.current >= TURN_COST {
-                let mut my_turn = true;
                 energy.current -= TURN_COST;
                 if entity == *player {
                     *runstate = RunState::AwaitingInput;
-                } else {
-                    let distance = DistanceAlg::Pythagoras.distance2d(
-                        *player_pos,
-                        Point::new(pos.x, pos.y)
-                    );
-                    if distance > 20.0 {
-                        my_turn = false;
-                    }
+                } else if cull_turn_by_distance(&player_pos, pos) {
+                    continue;
                 }
-                if my_turn {
-                    turns.insert(entity, TakingTurn {}).expect("Unable to insert turn.");
-                    if CONFIG.logging.log_ticks {
-                        let name = if let Some(name) = names.get(entity) {
-                            &name.name
-                        } else {
-                            "Unknown entity"
-                        };
-                        console::log(
-                            format!(
-                                "ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].",
-                                name,
-                                energy.current
-                            )
-                        );
-                    }
+                turns.insert(entity, TakingTurn {}).expect("Unable to insert turn.");
+                if CONFIG.logging.log_ticks {
+                    let name = if let Some(name) = names.get(entity) {
+                        &name.name
+                    } else {
+                        "Unknown entity"
+                    };
+                    console::log(
+                        format!(
+                            "ENERGY SYSTEM: {} granted a turn. [leftover energy: {}].",
+                            name,
+                            energy.current
+                        )
+                    );
                 }
             }
         }
     }
+}
+
+fn get_burden_modifier(burdens: &ReadStorage<Burden>, entity: Entity) -> f32 {
+    return if let Some(burden) = burdens.get(entity) {
+        match burden.level {
+            BurdenLevel::Burdened => SPEED_MOD_BURDENED,
+            BurdenLevel::Strained => SPEED_MOD_STRAINED,
+            BurdenLevel::Overloaded => SPEED_MOD_OVERLOADED,
+        }
+    } else {
+        1.0
+    };
+}
+
+fn get_overmap_modifier(map: &ReadExpect<Map>) -> f32 {
+    return if map.overmap { SPEED_MOD_OVERMAP_TRAVEL } else { 1.0 };
+}
+
+fn cull_turn_by_distance(player_pos: &Point, pos: &Position) -> bool {
+    let distance = DistanceAlg::Pythagoras.distance2d(*player_pos, Point::new(pos.x, pos.y));
+    if distance > 20.0 {
+        return true;
+    }
+    return false;
 }
