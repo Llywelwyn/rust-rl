@@ -10,6 +10,8 @@ check out the page in the header for the wasm version, pick [a release of your c
 
 this year for roguelikedev does the complete tutorial, i followed along with thebracket's [_roguelike tutorial - in rust_](https://bfnightly.bracketproductions.com). the notes i made during the sprint are being kept below for posterity - further changes since then are noted in [changelog.txt](https://github.com/Llywelwyn/rust-rl/blob/9150ed39e45bee536060cdc769d274e639021012/changelog.txt), and in the release notes.
 
+i'm also working on translating over my progress into blog entries on my site @ [llyw.co.uk](https://llyw.co.uk/), with a larger focus on some of the more interesting implementation details.
+
 ---
 
 <details>
