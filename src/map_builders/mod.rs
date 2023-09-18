@@ -70,7 +70,7 @@ use forest::forest_builder;
 mod foliage;
 use foliage::Foliage;
 mod room_themer;
-use room_themer::{ Theme, ThemeRooms };
+use room_themer::ThemeRooms;
 
 // Shared data to be passed around build chain
 pub struct BuilderMap {

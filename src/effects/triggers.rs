@@ -30,7 +30,6 @@ use crate::{
     SingleActivation,
     BUC,
     GrantsSpell,
-    KnownSpell,
     KnownSpells,
     Position,
     Viewshed,
@@ -175,9 +174,9 @@ fn handle_grant_spell(
     event: &mut EventInfo,
     mut logger: gamelog::Logger
 ) -> (gamelog::Logger, bool) {
-    if let Some(granted_spell) = ecs.read_storage::<GrantsSpell>().get(event.entity) {
+    if let Some(_granted_spell) = ecs.read_storage::<GrantsSpell>().get(event.entity) {
         if
-            let Some(known_spells) = ecs
+            let Some(_known_spells) = ecs
                 .write_storage::<KnownSpells>()
                 .get_mut(event.source.unwrap())
         {
@@ -349,10 +348,10 @@ fn handle_identify(
                     .get(event.source.unwrap())
                     .map(|b| b.known)
                     .unwrap_or(true);
-                return (
+                let result =
                     in_this_backpack &&
-                    (has_obfuscated_name || !already_identified || !known_beatitude)
-                );
+                    (has_obfuscated_name || !already_identified || !known_beatitude);
+                return result;
             }) {
             to_identify.push((e, name.name.clone()));
         }

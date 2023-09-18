@@ -129,7 +129,7 @@ fn main() -> BError {
     gs.ecs.insert(rex_assets::RexAssets::new());
 
     gamelog::setup_log();
-    gamelog::record_event(data::events::EVENT::LEVEL(1));
+    gamelog::record_event(data::events::EVENT::Level(1));
     gs.generate_world_map(1, TileType::Floor);
 
     main_loop(context, gs)

@@ -350,7 +350,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         destroyed_pos = Some(
                                             Point::new(pos.x + delta_x, pos.y + delta_y)
                                         );
-                                        gamelog::record_event(EVENT::BROKE_DOOR(1));
+                                        gamelog::record_event(EVENT::BrokeDoor(1));
                                         return false;
                                         // 66% chance of just kicking it.
                                     } else {
@@ -414,7 +414,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         ecs.delete_entity(destroyed_thing).expect("Unable to delete.");
     }
 
-    gamelog::record_event(EVENT::KICKED_SOMETHING(1));
+    gamelog::record_event(EVENT::KickedSomething(1));
     return RunState::Ticking;
 }
 

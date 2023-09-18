@@ -170,16 +170,16 @@ fn get_next_level_requirement(level: i32) -> i32 {
 
 fn get_death_message(ecs: &World, source: Entity) -> String {
     let player = ecs.fetch::<Entity>();
-    let mut result: String = format!("{} ", PLAYER_DIED);
+    let mut result: String = format!("{} ", PlayerDied);
     // If we killed ourselves,
     if source == *player {
-        result.push_str(format!("{}", PLAYER_DIED_SUICIDE).as_str());
+        result.push_str(format!("{}", PlayerDied_SUICIDE).as_str());
     } else if let Some(name) = ecs.read_storage::<Name>().get(source) {
         result.push_str(
-            format!("{} {}", PLAYER_DIED_NAMED_ATTACKER, with_article(name.name.clone())).as_str()
+            format!("{} {}", PlayerDied_NAMED_ATTACKER, with_article(name.name.clone())).as_str()
         );
     } else {
-        result.push_str(format!("{}", PLAYER_DIED_UNKNOWN).as_str());
+        result.push_str(format!("{}", PlayerDied_UNKNOWN).as_str());
     }
     // Status effects
     {
@@ -194,11 +194,11 @@ fn get_death_message(ecs: &World, source: Entity) -> String {
             result.push_str(" whilst");
             for (i, addendum) in addendums.iter().enumerate() {
                 if i == 0 {
-                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_FIRST, addendum).as_str());
+                    result.push_str(format!("{}{}", PlayerDied_ADDENDUM_FIRST, addendum).as_str());
                 } else if i == addendums.len() {
-                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_LAST, addendum).as_str());
+                    result.push_str(format!("{}{}", PlayerDied_ADDENDUM_LAST, addendum).as_str());
                 } else {
-                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_MID, addendum).as_str());
+                    result.push_str(format!("{}{}", PlayerDied_ADDENDUM_MID, addendum).as_str());
                 }
             }
         }
@@ -221,12 +221,12 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let Some(source) = effect.source {
         // If the target was the player, game over, and record source of death.
         if target == *player {
-            gamelog::record_event(EVENT::PLAYER_DIED(get_death_message(ecs, source)));
+            gamelog::record_event(EVENT::PlayerDied(get_death_message(ecs, source)));
             return;
         } else {
             // If the player was the source, record the kill.
             if let Some(tar_name) = names.get(target) {
-                gamelog::record_event(EVENT::KILLED(tar_name.name.clone()));
+                gamelog::record_event(EVENT::Killed(tar_name.name.clone()));
             }
         }
         // Calc XP value of target.
@@ -246,7 +246,7 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 source_pools.level += 1;
                 // If it was the PLAYER that levelled up:
                 if ecs.read_storage::<Player>().get(source).is_some() {
-                    gamelog::record_event(EVENT::LEVEL(1));
+                    gamelog::record_event(EVENT::Level(1));
                     gamelog::Logger
                         ::new()
                         .append(LEVELUP_PLAYER)
@@ -328,11 +328,11 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
         if target == *player {
             if let Some(hc) = ecs.read_storage::<HungerClock>().get(target) {
                 if hc.state == HungerState::Starving {
-                    gamelog::record_event(EVENT::PLAYER_DIED("You starved to death!".to_string()));
+                    gamelog::record_event(EVENT::PlayerDied("You starved to death!".to_string()));
                 }
             } else {
                 gamelog::record_event(
-                    EVENT::PLAYER_DIED("You died from unknown causes!".to_string())
+                    EVENT::PlayerDied("You died from unknown causes!".to_string())
                 );
             }
         }

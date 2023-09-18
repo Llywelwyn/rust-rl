@@ -99,7 +99,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                         .colour(WHITE)
                         .append("are confused!");
                     log = true;
-                    gamelog::record_event(EVENT::PLAYER_CONFUSED(1));
+                    gamelog::record_event(EVENT::PlayerConfused(1));
                 } else {
                     logger = logger
                         .append("The")

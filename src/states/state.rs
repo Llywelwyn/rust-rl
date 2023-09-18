@@ -128,7 +128,7 @@ impl State {
             .colour(WHITE)
             .period()
             .log();
-        gamelog::record_event(EVENT::CHANGED_FLOOR(mapname));
+        gamelog::record_event(EVENT::ChangedFloor(mapname));
     }
 
     fn game_over_cleanup(&mut self) {
@@ -152,7 +152,7 @@ impl State {
         self.generate_world_map(1, TileType::Floor);
 
         gamelog::setup_log();
-        gamelog::record_event(EVENT::LEVEL(1));
+        gamelog::record_event(EVENT::Level(1));
     }
 }
 
@@ -513,7 +513,7 @@ impl GameState for State {
                 let result = gui::show_help(ctx);
                 match result {
                     gui::YesNoResult::Yes => {
-                        gamelog::record_event(EVENT::LOOKED_FOR_HELP(1));
+                        gamelog::record_event(EVENT::LookedForHelp(1));
                         new_runstate = RunState::AwaitingInput;
                     }
                     _ => {}

@@ -68,7 +68,7 @@ impl<'a> System<'a> for EnergySystem {
                     .insert(entity, TakingTurn {})
                     .expect("Unable to insert turn for turn counter.");
                 energy.current -= TURN_COST;
-                crate::gamelog::record_event(EVENT::TURN(1));
+                crate::gamelog::record_event(EVENT::Turn(1));
                 // Handle spawning mobs each turn
                 if CONFIG.logging.log_ticks {
                     console::log(
