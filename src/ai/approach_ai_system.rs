@@ -7,7 +7,6 @@ pub struct ApproachAI {}
 impl<'a> System<'a> for ApproachAI {
     #[allow(clippy::type_complexity)]
     type SystemData = (
-        WriteExpect<'a, RandomNumberGenerator>,
         WriteStorage<'a, TakingTurn>,
         WriteStorage<'a, WantsToApproach>,
         WriteStorage<'a, Position>,
@@ -20,7 +19,6 @@ impl<'a> System<'a> for ApproachAI {
 
     fn run(&mut self, data: Self::SystemData) {
         let (
-            mut rng,
             mut turns,
             mut wants_to_approach,
             mut positions,

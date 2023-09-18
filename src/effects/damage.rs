@@ -170,16 +170,16 @@ fn get_next_level_requirement(level: i32) -> i32 {
 
 fn get_death_message(ecs: &World, source: Entity) -> String {
     let player = ecs.fetch::<Entity>();
-    let mut result: String = format!("{} ", PlayerDied);
+    let mut result: String = format!("{} ", PLAYER_DIED);
     // If we killed ourselves,
     if source == *player {
-        result.push_str(format!("{}", PlayerDied_SUICIDE).as_str());
+        result.push_str(format!("{}", PLAYER_DIED_SUICIDE).as_str());
     } else if let Some(name) = ecs.read_storage::<Name>().get(source) {
         result.push_str(
-            format!("{} {}", PlayerDied_NAMED_ATTACKER, with_article(name.name.clone())).as_str()
+            format!("{} {}", PLAYER_DIED_NAMED_ATTACKER, with_article(name.name.clone())).as_str()
         );
     } else {
-        result.push_str(format!("{}", PlayerDied_UNKNOWN).as_str());
+        result.push_str(format!("{}", PLAYER_DIED_UNKNOWN).as_str());
     }
     // Status effects
     {
@@ -194,11 +194,11 @@ fn get_death_message(ecs: &World, source: Entity) -> String {
             result.push_str(" whilst");
             for (i, addendum) in addendums.iter().enumerate() {
                 if i == 0 {
-                    result.push_str(format!("{}{}", PlayerDied_ADDENDUM_FIRST, addendum).as_str());
+                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_FIRST, addendum).as_str());
                 } else if i == addendums.len() {
-                    result.push_str(format!("{}{}", PlayerDied_ADDENDUM_LAST, addendum).as_str());
+                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_LAST, addendum).as_str());
                 } else {
-                    result.push_str(format!("{}{}", PlayerDied_ADDENDUM_MID, addendum).as_str());
+                    result.push_str(format!("{}{}", PLAYER_DIED_ADDENDUM_MID, addendum).as_str());
                 }
             }
         }

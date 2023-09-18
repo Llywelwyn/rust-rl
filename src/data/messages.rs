@@ -31,15 +31,15 @@ pub const YOU_REMOVE_ITEM: &str = "You unequip your";
 pub const YOU_REMOVE_ITEM_CURSED: &str = "You can't remove the";
 
 /// Prefixes death message.
-pub const PlayerDied: &str = "You died!";
+pub const PLAYER_DIED: &str = "You died!";
 /// Death message specifiers. Appended after PlayerDied.
-pub const PlayerDied_SUICIDE: &str = "You killed yourself";
-pub const PlayerDied_NAMED_ATTACKER: &str = "You were killed by";
-pub const PlayerDied_UNKNOWN: &str = "You were killed"; // Ultimately, this should never be used. Slowly include specific messages for any death.
+pub const PLAYER_DIED_SUICIDE: &str = "You killed yourself";
+pub const PLAYER_DIED_NAMED_ATTACKER: &str = "You were killed by";
+pub const PLAYER_DIED_UNKNOWN: &str = "You were killed"; // Ultimately, this should never be used. Slowly include specific messages for any death.
 /// Death message addendums. Appended at end of death message.
-pub const PlayerDied_ADDENDUM_FIRST: &str = " ";
-pub const PlayerDied_ADDENDUM_MID: &str = ", ";
-pub const PlayerDied_ADDENDUM_LAST: &str = ", and ";
+pub const PLAYER_DIED_ADDENDUM_FIRST: &str = " ";
+pub const PLAYER_DIED_ADDENDUM_MID: &str = ", ";
+pub const PLAYER_DIED_ADDENDUM_LAST: &str = ", and ";
 pub const STATUS_CONFUSED_STRING: &str = "confused";
 pub const STATUS_BLIND_STRING: &str = "blinded";
 // Results in something like: "You died! You were killed by a kobold captain, whilst confused."
