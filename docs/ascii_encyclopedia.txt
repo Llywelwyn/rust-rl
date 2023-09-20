@@ -1,4 +1,4 @@
-a -             A -
+a - insects     A -
 b -             B -
 c - chickens    C -
 d - canines     D -

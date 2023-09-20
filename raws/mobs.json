@@ -327,6 +327,57 @@
         "loot": { "table": "scrolls", "chance": 0.05 }
     },
     {
+        "id": "ant_worker",
+        "name": "worker ant",
+        "renderable": { "glyph": "a", "fg": "#ca7631", "bg": "#000000", "order": 1 },
+        "flags": ["SMALL_GROUP"],
+        "level": 2,
+        "bac": 3,
+        "speed": 18,
+        "vision_range": 16,
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d4" }],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "ant_soldier",
+        "name": "soldier ant",
+        "renderable": { "glyph": "a", "fg": "#ca3f26", "bg": "#000000", "order": 1 },
+        "flags": ["SMALL_GROUP"],
+        "level": 3,
+        "bac": 3,
+        "speed": 18,
+        "vision_range": 16,
+        "attacks": [
+            { "name": "bites", "hit_bonus": 0, "damage": "2d4" },
+            { "name": "stings", "hit_bonus": 0, "damage": "3d4" }
+        ],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "caterpillar_cave",
+        "name": "caterpillar",
+        "renderable": { "glyph": "a", "fg": "#6b6b6b", "bg": "#000000", "order": 1 },
+        "flags": ["SMALL_GROUP"],
+        "level": 1,
+        "bac": 3,
+        "speed": 9,
+        "vision_range": 16,
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "caterpillar_giant",
+        "name": "giant caterpillar",
+        "renderable": { "glyph": "a", "fg": "#b9aeae", "bg": "#000000", "order": 1 },
+        "flags": ["SMALL_GROUP"],
+        "level": 2,
+        "bac": 7,
+        "speed": 9,
+        "vision_range": 16,
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }],
+        "loot": { "table": "food", "chance": 0.10 }
+    },
+    {
         "id": "jackal",
         "name": "jackal",
         "renderable": { "glyph": "d", "fg": "#AA5500", "bg": "#000000", "order": 1 },
