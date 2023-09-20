@@ -121,7 +121,7 @@ fn main() -> BError {
     gs.ecs.insert(map::MasterDungeonMap::new()); // Master map list
     gs.ecs.insert(Map::new(true, 1, 64, 64, 0, "New Map", "N", 0)); // Map
     gs.ecs.insert(Point::new(0, 0)); // Player pos
-    gs.ecs.insert(gui::Ancestry::Dwarf); // ancestry
+    gs.ecs.insert(gui::Ancestry::Human); // ancestry
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity); // Player entity
     gs.ecs.insert(RunState::MapGeneration {}); // RunState
