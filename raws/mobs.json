@@ -463,6 +463,66 @@
         "loot": { "table": "equipment", "chance": 0.05 }
     },
     {
+        "id": "warg",
+        "name": "warg",
+        "renderable": { "glyph": "d", "fg": "#8b7164", "bg": "#000000", "order": 1 },
+        "flags": ["SMALL_GROUP"],
+        "level": 7,
+        "bac": 4,
+        "speed": 12,
+        "vision_range": 16,
+        "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "2d6" }],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "jaguar",
+        "name": "jaguar",
+        "renderable": { "glyph": "f", "fg": "#d3b947", "bg": "#000000", "order": 1 },
+        "flags": [],
+        "level": 4,
+        "bac": 6,
+        "speed": 15,
+        "vision_range": 16,
+        "attacks": [
+            { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
+            { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d8" },
+        ],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "lynx",
+        "name": "lynx",
+        "renderable": { "glyph": "f", "fg": "#b5d347", "bg": "#000000", "order": 1 },
+        "flags": [],
+        "level": 5,
+        "bac": 6,
+        "speed": 15,
+        "vision_range": 16,
+        "attacks": [
+            { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
+            { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d10" },
+        ],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
+        "id": "panther",
+        "name": "panther",
+        "renderable": { "glyph": "f", "fg": "#58554e", "bg": "#000000", "order": 1 },
+        "flags": [],
+        "level": 5,
+        "bac": 6,
+        "speed": 15,
+        "vision_range": 16,
+        "attacks": [
+            { "name": "claws", "hit_bonus": 0, "damage": "1d6" },
+            { "name": "claws", "hit_bonus": 0, "damage": "1d6" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d10" },
+        ],
+        "loot": { "table": "food", "chance": 0.05 }
+    },
+    {
         "id": "ogre",
         "name": "ogre",
         "renderable": { "glyph": "O", "fg": "#10A70d", "bg": "#000000", "order": 1 },

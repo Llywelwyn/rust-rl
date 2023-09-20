@@ -107,11 +107,15 @@
             { "id": "ant_worker",               "weight": 3,    "difficulty": 4},
             { "id": "dog",                      "weight": 1,    "difficulty": 5}, 
             { "id": "wolf",                     "weight": 2,    "difficulty": 6},
+            { "id": "jaguar",                   "weight": 2,    "difficulty": 6},
             { "id": "ant_soldier",              "weight": 2,    "difficulty": 6},
             { "id": "orc_captain",              "weight": 1,    "difficulty": 7},
             { "id": "dog_large",                "weight": 1,    "difficulty": 7},
+            { "id": "lynx",                     "weight": 1,    "difficulty": 7},
+            { "id": "panther",                  "weight": 1,    "difficulty": 7},
             { "id": "horse",                    "weight": 2,    "difficulty": 7},
             { "id": "ogre",                     "weight": 1,    "difficulty": 7},
+            { "id": "warg",                     "weight": 2,    "difficulty": 8},
             { "id": "horse_large",              "weight": 2,    "difficulty": 9}
         ]
     },
