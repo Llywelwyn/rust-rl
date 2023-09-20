@@ -47,3 +47,39 @@ fn tiletype_with_var_equality() {
     let tile3 = TileType::ToLocal(3);
     assert_eq!(tile2, tile3);
 }
+
+fn init_maps_for_tests() -> (MasterDungeonMap, Map, Map) {
+    let dm = MasterDungeonMap::new();
+    let (overmap, difficulty, name, short_name, depth) = (false, 0, "Test Map", "Test Map", 0);
+    let map1 = Map::new(overmap, 1, 64, 64, difficulty, name, short_name, depth);
+    let map2 = Map::new(overmap, 2, 128, 128, difficulty, name, short_name, depth);
+    (dm, map1, map2)
+}
+
+#[test]
+fn map_saving() {
+    let (mut dm, map1, map2) = init_maps_for_tests();
+    dm.store_map(&map1);
+    dm.store_map(&map2);
+}
+
+#[test]
+fn map_loading() {
+    let (mut dm, map1, map2) = init_maps_for_tests();
+    dm.store_map(&map1);
+    let loaded_map1 = dm.get_map(map1.id).unwrap();
+    assert_eq!(loaded_map1.overmap, map1.overmap);
+    assert_eq!(loaded_map1.id, map1.id);
+    assert_eq!(loaded_map1.width, map1.width);
+    assert_eq!(loaded_map1.height, map1.height);
+    assert_eq!(loaded_map1.difficulty, map1.difficulty);
+    assert_eq!(loaded_map1.name, map1.name);
+    assert_eq!(loaded_map1.short_name, map1.short_name);
+    assert_eq!(loaded_map1.depth, map1.depth);
+    assert_eq!(loaded_map1.tiles.len(), map1.tiles.len());
+    assert_eq!(loaded_map1.messages, map1.messages);
+    dm.store_map(&map2);
+    let loaded_map2 = dm.get_map(map2.id).unwrap();
+    assert_eq!(loaded_map2.width, map2.width);
+    assert_ne!(loaded_map2.width, map1.width);
+}
