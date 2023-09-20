@@ -5,7 +5,7 @@ use crate::data::names::*;
 
 lazy_static! {
     /// A count of each event that has happened over the run. i.e. "turns", "descended", "ascended"
-    static ref EVENT_COUNTER: Mutex<HashMap<String, i32>> = Mutex::new(HashMap::new());
+    pub static ref EVENT_COUNTER: Mutex<HashMap<String, i32>> = Mutex::new(HashMap::new());
     // A record of events that happened on a given turn. i.e. "Advanced to level 2".
     pub static ref EVENTS: Mutex<HashMap<u32, Vec<String>>> = Mutex::new(HashMap::new());
     // A record of floors visited, and monsters killed. Used to determine if an event is significant.
@@ -41,8 +41,9 @@ pub fn restore_events(events: HashMap<u32, Vec<String>>) {
 }
 /// Wipes all events - for starting a new game.
 pub fn clear_events() {
-    EVENT_COUNTER.lock().unwrap().clear();
-    EVENTS.lock().unwrap().clear();
+    let (mut events, mut event_counts) = (EVENTS.lock().unwrap(), EVENT_COUNTER.lock().unwrap());
+    events.clear();
+    event_counts.clear();
 }
 
 #[allow(unused_mut)]
