@@ -25,8 +25,8 @@ macro_rules! apply_effects {
                 }
                 "ranged" => $eb = $eb.with(Ranged { range: effect.1.parse::<i32>().unwrap() }),
                 "damage" => {
-                    let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
-                    $eb = $eb.with(InflictsDamage { n_dice, sides, modifier })
+                    let (damage_type, dice) = parse_damage_string(effect.1.as_str());
+                    $eb = $eb.with(InflictsDamage { damage_type, n_dice: dice.0, sides: dice.1, modifier: dice.2 })
                 }
                 "aoe" => $eb = $eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
                 "confusion" => $eb = $eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
@@ -45,6 +45,7 @@ macro_rules! apply_effects {
 /// flags are components that have no parameters to modify.
 macro_rules! apply_flags {
     ($flags:expr, $eb:expr) => {
+        let mut damage_modifiers: HashMap<DamageType, DamageModifier> = HashMap::new();
         for flag in $flags.iter() {
             match flag.as_str() {
                 // --- PROP FLAGS BEGIN HERE ---
@@ -89,6 +90,13 @@ macro_rules! apply_flags {
                 "NEUTRAL" => $eb = $eb.with(Faction { name: "neutral".to_string() }),
                 "HERBIVORE" => $eb = $eb.with(Faction { name: "herbivore".to_string() }),
                 "CARNIVORE" => $eb = $eb.with(Faction { name: "carnivore".to_string() }),
+                // --- DAMAGE MODIFIERS ---
+                "MAGIC_IMMUNITY" => { damage_modifiers.insert(DamageType::Magic, DamageModifier::Immune); }
+                "MAGIC_WEAKNESS" => { damage_modifiers.insert(DamageType::Magic, DamageModifier::Weakness); }
+                "MAGIC_RESISTANCE" => { damage_modifiers.insert(DamageType::Magic, DamageModifier::Resistance); }
+                "PHYSICAL_IMMUNITY" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Immune); }
+                "PHYSICAL_WEAKNESS" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Weakness); }
+                "PHYSICAL_RESISTANCE" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Resistance); }
                 // --- MOVEMENT MODES --- ( defaults to WANDER )
                 "STATIC" => $eb = $eb.with(MoveMode { mode: Movement::Static }),
                 "RANDOM_PATH" => $eb = $eb.with(MoveMode { mode: Movement::RandomWaypoint { path: None } }),
@@ -101,6 +109,9 @@ macro_rules! apply_flags {
                 "BLIND" => $eb = $eb.with(Blind {}),
                 _ => console::log(format!("Unrecognised flag: {}", flag.as_str())),
             }
+        }
+        if damage_modifiers.len() > 0 {
+            $eb = $eb.with(HasDamageModifiers { modifiers: damage_modifiers });
         }
     };
 }
@@ -340,13 +351,16 @@ pub fn spawn_named_item(
         }
 
         if let Some(weapon) = &item_template.equip {
-            let (n_dice, die_type, bonus) = parse_dice_string(weapon.damage.as_str());
+            let (damage_type, (n_dice, die_type, bonus)) = parse_damage_string(
+                weapon.damage.as_str()
+            );
             let weapon_attribute = match weapon.flag.as_str() {
                 "DEXTERITY" => WeaponAttribute::Dexterity,
                 "FINESSE" => WeaponAttribute::Finesse,
                 _ => WeaponAttribute::Strength,
             };
             let wpn = MeleeWeapon {
+                damage_type,
                 attribute: weapon_attribute,
                 damage_n_dice: n_dice,
                 damage_die_type: die_type,
@@ -526,9 +540,10 @@ pub fn spawn_named_mob(
         if let Some(natural_attacks) = &mob_template.attacks {
             let mut natural = NaturalAttacks { attacks: Vec::new() };
             for na in natural_attacks.iter() {
-                let (n, d, b) = parse_dice_string(&na.damage);
+                let (damage_type, (n, d, b)) = parse_damage_string(&na.damage);
                 let attack = NaturalAttack {
                     name: na.name.clone(),
+                    damage_type,
                     hit_bonus: na.hit_bonus,
                     damage_n_dice: n,
                     damage_die_type: d,
@@ -1038,4 +1053,19 @@ fn parse_particle_burst(n: &str) -> SpawnParticleBurst {
         trail_colour: RGB::from_hex(tokens[6]).expect("Invalid trail RGB"),
         trail_lifetime_ms: tokens[7].parse::<f32>().unwrap(),
     }
+}
+
+fn parse_damage_string(n: &str) -> (DamageType, (i32, i32, i32)) {
+    let tokens: Vec<_> = n.split(';').collect();
+    let damage_type = if tokens.len() > 1 {
+        match tokens[1] {
+            "physical" => DamageType::Physical,
+            "magic" => DamageType::Magic,
+            _ => panic!("Unrecognised damage type in raws: {}", tokens[1]),
+        }
+    } else {
+        DamageType::Physical
+    };
+    let dice = parse_dice_string(tokens[0]);
+    return (damage_type, dice);
 }

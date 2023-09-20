@@ -316,6 +316,7 @@ pub enum WeaponAttribute {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct MeleeWeapon {
+    pub damage_type: DamageType,
     pub attribute: WeaponAttribute,
     pub damage_n_dice: i32,
     pub damage_die_type: i32,
@@ -326,6 +327,7 @@ pub struct MeleeWeapon {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct NaturalAttack {
     pub name: String,
+    pub damage_type: DamageType,
     pub damage_n_dice: i32,
     pub damage_die_type: i32,
     pub damage_bonus: i32,
@@ -365,8 +367,55 @@ pub struct ProvidesHealing {
     pub modifier: i32,
 }
 
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
+pub enum DamageType {
+    Physical,
+    Magic,
+    Forced, // Bypasses any immunities. e.g. Hunger ticks.
+}
+
+impl DamageType {
+    pub fn is_magic(&self) -> bool {
+        match self {
+            DamageType::Magic => true,
+            _ => false,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum DamageModifier {
+    None,
+    Weakness,
+    Resistance,
+    Immune,
+}
+
+impl DamageModifier {
+    pub fn multiplier(&self) -> f32 {
+        match self {
+            DamageModifier::None => 1.0,
+            DamageModifier::Weakness => 10.0,
+            DamageModifier::Resistance => 0.5,
+            DamageModifier::Immune => 0.0,
+        }
+    }
+}
+
+#[derive(Component, Serialize, Deserialize, Debug, Clone)]
+pub struct HasDamageModifiers {
+    pub modifiers: HashMap<DamageType, DamageModifier>,
+}
+
+impl HasDamageModifiers {
+    pub fn modifier(&self, damage_type: &DamageType) -> &DamageModifier {
+        self.modifiers.get(damage_type).unwrap_or(&DamageModifier::None)
+    }
+}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InflictsDamage {
+    pub damage_type: DamageType,
     pub n_dice: i32,
     pub sides: i32,
     pub modifier: i32,

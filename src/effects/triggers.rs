@@ -246,7 +246,11 @@ fn handle_damage(
     if let Some(damage_item) = ecs.read_storage::<InflictsDamage>().get(event.entity) {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let roll = rng.roll_dice(damage_item.n_dice, damage_item.sides) + damage_item.modifier;
-        add_effect(event.source, EffectType::Damage { amount: roll }, event.target.clone());
+        add_effect(
+            event.source,
+            EffectType::Damage { amount: roll, damage_type: damage_item.damage_type },
+            event.target.clone()
+        );
         for target in get_entity_targets(&event.target) {
             if ecs.read_storage::<Prop>().get(target).is_some() {
                 continue;

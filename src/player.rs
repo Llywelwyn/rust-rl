@@ -32,6 +32,7 @@ use super::{
     WantsToPickupItem,
     get_dest,
     Destination,
+    DamageType,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -290,7 +291,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                     if rng.roll_dice(1, 20) == 20 {
                         add_effect(
                             None,
-                            EffectType::Damage { amount: 1 },
+                            EffectType::Damage { amount: 1, damage_type: DamageType::Physical },
                             Targets::Entity { target: entity }
                         );
                         gamelog::Logger

@@ -5,6 +5,7 @@ use super::{
     HungerClock,
     HungerState,
     TakingTurn,
+    DamageType,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -78,7 +79,7 @@ impl<'a> System<'a> for HungerSystem {
             if hunger_clock.state == HungerState::Starving {
                 add_effect(
                     None,
-                    EffectType::Damage { amount: 1 },
+                    EffectType::Damage { amount: 1, damage_type: DamageType::Forced },
                     Targets::Entity { target: entity }
                 );
             }

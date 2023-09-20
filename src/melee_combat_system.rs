@@ -123,6 +123,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 } else {
                     attacks.push((
                         MeleeWeapon {
+                            damage_type: crate::DamageType::Physical,
                             attribute: WeaponAttribute::Strength,
                             damage_n_dice: 1,
                             damage_die_type: 4,
@@ -301,7 +302,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     }
                     add_effect(
                         Some(entity),
-                        EffectType::Damage { amount: damage },
+                        EffectType::Damage { amount: damage, damage_type: weapon_info.damage_type },
                         Targets::Entity { target: wants_melee.target }
                     );
                     if entity == *player_entity {
@@ -392,6 +393,7 @@ fn get_natural_attacks(
             for a in nat.attacks.iter() {
                 attacks.push((
                     MeleeWeapon {
+                        damage_type: a.damage_type,
                         attribute: WeaponAttribute::Strength,
                         hit_bonus: a.hit_bonus,
                         damage_n_dice: a.damage_n_dice,
@@ -409,6 +411,7 @@ fn get_natural_attacks(
             };
             attacks.push((
                 MeleeWeapon {
+                    damage_type: nat.attacks[attack_index].damage_type,
                     attribute: WeaponAttribute::Strength,
                     hit_bonus: nat.attacks[attack_index].hit_bonus,
                     damage_n_dice: nat.attacks[attack_index].damage_n_dice,

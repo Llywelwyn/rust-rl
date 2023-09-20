@@ -14,6 +14,7 @@ use crate::{
     HungerClock,
     HungerState,
     Bleeds,
+    HasDamageModifiers,
 };
 use crate::gui::with_article;
 use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
@@ -27,8 +28,15 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
     if let Some(target_pool) = pools.get_mut(target) {
         if !target_pool.god {
-            if let EffectType::Damage { amount } = damage.effect_type {
-                target_pool.hit_points.current -= amount;
+            if let EffectType::Damage { amount, damage_type } = damage.effect_type {
+                let mult = if
+                    let Some(modifiers) = ecs.read_storage::<HasDamageModifiers>().get(target)
+                {
+                    modifiers.modifier(&damage_type).multiplier()
+                } else {
+                    1.0
+                };
+                target_pool.hit_points.current -= ((amount as f32) * mult) as i32;
                 let bleeders = ecs.read_storage::<Bleeds>();
                 if let Some(bleeds) = bleeders.get(target) {
                     add_effect(
