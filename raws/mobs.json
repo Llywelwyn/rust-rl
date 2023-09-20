@@ -486,7 +486,7 @@
         "attacks": [
             { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
             { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
-            { "name": "bites", "hit_bonus": 0, "damage": "1d8" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d8" }
         ],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -502,7 +502,7 @@
         "attacks": [
             { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
             { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
-            { "name": "bites", "hit_bonus": 0, "damage": "1d10" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d10" }
         ],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -518,7 +518,7 @@
         "attacks": [
             { "name": "claws", "hit_bonus": 0, "damage": "1d6" },
             { "name": "claws", "hit_bonus": 0, "damage": "1d6" },
-            { "name": "bites", "hit_bonus": 0, "damage": "1d10" },
+            { "name": "bites", "hit_bonus": 0, "damage": "1d10" }
         ],
         "loot": { "table": "food", "chance": 0.05 }
     },
