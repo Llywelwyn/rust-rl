@@ -64,7 +64,7 @@
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "particle_line": "*;-;#00b7ff;75.0;#f4fc83;100.0", "ranged": "12", "damage": "3d4+3" },
+        "effects": { "particle_line": "*;-;#00b7ff;75.0;#f4fc83;100.0", "ranged": "12", "damage": "3d4+3;magic" },
         "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {
@@ -74,7 +74,7 @@
         "weight": 0.5,
         "value": 100,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
-        "effects": { "particle": "*;#FFA500;200.0", "ranged": "10", "damage": "4d6", "aoe": "2" },
+        "effects": { "particle": "*;#FFA500;200.0", "ranged": "10", "damage": "4d6;magic", "aoe": "2" },
         "magic": { "class": "uncommon", "naming": "scroll" }
     },
     {
@@ -87,7 +87,7 @@
         "effects": {
             "particle_burst": "▓;*;~;#FFA500;#000000;500.0;#ffd381;60.0",
             "ranged": "10",
-            "damage": "8d6",
+            "damage": "8d6;magic",
             "aoe": "3"
         },
         "magic": { "class": "rare", "naming": "scroll" }
@@ -353,7 +353,7 @@
         "weight": 2,
         "value": 100,
         "flags": ["CHARGES"],
-        "effects": { "ranged": "12", "damage": "3d4+3" },
+        "effects": { "ranged": "12", "damage": "3d4+3;magic" },
         "magic": { "class": "uncommon", "naming": "wand" }
     },
     {
@@ -363,7 +363,7 @@
         "weight": 2,
         "value": 300,
         "flags": ["CHARGES"],
-        "effects": { "ranged": "10", "damage": "8d6", "aoe": "3" },
+        "effects": { "ranged": "10", "damage": "8d6;magic", "aoe": "3" },
         "magic": { "class": "rare", "naming": "wand" }
     },
     {
