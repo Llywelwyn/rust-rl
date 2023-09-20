@@ -62,7 +62,6 @@
         "renderable": { "glyph": "@", "fg": "#034efc", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "RANDOM_PATH", "IS_HUMAN"],
         "level": 2,
-        "vision_range": 16,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
         "equipped": ["equip_shortsword", "equip_body_leather"],
         "quips": ["You wont catch me down the mine.", "Staying out of trouble?"]
@@ -73,7 +72,6 @@
         "renderable": { "glyph": "r", "fg": "#aa6000", "bg": "#000000", "order": 1 },
         "flags": [],
         "bac": 6,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }],
         "loot": { "table": "food", "chance": 0.1 }
     },
@@ -83,7 +81,6 @@
         "renderable": { "glyph": "c", "fg": "#BB6000", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE"],
         "bac": 8,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
     },
     {
@@ -92,7 +89,6 @@
         "renderable": { "glyph": "q", "fg": "#a57037", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE"],
         "bac": 8,
-        "vision_range": 16,
         "attacks": [{ "name": "kicks", "hit_bonus": 0, "damage": "1d2" }]
     },
     {
@@ -101,7 +97,6 @@
         "renderable": { "glyph": "q", "fg": "#e7e7e7", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE", "SMALL_GROUP"],
         "bac": 10,
-        "vision_range": 16,
         "attacks": [{ "name": "kicks", "hit_bonus": 0, "damage": "1d2" }]
     },
     {
@@ -110,7 +105,6 @@
         "renderable": { "glyph": "c", "fg": "#fae478", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE"],
         "bac": 10,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
     },
     {
@@ -121,7 +115,6 @@
         "level": 3,
         "bac": 6,
         "speed": 16,
-        "vision_range": 16,
         "attacks": [
             { "name": "kicks", "hit_bonus": 0, "damage": "1d6" },
             { "name": "bites", "hit_bonus": 0, "damage": "1d2" }
@@ -136,7 +129,6 @@
         "level": 5,
         "bac": 5,
         "speed": 20,
-        "vision_range": 16,
         "attacks": [
             { "name": "kicks", "hit_bonus": 0, "damage": "1d8" },
             { "name": "bites", "hit_bonus": 0, "damage": "1d3" }
@@ -150,7 +142,6 @@
         "level": 7,
         "bac": 4,
         "speed": 24,
-        "vision_range": 16,
         "attacks": [
             { "name": "kicks", "hit_bonus": 0, "damage": "1d10" },
             { "name": "bites", "hit_bonus": 0, "damage": "1d4" }
@@ -163,7 +154,6 @@
         "flags": ["SMALL_GROUP"],
         "level": 1,
         "bac": 7,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }],
         "loot": { "table": "scrolls", "chance": 0.05 }
     },
@@ -175,7 +165,6 @@
         "level": 2,
         "bac": 6,
         "speed": 18,
-        "vision_range": 16,
         "quips": ["<woof!>", "<bark!>", "<grrr..>"],
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }]
     },
@@ -187,7 +176,6 @@
         "level": 4,
         "bac": 5,
         "speed": 16,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }]
     },
     {
@@ -198,7 +186,6 @@
         "level": 6,
         "bac": 4,
         "speed": 15,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "2d4" }]
     },
     {
@@ -208,7 +195,6 @@
         "flags": ["SMALL_GROUP", "IS_GNOME"],
         "level": 1,
         "speed": 6,
-        "vision_range": 16,
         "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d6" }],
         "loot": { "table": "wands", "chance": 0.05 }
     },
@@ -230,7 +216,6 @@
         "flags": [],
         "level": 1,
         "speed": 9,
-        "vision_range": 16,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d4" }]
     },
     {
@@ -240,7 +225,6 @@
         "flags": [],
         "level": 1,
         "speed": 6,
-        "vision_range": 16,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d4" }],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -286,7 +270,6 @@
         "level": 2,
         "bac": 10,
         "speed": 6,
-        "vision_range": 16,
         "attacks": [{ "name": "hacks", "hit_bonus": 0, "damage": "1d8" }],
         "equipped": ["equip_feet_iron"],
         "loot": { "table": "equipment", "chance": 0.05 }
@@ -322,7 +305,6 @@
         "level": 1,
         "bac": 3,
         "speed": 12,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }],
         "loot": { "table": "scrolls", "chance": 0.05 }
     },
@@ -334,7 +316,6 @@
         "level": 2,
         "bac": 3,
         "speed": 18,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d4" }],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -346,7 +327,6 @@
         "level": 3,
         "bac": 3,
         "speed": 18,
-        "vision_range": 16,
         "attacks": [
             { "name": "bites", "hit_bonus": 0, "damage": "2d4" },
             { "name": "stings", "hit_bonus": 0, "damage": "3d4" }
@@ -361,7 +341,6 @@
         "level": 1,
         "bac": 3,
         "speed": 9,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -373,7 +352,6 @@
         "level": 2,
         "bac": 7,
         "speed": 9,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d6" }],
         "loot": { "table": "food", "chance": 0.10 }
     },
@@ -383,7 +361,6 @@
         "renderable": { "glyph": "d", "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["CARNIVORE", "SMALL_GROUP"],
         "bac": 7,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
     },
     {
@@ -392,7 +369,6 @@
         "renderable": { "glyph": "d", "fg": "#FF0000", "bg": "#000000", "order": 1 },
         "flags": ["CARNIVORE"],
         "bac": 7,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
     },
     {
@@ -402,7 +378,6 @@
         "flags": ["CARNIVORE", "SMALL_GROUP"],
         "level": 1,
         "bac": 7,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d4" }]
     },
     {
@@ -412,7 +387,6 @@
         "flags": ["CARNIVORE"],
         "level": 5,
         "bac": 4,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "2d4" }]
     },
     {
@@ -422,7 +396,6 @@
         "flags": [],
         "level": 2,
         "speed": 9,
-        "vision_range": 16,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
         "loot": { "table": "wands", "chance": 0.05 }
     },
@@ -433,7 +406,6 @@
         "flags": ["SMALL_GROUP"],
         "level": 1,
         "speed": 9,
-        "vision_range": 16,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }],
         "loot": { "table": "equipment", "chance": 0.05 }
     },
@@ -444,7 +416,6 @@
         "flags": ["LARGE_GROUP"],
         "level": 2,
         "speed": 9,
-        "vision_range": 16,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }],
         "loot": { "table": "equipment", "chance": 0.05 }
     },
@@ -455,7 +426,6 @@
         "flags": ["MULTIATTACK"],
         "level": 5,
         "speed": 5,
-        "vision_range": 16,
         "attacks": [
             { "name": "hits", "hit_bonus": 0, "damage": "2d4" },
             { "name": "hits", "hit_bonus": 0, "damage": "2d4" }
@@ -470,7 +440,6 @@
         "level": 7,
         "bac": 4,
         "speed": 12,
-        "vision_range": 16,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "2d6" }],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -478,11 +447,10 @@
         "id": "jaguar",
         "name": "jaguar",
         "renderable": { "glyph": "f", "fg": "#d3b947", "bg": "#000000", "order": 1 },
-        "flags": [],
+        "flags": ["MULTIATTACK"],
         "level": 4,
         "bac": 6,
         "speed": 15,
-        "vision_range": 16,
         "attacks": [
             { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
             { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
@@ -494,11 +462,10 @@
         "id": "lynx",
         "name": "lynx",
         "renderable": { "glyph": "f", "fg": "#b5d347", "bg": "#000000", "order": 1 },
-        "flags": [],
+        "flags": ["MULTIATTACK"],
         "level": 5,
         "bac": 6,
         "speed": 15,
-        "vision_range": 16,
         "attacks": [
             { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
             { "name": "claws", "hit_bonus": 0, "damage": "1d4" },
@@ -510,11 +477,10 @@
         "id": "panther",
         "name": "panther",
         "renderable": { "glyph": "f", "fg": "#58554e", "bg": "#000000", "order": 1 },
-        "flags": [],
+        "flags": ["MULTIATTACK"],
         "level": 5,
         "bac": 6,
         "speed": 15,
-        "vision_range": 16,
         "attacks": [
             { "name": "claws", "hit_bonus": 0, "damage": "1d6" },
             { "name": "claws", "hit_bonus": 0, "damage": "1d6" },
@@ -530,7 +496,6 @@
         "level": 5,
         "bac": 5,
         "speed": 10,
-        "vision_range": 16,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "2d5" }],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -542,7 +507,6 @@
         "level": 2,
         "bac": 12,
         "speed": 3,
-        "vision_range": 16,
         "attacks": [{ "name": "lashes", "hit_bonus": 4, "damage": "1d8" }],
         "loot": { "table": "scrolls", "chance": 0.05 }
     }

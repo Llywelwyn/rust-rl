@@ -5,6 +5,7 @@ use crate::gui::Ancestry;
 use crate::random_table::RandomTable;
 use crate::config::CONFIG;
 use crate::data::visuals::BLOODSTAIN_COLOUR;
+use crate::data::entity::DEFAULT_VIEWSHED_STANDARD;
 use regex::Regex;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -387,7 +388,11 @@ pub fn spawn_named_mob(
         eb = eb.with(Name { name: mob_template.name.clone(), plural: mob_template.name.clone() });
         eb = eb.with(Viewshed {
             visible_tiles: Vec::new(),
-            range: mob_template.vision_range as i32,
+            range: if let Some(range) = mob_template.vision_range {
+                range
+            } else {
+                DEFAULT_VIEWSHED_STANDARD
+            },
             dirty: true,
         });
         if let Some(telepath) = &mob_template.telepathy_range {
