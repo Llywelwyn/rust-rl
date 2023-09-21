@@ -392,12 +392,17 @@ pub enum DamageModifier {
 }
 
 impl DamageModifier {
+    const NONE_MOD: f32 = 1.0;
+    const WEAK_MOD: f32 = 2.0;
+    const RESIST_MOD: f32 = 0.5;
+    const IMMUNE_MOD: f32 = 0.0;
+
     pub fn multiplier(&self) -> f32 {
         match self {
-            DamageModifier::None => 1.0,
-            DamageModifier::Weakness => 10.0,
-            DamageModifier::Resistance => 0.5,
-            DamageModifier::Immune => 0.0,
+            DamageModifier::None => Self::NONE_MOD,
+            DamageModifier::Weakness => Self::WEAK_MOD,
+            DamageModifier::Resistance => Self::RESIST_MOD,
+            DamageModifier::Immune => Self::IMMUNE_MOD,
         }
     }
 }
