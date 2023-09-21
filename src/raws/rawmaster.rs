@@ -6,7 +6,6 @@ use crate::random_table::RandomTable;
 use crate::config::CONFIG;
 use crate::data::visuals::BLOODSTAIN_COLOUR;
 use crate::data::entity::DEFAULT_VIEWSHED_STANDARD;
-use regex::Regex;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use specs::saveload::{ MarkedBuilder, SimpleMarker };
@@ -20,13 +19,13 @@ macro_rules! apply_effects {
             let effect_name = effect.0.as_str();
             match effect_name {
                 "heal" => {
-                    let (n_dice, sides, modifier) = parse_dice_string(effect.1.as_str());
-                    $eb = $eb.with(ProvidesHealing { n_dice, sides, modifier })
+                    let dice = parse_dice_string(effect.1.as_str()).expect("Failed to parse dice string");
+                    $eb = $eb.with(ProvidesHealing { n_dice: dice.n_dice, sides: dice.die_type, modifier: dice.bonus })
                 }
                 "ranged" => $eb = $eb.with(Ranged { range: effect.1.parse::<i32>().unwrap() }),
                 "damage" => {
                     let (damage_type, dice) = parse_damage_string(effect.1.as_str());
-                    $eb = $eb.with(InflictsDamage { damage_type, n_dice: dice.0, sides: dice.1, modifier: dice.2 })
+                    $eb = $eb.with(InflictsDamage { damage_type, n_dice: dice.n_dice, sides: dice.die_type, modifier: dice.bonus })
                 }
                 "aoe" => $eb = $eb.with(AOE { radius: effect.1.parse::<i32>().unwrap() }),
                 "confusion" => $eb = $eb.with(Confusion { turns: effect.1.parse::<i32>().unwrap() }),
@@ -351,9 +350,7 @@ pub fn spawn_named_item(
         }
 
         if let Some(weapon) = &item_template.equip {
-            let (damage_type, (n_dice, die_type, bonus)) = parse_damage_string(
-                weapon.damage.as_str()
-            );
+            let (damage_type, dice) = parse_damage_string(weapon.damage.as_str());
             let weapon_attribute = match weapon.flag.as_str() {
                 "DEXTERITY" => WeaponAttribute::Dexterity,
                 "FINESSE" => WeaponAttribute::Finesse,
@@ -362,9 +359,9 @@ pub fn spawn_named_item(
             let wpn = MeleeWeapon {
                 damage_type,
                 attribute: weapon_attribute,
-                damage_n_dice: n_dice,
-                damage_die_type: die_type,
-                damage_bonus: bonus,
+                damage_n_dice: dice.n_dice,
+                damage_die_type: dice.die_type,
+                damage_bonus: dice.bonus,
                 hit_bonus: weapon.to_hit.unwrap_or(0),
             };
             eb = eb.with(wpn);
@@ -540,14 +537,14 @@ pub fn spawn_named_mob(
         if let Some(natural_attacks) = &mob_template.attacks {
             let mut natural = NaturalAttacks { attacks: Vec::new() };
             for na in natural_attacks.iter() {
-                let (damage_type, (n, d, b)) = parse_damage_string(&na.damage);
+                let (damage_type, dice) = parse_damage_string(&na.damage);
                 let attack = NaturalAttack {
                     name: na.name.clone(),
                     damage_type,
                     hit_bonus: na.hit_bonus,
-                    damage_n_dice: n,
-                    damage_die_type: d,
-                    damage_bonus: b,
+                    damage_n_dice: dice.n_dice,
+                    damage_die_type: dice.die_type,
+                    damage_bonus: dice.bonus,
                 };
                 natural.attacks.push(attack);
             }
@@ -733,7 +730,7 @@ pub fn table_by_name(raws: &RawMaster, key: &str, optional_difficulty: Option<i3
     return RandomTable::new().add("debug", 1);
 }
 
-pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
+/*pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
     lazy_static! {
         static ref DICE_RE: Regex = Regex::new(r"(\d+)d(\d+)([\+\-]\d+)?").unwrap();
     }
@@ -752,7 +749,7 @@ pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
         }
     }
     (n_dice, die_type, die_bonus)
-}
+}*/
 
 fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
     if !raws.item_index.contains_key(tag) {
@@ -1055,7 +1052,7 @@ fn parse_particle_burst(n: &str) -> SpawnParticleBurst {
     }
 }
 
-fn parse_damage_string(n: &str) -> (DamageType, (i32, i32, i32)) {
+fn parse_damage_string(n: &str) -> (DamageType, DiceType) {
     let tokens: Vec<_> = n.split(';').collect();
     let damage_type = if tokens.len() > 1 {
         match tokens[1] {
@@ -1066,6 +1063,6 @@ fn parse_damage_string(n: &str) -> (DamageType, (i32, i32, i32)) {
     } else {
         DamageType::Physical
     };
-    let dice = parse_dice_string(tokens[0]);
+    let dice = parse_dice_string(tokens[0]).expect("Failed to parse dice string");
     return (damage_type, dice);
 }

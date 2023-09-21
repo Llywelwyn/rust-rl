@@ -172,7 +172,7 @@ fn handle_magic_mapper(
 fn handle_grant_spell(
     ecs: &mut World,
     event: &mut EventInfo,
-    mut logger: gamelog::Logger
+    logger: gamelog::Logger
 ) -> (gamelog::Logger, bool) {
     if let Some(_granted_spell) = ecs.read_storage::<GrantsSpell>().get(event.entity) {
         if

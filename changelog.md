@@ -1,6 +1,7 @@
 ## v0.1.4
 ### added
 - **overmap**: bare, but exists. player now starts on the overworld, and can move to local maps (like the old starting town) via >. can leave local maps back to the overmap by walking out of the map boundaries.
+- **intrinsics**: speed, regeneration
 - **damage types**: immunities, weaknesses, and resistances
 - **full keyboard support**: examining and targeting can now be done via keyboard only
 - **a config file** read at runtime, unfortunately not compatible with WASM builds yet
