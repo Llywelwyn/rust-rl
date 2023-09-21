@@ -6,6 +6,7 @@ use super::{
     HungerState,
     TakingTurn,
     DamageType,
+    Intrinsics,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -53,10 +54,11 @@ impl<'a> System<'a> for HungerSystem {
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Clock>,
         ReadStorage<'a, TakingTurn>,
+        ReadStorage<'a, Intrinsics>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (entities, mut hunger_clock, player_entity, turn_clock, turns) = data;
+        let (entities, mut hunger_clock, player_entity, turn_clock, turns, intrinsics) = data;
 
         // If the turn clock isn't taking a turn this tick, don't bother ticking hunger.
         let mut ticked = false;
@@ -72,7 +74,16 @@ impl<'a> System<'a> for HungerSystem {
             if hunger_clock.duration >= MAX_SATIATION {
                 hunger_clock.duration = MAX_SATIATION;
             } else {
-                hunger_clock.duration -= BASE_CLOCK_DECREMENT_PER_TURN;
+                let mut modifier = 0;
+                let intrinsic_regen = if let Some(i) = intrinsics.get(entity) {
+                    i.list.contains(&crate::Intrinsic::Regeneration)
+                } else {
+                    false
+                };
+                if intrinsic_regen {
+                    modifier += 1;
+                }
+                hunger_clock.duration -= BASE_CLOCK_DECREMENT_PER_TURN + modifier;
             }
             let initial_state = hunger_clock.state;
             hunger_clock.state = get_hunger_state(hunger_clock.duration);

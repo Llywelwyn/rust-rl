@@ -10,6 +10,7 @@ use crate::{
     Map,
     TakingTurn,
     Confusion,
+    Intrinsics,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -36,6 +37,7 @@ impl<'a> System<'a> for EnergySystem {
         ReadStorage<'a, Name>,
         ReadExpect<'a, Point>,
         ReadStorage<'a, Confusion>,
+        ReadStorage<'a, Intrinsics>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -53,6 +55,7 @@ impl<'a> System<'a> for EnergySystem {
             names,
             player_pos,
             confusion,
+            intrinsics,
         ) = data;
         // If not ticking, do nothing.
         if *runstate != RunState::Ticking {
@@ -89,10 +92,12 @@ impl<'a> System<'a> for EnergySystem {
         ).join() {
             let burden_modifier = get_burden_modifier(&burdens, entity);
             let overmap_mod = get_overmap_modifier(&map);
+            let intrinsic_speed = get_intrinsic_speed(&intrinsics, entity);
             // Every entity has a POTENTIAL equal to their speed.
             let mut energy_potential: i32 = ((energy.speed as f32) *
                 burden_modifier *
-                overmap_mod) as i32;
+                overmap_mod *
+                intrinsic_speed) as i32;
             // Increment current energy by NORMAL_SPEED for every
             // whole number of NORMAL_SPEEDS in their POTENTIAL.
             while energy_potential >= NORMAL_SPEED {
@@ -161,4 +166,13 @@ fn cull_turn_by_distance(player_pos: &Point, pos: &Position) -> bool {
         return true;
     }
     return false;
+}
+
+fn get_intrinsic_speed(intrinsics: &ReadStorage<Intrinsics>, entity: Entity) -> f32 {
+    if let Some(intrinsics) = intrinsics.get(entity) {
+        if intrinsics.list.contains(&crate::Intrinsic::Speed) {
+            return 4.0 / 3.0;
+        }
+    }
+    return 1.0;
 }

@@ -6,7 +6,7 @@ use specs::error::NoError;
 use specs::prelude::*;
 use specs::saveload::{ ConvertSaveload, Marker };
 use specs_derive::*;
-use std::collections::HashMap;
+use std::collections::{ HashMap, HashSet };
 
 // Serialization helper code. We need to implement ConvertSaveload for each type that contains an
 // Entity.
@@ -416,6 +416,17 @@ impl HasDamageModifiers {
     pub fn modifier(&self, damage_type: &DamageType) -> &DamageModifier {
         self.modifiers.get(damage_type).unwrap_or(&DamageModifier::None)
     }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Intrinsic {
+    Regeneration, // Regenerate 1 HP on every tick
+    Speed, // 4/3x speed multiplier
+}
+
+#[derive(Component, Serialize, Deserialize, Debug, Clone)]
+pub struct Intrinsics {
+    pub list: HashSet<Intrinsic>,
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
