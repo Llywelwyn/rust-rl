@@ -90,12 +90,21 @@ macro_rules! apply_flags {
                 "HERBIVORE" => $eb = $eb.with(Faction { name: "herbivore".to_string() }),
                 "CARNIVORE" => $eb = $eb.with(Faction { name: "carnivore".to_string() }),
                 // --- DAMAGE MODIFIERS ---
+                "PHYS_IMMUNITY" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Immune); }
+                "PHYS_WEAK" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Weakness); }
+                "PHYS_RES" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Resistance); }
                 "MAGIC_IMMUNITY" => { damage_modifiers.insert(DamageType::Magic, DamageModifier::Immune); }
-                "MAGIC_WEAKNESS" => { damage_modifiers.insert(DamageType::Magic, DamageModifier::Weakness); }
-                "MAGIC_RESISTANCE" => { damage_modifiers.insert(DamageType::Magic, DamageModifier::Resistance); }
-                "PHYSICAL_IMMUNITY" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Immune); }
-                "PHYSICAL_WEAKNESS" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Weakness); }
-                "PHYSICAL_RESISTANCE" => { damage_modifiers.insert(DamageType::Physical, DamageModifier::Resistance); }
+                "MAGIC_WEAK" => { damage_modifiers.insert(DamageType::Magic, DamageModifier::Weakness); }
+                "MAGIC_RES" => { damage_modifiers.insert(DamageType::Magic, DamageModifier::Resistance); }
+                "FIRE_IMMUNITY" => { damage_modifiers.insert(DamageType::Fire, DamageModifier::Immune); }
+                "FIRE_WEAK" => { damage_modifiers.insert(DamageType::Fire, DamageModifier::Weakness); }
+                "FIRE_RES" => { damage_modifiers.insert(DamageType::Fire, DamageModifier::Resistance); }
+                "COLD_IMMUNITY" => { damage_modifiers.insert(DamageType::Cold, DamageModifier::Immune); }
+                "COLD_WEAK" => { damage_modifiers.insert(DamageType::Cold, DamageModifier::Weakness); }
+                "COLD_RES" => { damage_modifiers.insert(DamageType::Cold, DamageModifier::Resistance); }
+                "POISON_IMMUNITY" => { damage_modifiers.insert(DamageType::Poison, DamageModifier::Immune); }
+                "POISON_WEAK" => { damage_modifiers.insert(DamageType::Poison, DamageModifier::Weakness); }
+                "POISON_RES" => { damage_modifiers.insert(DamageType::Poison, DamageModifier::Resistance); }
                 // --- MOVEMENT MODES --- ( defaults to WANDER )
                 "STATIC" => $eb = $eb.with(MoveMode { mode: Movement::Static }),
                 "RANDOM_PATH" => $eb = $eb.with(MoveMode { mode: Movement::RandomWaypoint { path: None } }),
@@ -1058,6 +1067,9 @@ fn parse_damage_string(n: &str) -> (DamageType, DiceType) {
         match tokens[1] {
             "physical" => DamageType::Physical,
             "magic" => DamageType::Magic,
+            "fire" => DamageType::Fire,
+            "cold" => DamageType::Cold,
+            "poison" => DamageType::Poison,
             _ => panic!("Unrecognised damage type in raws: {}", tokens[1]),
         }
     } else {

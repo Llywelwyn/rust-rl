@@ -323,13 +323,13 @@
         "id": "ant_soldier",
         "name": "soldier ant",
         "renderable": { "glyph": "a", "fg": "#ca3f26", "bg": "#000000", "order": 1 },
-        "flags": ["SMALL_GROUP"],
+        "flags": ["SMALL_GROUP", "POISON_RES"],
         "level": 3,
         "bac": 3,
         "speed": 18,
         "attacks": [
             { "name": "bites", "hit_bonus": 0, "damage": "2d4" },
-            { "name": "stings", "hit_bonus": 0, "damage": "3d4" }
+            { "name": "stings", "hit_bonus": 0, "damage": "3d4;poison" }
         ],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -503,7 +503,7 @@
         "id": "treant_small",
         "name": "treant sapling",
         "renderable": { "glyph": "♠️", "fg": "#10570d", "bg": "#000000", "order": 1 },
-        "flags": ["LARGE_GROUP", "GREEN_BLOOD"],
+        "flags": ["LARGE_GROUP", "GREEN_BLOOD", "FIRE_WEAK"],
         "level": 2,
         "bac": 12,
         "speed": 3,

@@ -370,14 +370,17 @@ pub struct ProvidesHealing {
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
 pub enum DamageType {
     Physical,
-    Magic,
+    Magic, // e.g. magic missiles, silvered weapons
+    Fire, // e.g. fireball
+    Cold, // e.g. cone of cold
+    Poison, // e.g. poison gas
     Forced, // Bypasses any immunities. e.g. Hunger ticks.
 }
 
 impl DamageType {
     pub fn is_magic(&self) -> bool {
         match self {
-            DamageType::Magic => true,
+            DamageType::Magic | DamageType::Fire | DamageType::Cold => true,
             _ => false,
         }
     }
