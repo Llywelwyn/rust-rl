@@ -27,7 +27,7 @@ impl CorridorSpawner {
                 );
             }
         } else {
-            panic!("CorridorSpawner only works after corridors have been created");
+            unreachable!("CorridorSpawner tried to run without any corridors.");
         }
     }
 }

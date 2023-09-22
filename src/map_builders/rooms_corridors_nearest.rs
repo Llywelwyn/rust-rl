@@ -22,7 +22,7 @@ impl NearestCorridors {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("NearestCorridors requires a builder with rooms");
+            unreachable!("NearestCorridors tried to run without any rooms.");
         }
 
         let mut connected: HashSet<usize> = HashSet::new();

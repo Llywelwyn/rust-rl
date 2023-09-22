@@ -759,7 +759,7 @@ pub fn table_by_name(raws: &RawMaster, key: &str, optional_difficulty: Option<i3
 
 fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
     if !raws.item_index.contains_key(tag) {
-        panic!("Trying to equip an unknown item: {}", tag);
+        unreachable!("Tried to equip an unknown item: {}", tag);
     }
     let item_index = raws.item_index[tag];
     let item = &raws.raws.items[item_index];
@@ -794,7 +794,7 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
             }
         }
     }
-    panic!("Trying to equip {}, but it has no slot tag.", tag);
+    unreachable!("Tried to equip {}, but it has no slot tag.", tag);
 }
 
 pub fn roll_on_loot_table(
@@ -1067,7 +1067,7 @@ fn parse_damage_string(n: &str) -> (DamageType, DiceType) {
             "fire" => DamageType::Fire,
             "cold" => DamageType::Cold,
             "poison" => DamageType::Poison,
-            _ => panic!("Unrecognised damage type in raws: {}", tokens[1]),
+            _ => unreachable!("Unrecognised damage type in raws: {}", tokens[1]),
         }
     } else {
         DamageType::Physical

@@ -42,7 +42,7 @@ impl RoomCornerRounder {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("RoomCornerRounding requires a builder with rooms.");
+            unreachable!("RoomCornerRounding tried to run without any rooms.");
         }
 
         for room in rooms.iter() {

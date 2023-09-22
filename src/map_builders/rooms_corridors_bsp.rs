@@ -21,7 +21,7 @@ impl BspCorridors {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("BSP Corridors require a builder with room structures");
+            unreachable!("BSP Corridors tried to run without any rooms.");
         }
 
         let mut corridors: Vec<Vec<usize>> = Vec::new();

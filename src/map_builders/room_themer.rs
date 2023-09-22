@@ -141,7 +141,7 @@ impl ThemeRooms {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("RoomCornerRounding requires a builder with rooms.");
+            unreachable!("RoomCornerRounding tried to run without any rooms.");
         }
 
         let count = roll_until_fail(rng, self.percent);

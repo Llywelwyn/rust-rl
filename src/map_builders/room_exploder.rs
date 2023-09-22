@@ -20,7 +20,7 @@ impl RoomExploder {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("RoomExploder requires a builder with rooms.");
+            unreachable!("RoomExploder tried to run without any rooms.");
         }
         for room in rooms.iter() {
             let start = room.center();

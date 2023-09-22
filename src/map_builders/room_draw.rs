@@ -50,7 +50,7 @@ impl RoomDrawer {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("RoomDrawer require a builder with rooms");
+            unreachable!("RoomDrawer tried to run without any rooms.");
         }
 
         for room in rooms.iter() {

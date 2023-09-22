@@ -137,7 +137,7 @@ impl BuilderChain {
             None => {
                 self.starter = Some(starter);
             }
-            Some(_) => panic!("You can only have one starting builder."),
+            Some(_) => unreachable!("You can only have one starting builder."),
         };
     }
 
@@ -147,7 +147,7 @@ impl BuilderChain {
 
     pub fn build_map(&mut self, rng: &mut RandomNumberGenerator) {
         match &mut self.starter {
-            None => panic!("Cannot run a map builder chain without a starting build system"),
+            None => unreachable!("Cannot run a map builder chain without a starting build system"),
             Some(starter) => {
                 // Build the starting map
                 starter.build_map(rng, &mut self.build_data);

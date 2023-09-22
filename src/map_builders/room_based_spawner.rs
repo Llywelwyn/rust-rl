@@ -27,7 +27,7 @@ impl RoomBasedSpawner {
                 );
             }
         } else {
-            panic!("RoomBasedSpawner only works after rooms have been created");
+            unreachable!("RoomBasedSpawner tried to run without any rooms.");
         }
     }
 }

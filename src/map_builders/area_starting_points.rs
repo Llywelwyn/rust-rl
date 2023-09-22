@@ -75,7 +75,7 @@ impl AreaStartingPosition {
             }
         }
         if available_floors.is_empty() {
-            panic!("No valid floors to start on");
+            unreachable!("No valid floors to start on.");
         }
 
         available_floors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());

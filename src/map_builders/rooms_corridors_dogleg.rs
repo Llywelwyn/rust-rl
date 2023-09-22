@@ -21,7 +21,7 @@ impl DoglegCorridors {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("DoglegCorridors require a builder with rooms.");
+            unreachable!("DoglegCorridors tried to run without any rooms.");
         }
 
         let mut corridors: Vec<Vec<usize>> = Vec::new();

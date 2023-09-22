@@ -22,7 +22,7 @@ impl BresenhamCorridors {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("BresenhamCorridors require a builder with room structures");
+            unreachable!("BresenhamCorridors tried to run without any rooms.");
         }
 
         let mut connected: HashSet<usize> = HashSet::new();

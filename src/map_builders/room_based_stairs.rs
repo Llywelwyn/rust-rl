@@ -22,7 +22,7 @@ impl RoomBasedStairs {
             build_data.map.tiles[stairs_idx] = TileType::DownStair;
             build_data.take_snapshot();
         } else {
-            panic!("RoomBasedStairs only works after rooms have been created");
+            unreachable!("RoomBasedStairs tried to run without any rooms.");
         }
     }
 }
