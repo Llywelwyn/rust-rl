@@ -727,16 +727,13 @@ pub fn table_by_name(raws: &RawMaster, key: &str, optional_difficulty: Option<i3
             return rt;
         }
     }
-    console::log(
-        format!(
-            "DEBUGINFO: Something went wrong when trying to spawn {} @ map difficulty {} [upper bound: {}, lower bound: {}]. Returned debug entry.",
-            key,
-            difficulty,
-            upper_bound,
-            lower_bound
-        )
+    unreachable!(
+        "Something went wrong when trying to spawn {} @ map difficulty {} [upper bound: {}, lower bound: {}].",
+        key,
+        difficulty,
+        upper_bound,
+        lower_bound
     );
-    return RandomTable::new().add("debug", 1);
 }
 
 /*pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
