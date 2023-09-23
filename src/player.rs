@@ -656,6 +656,50 @@ pub fn player_input(gs: &mut State, ctx: &mut App, on_overmap: bool) -> RunState
         return try_move_player(0, -1, &mut gs.ecs);
     } else if key.was_pressed(KeyCode::Numpad2) {
         return try_move_player(0, 1, &mut gs.ecs);
+    } else if key.was_pressed(KeyCode::Numpad9) {
+        return try_move_player(1, -1, &mut gs.ecs);
+    } else if key.was_pressed(KeyCode::Numpad7) {
+        return try_move_player(-1, -1, &mut gs.ecs);
+    } else if key.was_pressed(KeyCode::Numpad3) {
+        return try_move_player(1, 1, &mut gs.ecs);
+    } else if key.was_pressed(KeyCode::Numpad1) {
+        return try_move_player(-1, 1, &mut gs.ecs);
+    } else if key.was_pressed(KeyCode::Period) {
+        if key.shift() {
+            let dest = try_change_level(&mut gs.ecs, false);
+            let curr_map_id = gs.ecs.fetch::<Map>().id;
+            return match dest {
+                // If we have no destination, do nothing.
+                Destination::None => RunState::AwaitingInput,
+                // If we want to go to the next level, go to the up-stair tile of id + 1.
+                Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
+                // If we want to go to the previous level, go to the down-stair tile of id - 1.
+                Destination::PreviousLevel =>
+                    RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
+                Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
+                Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
+            };
+        } else {
+            return skip_turn(&mut gs.ecs); // (Wait a turn)
+        }
+    } else if key.was_pressed(KeyCode::Comma) {
+        if key.shift() {
+            let dest = try_change_level(&mut gs.ecs, false);
+            let curr_map_id = gs.ecs.fetch::<Map>().id;
+            return match dest {
+                // If we have no destination, do nothing.
+                Destination::None => RunState::AwaitingInput,
+                // If we want to go to the next level, go to the up-stair tile of id + 1.
+                Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
+                // If we want to go to the previous level, go to the down-stair tile of id - 1.
+                Destination::PreviousLevel =>
+                    RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
+                Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
+                Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
+            };
+        } else {
+            return skip_turn(&mut gs.ecs); // (Wait a turn)
+        }
     }
     return RunState::AwaitingInput;
 

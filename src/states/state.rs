@@ -23,9 +23,8 @@ use crate::camera;
 use crate::saveload_system;
 use crate::morgue;
 use crate::damage_system;
-use crate::data::prelude::*;
-use notan::prelude::*;
 use std::collections::HashMap;
+use notan::prelude::*;
 
 #[derive(AppState)]
 pub struct State {
@@ -163,21 +162,162 @@ impl State {
 }
 
 impl State {
-    pub fn tick(&mut self, app: &mut App) {
+    pub fn update(&mut self, ctx: &mut App) {
+        let mut new_runstate;
+        {
+            let runstate = self.ecs.fetch::<RunState>();
+            new_runstate = *runstate;
+        }
+
+        // Particle ticker here
+
+        match new_runstate {
+            | RunState::MainMenu { .. }
+            | RunState::CharacterCreation { .. }
+            | RunState::PreRun { .. } => {}
+            _ => {
+                // Draw map and ui
+            }
+        }
+
+        match new_runstate {
+            RunState::PreRun => {
+                self.run_systems();
+                self.ecs.maintain();
+                new_runstate = RunState::AwaitingInput;
+            }
+            RunState::AwaitingInput => {
+                self.refresh_indexes();
+                effects::run_effects_queue(&mut self.ecs);
+                let mut can_act = false;
+                {
+                    let player_entity = self.ecs.fetch::<Entity>();
+                    let turns = self.ecs.read_storage::<TakingTurn>();
+                    if let Some(_) = turns.get(*player_entity) {
+                        can_act = true;
+                    }
+                }
+                if can_act {
+                    let on_overmap = self.ecs.fetch::<Map>().overmap;
+                    new_runstate = player_input(self, ctx, on_overmap);
+                } else {
+                    new_runstate = RunState::Ticking;
+                }
+            }
+            RunState::Ticking => {
+                while new_runstate == RunState::Ticking && particle_system::check_queue(&self.ecs) {
+                    self.run_systems();
+                    self.ecs.maintain();
+                    try_spawn_interval(&mut self.ecs);
+                    maybe_map_message(&mut self.ecs);
+                    match *self.ecs.fetch::<RunState>() {
+                        RunState::AwaitingInput => {
+                            new_runstate = RunState::AwaitingInput;
+                        }
+                        RunState::MagicMapReveal { row, cursed } => {
+                            new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed };
+                        }
+                        RunState::ShowRemoveCurse => {
+                            new_runstate = RunState::ShowRemoveCurse;
+                        }
+                        RunState::ShowIdentify => {
+                            new_runstate = RunState::ShowIdentify;
+                        }
+                        _ => {
+                            new_runstate = RunState::Ticking;
+                        }
+                    }
+                }
+            }
+            // RunState::Farlook
+            // RunState::ShowCheatMenu
+            // RunState::ShowInventory
+            // RunState::ShowDropItem
+            // RunState::ShowRemoveItem
+            // RunState::ShowTargeting
+            // RunState::ShowRemoveCurse
+            // RunState::ShowIdentify
+            // RunState::ActionWithDirection
+            // RunState::MainMenu
+            // RunState::CharacterCreation
+            RunState::SaveGame => {
+                saveload_system::save_game(&mut self.ecs);
+                new_runstate = RunState::MainMenu {
+                    menu_selection: gui::MainMenuSelection::LoadGame,
+                };
+            }
+            //RunState::GameOver
+            RunState::GoToLevel(id, dest_tile) => {
+                self.goto_id(id, dest_tile);
+                self.mapgen_next_state = Some(RunState::PreRun);
+                new_runstate = RunState::MapGeneration;
+            }
+            // RunState::HelpScreen
+            RunState::MagicMapReveal { row, cursed } => {
+                let mut map = self.ecs.fetch_mut::<Map>();
+
+                // Could probably toss this into a function somewhere, and/or
+                // have multiple simple animations for it.
+                for x in 0..map.width {
+                    let idx;
+                    if x % 2 == 0 {
+                        idx = map.xy_idx(x as i32, row);
+                    } else {
+                        idx = map.xy_idx(x as i32, (map.height as i32) - 1 - row);
+                    }
+                    if !cursed {
+                        map.revealed_tiles[idx] = true;
+                    } else {
+                        map.revealed_tiles[idx] = false;
+                    }
+                }
+                // Dirtify viewshed only if cursed, so our currently visible tiles aren't removed too
+                if cursed {
+                    let player_entity = self.ecs.fetch::<Entity>();
+                    let mut viewshed_components = self.ecs.write_storage::<Viewshed>();
+                    let viewshed = viewshed_components.get_mut(*player_entity);
+                    if let Some(viewshed) = viewshed {
+                        viewshed.dirty = true;
+                    }
+                }
+
+                if (row as usize) == (map.height as usize) - 1 {
+                    new_runstate = RunState::Ticking;
+                } else {
+                    new_runstate = RunState::MagicMapReveal { row: row + 1, cursed: cursed };
+                }
+            }
+            // RunState::MapGeneration
+            _ => {}
+        }
+        {
+            let mut runwriter = self.ecs.write_resource::<RunState>();
+            *runwriter = new_runstate;
+        }
+        damage_system::delete_the_dead(&mut self.ecs);
+    }
+    fn tick(&mut self, ctx: &mut BTerm) {
         let mut new_runstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
             new_runstate = *runstate;
         }
         // Clear screen
-        //particle_system::particle_ticker(&mut self.ecs, ctx);
+        ctx.set_active_console(2);
+        ctx.cls();
+        ctx.set_active_console(1);
+        ctx.cls();
+        ctx.set_active_console(0);
+        ctx.cls();
+        particle_system::particle_ticker(&mut self.ecs, ctx);
 
         match new_runstate {
-            RunState::MainMenu { .. } | RunState::PreRun | RunState::CharacterCreation { .. } => {}
+            RunState::MainMenu { .. } => {}
+            RunState::CharacterCreation { .. } => {}
             _ => {
                 // Draw map and ui
-                //camera::render_camera(&self.ecs, ctx);
-                //gui::draw_ui(&self.ecs, ctx);
+                camera::render_camera(&self.ecs, ctx);
+                gui::draw_ui(&self.ecs, ctx);
             }
         }
 
@@ -206,7 +346,7 @@ impl State {
                 }
                 if can_act {
                     let on_overmap = self.ecs.fetch::<Map>().overmap;
-                    new_runstate = player_input(self, app, on_overmap);
+                    new_runstate = RunState::AwaitingInput; //player_input(self, ctx, on_overmap);
                 } else {
                     new_runstate = RunState::Ticking;
                 }
@@ -237,7 +377,7 @@ impl State {
                 }
             }
             RunState::Farlook { .. } => {
-                let result = gui::FarlookResult::Cancel; //gui::show_farlook(self, ctx);
+                let result = gui::show_farlook(self, ctx);
                 match result {
                     gui::FarlookResult::NoResponse { x, y } => {
                         new_runstate = RunState::Farlook { x, y };
@@ -248,7 +388,7 @@ impl State {
                 }
             }
             RunState::ShowCheatMenu => {
-                let result = gui::CheatMenuResult::Cancel; //gui::show_cheat_menu(self, ctx);
+                let result = gui::show_cheat_menu(self, ctx);
                 match result {
                     gui::CheatMenuResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;
@@ -291,7 +431,7 @@ impl State {
                 }
             }
             RunState::ShowInventory => {
-                let result = gui::ItemMenuResult::Cancel; //gui::show_inventory(self, ctx);
+                let result = gui::show_inventory(self, ctx);
                 match result.0 {
                     gui::ItemMenuResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;
@@ -466,10 +606,7 @@ impl State {
                 }
             }
             RunState::CharacterCreation { .. } => {
-                let result = gui::CharCreateResult::Selected {
-                    ancestry: gui::Ancestry::Human,
-                    class: gui::Class::Fighter,
-                }; //gui::character_creation(self, ctx);
+                let result = gui::character_creation(self, ctx);
                 match result {
                     gui::CharCreateResult::NoSelection { ancestry, class } => {
                         new_runstate = RunState::CharacterCreation { ancestry, class };
@@ -494,7 +631,7 @@ impl State {
                 };
             }
             RunState::GameOver => {
-                let result = gui::YesNoResult::No; //gui::game_over(ctx);
+                let result = gui::game_over(ctx);
                 let write_to_morgue: Option<bool> = match result {
                     gui::YesNoResult::NoSelection => None,
                     gui::YesNoResult::No => Some(false),
@@ -517,7 +654,7 @@ impl State {
                 new_runstate = RunState::MapGeneration;
             }
             RunState::HelpScreen => {
-                let result = gui::YesNoResult::Yes; //gui::show_help(ctx);
+                let result = gui::show_help(ctx);
                 match result {
                     gui::YesNoResult::Yes => {
                         gamelog::record_event(EVENT::LookedForHelp(1));
@@ -566,9 +703,15 @@ impl State {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 if self.mapgen_history.len() != 0 {
-                    //camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
+                    ctx.set_active_console(2);
+                    ctx.cls();
+                    ctx.set_active_console(1);
+                    ctx.cls();
+                    ctx.set_active_console(0);
+                    ctx.cls();
+                    camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
 
-                    //self.mapgen_timer += ctx.frame_time_ms;
+                    self.mapgen_timer += ctx.frame_time_ms;
                     if self.mapgen_timer > 300.0 {
                         self.mapgen_timer = 0.0;
                         self.mapgen_index += 1;
@@ -587,6 +730,6 @@ impl State {
 
         damage_system::delete_the_dead(&mut self.ecs);
 
-        //let _ = render_draw_buffer(ctx);
+        let _ = render_draw_buffer(ctx);
     }
 }

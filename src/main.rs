@@ -136,7 +136,7 @@ fn setup(gfx: &mut Graphics) -> State {
     gs.ecs.insert(gui::Ancestry::Human); // ancestry
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity); // Player entity
-    gs.ecs.insert(RunState::MapGeneration {}); // RunState
+    gs.ecs.insert(RunState::AwaitingInput {}); // TODO: Set this back to RunState::MapGen
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());
 
@@ -156,6 +156,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         let px = idx_to_px(i, &map);
         draw.image(gs.atlas.get("floor_grass_d").unwrap()).position(px.0, px.1);
     }
+    let ppos = gs.ecs.fetch::<Point>();
+    let px = idx_to_px(map.xy_idx(ppos.x, ppos.y), &map);
+    draw.image(gs.atlas.get("ui_heart_full").unwrap()).position(px.0, px.1);
     // Render batch
     gfx.render(&draw);
 }
@@ -167,6 +170,6 @@ fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
     )
 }
 
-fn update(app: &mut App, state: &mut State) {
-    //state.tick(app);
+fn update(ctx: &mut App, state: &mut State) {
+    state.update(ctx);
 }
