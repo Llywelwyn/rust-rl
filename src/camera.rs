@@ -1,4 +1,4 @@
-use super::{ Hidden, Map, Mind, Position, Prop, Renderable };
+use super::{ Hidden, Map, Mind, Position, Prop, Renderable, Pools };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
@@ -58,7 +58,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                     y + y_offset,
                     RGB::named(DARKSLATEGRAY),
                     RGB::named(BLACK),
-                    rltk::to_cp437('#')
+                    to_cp437('#')
                 );
             }
             x += 1;

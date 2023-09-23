@@ -11,17 +11,17 @@ fn main() -> BError {
     const CURSES_16_16_BYTES: &[u8] = include_bytes!("../resources/curses16x16.png");
     const CURSES_8_16_BYTES: &[u8] = include_bytes!("../resources/curses8x16.png");
     const SINGLE_1_1_BYTES: &[u8] = include_bytes!("../resources/healthbar22x2.png");
-    rltk::embedding::EMBED
+    bracket_lib::terminal::EMBED
         .lock()
         .add_resource("resources/curses16x16.png".to_string(), CURSES_16_16_BYTES);
-    rltk::embedding::EMBED
+    bracket_lib::terminal::EMBED
         .lock()
         .add_resource("resources/curses8x16.png".to_string(), CURSES_8_16_BYTES);
-    rltk::embedding::EMBED
+    bracket_lib::terminal::EMBED
         .lock()
         .add_resource("resources/healthbar22x2.png".to_string(), SINGLE_1_1_BYTES);
 
-    let mut context = RltkBuilder::new()
+    let mut context = BTermBuilder::new()
         .with_title("rust-rl")
         .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
         .with_font("curses16x16.png", 16, 16)

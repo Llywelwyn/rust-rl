@@ -121,7 +121,7 @@ impl<'a> System<'a> for VisibilitySystem {
                 if let Some(_is_blind) = blind_entities.get(ent) {
                     range *= BLIND_TELEPATHY_RANGE_MULTIPLIER;
                 }
-                telepath.telepath_tiles = fast_fov(pos.x, pos.y, range);
+                telepath.telepath_tiles = fast_fov(pos.x, pos.y, range, &map);
                 telepath.telepath_tiles.retain(
                     |p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height
                 );

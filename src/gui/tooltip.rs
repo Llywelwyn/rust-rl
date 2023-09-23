@@ -44,7 +44,7 @@ impl Tooltip {
     fn height(&self) -> i32 {
         return (self.lines.len() as i32) + 2i32;
     }
-    fn render(&self, ctx: &mut Rltk, x: i32, y: i32) {
+    fn render(&self, ctx: &mut BTerm, x: i32, y: i32) {
         ctx.set_active_console(1);
         ctx.draw_box(
             x,
@@ -178,7 +178,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm, xy: Option<(i32, i32)>) {
         arrow_x = (mouse_pos.0 + 1) * 2;
     }
     ctx.set_active_console(1);
-    ctx.set(arrow_x, arrow_y, white, RGB::named(rltk::BLACK), arrow);
+    ctx.set(arrow_x, arrow_y, white, RGB::named(BLACK), arrow);
     ctx.set_active_console(0);
 
     let mut total_height = 0;
