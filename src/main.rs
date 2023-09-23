@@ -19,6 +19,7 @@ fn main() -> Result<(), String> {
         .add_config(win_config)
         .add_config(notan::draw::DrawConfig)
         .draw(draw)
+        .update(update)
         .build()
 }
 
@@ -146,19 +147,26 @@ fn setup(gfx: &mut Graphics) -> State {
     gs
 }
 
-fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
-    let mut x = 10.0;
-    let mut y = 10.0;
-    // Draw base texture
-    state.atlas.iter().for_each(|(k, tex)| {
-        if y + tex.height() > (gfx.size().1 as f32) * 0.8 {
-            y = 10.0;
-            x += 17.0;
-        }
-        draw.image(tex).position(x, y);
-        y += tex.height() + 1.0;
-    });
+    // Draw map
+    let map = gs.ecs.fetch::<Map>();
+    for (i, _tile) in map.tiles.iter().enumerate() {
+        let px = idx_to_px(i, &map);
+        draw.image(gs.atlas.get("floor_grass_d").unwrap()).position(px.0, px.1);
+    }
+    // Render batch
     gfx.render(&draw);
+}
+
+fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
+    (
+        ((idx % (map.width as usize)) as i32 as f32) * (TILESIZE as f32),
+        ((idx / (map.width as usize)) as i32 as f32) * (TILESIZE as f32),
+    )
+}
+
+fn update(app: &mut App, state: &mut State) {
+    // game loop
 }
