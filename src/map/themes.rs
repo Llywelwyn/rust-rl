@@ -5,6 +5,22 @@ use crate::data::ids::*;
 use bracket_lib::prelude::*;
 use std::ops::{ Add, Mul };
 
+pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (usize, RGBA) {
+    let x = (idx as i32) % map.width;
+    let y = (idx as i32) / map.width;
+    let tile = map.tiles[idx];
+    let base = match tile {
+        TileType::Wall => wall_sprite(tile.sprite(), map, x, y),
+        _ => tile.sprite(),
+    };
+    let sprite_id = pick_variant(base, tile.variants(), idx, map);
+    let tint = if !map.visible_tiles[idx] {
+        RGBA::from_f32(0.75, 0.75, 0.75, 1.0)
+    } else {
+        RGBA::named(WHITE)
+    };
+    return (sprite_id, tint);
+}
 /// Gets the renderables for a tile, with darkening/offset/post-processing/etc. Passing a val for "debug" will ignore viewshed.
 pub fn get_tile_renderables_for_id(
     idx: usize,
@@ -140,6 +156,20 @@ fn is_revealed_and_wall(map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool 
     let idx = map.xy_idx(x, y);
     map.tiles[idx] == TileType::Wall &&
         (if debug.is_none() { map.revealed_tiles[idx] } else { true })
+}
+
+fn wall_sprite(id: usize, map: &Map, x: i32, y: i32) -> usize {
+    if y > map.height - (2 as i32) {
+        return id;
+    }
+    if is_revealed_and_wall(map, x, y + 1, None) {
+        return id + 6;
+    }
+    return id;
+}
+
+fn pick_variant(base: usize, variants: usize, idx: usize, map: &Map) -> usize {
+    return base + ((map.colour_offset[idx].0.0 * (variants as f32)) as usize);
 }
 
 fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> FontCharType {

@@ -34,6 +34,7 @@ use super::{
     BUC,
     data::ids::get_local_col,
 };
+use crate::data::prelude::*;
 use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
 use crate::data::visuals::{
     TARGETING_LINE_COL,
@@ -110,7 +111,7 @@ pub fn draw_lerping_bar(
 pub const TEXT_FONT_MOD: i32 = 2;
 
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
-    ctx.set_active_console(1);
+    ctx.set_active_console(TEXT_LAYER);
     // Render stats
     let pools = ecs.read_storage::<Pools>();
     let attributes = ecs.read_storage::<Attributes>();
@@ -474,7 +475,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
 
     // Render the message log at [1, 7], ascending, with 7 lines and a max width of 68.
     gamelog::print_log(
-        &mut BACKEND_INTERNAL.lock().consoles[1].console,
+        &mut BACKEND_INTERNAL.lock().consoles[TEXT_LAYER].console,
         Point::new(1 * TEXT_FONT_MOD, 7),
         false,
         7,
@@ -539,7 +540,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         RGB::named(WHITE),
         RGB::named(BLACK)
     ); // Side box
-    ctx.set_active_console(0);
+    ctx.set_active_console(TILE_LAYER);
     tooltip::draw_tooltips(ecs, ctx, None);
 }
 
@@ -999,7 +1000,7 @@ pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
 }
 
 pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
-    ctx.set_active_console(1);
+    ctx.set_active_console(TEXT_LAYER);
 
     let player_inventory = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
@@ -1021,7 +1022,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
     ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
     print_options(&player_inventory, x + 1, y + 1, ctx);
 
-    ctx.set_active_console(0);
+    ctx.set_active_console(TILE_LAYER);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),

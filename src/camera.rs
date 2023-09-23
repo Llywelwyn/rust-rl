@@ -3,6 +3,8 @@ use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
 use super::data::visuals::{ VIEWPORT_W, VIEWPORT_H };
+use super::data::sprites::*;
+use super::data::prelude::*;
 
 const SHOW_BOUNDARIES: bool = false;
 
@@ -44,13 +46,29 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
             if t_x >= 0 && t_x < map.width && t_y >= 0 && t_y < map.height {
                 let idx = map.xy_idx(t_x, t_y);
                 if map.revealed_tiles[idx] {
-                    let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(
-                        idx,
-                        &*map,
-                        Some(*ecs.fetch::<Point>()),
-                        None
-                    );
-                    ctx.set(x + x_offset, y + y_offset, fg, bg, glyph);
+                    if 1 == 2 {
+                        let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(
+                            idx,
+                            &*map,
+                            Some(*ecs.fetch::<Point>()),
+                            None
+                        );
+                        ctx.set(x + x_offset, y + y_offset, fg, bg, glyph);
+                    } else {
+                        ctx.set_active_console(0);
+                        let (id, tint) = crate::map::themes::get_sprite_for_id(
+                            idx,
+                            &*map,
+                            Some(*ecs.fetch::<Point>())
+                        );
+                        ctx.add_sprite(
+                            Rect::with_size(x * 16 + x_offset * 16, y * 16 + y_offset * 16, 16, 16),
+                            0,
+                            tint,
+                            id
+                        );
+                        ctx.set_active_console(TILE_LAYER);
+                    }
                 }
             } else if SHOW_BOUNDARIES {
                 ctx.set(
@@ -68,6 +86,8 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
 
     // Render entities
     {
+        ctx.set_active_console(ENTITY_LAYER);
+
         let positions = ecs.read_storage::<Position>();
         let renderables = ecs.read_storage::<Renderable>();
         let pools = ecs.read_storage::<Pools>();
@@ -86,12 +106,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
             if pos.x < max_x && pos.y < max_y && pos.x >= min_x && pos.y >= min_y {
                 let mut draw = false;
                 let mut fg = render.fg;
-                let mut bg = crate::map::themes::get_tile_renderables_for_id(
-                    idx,
-                    &*map,
-                    Some(*ecs.fetch::<Point>()),
-                    None
-                ).2;
+                let bg = BLACK;
                 // Draw entities on visible tiles
                 if map.visible_tiles[idx] {
                     draw = true;
@@ -106,9 +121,6 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                         let has_mind = minds.get(*ent);
                         if let Some(_) = has_mind {
                             draw = true;
-                            if !map.revealed_tiles[idx] {
-                                bg = RGB::named(BLACK);
-                            }
                         }
                     }
                 }
@@ -129,7 +141,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                     );
                     if let Some(pool) = pools.get(*ent) {
                         if pool.hit_points.current < pool.hit_points.max {
-                            ctx.set_active_console(2);
+                            ctx.set_active_console(HP_BAR_LAYER);
                             crate::gui::draw_lerping_bar(
                                 ctx,
                                 (entity_offset_x + x_offset) * 16 + 2,
@@ -142,12 +154,13 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                                 false,
                                 false
                             );
-                            ctx.set_active_console(0);
+                            ctx.set_active_console(ENTITY_LAYER);
                         }
                     }
                 }
             }
         }
+        ctx.set_active_console(TILE_LAYER);
     }
 }
 

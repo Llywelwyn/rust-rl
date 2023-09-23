@@ -23,6 +23,7 @@ use crate::camera;
 use crate::saveload_system;
 use crate::morgue;
 use crate::damage_system;
+use crate::data::prelude::*;
 
 pub struct State {
     pub ecs: World,
@@ -164,11 +165,15 @@ impl GameState for State {
             new_runstate = *runstate;
         }
         // Clear screen
-        ctx.set_active_console(2);
-        ctx.cls();
-        ctx.set_active_console(1);
-        ctx.cls();
         ctx.set_active_console(0);
+        ctx.cls();
+        ctx.set_active_console(HP_BAR_LAYER);
+        ctx.cls();
+        ctx.set_active_console(TEXT_LAYER);
+        ctx.cls();
+        ctx.set_active_console(ENTITY_LAYER);
+        ctx.cls();
+        ctx.set_active_console(TILE_LAYER);
         ctx.cls();
         particle_system::particle_ticker(&mut self.ecs, ctx);
 
@@ -564,11 +569,15 @@ impl GameState for State {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 if self.mapgen_history.len() != 0 {
-                    ctx.set_active_console(2);
-                    ctx.cls();
-                    ctx.set_active_console(1);
-                    ctx.cls();
                     ctx.set_active_console(0);
+                    ctx.cls();
+                    ctx.set_active_console(HP_BAR_LAYER);
+                    ctx.cls();
+                    ctx.set_active_console(TEXT_LAYER);
+                    ctx.cls();
+                    ctx.set_active_console(ENTITY_LAYER);
+                    ctx.cls();
+                    ctx.set_active_console(TILE_LAYER);
                     ctx.cls();
                     camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
 

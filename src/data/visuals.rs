@@ -5,6 +5,11 @@ pub const WITH_DARKEN_BY_DISTANCE: bool = true; // If further away tiles should 
 pub const VIEWPORT_W: i32 = 69;
 pub const VIEWPORT_H: i32 = 41;
 
+pub const TILE_LAYER: usize = 1;
+pub const ENTITY_LAYER: usize = 2;
+pub const TEXT_LAYER: usize = 3;
+pub const HP_BAR_LAYER: usize = 4;
+
 pub const BRIGHTEN_FG_COLOUR_BY: i32 = 16;
 pub const GLOBAL_OFFSET_MIN_CLAMP: f32 = -0.5;
 pub const GLOBAL_OFFSET_MAX_CLAMP: f32 = 1.0;

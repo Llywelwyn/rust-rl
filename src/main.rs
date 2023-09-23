@@ -8,18 +8,23 @@ const DISPLAYHEIGHT: i32 = 56;
 
 fn main() -> BError {
     // Embedded resources for use in wasm build
-    const CURSES_16_16_BYTES: &[u8] = include_bytes!("../resources/curses16x16.png");
-    const CURSES_8_16_BYTES: &[u8] = include_bytes!("../resources/curses8x16.png");
-    const SINGLE_1_1_BYTES: &[u8] = include_bytes!("../resources/healthbar22x2.png");
-    bracket_lib::terminal::EMBED
-        .lock()
-        .add_resource("resources/curses16x16.png".to_string(), CURSES_16_16_BYTES);
-    bracket_lib::terminal::EMBED
-        .lock()
-        .add_resource("resources/curses8x16.png".to_string(), CURSES_8_16_BYTES);
-    bracket_lib::terminal::EMBED
-        .lock()
-        .add_resource("resources/healthbar22x2.png".to_string(), SINGLE_1_1_BYTES);
+    {
+        const WORLD_16_16_BYTES: &[u8] = include_bytes!("../resources/world16x16.png");
+        const CURSES_16_16_BYTES: &[u8] = include_bytes!("../resources/curses16x16.png");
+        const CURSES_8_16_BYTES: &[u8] = include_bytes!("../resources/curses8x16.png");
+        const SINGLE_1_1_BYTES: &[u8] = include_bytes!("../resources/healthbar22x2.png");
+        let mut lock = bracket_lib::terminal::EMBED.lock();
+        lock.add_resource("resources/world16x16.png".to_string(), WORLD_16_16_BYTES);
+        lock.add_resource("resources/curses16x16.png".to_string(), CURSES_16_16_BYTES);
+        lock.add_resource("resources/curses8x16.png".to_string(), CURSES_8_16_BYTES);
+        lock.add_resource("resources/healthbar22x2.png".to_string(), SINGLE_1_1_BYTES);
+    }
+
+    let world_sheet = SpriteSheet {
+        filename: "resources/world16x16.png".to_string(),
+        sprites: register_spritesheet(16, 16, 19, 16),
+        backing: None,
+    };
 
     let mut context = BTermBuilder::new()
         .with_title("rust-rl")
@@ -29,13 +34,29 @@ fn main() -> BError {
         .with_font("healthbar22x2.png", 1, 1)
         .with_tile_dimensions(16, 16)
         .with_gutter(2)
-        .with_simple_console(DISPLAYWIDTH, DISPLAYHEIGHT, "curses16x16.png")
+        .with_sprite_console(DISPLAYWIDTH * 16, DISPLAYHEIGHT * 16, 0)
+        .with_sprite_sheet(world_sheet)
+        .with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "curses16x16.png")
+        .with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "curses16x16.png")
         .with_sparse_console(DISPLAYWIDTH * 2, DISPLAYHEIGHT, "curses8x16.png")
         .with_sparse_console(DISPLAYWIDTH * 16, DISPLAYHEIGHT * 16, "healthbar22x2.png")
         .build()?;
     if config::CONFIG.visuals.with_scanlines {
         context.with_post_scanlines(config::CONFIG.visuals.with_screen_burn);
     }
+
+    context.set_active_console(0);
+    for i in 0..16 {
+        for j in 0..19 {
+            context.add_sprite(
+                Rect::with_size(i * 16, j * 16, 16, 16),
+                0,
+                RGBA::named(WHITE),
+                i + j * 16
+            );
+        }
+    }
+    context.set_active_console(1);
 
     let mut gs = State {
         ecs: World::new(),
@@ -148,4 +169,16 @@ fn main() -> BError {
     gs.generate_world_map(1, TileType::Floor);
 
     main_loop(context, gs)
+}
+
+fn register_spritesheet(width: i32, height: i32, rows: i32, columns: i32) -> Vec<Sprite> {
+    let mut sprites: Vec<Sprite> = Vec::new();
+    for y in 0..rows {
+        for x in 0..columns {
+            sprites.push(
+                Sprite::new(Rect::with_size(x * width + 1, y * height + 1, width, height))
+            );
+        }
+    }
+    sprites
 }

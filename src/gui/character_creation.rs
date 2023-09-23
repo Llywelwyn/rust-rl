@@ -28,6 +28,7 @@ use bracket_lib::prelude::*;
 use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
 use std::collections::HashMap;
+use crate::data::prelude::*;
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
 pub enum Ancestry {
@@ -112,7 +113,7 @@ pub enum CharCreateResult {
 
 /// Handles the player character creation screen.
 pub fn character_creation(gs: &mut State, ctx: &mut BTerm) -> CharCreateResult {
-    ctx.set_active_console(1);
+    ctx.set_active_console(TEXT_LAYER);
     let runstate = gs.ecs.fetch::<RunState>();
 
     let mut x = 2;
@@ -246,7 +247,7 @@ pub fn character_creation(gs: &mut State, ctx: &mut BTerm) -> CharCreateResult {
                 }
         }
     }
-    ctx.set_active_console(0);
+    ctx.set_active_console(TILE_LAYER);
     return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class: Class::Fighter };
 }
 

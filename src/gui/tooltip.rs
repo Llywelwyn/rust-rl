@@ -12,6 +12,7 @@ use super::{
 };
 use crate::TileType;
 use crate::data::ids::*;
+use crate::data::prelude::*;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
@@ -45,7 +46,7 @@ impl Tooltip {
         return (self.lines.len() as i32) + 2i32;
     }
     fn render(&self, ctx: &mut BTerm, x: i32, y: i32) {
-        ctx.set_active_console(1);
+        ctx.set_active_console(TEXT_LAYER);
         ctx.draw_box(
             x,
             y,
@@ -57,7 +58,7 @@ impl Tooltip {
         for (i, s) in self.lines.iter().enumerate() {
             ctx.print_color(x + 1, y + (i as i32) + 1, s.1, RGB::named(BLACK), &s.0);
         }
-        ctx.set_active_console(0);
+        ctx.set_active_console(TILE_LAYER);
     }
 }
 
@@ -177,9 +178,9 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm, xy: Option<(i32, i32)>) {
         arrow = to_cp437('←');
         arrow_x = (mouse_pos.0 + 1) * 2;
     }
-    ctx.set_active_console(1);
+    ctx.set_active_console(TEXT_LAYER);
     ctx.set(arrow_x, arrow_y, white, RGB::named(BLACK), arrow);
-    ctx.set_active_console(0);
+    ctx.set_active_console(TILE_LAYER);
 
     let mut total_height = 0;
     for t in tooltips.iter() {
