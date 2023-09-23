@@ -2,7 +2,7 @@
     {
         "id": "door",
         "name": "door",
-        "renderable": { "glyph": "+", "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "+", "sprite": 17, "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "flags": ["DOOR"]
     },
     {

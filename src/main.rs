@@ -45,19 +45,6 @@ fn main() -> BError {
         context.with_post_scanlines(config::CONFIG.visuals.with_screen_burn);
     }
 
-    context.set_active_console(0);
-    for i in 0..16 {
-        for j in 0..19 {
-            context.add_sprite(
-                Rect::with_size(i * 16, j * 16, 16, 16),
-                0,
-                RGBA::named(WHITE),
-                i + j * 16
-            );
-        }
-    }
-    context.set_active_console(1);
-
     let mut gs = State {
         ecs: World::new(),
         mapgen_next_state: Some(RunState::MainMenu {

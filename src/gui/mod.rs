@@ -1235,9 +1235,8 @@ pub fn ranged_target(
         &gs.ecs,
         ctx
     );
-    let (screen_x, screen_y) = (40, 30);
-    let x = x.clamp(x_offset, x_offset - 1 + (screen_x as i32));
-    let y = y.clamp(y_offset, y_offset - 1 + (screen_y as i32));
+    let x = x.clamp(x_offset, x_offset - 1 + VIEWPORT_W);
+    let y = y.clamp(y_offset, y_offset - 1 + VIEWPORT_H);
 
     let mut mouse_pos_adjusted = mouse_pos;
     mouse_pos_adjusted.0 += min_x - x_offset;

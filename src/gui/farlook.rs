@@ -1,4 +1,11 @@
-use super::{ State, RunState, tooltip::draw_tooltips, camera::get_screen_bounds };
+use super::{
+    State,
+    RunState,
+    tooltip::draw_tooltips,
+    camera::get_screen_bounds,
+    VIEWPORT_H,
+    VIEWPORT_W,
+};
 use bracket_lib::prelude::*;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -23,9 +30,8 @@ pub fn show_farlook(gs: &mut State, ctx: &mut BTerm) -> FarlookResult {
     );
 
     if let RunState::Farlook { x, y } = *runstate {
-        let (screen_x, screen_y) = (40, 30);
-        let x = x.clamp(x_offset, x_offset - 1 + (screen_x as i32));
-        let y = y.clamp(y_offset, y_offset - 1 + (screen_y as i32));
+        let x = x.clamp(x_offset, x_offset - 1 + VIEWPORT_W);
+        let y = y.clamp(y_offset, y_offset - 1 + VIEWPORT_H);
 
         ctx.set(x, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437('X'));
         draw_tooltips(&gs.ecs, ctx, Some((x, y)));
