@@ -81,6 +81,7 @@ fn create_delayed_particles(ecs: &mut World, ctx: &BTerm) {
             .expect("Could not insert position");
         renderables
             .insert(p, Renderable {
+                sprite: None, // TODO: Particle sprite
                 fg: handled.fg,
                 bg: handled.bg,
                 glyph: handled.glyph,
@@ -306,6 +307,7 @@ impl<'a> System<'a> for ParticleSpawnSystem {
                 .expect("Could not insert position");
             renderables
                 .insert(p, Renderable {
+                    sprite: None, // TODO: Particle sprite
                     fg: new_particle.fg,
                     bg: new_particle.bg,
                     glyph: new_particle.glyph,

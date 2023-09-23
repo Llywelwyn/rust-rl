@@ -1553,7 +1553,7 @@ pub fn game_over(ctx: &mut BTerm) -> YesNoResult {
     }
 }
 
-pub fn with_article(name: String) -> String {
+pub fn with_article(name: &String) -> String {
     // If first letter is a capital
     if name.chars().nth(0).unwrap().is_uppercase() {
         return format!("{}", name);

@@ -184,7 +184,7 @@ fn get_death_message(ecs: &World, source: Entity) -> String {
         result.push_str(format!("{}", PLAYER_DIED_SUICIDE).as_str());
     } else if let Some(name) = ecs.read_storage::<Name>().get(source) {
         result.push_str(
-            format!("{} {}", PLAYER_DIED_NAMED_ATTACKER, with_article(name.name.clone())).as_str()
+            format!("{} {}", PLAYER_DIED_NAMED_ATTACKER, with_article(&name.name)).as_str()
         );
     } else {
         result.push_str(format!("{}", PLAYER_DIED_UNKNOWN).as_str());

@@ -21,7 +21,7 @@
     {
         "id": "prop_table",
         "name": "table",
-        "renderable": { "glyph": "-", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "-", "sprite": 52, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
@@ -33,25 +33,25 @@
     {
         "id": "prop_statue",
         "name": "statue",
-        "renderable": { "glyph": "@", "fg": "#ffffff", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "@", "sprite": 29, "fg": "#ffffff", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "prop_bed",
         "name": "bed",
-        "renderable": { "glyph": "=", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "=", "sprite": 50, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "prop_chair",
         "name": "chair",
-        "renderable": { "glyph": "└", "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "└", "sprite": 51, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "prop_candle",
         "name": "candle",
-        "renderable": { "glyph": "Ä", "fg": "#FFA500", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "Ä", "sprite": 3, "fg": "#FFA500", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {

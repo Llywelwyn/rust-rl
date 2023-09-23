@@ -39,6 +39,7 @@ use specs::prelude::*;
 use std::cmp::{ max, min };
 use crate::data::events::*;
 use crate::data::ids::*;
+use crate::gui::with_article;
 
 pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
@@ -560,11 +561,11 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                 let mut logger = gamelog::Logger::new().append("You see");
                 for i in 0..seen_items.len() {
                     if i > 0 && i < seen_items.len() {
-                        logger = logger.append(", a");
+                        logger = logger.append(", ");
                     }
                     logger = logger
                         .colour(seen_items[i].1)
-                        .append_n(&seen_items[i].0)
+                        .append_n(with_article(&seen_items[i].0))
                         .colour(WHITE);
                 }
                 logger.period().log();

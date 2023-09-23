@@ -30,6 +30,7 @@ pub struct Equippable {
 #[derive(Deserialize, Debug)]
 pub struct Renderable {
     pub glyph: String,
+    pub sprite: Option<usize>,
     pub fg: String,
     pub bg: String,
     pub order: i32,

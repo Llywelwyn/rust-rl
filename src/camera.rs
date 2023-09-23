@@ -132,13 +132,29 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                     }
                 }
                 if draw {
-                    ctx.set(
-                        entity_offset_x + x_offset,
-                        entity_offset_y + y_offset,
-                        fg,
-                        bg,
-                        render.glyph
-                    );
+                    if let Some(sprite) = render.sprite {
+                        ctx.set_active_console(0);
+                        ctx.add_sprite(
+                            Rect::with_size(
+                                entity_offset_x * 16 + x_offset * 16,
+                                entity_offset_y * 16 + y_offset * 16,
+                                16,
+                                16
+                            ),
+                            render.render_order,
+                            RGBA::named(WHITE),
+                            sprite
+                        );
+                        ctx.set_active_console(ENTITY_LAYER);
+                    } else {
+                        ctx.set(
+                            entity_offset_x + x_offset,
+                            entity_offset_y + y_offset,
+                            fg,
+                            bg,
+                            render.glyph
+                        );
+                    }
                     if let Some(pool) = pools.get(*ent) {
                         if pool.hit_points.current < pool.hit_points.max {
                             ctx.set_active_console(HP_BAR_LAYER);

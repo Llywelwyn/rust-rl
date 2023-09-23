@@ -86,7 +86,7 @@ pub const LILYPAD8: usize = 79;
 // Row 6 (80-95)
 // Row 7 (96-111)
 // Row 8 (112-127)
-pub const FLOOR_WOOD: usize = 123;
+pub const FLOOR_WOOD: usize = 124;
 // Row 9 (128-143)
 // Row 10 (144-159)
 // Row 11 (160-175)

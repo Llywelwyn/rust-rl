@@ -112,26 +112,7 @@ fn make_scroll_name(rng: &mut RandomNumberGenerator) -> String {
     return name;
 }
 
-const POTION_COLOURS: &[&str] = &[
-    "red",
-    "orange",
-    "yellow",
-    "green",
-    "blue",
-    "indigo",
-    "violet",
-    "black",
-    "white",
-    "silver",
-    "gold",
-    "rainbow",
-    "blood",
-    "purple",
-    "cyan",
-    "brown",
-    "grey",
-    "octarine",
-];
+const POTION_COLOURS: &[&str] = &["blue", "red", "green", "yellow", "black"];
 const POTION_ADJECTIVES: &[&str] = &[
     "swirling",
     "viscous",
