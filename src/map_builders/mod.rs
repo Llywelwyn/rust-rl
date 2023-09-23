@@ -438,21 +438,19 @@ pub fn random_builder(
 }
 
 pub fn level_builder(
-    new_id: i32,
+    id: i32,
     rng: &mut RandomNumberGenerator,
     width: i32,
     height: i32,
     initial_player_level: i32
 ) -> BuilderChain {
-    // TODO: With difficulty and ID/depth decoupled, this can be used for branches later.
-    let difficulty = new_id;
-    match new_id {
+    match id {
         ID_OVERMAP => overmap_builder(),
-        ID_TOWN => town_builder(new_id, rng, width, height, 0, initial_player_level),
-        ID_TOWN2 => forest_builder(new_id, rng, width, height, 1, initial_player_level),
+        ID_TOWN => town_builder(id, rng, width, height, 0, initial_player_level),
+        ID_TOWN2 => forest_builder(id, rng, width, height, 1, initial_player_level),
         ID_TOWN3 =>
             random_builder(
-                new_id,
+                id,
                 rng,
                 width,
                 height,
@@ -462,29 +460,33 @@ pub fn level_builder(
                 true,
                 BuildType::Room
             ),
-        _ if new_id >= ID_INFINITE =>
+        _ if id >= ID_INFINITE =>
             random_builder(
-                new_id,
+                id,
                 rng,
                 width,
                 height,
-                difficulty,
-                new_id - ID_INFINITE + 1,
+                4 + diff(ID_INFINITE, id),
+                1 + diff(ID_INFINITE, id),
                 initial_player_level,
                 false,
                 BuildType::Room
             ),
-        _ =>
+        _ => // This should be unreachable!() eventually. Right now it's reachable with the debug/cheat menu. It should not be in normal gameplay.
             random_builder(
-                new_id,
+                id,
                 rng,
                 width,
                 height,
-                difficulty,
+                1,
                 404,
                 initial_player_level,
                 false,
                 BuildType::Room
             ),
     }
+}
+
+fn diff(branch_id: i32, lvl_id: i32) -> i32 {
+    return lvl_id - branch_id;
 }
