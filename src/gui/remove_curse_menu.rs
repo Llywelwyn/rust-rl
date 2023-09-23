@@ -117,7 +117,7 @@ pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<
     }
     // Get display args
     let width = get_max_inventory_width(&player_inventory);
-    let (_, _, _, _, x_offset, y_offset) = crate::camera::get_screen_bounds(&gs.ecs, ctx);
+    let (_, _, _, _, x_offset, y_offset) = crate::camera::get_screen_bounds(&gs.ecs);
     let (x, y) = (x_offset + 1, y_offset + 3);
     // Draw menu
     ctx.print_color(

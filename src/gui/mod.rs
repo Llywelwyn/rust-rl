@@ -549,7 +549,7 @@ pub fn get_input_direction(
     ctx: &mut BTerm,
     function: fn(i: i32, j: i32, ecs: &mut World) -> RunState
 ) -> RunState {
-    let (_, _, _, _, x_offset, y_offset) = camera::get_screen_bounds(ecs, ctx);
+    let (_, _, _, _, x_offset, y_offset) = camera::get_screen_bounds(ecs);
 
     ctx.print_color(
         1 + x_offset,
@@ -1191,7 +1191,7 @@ pub fn ranged_target(
     range: i32,
     aoe: i32
 ) -> (TargetResult, Option<Point>) {
-    let (min_x, max_x, min_y, max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs, ctx);
+    let (min_x, max_x, min_y, max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
@@ -1231,10 +1231,7 @@ pub fn ranged_target(
 
     // Draw mouse cursor
     let mouse_pos = (x, y);
-    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(
-        &gs.ecs,
-        ctx
-    );
+    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs);
     let x = x.clamp(x_offset, x_offset - 1 + VIEWPORT_W);
     let y = y.clamp(y_offset, y_offset - 1 + VIEWPORT_H);
 

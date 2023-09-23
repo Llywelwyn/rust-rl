@@ -7,7 +7,7 @@ use super::data::prelude::*;
 
 const SHOW_BOUNDARIES: bool = false;
 
-pub fn get_screen_bounds(ecs: &World, _ctx: &mut BTerm) -> (i32, i32, i32, i32, i32, i32) {
+pub fn get_screen_bounds(ecs: &World) -> (i32, i32, i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
     let map = ecs.fetch::<Map>();
     let (x_chars, y_chars, mut x_offset, mut y_offset) = (VIEWPORT_W, VIEWPORT_H, 1, 10);
@@ -35,7 +35,7 @@ pub fn get_screen_bounds(ecs: &World, _ctx: &mut BTerm) -> (i32, i32, i32, i32, 
 
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
-    let (min_x, max_x, min_y, max_y, x_offset, y_offset) = get_screen_bounds(ecs, ctx);
+    let (min_x, max_x, min_y, max_y, x_offset, y_offset) = get_screen_bounds(ecs);
 
     // Render map
     let mut y = 0;

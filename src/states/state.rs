@@ -162,33 +162,22 @@ impl State {
     }
 }
 
-impl GameState for State {
-    fn tick(&mut self, ctx: &mut BTerm) {
+impl State {
+    pub fn tick(&mut self, app: &mut App) {
         let mut new_runstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
             new_runstate = *runstate;
         }
         // Clear screen
-        ctx.set_active_console(0);
-        ctx.cls();
-        ctx.set_active_console(HP_BAR_LAYER);
-        ctx.cls();
-        ctx.set_active_console(TEXT_LAYER);
-        ctx.cls();
-        ctx.set_active_console(ENTITY_LAYER);
-        ctx.cls();
-        ctx.set_active_console(TILE_LAYER);
-        ctx.cls();
-        particle_system::particle_ticker(&mut self.ecs, ctx);
+        //particle_system::particle_ticker(&mut self.ecs, ctx);
 
         match new_runstate {
-            RunState::MainMenu { .. } => {}
-            RunState::CharacterCreation { .. } => {}
+            RunState::MainMenu { .. } | RunState::PreRun | RunState::CharacterCreation { .. } => {}
             _ => {
                 // Draw map and ui
-                camera::render_camera(&self.ecs, ctx);
-                gui::draw_ui(&self.ecs, ctx);
+                //camera::render_camera(&self.ecs, ctx);
+                //gui::draw_ui(&self.ecs, ctx);
             }
         }
 
@@ -217,7 +206,7 @@ impl GameState for State {
                 }
                 if can_act {
                     let on_overmap = self.ecs.fetch::<Map>().overmap;
-                    new_runstate = player_input(self, ctx, on_overmap);
+                    new_runstate = player_input(self, app, on_overmap);
                 } else {
                     new_runstate = RunState::Ticking;
                 }
@@ -248,7 +237,7 @@ impl GameState for State {
                 }
             }
             RunState::Farlook { .. } => {
-                let result = gui::show_farlook(self, ctx);
+                let result = gui::FarlookResult::Cancel; //gui::show_farlook(self, ctx);
                 match result {
                     gui::FarlookResult::NoResponse { x, y } => {
                         new_runstate = RunState::Farlook { x, y };
@@ -259,7 +248,7 @@ impl GameState for State {
                 }
             }
             RunState::ShowCheatMenu => {
-                let result = gui::show_cheat_menu(self, ctx);
+                let result = gui::CheatMenuResult::Cancel; //gui::show_cheat_menu(self, ctx);
                 match result {
                     gui::CheatMenuResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;
@@ -302,7 +291,7 @@ impl GameState for State {
                 }
             }
             RunState::ShowInventory => {
-                let result = gui::show_inventory(self, ctx);
+                let result = gui::ItemMenuResult::Cancel; //gui::show_inventory(self, ctx);
                 match result.0 {
                     gui::ItemMenuResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;
@@ -316,7 +305,7 @@ impl GameState for State {
                             let is_aoe = self.ecs.read_storage::<AOE>();
                             let aoe_item = is_aoe.get(item_entity);
                             let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) =
-                                camera::get_screen_bounds(&self.ecs, ctx);
+                                camera::get_screen_bounds(&self.ecs);
                             let ppos = self.ecs.fetch::<Point>();
                             if let Some(aoe_item) = aoe_item {
                                 new_runstate = RunState::ShowTargeting {
@@ -477,7 +466,10 @@ impl GameState for State {
                 }
             }
             RunState::CharacterCreation { .. } => {
-                let result = gui::character_creation(self, ctx);
+                let result = gui::CharCreateResult::Selected {
+                    ancestry: gui::Ancestry::Human,
+                    class: gui::Class::Fighter,
+                }; //gui::character_creation(self, ctx);
                 match result {
                     gui::CharCreateResult::NoSelection { ancestry, class } => {
                         new_runstate = RunState::CharacterCreation { ancestry, class };
@@ -502,7 +494,7 @@ impl GameState for State {
                 };
             }
             RunState::GameOver => {
-                let result = gui::game_over(ctx);
+                let result = gui::YesNoResult::No; //gui::game_over(ctx);
                 let write_to_morgue: Option<bool> = match result {
                     gui::YesNoResult::NoSelection => None,
                     gui::YesNoResult::No => Some(false),
@@ -525,7 +517,7 @@ impl GameState for State {
                 new_runstate = RunState::MapGeneration;
             }
             RunState::HelpScreen => {
-                let result = gui::show_help(ctx);
+                let result = gui::YesNoResult::Yes; //gui::show_help(ctx);
                 match result {
                     gui::YesNoResult::Yes => {
                         gamelog::record_event(EVENT::LookedForHelp(1));
@@ -574,19 +566,9 @@ impl GameState for State {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 if self.mapgen_history.len() != 0 {
-                    ctx.set_active_console(0);
-                    ctx.cls();
-                    ctx.set_active_console(HP_BAR_LAYER);
-                    ctx.cls();
-                    ctx.set_active_console(TEXT_LAYER);
-                    ctx.cls();
-                    ctx.set_active_console(ENTITY_LAYER);
-                    ctx.cls();
-                    ctx.set_active_console(TILE_LAYER);
-                    ctx.cls();
-                    camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
+                    //camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
 
-                    self.mapgen_timer += ctx.frame_time_ms;
+                    //self.mapgen_timer += ctx.frame_time_ms;
                     if self.mapgen_timer > 300.0 {
                         self.mapgen_timer = 0.0;
                         self.mapgen_index += 1;
@@ -605,6 +587,6 @@ impl GameState for State {
 
         damage_system::delete_the_dead(&mut self.ecs);
 
-        let _ = render_draw_buffer(ctx);
+        //let _ = render_draw_buffer(ctx);
     }
 }

@@ -645,8 +645,21 @@ fn get_item(ecs: &mut World) -> RunState {
     }
 }
 
-pub fn player_input(gs: &mut State, ctx: &mut BTerm, on_overmap: bool) -> RunState {
-    match ctx.key {
+use notan::prelude::*;
+pub fn player_input(gs: &mut State, ctx: &mut App, on_overmap: bool) -> RunState {
+    let key = &ctx.keyboard;
+    if key.was_pressed(KeyCode::Numpad4) {
+        return try_move_player(-1, 0, &mut gs.ecs);
+    } else if key.was_pressed(KeyCode::Numpad6) {
+        return try_move_player(1, 0, &mut gs.ecs);
+    } else if key.was_pressed(KeyCode::Numpad8) {
+        return try_move_player(0, -1, &mut gs.ecs);
+    } else if key.was_pressed(KeyCode::Numpad2) {
+        return try_move_player(0, 1, &mut gs.ecs);
+    }
+    return RunState::AwaitingInput;
+
+    /*match ctx.key {
         None => {
             return RunState::AwaitingInput;
         }
@@ -776,7 +789,7 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm, on_overmap: bool) -> RunSta
                 }
             }
     }
-    return RunState::AwaitingInput;
+    return RunState::AwaitingInput;*/
 }
 
 fn try_change_level(ecs: &mut World, backtracking: bool) -> Destination {

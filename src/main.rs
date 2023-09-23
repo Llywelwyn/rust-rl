@@ -168,5 +168,5 @@ fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
 }
 
 fn update(app: &mut App, state: &mut State) {
-    // game loop
+    //state.tick(app);
 }

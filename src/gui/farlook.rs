@@ -19,7 +19,7 @@ pub enum FarlookResult {
 
 pub fn show_farlook(gs: &mut State, ctx: &mut BTerm) -> FarlookResult {
     let runstate = gs.ecs.fetch::<RunState>();
-    let (_min_x, _max_x, _min_y, _max_y, x_offset, y_offset) = get_screen_bounds(&gs.ecs, ctx);
+    let (_min_x, _max_x, _min_y, _max_y, x_offset, y_offset) = get_screen_bounds(&gs.ecs);
 
     ctx.print_color(
         1 + x_offset,
