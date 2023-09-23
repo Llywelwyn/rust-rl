@@ -37,19 +37,6 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
     let (min_x, max_x, min_y, max_y, x_offset, y_offset) = get_screen_bounds(ecs, ctx);
 
-    ctx.set_active_console(0);
-    for i in 0..16 {
-        for j in 0..19 {
-            ctx.add_sprite(
-                Rect::with_size(i * 16, j * 16, 16, 16),
-                0,
-                RGBA::named(WHITE),
-                i + j * 16
-            );
-        }
-    }
-    ctx.set_active_console(1);
-
     // Render map
     let mut y = 0;
     for t_y in min_y..max_y {
