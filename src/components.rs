@@ -1,12 +1,12 @@
 use crate::gui::Ancestry;
 use crate::gui::Class;
-use rltk::RGB;
+use bracket_lib::prelude::*;
 use serde::{ Deserialize, Serialize };
 use specs::error::NoError;
 use specs::prelude::*;
 use specs::saveload::{ ConvertSaveload, Marker };
 use specs_derive::*;
-use std::collections::HashMap;
+use std::collections::{ HashMap, HashSet };
 
 // Serialization helper code. We need to implement ConvertSaveload for each type that contains an
 // Entity.
@@ -40,7 +40,7 @@ pub struct OtherLevelPosition {
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Renderable {
-    pub glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
     pub fg: RGB,
     pub bg: RGB,
     pub render_order: i32,
@@ -104,14 +104,14 @@ pub struct Mind {}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Viewshed {
-    pub visible_tiles: Vec<rltk::Point>,
+    pub visible_tiles: Vec<Point>,
     pub range: i32,
     pub dirty: bool,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Telepath {
-    pub telepath_tiles: Vec<rltk::Point>,
+    pub telepath_tiles: Vec<Point>,
     pub range: i32,
     pub dirty: bool,
 }
@@ -316,6 +316,7 @@ pub enum WeaponAttribute {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct MeleeWeapon {
+    pub damage_type: DamageType,
     pub attribute: WeaponAttribute,
     pub damage_n_dice: i32,
     pub damage_die_type: i32,
@@ -326,6 +327,7 @@ pub struct MeleeWeapon {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct NaturalAttack {
     pub name: String,
+    pub damage_type: DamageType,
     pub damage_n_dice: i32,
     pub damage_die_type: i32,
     pub damage_bonus: i32,
@@ -365,8 +367,74 @@ pub struct ProvidesHealing {
     pub modifier: i32,
 }
 
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
+pub enum DamageType {
+    Physical,
+    Magic, // e.g. magic missiles, silvered weapons
+    Fire, // e.g. fireball
+    Cold, // e.g. cone of cold
+    Poison, // e.g. poison gas
+    Forced, // Bypasses any immunities. e.g. Hunger ticks.
+}
+
+impl DamageType {
+    pub fn is_magic(&self) -> bool {
+        match self {
+            DamageType::Magic | DamageType::Fire | DamageType::Cold => true,
+            _ => false,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum DamageModifier {
+    None,
+    Weakness,
+    Resistance,
+    Immune,
+}
+
+impl DamageModifier {
+    const NONE_MOD: f32 = 1.0;
+    const WEAK_MOD: f32 = 2.0;
+    const RESIST_MOD: f32 = 0.5;
+    const IMMUNE_MOD: f32 = 0.0;
+
+    pub fn multiplier(&self) -> f32 {
+        match self {
+            DamageModifier::None => Self::NONE_MOD,
+            DamageModifier::Weakness => Self::WEAK_MOD,
+            DamageModifier::Resistance => Self::RESIST_MOD,
+            DamageModifier::Immune => Self::IMMUNE_MOD,
+        }
+    }
+}
+
+#[derive(Component, Serialize, Deserialize, Debug, Clone)]
+pub struct HasDamageModifiers {
+    pub modifiers: HashMap<DamageType, DamageModifier>,
+}
+
+impl HasDamageModifiers {
+    pub fn modifier(&self, damage_type: &DamageType) -> &DamageModifier {
+        self.modifiers.get(damage_type).unwrap_or(&DamageModifier::None)
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Intrinsic {
+    Regeneration, // Regenerate 1 HP on every tick
+    Speed, // 4/3x speed multiplier
+}
+
+#[derive(Component, Serialize, Deserialize, Debug, Clone)]
+pub struct Intrinsics {
+    pub list: HashSet<Intrinsic>,
+}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InflictsDamage {
+    pub damage_type: DamageType,
     pub n_dice: i32,
     pub sides: i32,
     pub modifier: i32,
@@ -417,7 +485,7 @@ pub struct WantsToRemoveItem {
 #[derive(Component, Debug, ConvertSaveload)]
 pub struct WantsToUseItem {
     pub item: Entity,
-    pub target: Option<rltk::Point>,
+    pub target: Option<Point>,
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -446,8 +514,8 @@ pub struct Charges {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleLine {
-    pub glyph: rltk::FontCharType,
-    pub tail_glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
+    pub tail_glyph: FontCharType,
     pub colour: RGB,
     pub lifetime_ms: f32,
     pub trail_colour: RGB,
@@ -456,16 +524,16 @@ pub struct SpawnParticleLine {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleSimple {
-    pub glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
     pub colour: RGB,
     pub lifetime_ms: f32,
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleBurst {
-    pub glyph: rltk::FontCharType,
-    pub head_glyph: rltk::FontCharType,
-    pub tail_glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
+    pub head_glyph: FontCharType,
+    pub tail_glyph: FontCharType,
     pub colour: RGB,
     pub lerp: RGB,
     pub lifetime_ms: f32,

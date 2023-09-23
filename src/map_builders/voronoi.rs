@@ -1,5 +1,5 @@
 use super::{ BuilderMap, InitialMapBuilder, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 #[derive(PartialEq, Copy, Clone)]
 #[allow(dead_code)]
@@ -16,7 +16,7 @@ pub struct VoronoiBuilder {
 
 impl InitialMapBuilder for VoronoiBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
@@ -40,20 +40,21 @@ impl VoronoiBuilder {
     #[allow(clippy::map_entry)]
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         // Make a Voronoi diagram. We'll do this the hard way to learn about the technique!
-        let mut voronoi_seeds: Vec<(usize, rltk::Point)> = Vec::new();
+        let mut voronoi_seeds: Vec<(usize, Point)> = Vec::new();
 
         while voronoi_seeds.len() < self.n_seeds {
             let vx = rng.roll_dice(1, build_data.map.width - 1);
             let vy = rng.roll_dice(1, build_data.map.height - 1);
             let vidx = build_data.map.xy_idx(vx, vy);
-            let candidate = (vidx, rltk::Point::new(vx, vy));
+            let candidate = (vidx, Point::new(vx, vy));
             if !voronoi_seeds.contains(&candidate) {
                 voronoi_seeds.push(candidate);
             }
         }
 
         let mut voronoi_distance = vec![(0, 0.0f32); self.n_seeds];
-        let mut voronoi_membership: Vec<i32> = vec![0; build_data.map.width as usize * build_data.map.height as usize];
+        let mut voronoi_membership: Vec<i32> =
+            vec![0; build_data.map.width as usize * build_data.map.height as usize];
         for (i, vid) in voronoi_membership.iter_mut().enumerate() {
             let x = (i as i32) % build_data.map.width;
             let y = (i as i32) / build_data.map.width;
@@ -62,13 +63,16 @@ impl VoronoiBuilder {
                 let distance;
                 match self.distance_algorithm {
                     DistanceAlgorithm::Pythagoras => {
-                        distance = rltk::DistanceAlg::PythagorasSquared.distance2d(rltk::Point::new(x, y), pos.1);
+                        distance = DistanceAlg::PythagorasSquared.distance2d(
+                            Point::new(x, y),
+                            pos.1
+                        );
                     }
                     DistanceAlgorithm::Manhattan => {
-                        distance = rltk::DistanceAlg::Manhattan.distance2d(rltk::Point::new(x, y), pos.1);
+                        distance = DistanceAlg::Manhattan.distance2d(Point::new(x, y), pos.1);
                     }
                     DistanceAlgorithm::Chebyshev => {
-                        distance = rltk::DistanceAlg::Chebyshev.distance2d(rltk::Point::new(x, y), pos.1);
+                        distance = DistanceAlg::Chebyshev.distance2d(Point::new(x, y), pos.1);
                     }
                 }
                 voronoi_distance[seed] = (seed, distance);

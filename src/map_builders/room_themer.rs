@@ -7,7 +7,7 @@ use crate::data::messages::{
     FEATURE_BARRACKS_ORC,
 };
 use crate::raws;
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 use std::collections::HashSet;
 
 pub enum Theme {
@@ -22,7 +22,7 @@ pub struct ThemeRooms {
 }
 
 impl MetaMapBuilder for ThemeRooms {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
@@ -141,7 +141,7 @@ impl ThemeRooms {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("RoomCornerRounding requires a builder with rooms.");
+            unreachable!("RoomCornerRounding tried to run without any rooms.");
         }
 
         let count = roll_until_fail(rng, self.percent);
@@ -173,7 +173,7 @@ fn roll_until_fail(rng: &mut RandomNumberGenerator, target: i32) -> i32 {
     loop {
         if rng.roll_dice(1, 100) <= target - accumulator {
             accumulator += 1;
-            rltk::console::log(accumulator);
+            console::log(accumulator);
         } else {
             break;
         }

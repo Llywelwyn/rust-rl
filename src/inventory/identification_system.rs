@@ -1,4 +1,13 @@
-use crate::{ Beatitude, IdentifiedBeatitude, IdentifiedItem, Item, MasterDungeonMap, Name, ObfuscatedName, Player };
+use crate::{
+    Beatitude,
+    IdentifiedBeatitude,
+    IdentifiedItem,
+    Item,
+    MasterDungeonMap,
+    Name,
+    ObfuscatedName,
+    Player,
+};
 use specs::prelude::*;
 use crate::data::events::*;
 use crate::gamelog;
@@ -35,7 +44,7 @@ impl<'a> System<'a> for ItemIdentificationSystem {
             let tag = crate::raws::get_id_from_name(id.name.clone());
             if !dm.identified_items.contains(&id.name) && crate::raws::is_tag_magic(&tag) {
                 if gamelog::get_event_count(EVENT::COUNT_TURN) != 1 {
-                    gamelog::record_event(EVENT::IDENTIFIED(id.name.clone()));
+                    gamelog::record_event(EVENT::Identified(id.name.clone()));
                 }
                 dm.identified_items.insert(id.name.clone());
                 for (entity, _item, name) in (&entities, &items, &names).join() {

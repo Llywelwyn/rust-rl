@@ -1,6 +1,6 @@
 use super::{ Map, TileType };
 use crate::{ gamelog, map_builders, OtherLevelPosition, Position, Telepath, Viewshed };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
 use std::collections::{ HashMap, HashSet };
@@ -61,7 +61,11 @@ impl MasterDungeonMap {
 
 fn make_scroll_name(rng: &mut RandomNumberGenerator) -> String {
     let len = 4 + rng.roll_dice(1, 6);
-    let space_at_i = if len > 6 && rng.roll_dice(1, 2) == 1 { rng.roll_dice(1, len - 6) + 3 } else { -1 };
+    let space_at_i = if len > 6 && rng.roll_dice(1, 2) == 1 {
+        rng.roll_dice(1, len - 6) + 3
+    } else {
+        -1
+    };
     let offset = rng.roll_dice(1, 2) - 1;
     let mut name = "".to_string();
     for i in 0..len {
@@ -142,7 +146,9 @@ const POTION_ADJECTIVES: &[&str] = &[
 fn make_potion_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
     loop {
         let mut name: String =
-            POTION_ADJECTIVES[(rng.roll_dice(1, POTION_ADJECTIVES.len() as i32) as usize) - 1].to_string();
+            POTION_ADJECTIVES[
+                (rng.roll_dice(1, POTION_ADJECTIVES.len() as i32) as usize) - 1
+            ].to_string();
         name += " ";
         name += POTION_COLOURS[(rng.roll_dice(1, POTION_COLOURS.len() as i32) as usize) - 1];
         name += " potion";
@@ -178,7 +184,8 @@ const WAND_TYPES: &[&str] = &[
 
 fn make_wand_name(rng: &mut RandomNumberGenerator, used_names: &mut HashSet<String>) -> String {
     loop {
-        let mut name: String = WAND_TYPES[(rng.roll_dice(1, WAND_TYPES.len() as i32) as usize) - 1].to_string();
+        let mut name: String =
+            WAND_TYPES[(rng.roll_dice(1, WAND_TYPES.len() as i32) as usize) - 1].to_string();
         name += " wand";
 
         if !used_names.contains(&name) {
@@ -227,8 +234,9 @@ fn transition_to_existing_map(ecs: &mut World, new_id: i32, dest_tile: TileType)
         }
         possible_destinations.push(((map.width * map.height) as usize) / 2); // Centre of map
     }
-    let mut rng = ecs.write_resource::<rltk::RandomNumberGenerator>();
-    let idx = possible_destinations[(rng.roll_dice(1, possible_destinations.len() as i32) as usize) - 1];
+    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+    let idx =
+        possible_destinations[(rng.roll_dice(1, possible_destinations.len() as i32) as usize) - 1];
     let mut player_position = ecs.write_resource::<Point>();
     *player_position = Point::new((idx as i32) % w, (idx as i32) / w);
     let mut position_components = ecs.write_storage::<Position>();
@@ -253,7 +261,7 @@ fn transition_to_existing_map(ecs: &mut World, new_id: i32, dest_tile: TileType)
 }
 
 fn transition_to_new_map(ecs: &mut World, new_id: i32, _dest_tile: TileType) -> Vec<Map> {
-    let mut rng = ecs.write_resource::<rltk::RandomNumberGenerator>();
+    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
     // Might need this to fallback to 1, but if player
     // level isn't found at all, there's a bigger concern
     // concern than just this function not working.
@@ -346,7 +354,9 @@ pub fn thaw_entities(ecs: &mut World) {
     let mut pos_to_delete: Vec<Entity> = Vec::new();
     for (entity, pos) in (&entities, &other_positions).join() {
         if entity != *player_entity && pos.id == map_id {
-            positions.insert(entity, Position { x: pos.x, y: pos.y }).expect("Failed to insert OtherLevelPosition");
+            positions
+                .insert(entity, Position { x: pos.x, y: pos.y })
+                .expect("Failed to insert OtherLevelPosition");
             pos_to_delete.push(entity);
         }
     }

@@ -19,7 +19,6 @@ use super::{
     Item,
     Map,
     Name,
-    ParticleBuilder,
     Player,
     Pools,
     Position,
@@ -33,9 +32,9 @@ use super::{
     WantsToPickupItem,
     get_dest,
     Destination,
+    DamageType,
 };
-use rltk::prelude::*;
-use rltk::{ Point, RandomNumberGenerator, Rltk, VirtualKeyCode };
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{ max, min };
 use crate::data::events::*;
@@ -133,7 +132,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             std::mem::drop(renderables);
                             let mut renderables = ecs.write_storage::<Renderable>();
                             let render_data = renderables.get_mut(potential_target).unwrap();
-                            render_data.glyph = rltk::to_cp437('+'); // Nethack open door, maybe just use '/' instead.
+                            render_data.glyph = to_cp437('+'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
                         result = RunState::Ticking;
@@ -230,7 +229,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                             std::mem::drop(renderables);
                             let mut renderables = ecs.write_storage::<Renderable>();
                             let render_data = renderables.get_mut(potential_target).unwrap();
-                            render_data.glyph = rltk::to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
+                            render_data.glyph = to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
                         result = RunState::Ticking;
@@ -292,7 +291,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                     if rng.roll_dice(1, 20) == 20 {
                         add_effect(
                             None,
-                            EffectType::Damage { amount: 1 },
+                            EffectType::Damage { amount: 1, damage_type: DamageType::Physical },
                             Targets::Entity { target: entity }
                         );
                         gamelog::Logger
@@ -352,7 +351,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         destroyed_pos = Some(
                                             Point::new(pos.x + delta_x, pos.y + delta_y)
                                         );
-                                        gamelog::record_event(EVENT::BROKE_DOOR(1));
+                                        gamelog::record_event(EVENT::BrokeDoor(1));
                                         return false;
                                         // 66% chance of just kicking it.
                                     } else {
@@ -416,7 +415,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
         ecs.delete_entity(destroyed_thing).expect("Unable to delete.");
     }
 
-    gamelog::record_event(EVENT::KICKED_SOMETHING(1));
+    gamelog::record_event(EVENT::KickedSomething(1));
     return RunState::Ticking;
 }
 
@@ -505,7 +504,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                                 ::new()
                                 .append("The")
                                 .colour(colour)
-                                .append_n(&name.name)
+                                .append(&name.name)
                                 .colour(WHITE)
                                 .append("is in your way.")
                                 .log();
@@ -643,7 +642,7 @@ fn get_item(ecs: &mut World) -> RunState {
     }
 }
 
-pub fn player_input(gs: &mut State, ctx: &mut Rltk, on_overmap: bool) -> RunState {
+pub fn player_input(gs: &mut State, ctx: &mut BTerm, on_overmap: bool) -> RunState {
     match ctx.key {
         None => {
             return RunState::AwaitingInput;
@@ -878,7 +877,7 @@ pub fn auto_explore(ecs: &mut World) {
         }
     }
 
-    let path = rltk::a_star_search(map.xy_idx(player_pos.x, player_pos.y), unexplored_tile.0, &*map);
+    let path = a_star_search(map.xy_idx(player_pos.x, player_pos.y), unexplored_tile.0, &*map);
     if path.success && path.steps.len() > 1 {
         let mut idx = map.xy_idx(player_pos.x, player_pos.y);
         map.blocked[idx] = false;

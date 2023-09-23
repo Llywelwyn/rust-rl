@@ -11,12 +11,12 @@ use super::{
     YStart,
     Foliage,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use crate::data::names::*;
 
 pub fn forest_builder(
     new_id: i32,
-    _rng: &mut rltk::RandomNumberGenerator,
+    _rng: &mut RandomNumberGenerator,
     width: i32,
     height: i32,
     difficulty: i32,
@@ -76,7 +76,7 @@ impl RoadExit {
             }
         }
         if available_floors.is_empty() {
-            panic!("No valid floors to start on.");
+            unreachable!("No valid floors to start on.");
         }
         available_floors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
         let end_x = (available_floors[0].0 as i32) % build_data.map.width;

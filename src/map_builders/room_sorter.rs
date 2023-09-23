@@ -1,5 +1,5 @@
 use super::{ BuilderMap, MetaMapBuilder, Rect };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 #[allow(dead_code)]
 pub enum RoomSort {
@@ -16,7 +16,7 @@ pub struct RoomSorter {
 
 impl MetaMapBuilder for RoomSorter {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.sorter(rng, build_data);
     }
 }
@@ -50,21 +50,18 @@ impl RoomSorter {
                     .unwrap()
                     .sort_by(|a, b| b.y2.cmp(&a.y2)),
             RoomSort::CENTRAL => {
-                let map_centre = rltk::Point::new(
-                    build_data.map.width / 2,
-                    build_data.map.height / 2
-                );
+                let map_centre = Point::new(build_data.map.width / 2, build_data.map.height / 2);
                 build_data.rooms
                     .as_mut()
                     .unwrap()
                     .sort_by(|a: &Rect, b: &Rect| {
-                        let a_centre_pt = rltk::Point::new(a.center().x, a.center().y);
-                        let b_centre_pt = rltk::Point::new(b.center().x, b.center().y);
-                        let distance_a = rltk::DistanceAlg::Pythagoras.distance2d(
+                        let a_centre_pt = Point::new(a.center().x, a.center().y);
+                        let b_centre_pt = Point::new(b.center().x, b.center().y);
+                        let distance_a = DistanceAlg::Pythagoras.distance2d(
                             a_centre_pt,
                             map_centre
                         );
-                        let distance_b = rltk::DistanceAlg::Pythagoras.distance2d(
+                        let distance_b = DistanceAlg::Pythagoras.distance2d(
                             b_centre_pt,
                             map_centre
                         );

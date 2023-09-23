@@ -1,12 +1,12 @@
 use rust_rl::*;
 use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 
 const DISPLAYWIDTH: i32 = 100;
 const DISPLAYHEIGHT: i32 = 56;
 
-fn main() -> rltk::BError {
+fn main() -> BError {
     // Embedded resources for use in wasm build
     const CURSES_16_16_BYTES: &[u8] = include_bytes!("../resources/curses16x16.png");
     const CURSES_8_16_BYTES: &[u8] = include_bytes!("../resources/curses8x16.png");
@@ -122,6 +122,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SpawnParticleSimple>();
     gs.ecs.register::<SpawnParticleBurst>();
     gs.ecs.register::<SpawnParticleLine>();
+    gs.ecs.register::<HasDamageModifiers>();
+    gs.ecs.register::<Intrinsics>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<DMSerializationHelper>();
@@ -130,11 +132,11 @@ fn main() -> rltk::BError {
     raws::load_raws();
 
     // Insert calls
-    gs.ecs.insert(rltk::RandomNumberGenerator::new());
+    gs.ecs.insert(RandomNumberGenerator::new());
     gs.ecs.insert(map::MasterDungeonMap::new()); // Master map list
     gs.ecs.insert(Map::new(true, 1, 64, 64, 0, "New Map", "N", 0)); // Map
     gs.ecs.insert(Point::new(0, 0)); // Player pos
-    gs.ecs.insert(gui::Ancestry::Dwarf); // ancestry
+    gs.ecs.insert(gui::Ancestry::Human); // ancestry
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity); // Player entity
     gs.ecs.insert(RunState::MapGeneration {}); // RunState
@@ -142,8 +144,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(rex_assets::RexAssets::new());
 
     gamelog::setup_log();
-    gamelog::record_event(data::events::EVENT::LEVEL(1));
+    gamelog::record_event(data::events::EVENT::Level(1));
     gs.generate_world_map(1, TileType::Floor);
 
-    rltk::main_loop(context, gs)
+    main_loop(context, gs)
 }

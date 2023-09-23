@@ -1,5 +1,5 @@
 use criterion::{ black_box, criterion_group, criterion_main, Criterion };
-use rltk::RGB;
+use bracket_lib::prelude::*;
 
 /// Benchmarks methods from rltk used to desaturate non-visible tiles.
 // Greyscale is significantly faster, but generally looks worse - the

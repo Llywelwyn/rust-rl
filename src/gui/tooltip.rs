@@ -7,13 +7,12 @@ use super::{
     Pools,
     Position,
     Renderable,
-    Rltk,
     World,
     RGB,
 };
 use crate::TileType;
 use crate::data::ids::*;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 struct Tooltip {
@@ -63,7 +62,7 @@ impl Tooltip {
 }
 
 #[rustfmt::skip]
-pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk, xy: Option<(i32, i32)>) {
+pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm, xy: Option<(i32, i32)>) {
     let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
@@ -164,7 +163,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut Rltk, xy: Option<(i32, i32)>) {
 
     if tooltips.is_empty() { return ; }
 
-    let white = RGB::named(rltk::WHITE);
+    let white = RGB::named(WHITE);
 
     let arrow;
     let arrow_x;

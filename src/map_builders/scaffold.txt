@@ -2,7 +2,7 @@ use super::{
     generate_voronoi_spawn_regions, remove_unreachable_areas_returning_most_distant, spawner, Map, MapBuilder,
     Position, TileType, SHOW_MAPGEN,
 };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::HashMap;
 

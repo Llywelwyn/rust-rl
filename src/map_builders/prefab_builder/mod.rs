@@ -1,5 +1,5 @@
 use super::{ spawner, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 pub mod prefab_levels;
 pub mod prefab_sections;
 pub mod prefab_vaults;
@@ -25,14 +25,14 @@ pub struct PrefabBuilder {
 }
 
 impl MetaMapBuilder for PrefabBuilder {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
 
 impl InitialMapBuilder for PrefabBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
@@ -65,7 +65,8 @@ impl PrefabBuilder {
 
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         match self.mode {
-            PrefabMode::Overmap => self.load_ascii_map(&prefab_levels::OVERMAP, rng, build_data, true),
+            PrefabMode::Overmap =>
+                self.load_ascii_map(&prefab_levels::OVERMAP, rng, build_data, true),
             PrefabMode::Constant { level } => self.load_ascii_map(&level, rng, build_data, false),
             PrefabMode::Sectional { section } => self.apply_sectional(&section, rng, build_data),
             PrefabMode::RoomVaults => self.apply_room_vaults(rng, build_data),
@@ -73,7 +74,13 @@ impl PrefabBuilder {
         build_data.take_snapshot();
     }
 
-    fn char_to_map(&mut self, ch: char, idx: usize, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn char_to_map(
+        &mut self,
+        ch: char,
+        idx: usize,
+        rng: &mut RandomNumberGenerator,
+        build_data: &mut BuilderMap
+    ) {
         let difficulty = (build_data.map.difficulty + build_data.initial_player_level) / 2;
         match ch {
             ' ' => {
@@ -123,7 +130,10 @@ impl PrefabBuilder {
             }
             '!' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::potion_table(Some(difficulty)).roll(rng)));
+                build_data.spawn_list.push((
+                    idx,
+                    spawner::potion_table(Some(difficulty)).roll(rng),
+                ));
             }
             '/' => {
                 build_data.map.tiles[idx] = TileType::Floor;
@@ -131,14 +141,20 @@ impl PrefabBuilder {
             }
             '?' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::scroll_table(Some(difficulty)).roll(rng)));
+                build_data.spawn_list.push((
+                    idx,
+                    spawner::scroll_table(Some(difficulty)).roll(rng),
+                ));
             }
             ')' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, spawner::equipment_table(Some(difficulty)).roll(rng)));
+                build_data.spawn_list.push((
+                    idx,
+                    spawner::equipment_table(Some(difficulty)).roll(rng),
+                ));
             }
             _ => {
-                rltk::console::log(format!("Unknown glyph '{}' when loading prefab", ch as u8 as char));
+                console::log(format!("Unknown glyph '{}' when loading prefab", ch as u8 as char));
             }
         }
     }
@@ -185,14 +201,19 @@ impl PrefabBuilder {
                 build_data.map.tiles[idx] = TileType::ToLocal(ID_INFINITE);
             }
             _ => {
-                rltk::console::log(format!("Unknown glyph '{}' when loading overmap", ch as u8 as char));
+                console::log(format!("Unknown glyph '{}' when loading overmap", ch as u8 as char));
             }
         }
     }
 
     #[allow(dead_code)]
-    fn load_rex_map(&mut self, path: &str, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
-        let xp_file = rltk::rex::XpFile::from_resource(path).unwrap();
+    fn load_rex_map(
+        &mut self,
+        path: &str,
+        rng: &mut RandomNumberGenerator,
+        build_data: &mut BuilderMap
+    ) {
+        let xp_file = rex::XpFile::from_resource(path).unwrap();
 
         for layer in &xp_file.layers {
             for y in 0..layer.height {

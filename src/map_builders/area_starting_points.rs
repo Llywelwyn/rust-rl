@@ -1,5 +1,5 @@
 use super::{ BuilderMap, MetaMapBuilder, Position };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 #[allow(dead_code)]
 pub enum XStart {
@@ -21,7 +21,7 @@ pub struct AreaStartingPosition {
 }
 
 impl MetaMapBuilder for AreaStartingPosition {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
@@ -64,15 +64,18 @@ impl AreaStartingPosition {
             if crate::tile_walkable(*tiletype) {
                 available_floors.push((
                     idx,
-                    rltk::DistanceAlg::PythagorasSquared.distance2d(
-                        rltk::Point::new((idx as i32) % build_data.map.width, (idx as i32) / build_data.map.width),
-                        rltk::Point::new(seed_x, seed_y)
+                    DistanceAlg::PythagorasSquared.distance2d(
+                        Point::new(
+                            (idx as i32) % build_data.map.width,
+                            (idx as i32) / build_data.map.width
+                        ),
+                        Point::new(seed_x, seed_y)
                     ),
                 ));
             }
         }
         if available_floors.is_empty() {
-            panic!("No valid floors to start on");
+            unreachable!("No valid floors to start on.");
         }
 
         available_floors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());

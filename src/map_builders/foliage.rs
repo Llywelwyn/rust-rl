@@ -1,5 +1,5 @@
 use super::{ BuilderMap, MetaMapBuilder, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct Foliage {
     start_tile: TileType,
@@ -8,7 +8,7 @@ pub struct Foliage {
 
 impl MetaMapBuilder for Foliage {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.apply(rng, build_data);
     }
 }

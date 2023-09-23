@@ -7,13 +7,24 @@ use super::{
     ItemMenuResult,
     UniqueInventoryItem,
 };
-use crate::{ gamelog, Beatitude, Entity, Equipped, InBackpack, Item, Name, Renderable, states::state::*, BUC };
-use rltk::prelude::*;
+use crate::{
+    gamelog,
+    Beatitude,
+    Entity,
+    Equipped,
+    InBackpack,
+    Item,
+    Name,
+    Renderable,
+    states::state::*,
+    BUC,
+};
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
 
 /// Handles the Remove Curse menu.
-pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let equipped = gs.ecs.read_storage::<Equipped>();
     let backpack = gs.ecs.read_storage::<InBackpack>();
@@ -24,33 +35,35 @@ pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<E
     let renderables = gs.ecs.read_storage::<Renderable>();
 
     let build_cursed_iterator = || {
-        (&entities, &items, &beatitudes, &renderables, &names).join().filter(|(item_entity, _i, b, _r, _n)| {
-            // Set all items to FALSE initially.
-            let mut keep = false;
-            // If found in the player's backpack, set to TRUE
-            if let Some(bp) = backpack.get(*item_entity) {
-                if bp.owner == *player_entity {
-                    keep = true;
+        (&entities, &items, &beatitudes, &renderables, &names)
+            .join()
+            .filter(|(item_entity, _i, b, _r, _n)| {
+                // Set all items to FALSE initially.
+                let mut keep = false;
+                // If found in the player's backpack, set to TRUE
+                if let Some(bp) = backpack.get(*item_entity) {
+                    if bp.owner == *player_entity {
+                        keep = true;
+                    }
                 }
-            }
-            // If found in the player's equipslot, set to TRUE
-            if let Some(equip) = equipped.get(*item_entity) {
-                if equip.owner == *player_entity {
-                    keep = true;
+                // If found in the player's equipslot, set to TRUE
+                if let Some(equip) = equipped.get(*item_entity) {
+                    if equip.owner == *player_entity {
+                        keep = true;
+                    }
                 }
-            }
-            // If it's not OUR item, RETURN FALSE.
-            if !keep {
-                return false;
-            }
-            // If it's identified as noncursed, RETURN FALSE.
-            if b.known && b.buc != BUC::Cursed {
-                return false;
-            }
-            // Otherwise, return: returns any items that are unidentified,
-            // or identified as being cursed.
-            return true;
-        })
+                // If it's not OUR item, RETURN FALSE.
+                if !keep {
+                    return false;
+                }
+                // If it's identified as noncursed, RETURN FALSE.
+                if b.known && b.buc != BUC::Cursed {
+                    return false;
+                }
+                // Otherwise, return: returns any items that are unidentified,
+                // or identified as being cursed.
+                return true;
+            })
     };
 
     // Build list of items to display
@@ -76,7 +89,9 @@ pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<E
     let mut player_inventory: super::PlayerInventory = BTreeMap::new();
     for (entity, _i, _b, renderable, name) in build_cursed_iterator() {
         let (singular, plural) = obfuscate_name_ecs(&gs.ecs, entity);
-        let beatitude_status = if let Some(beatitude) = gs.ecs.read_storage::<Beatitude>().get(entity) {
+        let beatitude_status = if
+            let Some(beatitude) = gs.ecs.read_storage::<Beatitude>().get(entity)
+        {
             match beatitude.buc {
                 BUC::Blessed => 1,
                 BUC::Uncursed => 2,
@@ -108,8 +123,8 @@ pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<E
     ctx.print_color(
         1 + x_offset,
         1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(WHITE),
+        RGB::named(BLACK),
         "Decurse which item? [aA-zZ][Esc.]"
     );
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
@@ -121,7 +136,7 @@ pub fn remove_curse(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<E
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = rltk::letter_to_option(key);
+                    let selection = letter_to_option(key);
                     if selection > -1 && selection < (count as i32) {
                         let item = player_inventory
                             .iter()

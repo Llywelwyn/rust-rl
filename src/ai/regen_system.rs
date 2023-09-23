@@ -9,6 +9,7 @@ use crate::{
     Position,
     RandomNumberGenerator,
     TakingTurn,
+    Intrinsics,
 };
 use specs::prelude::*;
 use crate::data::events::*;
@@ -36,10 +37,24 @@ impl<'a> System<'a> for RegenSystem {
         ReadStorage<'a, HasClass>,
         ReadStorage<'a, Attributes>,
         WriteExpect<'a, RandomNumberGenerator>,
+        ReadStorage<'a, Intrinsics>,
+        ReadExpect<'a, Entity>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (clock, entities, positions, mut pools, turns, player, classes, attributes, mut rng) = data;
+        let (
+            clock,
+            entities,
+            positions,
+            mut pools,
+            turns,
+            player,
+            classes,
+            attributes,
+            mut rng,
+            intrinsics,
+            player_entity,
+        ) = data;
         let mut clock_turn = false;
         for (_e, _c, _t) in (&entities, &clock, &turns).join() {
             clock_turn = true;
@@ -56,19 +71,29 @@ impl<'a> System<'a> for RegenSystem {
         }
         // Player HP regen
         let level = gamelog::get_event_count(EVENT::COUNT_LEVEL);
-        if current_turn % get_player_hp_regen_turn(level) == 0 {
+        if
+            current_turn % get_player_hp_regen_turn(level) == 0 ||
+            intrinsics.get(*player_entity).unwrap().list.contains(&crate::Intrinsic::Regeneration)
+        {
             for (_e, _p, pool, _player) in (&entities, &positions, &mut pools, &player).join() {
                 try_hp_regen_tick(pool, get_player_hp_regen_per_tick(level));
             }
         }
         // Both MP regen
         for (e, _p, pool) in (&entities, &positions, &mut pools).join() {
-            let is_wizard = if let Some(class) = classes.get(e) { class.name == Class::Wizard } else { false };
+            let is_wizard = if let Some(class) = classes.get(e) {
+                class.name == Class::Wizard
+            } else {
+                false
+            };
             let numerator = if is_wizard { WIZARD_MP_REGEN_MOD } else { NONWIZARD_MP_REGEN_MOD };
             let multiplier: f32 = (numerator as f32) / (MP_REGEN_DIVISOR as f32);
             let mp_regen_tick = (((MP_REGEN_BASE - pool.level) as f32) * multiplier) as i32;
             if current_turn % mp_regen_tick == 0 {
-                try_mana_regen_tick(pool, rng.roll_dice(1, get_mana_regen_per_tick(e, &attributes)));
+                try_mana_regen_tick(
+                    pool,
+                    rng.roll_dice(1, get_mana_regen_per_tick(e, &attributes))
+                );
             }
         }
     }

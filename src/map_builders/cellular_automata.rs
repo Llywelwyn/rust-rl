@@ -1,5 +1,5 @@
 use super::{ BuilderMap, InitialMapBuilder, MetaMapBuilder, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct CellularAutomataBuilder {
     floor_tile: TileType,
@@ -7,14 +7,14 @@ pub struct CellularAutomataBuilder {
 
 impl InitialMapBuilder for CellularAutomataBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
 
 impl MetaMapBuilder for CellularAutomataBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, _rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, _rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.apply_iteration(build_data);
     }
 }
@@ -69,16 +69,28 @@ impl CellularAutomataBuilder {
                 if build_data.map.tiles[idx + (build_data.map.width as usize)] == TileType::Wall {
                     neighbors += 1;
                 }
-                if build_data.map.tiles[idx - ((build_data.map.width as usize) - 1)] == TileType::Wall {
+                if
+                    build_data.map.tiles[idx - ((build_data.map.width as usize) - 1)] ==
+                    TileType::Wall
+                {
                     neighbors += 1;
                 }
-                if build_data.map.tiles[idx - ((build_data.map.width as usize) + 1)] == TileType::Wall {
+                if
+                    build_data.map.tiles[idx - ((build_data.map.width as usize) + 1)] ==
+                    TileType::Wall
+                {
                     neighbors += 1;
                 }
-                if build_data.map.tiles[idx + ((build_data.map.width as usize) - 1)] == TileType::Wall {
+                if
+                    build_data.map.tiles[idx + ((build_data.map.width as usize) - 1)] ==
+                    TileType::Wall
+                {
                     neighbors += 1;
                 }
-                if build_data.map.tiles[idx + ((build_data.map.width as usize) + 1)] == TileType::Wall {
+                if
+                    build_data.map.tiles[idx + ((build_data.map.width as usize) + 1)] ==
+                    TileType::Wall
+                {
                     neighbors += 1;
                 }
 

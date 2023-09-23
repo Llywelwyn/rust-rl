@@ -1,11 +1,11 @@
 use super::{ apply_horizontal_tunnel, apply_vertical_tunnel, BuilderMap, MetaMapBuilder, Rect };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct DoglegCorridors {}
 
 impl MetaMapBuilder for DoglegCorridors {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.corridors(rng, build_data);
     }
 }
@@ -21,7 +21,7 @@ impl DoglegCorridors {
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
         } else {
-            panic!("DoglegCorridors require a builder with rooms.");
+            unreachable!("DoglegCorridors tried to run without any rooms.");
         }
 
         let mut corridors: Vec<Vec<usize>> = Vec::new();

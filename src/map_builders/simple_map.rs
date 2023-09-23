@@ -1,5 +1,5 @@
 use super::{ BuilderMap, InitialMapBuilder, Rect };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct SimpleMapBuilder {
     room_params: (i32, i32, i32),
@@ -7,7 +7,7 @@ pub struct SimpleMapBuilder {
 
 impl InitialMapBuilder for SimpleMapBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build_rooms(rng, build_data);
     }
 }

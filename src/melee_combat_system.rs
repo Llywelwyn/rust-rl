@@ -25,7 +25,7 @@ use super::{
     WeaponAttribute,
     config::CONFIG,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub struct MeleeCombatSystem {}
@@ -50,7 +50,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, HungerClock>,
         ReadStorage<'a, MultiAttack>,
         ReadStorage<'a, Blind>,
-        WriteExpect<'a, rltk::RandomNumberGenerator>,
+        WriteExpect<'a, RandomNumberGenerator>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -123,6 +123,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 } else {
                     attacks.push((
                         MeleeWeapon {
+                            damage_type: crate::DamageType::Physical,
                             attribute: WeaponAttribute::Strength,
                             damage_n_dice: 1,
                             damage_die_type: 4,
@@ -194,7 +195,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         armour_ac_bonus += ac.amount;
                     }
                 }
-                let actual_armour_class = bac - attribute_ac_bonus - skill_ac_bonus - armour_ac_bonus;
+                let actual_armour_class =
+                    bac - attribute_ac_bonus - skill_ac_bonus - armour_ac_bonus;
                 let mut armour_class_roll = actual_armour_class;
 
                 if actual_armour_class < 0 {
@@ -205,13 +207,17 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 }
 
                 // Monster attacks receive a +10 to-hit bonus against the player.
-                let monster_v_player_bonus = if wants_melee.target == *player_entity { 10 } else { 0 };
+                let monster_v_player_bonus = if wants_melee.target == *player_entity {
+                    10
+                } else {
+                    0
+                };
 
                 let target_number = monster_v_player_bonus + armour_class_roll + attacker_bonuses;
 
                 let target_name = names.get(wants_melee.target).unwrap();
                 if CONFIG.logging.log_combat {
-                    rltk::console::log(
+                    console::log(
                         format!(
                             "ATTACKLOG: {} *{}* {}: rolled ({}) 1d20 vs. {} ({} + {}AC + {}to-hit)",
                             &name.name,
@@ -228,8 +234,14 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
                 if d20 < target_number {
                     // Target hit!
-                    let base_damage = rng.roll_dice(weapon_info.damage_n_dice, weapon_info.damage_die_type);
-                    let skill_damage_bonus = gamesystem::skill_bonus(Skill::Melee, &*attacker_skills);
+                    let base_damage = rng.roll_dice(
+                        weapon_info.damage_n_dice,
+                        weapon_info.damage_die_type
+                    );
+                    let skill_damage_bonus = gamesystem::skill_bonus(
+                        Skill::Melee,
+                        &*attacker_skills
+                    );
                     let mut attribute_damage_bonus = weapon_info.damage_bonus;
                     match weapon_info.attribute {
                         WeaponAttribute::Dexterity => {
@@ -239,17 +251,23 @@ impl<'a> System<'a> for MeleeCombatSystem {
                             attribute_damage_bonus += attacker_attributes.strength.bonus;
                         }
                         WeaponAttribute::Finesse => {
-                            if attacker_attributes.dexterity.bonus > attacker_attributes.strength.bonus {
+                            if
+                                attacker_attributes.dexterity.bonus >
+                                attacker_attributes.strength.bonus
+                            {
                                 attribute_damage_bonus += attacker_attributes.dexterity.bonus;
                             } else {
                                 attribute_damage_bonus += attacker_attributes.strength.bonus;
                             }
                         }
                     }
-                    let mut damage = i32::max(0, base_damage + skill_damage_bonus + attribute_damage_bonus);
+                    let mut damage = i32::max(
+                        0,
+                        base_damage + skill_damage_bonus + attribute_damage_bonus
+                    );
 
                     if CONFIG.logging.log_combat {
-                        rltk::console::log(
+                        console::log(
                             format!(
                                 "ATTACKLOG: {} HIT for {} ({}[{}d{}]+{}[skill]+{}[attr])",
                                 &name.name,
@@ -267,7 +285,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         let ac_damage_reduction = rng.roll_dice(1, -actual_armour_class);
                         damage = i32::min(1, damage - ac_damage_reduction);
                         if CONFIG.logging.log_combat {
-                            rltk::console::log(
+                            console::log(
                                 format!(
                                     "ATTACKLOG: {} reduced their damage taken by {} (1dAC), and took {} hp damage.",
                                     &target_name.name,
@@ -284,7 +302,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     }
                     add_effect(
                         Some(entity),
-                        EffectType::Damage { amount: damage },
+                        EffectType::Damage { amount: damage, damage_type: weapon_info.damage_type },
                         Targets::Entity { target: wants_melee.target }
                     );
                     if entity == *player_entity {
@@ -321,7 +339,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     }
                 } else {
                     if CONFIG.logging.log_combat {
-                        rltk::console::log(format!("ATTACKLOG: {} *MISSED*", &name.name));
+                        console::log(format!("ATTACKLOG: {} *MISSED*", &name.name));
                     }
 
                     let pos = positions.get(wants_melee.target);
@@ -365,7 +383,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
 }
 
 fn get_natural_attacks(
-    rng: &mut rltk::RandomNumberGenerator,
+    rng: &mut RandomNumberGenerator,
     nat: NaturalAttacks,
     multi_attack: bool,
     attacks: &mut Vec<(MeleeWeapon, String)>
@@ -375,6 +393,7 @@ fn get_natural_attacks(
             for a in nat.attacks.iter() {
                 attacks.push((
                     MeleeWeapon {
+                        damage_type: a.damage_type,
                         attribute: WeaponAttribute::Strength,
                         hit_bonus: a.hit_bonus,
                         damage_n_dice: a.damage_n_dice,
@@ -392,6 +411,7 @@ fn get_natural_attacks(
             };
             attacks.push((
                 MeleeWeapon {
+                    damage_type: nat.attacks[attack_index].damage_type,
                     attribute: WeaponAttribute::Strength,
                     hit_bonus: nat.attacks[attack_index].hit_bonus,
                     damage_n_dice: nat.attacks[attack_index].damage_n_dice,

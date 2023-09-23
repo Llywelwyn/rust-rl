@@ -1,7 +1,7 @@
 // src/lib.rs
 // 31-Aug-2023
 
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 extern crate serde;
 

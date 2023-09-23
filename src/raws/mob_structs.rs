@@ -14,7 +14,7 @@ pub struct Mob {
     pub attacks: Option<Vec<NaturalAttack>>,
     pub attributes: Option<MobAttributes>,
     pub skills: Option<HashMap<String, i32>>,
-    pub vision_range: i32,
+    pub vision_range: Option<i32>,
     pub telepathy_range: Option<i32>,
     pub equipped: Option<Vec<String>>,
     pub loot: Option<LootTableInfo>,

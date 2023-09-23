@@ -1,5 +1,16 @@
-use crate::{ tile_walkable, EntityMoved, Map, MoveMode, Movement, Position, TakingTurn, Telepath, Viewshed };
+use crate::{
+    tile_walkable,
+    EntityMoved,
+    Map,
+    MoveMode,
+    Movement,
+    Position,
+    TakingTurn,
+    Telepath,
+    Viewshed,
+};
 use specs::prelude::*;
+use bracket_lib::prelude::*;
 
 // Rolling a 1d8+x to decide where to move, where x are the number
 // of dice rolls in which they will remian stationary. i.e. If this
@@ -16,7 +27,7 @@ impl<'a> System<'a> for DefaultAI {
         WriteStorage<'a, Viewshed>,
         WriteStorage<'a, Telepath>,
         WriteStorage<'a, EntityMoved>,
-        WriteExpect<'a, rltk::RandomNumberGenerator>,
+        WriteExpect<'a, RandomNumberGenerator>,
         Entities<'a>,
     );
 
@@ -85,7 +96,9 @@ impl<'a> System<'a> for DefaultAI {
                             let idx = map.xy_idx(pos.x, pos.y);
                             pos.x = x;
                             pos.y = y;
-                            entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert EntityMoved");
+                            entity_moved
+                                .insert(entity, EntityMoved {})
+                                .expect("Unable to insert EntityMoved");
                             crate::spatial::move_entity(entity, idx, dest_idx);
                             viewshed.dirty = true;
                             if let Some(is_telepath) = telepaths.get_mut(entity) {
@@ -102,7 +115,9 @@ impl<'a> System<'a> for DefaultAI {
                             if !crate::spatial::is_blocked(path[1] as usize) {
                                 pos.x = (path[1] as i32) % map.width;
                                 pos.y = (path[1] as i32) / map.width;
-                                entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert EntityMoved");
+                                entity_moved
+                                    .insert(entity, EntityMoved {})
+                                    .expect("Unable to insert EntityMoved");
                                 let new_idx = map.xy_idx(pos.x, pos.y);
                                 crate::spatial::move_entity(entity, idx, new_idx);
                                 viewshed.dirty = true;
@@ -112,7 +127,7 @@ impl<'a> System<'a> for DefaultAI {
                                 path.remove(0);
                             } else {
                                 // If the path is blocked, recalculate a new path to the same waypoint.
-                                let path = rltk::a_star_search(
+                                let path = a_star_search(
                                     map.xy_idx(pos.x, pos.y) as i32,
                                     map.xy_idx(
                                         (path[path.len() - 1] as i32) % map.width,
@@ -121,7 +136,9 @@ impl<'a> System<'a> for DefaultAI {
                                     &mut *map
                                 );
                                 if path.success && path.steps.len() > 1 {
-                                    move_mode.mode = Movement::RandomWaypoint { path: Some(path.steps) };
+                                    move_mode.mode = Movement::RandomWaypoint {
+                                        path: Some(path.steps),
+                                    };
                                 }
                             }
                         } else {
@@ -132,7 +149,7 @@ impl<'a> System<'a> for DefaultAI {
                         let target_y = rng.roll_dice(1, map.height - 2);
                         let idx = map.xy_idx(target_x, target_y);
                         if tile_walkable(map.tiles[idx]) {
-                            let path = rltk::a_star_search(
+                            let path = a_star_search(
                                 map.xy_idx(pos.x, pos.y) as i32,
                                 map.xy_idx(target_x, target_y) as i32,
                                 &mut *map

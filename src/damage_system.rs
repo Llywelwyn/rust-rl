@@ -12,7 +12,7 @@ use super::{
     Renderable,
     RunState,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::data::events;
 
@@ -40,7 +40,7 @@ pub fn delete_the_dead(ecs: &mut World) {
                                     .append("The")
                                     .colour(renderable_colour(&renderables, entity))
                                     .append(&victim_name.name)
-                                    .colour(rltk::WHITE)
+                                    .colour(WHITE)
                                     .append("is destroyed!")
                                     .log();
                             } else {
@@ -49,7 +49,7 @@ pub fn delete_the_dead(ecs: &mut World) {
                                     .append("The")
                                     .colour(renderable_colour(&renderables, entity))
                                     .append(&victim_name.name)
-                                    .colour(rltk::WHITE)
+                                    .colour(WHITE)
                                     .append("dies!")
                                     .log();
                             }
@@ -81,12 +81,15 @@ pub fn delete_the_dead(ecs: &mut World) {
     }
     // For everything that died, increment the event log, and delete.
     for victim in dead {
-        gamelog::record_event(events::EVENT::TURN(1));
+        gamelog::record_event(events::EVENT::Turn(1));
         ecs.delete_entity(victim).expect("Unable to delete.");
     }
 }
 
-fn handle_dead_entity_items(ecs: &mut World, dead: &Vec<Entity>) -> (Vec<Entity>, Vec<(String, Position)>) {
+fn handle_dead_entity_items(
+    ecs: &mut World,
+    dead: &Vec<Entity>
+) -> (Vec<Entity>, Vec<(String, Position)>) {
     let mut to_drop: Vec<(Entity, Position)> = Vec::new();
     let mut to_spawn: Vec<(String, Position)> = Vec::new();
     let entities = ecs.entities();

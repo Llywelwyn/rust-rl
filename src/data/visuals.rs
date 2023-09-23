@@ -1,3 +1,5 @@
+use bracket_lib::prelude::*;
+
 // POST-PROCESSING
 pub const WITH_DARKEN_BY_DISTANCE: bool = true; // If further away tiles should get darkened, instead of a harsh transition to non-visible.
 pub const VIEWPORT_W: i32 = 69;
@@ -17,8 +19,8 @@ pub const SHORT_PARTICLE_LIFETIME: f32 = 100.0; // in ms
 pub const DEFAULT_PARTICLE_LIFETIME: f32 = 200.0;
 pub const LONG_PARTICLE_LIFETIME: f32 = 300.0;
 
-pub const TARGETING_CURSOR_COL: (u8, u8, u8) = rltk::GOLDENROD;
-pub const TARGETING_LINE_COL: (u8, u8, u8) = rltk::LIGHTGOLDENROD;
+pub const TARGETING_CURSOR_COL: (u8, u8, u8) = GOLDENROD;
+pub const TARGETING_LINE_COL: (u8, u8, u8) = LIGHTGOLDENROD;
 pub const TARGETING_AOE_COL: (u8, u8, u8) = (20, 20, 20);
 pub const TARGETING_VALID_COL: (u8, u8, u8) = (10, 10, 10);
 

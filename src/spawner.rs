@@ -21,19 +21,20 @@ use super::{
     SerializeMe,
     Skill,
     Skills,
-    TileType,
     tile_walkable,
     Viewshed,
     BlocksTile,
     Bleeds,
+    HasDamageModifiers,
+    Intrinsics,
 };
 use crate::data::entity;
 use crate::data::visuals::BLOODSTAIN_COLOUR;
 use crate::gamesystem::*;
-use rltk::{ RandomNumberGenerator, RGB };
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use specs::saveload::{ MarkedBuilder, SimpleMarker };
-use std::collections::HashMap;
+use std::collections::{ HashMap, HashSet };
 
 /// Spawns the player and returns his/her entity object.
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
@@ -52,9 +53,9 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Position { x: player_x, y: player_y })
         .with(BlocksTile {})
         .with(Renderable {
-            glyph: rltk::to_cp437('@'),
-            fg: RGB::named(rltk::YELLOW),
-            bg: RGB::named(rltk::BLACK),
+            glyph: to_cp437('@'),
+            fg: RGB::named(YELLOW),
+            bg: RGB::named(BLACK),
             render_order: 0,
         })
         .with(Bleeds { colour: RGB::named(BLOODSTAIN_COLOUR) })
@@ -87,7 +88,9 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             weight: 0.0,
             god: false,
         })
-        .with(EquipmentChanged {})
+        .with(HasDamageModifiers { modifiers: HashMap::new() })
+        .with(Intrinsics { list: HashSet::new() })
+        .with(EquipmentChanged {}) // To force re-calc of equipment bonuses.
         .with(skills)
         .with(Energy { current: 0, speed: entity::NORMAL_SPEED })
         .marked::<SimpleMarker<SerializeMe>>()
@@ -132,7 +135,7 @@ pub fn spawn_region(
     let difficulty = (map.difficulty + player_level) / 2;
     // If no area, log and return.
     if areas.len() == 0 {
-        rltk::console::log("DEBUGINFO: No areas capable of spawning mobs!");
+        console::log("DEBUGINFO: No areas capable of spawning mobs!");
         return;
     }
     // Get num of each entity type.
@@ -212,7 +215,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         return;
     }
 
-    rltk::console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
+    console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
 }
 
 // 3 scrolls : 3 potions : 1 equipment : 1 wand?

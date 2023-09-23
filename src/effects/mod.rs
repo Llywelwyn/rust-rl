@@ -1,9 +1,10 @@
 use super::BUC;
 use crate::spatial;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::VecDeque;
 use std::sync::Mutex;
+use crate::components::DamageType;
 
 mod damage;
 mod hunger;
@@ -24,6 +25,7 @@ lazy_static! {
 pub enum EffectType {
     Damage {
         amount: i32,
+        damage_type: DamageType,
     },
     Healing {
         amount: i32,

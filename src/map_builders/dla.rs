@@ -1,5 +1,5 @@
 use super::{ paint, BuilderMap, InitialMapBuilder, MetaMapBuilder, Position, Symmetry, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 #[derive(PartialEq, Copy, Clone)]
 #[allow(dead_code)]
@@ -18,14 +18,14 @@ pub struct DLABuilder {
 
 impl InitialMapBuilder for DLABuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
 
 impl MetaMapBuilder for DLABuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
@@ -94,7 +94,10 @@ impl DLABuilder {
     #[allow(clippy::map_entry)]
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         // Carve a starting seed
-        let starting_position = Position { x: build_data.map.width / 2, y: build_data.map.height / 2 };
+        let starting_position = Position {
+            x: build_data.map.width / 2,
+            y: build_data.map.height / 2,
+        };
         let start_idx = build_data.map.xy_idx(starting_position.x, starting_position.y);
         build_data.take_snapshot();
         build_data.map.tiles[start_idx] = TileType::Floor;
@@ -189,10 +192,10 @@ impl DLABuilder {
                     let mut prev_y = digger_y;
                     let mut digger_idx = build_data.map.xy_idx(digger_x, digger_y);
 
-                    let mut path = rltk::line2d(
-                        rltk::LineAlg::Bresenham,
-                        rltk::Point::new(digger_x, digger_y),
-                        rltk::Point::new(starting_position.x, starting_position.y)
+                    let mut path = line2d(
+                        LineAlg::Bresenham,
+                        Point::new(digger_x, digger_y),
+                        Point::new(starting_position.x, starting_position.y)
                     );
 
                     while build_data.map.tiles[digger_idx] == TileType::Wall && !path.is_empty() {

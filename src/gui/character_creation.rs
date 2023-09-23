@@ -24,7 +24,7 @@ use crate::{
     Telepath,
     BUC,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
 use std::collections::HashMap;
@@ -119,7 +119,7 @@ pub fn character_creation(gs: &mut State, ctx: &mut Rltk) -> CharCreateResult {
     let mut y = 11;
     let column_width = 20;
 
-    ctx.print_color(x, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), CHAR_CREATE_HEADER);
+    ctx.print_color(x, y, RGB::named(WHITE), RGB::named(BLACK), CHAR_CREATE_HEADER);
     y += 2;
 
     if let RunState::CharacterCreation { ancestry, class } = *runstate {
@@ -271,9 +271,9 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
         Ancestry::Dwarf => {
             renderables
                 .insert(*player, Renderable {
-                    glyph: rltk::to_cp437(DWARF_GLYPH),
+                    glyph: to_cp437(DWARF_GLYPH),
                     fg: RGB::named(DWARF_COLOUR),
-                    bg: RGB::named(rltk::BLACK),
+                    bg: RGB::named(BLACK),
                     render_order: 0,
                 })
                 .expect("Unable to insert renderable component");
@@ -282,9 +282,9 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
         Ancestry::Elf => {
             renderables
                 .insert(*player, Renderable {
-                    glyph: rltk::to_cp437(ELF_GLYPH),
+                    glyph: to_cp437(ELF_GLYPH),
                     fg: RGB::named(ELF_COLOUR),
-                    bg: RGB::named(rltk::BLACK),
+                    bg: RGB::named(BLACK),
                     render_order: 0,
                 })
                 .expect("Unable to insert renderable component");
@@ -307,9 +307,9 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
         Ancestry::Catfolk => {
             renderables
                 .insert(*player, Renderable {
-                    glyph: rltk::to_cp437(CATFOLK_GLYPH),
+                    glyph: to_cp437(CATFOLK_GLYPH),
                     fg: RGB::named(CATFOLK_COLOUR),
-                    bg: RGB::named(rltk::BLACK),
+                    bg: RGB::named(BLACK),
                     render_order: 0,
                 })
                 .expect("Unable to insert renderable component");
@@ -453,11 +453,11 @@ fn pick_random_table_item(
     rng: &mut RandomNumberGenerator,
     push_to: &mut Vec<String>,
     table: &'static str,
-    dice: &'static str,
+    dice_str: &'static str,
     difficulty: Option<i32>
 ) {
-    let (n, d, m) = raws::parse_dice_string(dice);
-    for _i in 0..rng.roll_dice(n, d) + m {
+    let dice = parse_dice_string(dice_str).expect("Error parsing dice");
+    for _i in 0..rng.roll_dice(dice.n_dice, dice.die_type) + dice.bonus {
         push_to.push(raws::table_by_name(&raws::RAWS.lock().unwrap(), table, difficulty).roll(rng));
     }
 }

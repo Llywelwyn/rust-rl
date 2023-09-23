@@ -14,21 +14,29 @@ use crate::{
     HungerClock,
     HungerState,
     Bleeds,
+    HasDamageModifiers,
 };
 use crate::gui::with_article;
 use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
 use crate::data::messages::LEVELUP_PLAYER;
 use crate::data::events::*;
 use crate::data::messages::*;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
     if let Some(target_pool) = pools.get_mut(target) {
         if !target_pool.god {
-            if let EffectType::Damage { amount } = damage.effect_type {
-                target_pool.hit_points.current -= amount;
+            if let EffectType::Damage { amount, damage_type } = damage.effect_type {
+                let mult = if
+                    let Some(modifiers) = ecs.read_storage::<HasDamageModifiers>().get(target)
+                {
+                    modifiers.modifier(&damage_type).multiplier()
+                } else {
+                    1.0
+                };
+                target_pool.hit_points.current -= ((amount as f32) * mult) as i32;
                 let bleeders = ecs.read_storage::<Bleeds>();
                 if let Some(bleeds) = bleeders.get(target) {
                     add_effect(
@@ -221,12 +229,12 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let Some(source) = effect.source {
         // If the target was the player, game over, and record source of death.
         if target == *player {
-            gamelog::record_event(EVENT::PLAYER_DIED(get_death_message(ecs, source)));
+            gamelog::record_event(EVENT::PlayerDied(get_death_message(ecs, source)));
             return;
         } else {
             // If the player was the source, record the kill.
             if let Some(tar_name) = names.get(target) {
-                gamelog::record_event(EVENT::KILLED(tar_name.name.clone()));
+                gamelog::record_event(EVENT::Killed(tar_name.name.clone()));
             }
         }
         // Calc XP value of target.
@@ -246,7 +254,7 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 source_pools.level += 1;
                 // If it was the PLAYER that levelled up:
                 if ecs.read_storage::<Player>().get(source).is_some() {
-                    gamelog::record_event(EVENT::LEVEL(1));
+                    gamelog::record_event(EVENT::Level(1));
                     gamelog::Logger
                         ::new()
                         .append(LEVELUP_PLAYER)
@@ -328,11 +336,11 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
         if target == *player {
             if let Some(hc) = ecs.read_storage::<HungerClock>().get(target) {
                 if hc.state == HungerState::Starving {
-                    gamelog::record_event(EVENT::PLAYER_DIED("You starved to death!".to_string()));
+                    gamelog::record_event(EVENT::PlayerDied("You starved to death!".to_string()));
                 }
             } else {
                 gamelog::record_event(
-                    EVENT::PLAYER_DIED("You died from unknown causes!".to_string())
+                    EVENT::PlayerDied("You died from unknown causes!".to_string())
                 );
             }
         }

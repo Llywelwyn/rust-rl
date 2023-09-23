@@ -1,4 +1,5 @@
 use super::components::*;
+use bracket_lib::prelude::*;
 use specs::error::NoError;
 use specs::prelude::*;
 use specs::saveload::{
@@ -87,12 +88,14 @@ pub fn save_game(ecs: &mut World) {
             GrantsXP,
             HasAncestry,
             HasClass,
+            HasDamageModifiers,
             Hidden,
             HungerClock,
             IdentifiedBeatitude,
             IdentifiedItem,
             InBackpack,
             InflictsDamage,
+            Intrinsics,
             Item,
             KnownSpells,
             LootTable,
@@ -217,12 +220,14 @@ pub fn load_game(ecs: &mut World) {
             GrantsXP,
             HasAncestry,
             HasClass,
+            HasDamageModifiers,
             Hidden,
             HungerClock,
             IdentifiedBeatitude,
             IdentifiedItem,
             InBackpack,
             InflictsDamage,
+            Intrinsics,
             Item,
             KnownSpells,
             LootTable,
@@ -293,8 +298,8 @@ pub fn load_game(ecs: &mut World) {
             crate::gamelog::restore_events(h.events.clone());
         }
         for (e, _p, pos) in (&entities, &player, &position).join() {
-            let mut ppos = ecs.write_resource::<rltk::Point>();
-            *ppos = rltk::Point::new(pos.x, pos.y);
+            let mut ppos = ecs.write_resource::<Point>();
+            *ppos = Point::new(pos.x, pos.y);
             let mut player_resource = ecs.write_resource::<Entity>();
             *player_resource = e;
         }

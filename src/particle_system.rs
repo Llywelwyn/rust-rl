@@ -1,5 +1,5 @@
-use super::{ ParticleLifetime, Position, Renderable, Rltk };
-use rltk::RGB;
+use super::{ ParticleLifetime, Position, Renderable, BTerm };
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME };
 
@@ -8,12 +8,12 @@ use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME }
 // running through a list and removing the frame_time_ms from the
 // delay. When delay is <= 0, make a particle_builder.request for
 // the particle.
-pub fn particle_ticker(ecs: &mut World, ctx: &Rltk) {
+pub fn particle_ticker(ecs: &mut World, ctx: &BTerm) {
     cull_dead_particles(ecs, ctx);
     create_delayed_particles(ecs, ctx);
 }
 
-fn cull_dead_particles(ecs: &mut World, ctx: &Rltk) {
+fn cull_dead_particles(ecs: &mut World, ctx: &BTerm) {
     let mut dead_particles: Vec<Entity> = Vec::new();
     {
         // Age out particles
@@ -39,7 +39,7 @@ pub fn check_queue(ecs: &World) -> bool {
     return false;
 }
 
-fn create_delayed_particles(ecs: &mut World, ctx: &Rltk) {
+fn create_delayed_particles(ecs: &mut World, ctx: &BTerm) {
     let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
     let mut handled_particles: Vec<ParticleRequest> = Vec::new();
     for delayed_particle in particle_builder.delayed_requests.iter_mut() {
@@ -76,11 +76,20 @@ fn create_delayed_particles(ecs: &mut World, ctx: &Rltk) {
             .unwrap();
         particle_builder.delayed_requests.remove(index);
         let p = entities.create();
-        positions.insert(p, Position { x: handled.x, y: handled.y }).expect("Could not insert position");
+        positions
+            .insert(p, Position { x: handled.x, y: handled.y })
+            .expect("Could not insert position");
         renderables
-            .insert(p, Renderable { fg: handled.fg, bg: handled.bg, glyph: handled.glyph, render_order: 0 })
+            .insert(p, Renderable {
+                fg: handled.fg,
+                bg: handled.bg,
+                glyph: handled.glyph,
+                render_order: 0,
+            })
             .expect("Could not insert renderables");
-        particles.insert(p, ParticleLifetime { lifetime_ms: handled.lifetime }).expect("Could not insert lifetime");
+        particles
+            .insert(p, ParticleLifetime { lifetime_ms: handled.lifetime })
+            .expect("Could not insert lifetime");
     }
 }
 
@@ -90,7 +99,7 @@ pub struct ParticleRequest {
     y: i32,
     fg: RGB,
     bg: RGB,
-    glyph: rltk::FontCharType,
+    glyph: FontCharType,
     lifetime: f32,
 }
 
@@ -112,11 +121,28 @@ impl ParticleBuilder {
     }
 
     /// Makes a single particle request.
-    pub fn request(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32) {
+    pub fn request(
+        &mut self,
+        x: i32,
+        y: i32,
+        fg: RGB,
+        bg: RGB,
+        glyph: FontCharType,
+        lifetime: f32
+    ) {
         self.requests.push(ParticleRequest { x, y, fg, bg, glyph, lifetime });
     }
 
-    pub fn delay(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32, delay: f32) {
+    pub fn delay(
+        &mut self,
+        x: i32,
+        y: i32,
+        fg: RGB,
+        bg: RGB,
+        glyph: FontCharType,
+        lifetime: f32,
+        delay: f32
+    ) {
         self.delayed_requests.push(DelayedParticleRequest {
             delay: delay,
             particle: ParticleRequest { x, y, fg, bg, glyph, lifetime },
@@ -127,9 +153,9 @@ impl ParticleBuilder {
         self.request(
             x,
             y,
-            rltk::RGB::named(rltk::ORANGE),
-            rltk::RGB::named(rltk::BLACK),
-            rltk::to_cp437('‼'),
+            RGB::named(ORANGE),
+            RGB::named(BLACK),
+            to_cp437('‼'),
             DEFAULT_PARTICLE_LIFETIME
         );
     }
@@ -138,9 +164,9 @@ impl ParticleBuilder {
         self.request(
             x,
             y,
-            rltk::RGB::named(rltk::CYAN),
-            rltk::RGB::named(rltk::BLACK),
-            rltk::to_cp437('‼'),
+            RGB::named(CYAN),
+            RGB::named(BLACK),
+            to_cp437('‼'),
             DEFAULT_PARTICLE_LIFETIME
         );
     }
@@ -149,9 +175,9 @@ impl ParticleBuilder {
         self.request(
             x,
             y,
-            rltk::RGB::named(rltk::CHOCOLATE),
-            rltk::RGB::named(rltk::BLACK),
-            rltk::to_cp437('‼'),
+            RGB::named(CHOCOLATE),
+            RGB::named(BLACK),
+            to_cp437('‼'),
             SHORT_PARTICLE_LIFETIME
         );
     }
@@ -164,57 +190,97 @@ impl ParticleBuilder {
         y: i32,
         fg: RGB,
         bg: RGB,
-        glyph: rltk::FontCharType,
+        glyph: FontCharType,
         lifetime: f32,
         secondary_fg: RGB
     ) {
         let eighth_l = lifetime / 8.0;
         let quarter_l = eighth_l * 2.0;
         self.request(x, y, fg, bg, glyph, lifetime);
-        self.delay(x + 1, y + 1, secondary_fg.lerp(bg, 0.8), bg, rltk::to_cp437('/'), quarter_l, eighth_l);
-        self.delay(x + 1, y - 1, secondary_fg.lerp(bg, 0.6), bg, rltk::to_cp437('\\'), quarter_l, quarter_l);
-        self.delay(x - 1, y - 1, secondary_fg.lerp(bg, 0.2), bg, rltk::to_cp437('/'), quarter_l, eighth_l * 3.0);
-        self.delay(x - 1, y + 1, secondary_fg.lerp(bg, 0.4), bg, rltk::to_cp437('\\'), quarter_l, lifetime);
+        self.delay(
+            x + 1,
+            y + 1,
+            secondary_fg.lerp(bg, 0.8),
+            bg,
+            to_cp437('/'),
+            quarter_l,
+            eighth_l
+        );
+        self.delay(
+            x + 1,
+            y - 1,
+            secondary_fg.lerp(bg, 0.6),
+            bg,
+            to_cp437('\\'),
+            quarter_l,
+            quarter_l
+        );
+        self.delay(
+            x - 1,
+            y - 1,
+            secondary_fg.lerp(bg, 0.2),
+            bg,
+            to_cp437('/'),
+            quarter_l,
+            eighth_l * 3.0
+        );
+        self.delay(
+            x - 1,
+            y + 1,
+            secondary_fg.lerp(bg, 0.4),
+            bg,
+            to_cp437('\\'),
+            quarter_l,
+            lifetime
+        );
     }
 
     // Makes a rainbow particle request in the shape of an 'x'. Sort of.
     #[allow(dead_code)]
-    pub fn request_rainbow_star(&mut self, x: i32, y: i32, glyph: rltk::FontCharType, lifetime: f32) {
-        let bg = RGB::named(rltk::BLACK);
+    pub fn request_rainbow_star(&mut self, x: i32, y: i32, glyph: FontCharType, lifetime: f32) {
+        let bg = RGB::named(BLACK);
         let eighth_l = lifetime / 8.0;
         let quarter_l = eighth_l * 2.0;
         let half_l = quarter_l * 2.0;
 
-        self.request(x, y, RGB::named(rltk::CYAN), bg, glyph, lifetime);
-        self.delay(x + 1, y + 1, RGB::named(rltk::RED), bg, rltk::to_cp437('\\'), half_l, eighth_l);
-        self.delay(x + 1, y - 1, RGB::named(rltk::ORANGE), bg, rltk::to_cp437('/'), half_l, quarter_l);
-        self.delay(x - 1, y - 1, RGB::named(rltk::GREEN), bg, rltk::to_cp437('\\'), half_l, eighth_l * 3.0);
-        self.delay(x - 1, y + 1, RGB::named(rltk::YELLOW), bg, rltk::to_cp437('/'), half_l, half_l);
+        self.request(x, y, RGB::named(CYAN), bg, glyph, lifetime);
+        self.delay(x + 1, y + 1, RGB::named(RED), bg, to_cp437('\\'), half_l, eighth_l);
+        self.delay(x + 1, y - 1, RGB::named(ORANGE), bg, to_cp437('/'), half_l, quarter_l);
+        self.delay(x - 1, y - 1, RGB::named(GREEN), bg, to_cp437('\\'), half_l, eighth_l * 3.0);
+        self.delay(x - 1, y + 1, RGB::named(YELLOW), bg, to_cp437('/'), half_l, half_l);
     }
 
     // Makes a rainbow particle request. Sort of.
     #[allow(dead_code)]
-    pub fn request_rainbow(&mut self, x: i32, y: i32, glyph: rltk::FontCharType, lifetime: f32) {
-        let bg = RGB::named(rltk::BLACK);
+    pub fn request_rainbow(&mut self, x: i32, y: i32, glyph: FontCharType, lifetime: f32) {
+        let bg = RGB::named(BLACK);
         let eighth_l = lifetime / 8.0;
 
-        self.request(x, y, RGB::named(rltk::RED), bg, glyph, eighth_l);
-        self.delay(x, y, RGB::named(rltk::ORANGE), bg, glyph, eighth_l, eighth_l);
-        self.delay(x, y, RGB::named(rltk::YELLOW), bg, glyph, eighth_l, eighth_l * 2.0);
-        self.delay(x, y, RGB::named(rltk::GREEN), bg, glyph, eighth_l, eighth_l * 3.0);
-        self.delay(x, y, RGB::named(rltk::BLUE), bg, glyph, eighth_l, eighth_l * 4.0);
-        self.delay(x, y, RGB::named(rltk::INDIGO), bg, glyph, eighth_l, eighth_l * 5.0);
-        self.delay(x, y, RGB::named(rltk::VIOLET), bg, glyph, eighth_l, eighth_l * 6.0);
+        self.request(x, y, RGB::named(RED), bg, glyph, eighth_l);
+        self.delay(x, y, RGB::named(ORANGE), bg, glyph, eighth_l, eighth_l);
+        self.delay(x, y, RGB::named(YELLOW), bg, glyph, eighth_l, eighth_l * 2.0);
+        self.delay(x, y, RGB::named(GREEN), bg, glyph, eighth_l, eighth_l * 3.0);
+        self.delay(x, y, RGB::named(BLUE), bg, glyph, eighth_l, eighth_l * 4.0);
+        self.delay(x, y, RGB::named(INDIGO), bg, glyph, eighth_l, eighth_l * 5.0);
+        self.delay(x, y, RGB::named(VIOLET), bg, glyph, eighth_l, eighth_l * 6.0);
     }
 
     /// Makes a particle request in the shape of a +.
     #[allow(dead_code)]
-    pub fn request_plus(&mut self, x: i32, y: i32, fg: RGB, bg: RGB, glyph: rltk::FontCharType, lifetime: f32) {
+    pub fn request_plus(
+        &mut self,
+        x: i32,
+        y: i32,
+        fg: RGB,
+        bg: RGB,
+        glyph: FontCharType,
+        lifetime: f32
+    ) {
         self.request(x, y, fg, bg, glyph, lifetime * 2.0);
-        self.request(x + 1, y, fg, bg, rltk::to_cp437('─'), lifetime);
-        self.request(x - 1, y, fg, bg, rltk::to_cp437('─'), lifetime);
-        self.request(x, y + 1, fg, bg, rltk::to_cp437('│'), lifetime);
-        self.request(x, y - 1, fg, bg, rltk::to_cp437('│'), lifetime);
+        self.request(x + 1, y, fg, bg, to_cp437('─'), lifetime);
+        self.request(x - 1, y, fg, bg, to_cp437('─'), lifetime);
+        self.request(x, y + 1, fg, bg, to_cp437('│'), lifetime);
+        self.request(x, y - 1, fg, bg, to_cp437('│'), lifetime);
     }
 }
 
@@ -235,7 +301,9 @@ impl<'a> System<'a> for ParticleSpawnSystem {
 
         for new_particle in particle_builder.requests.iter() {
             let p = entities.create();
-            positions.insert(p, Position { x: new_particle.x, y: new_particle.y }).expect("Could not insert position");
+            positions
+                .insert(p, Position { x: new_particle.x, y: new_particle.y })
+                .expect("Could not insert position");
             renderables
                 .insert(p, Renderable {
                     fg: new_particle.fg,

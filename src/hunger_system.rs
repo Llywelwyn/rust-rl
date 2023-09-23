@@ -1,5 +1,14 @@
-use super::{ effects::{ add_effect, EffectType, Targets }, gamelog, Clock, HungerClock, HungerState, TakingTurn };
-use rltk::prelude::*;
+use super::{
+    effects::{ add_effect, EffectType, Targets },
+    gamelog,
+    Clock,
+    HungerClock,
+    HungerState,
+    TakingTurn,
+    DamageType,
+    Intrinsics,
+};
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::config::CONFIG;
 
@@ -45,10 +54,11 @@ impl<'a> System<'a> for HungerSystem {
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Clock>,
         ReadStorage<'a, TakingTurn>,
+        ReadStorage<'a, Intrinsics>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (entities, mut hunger_clock, player_entity, turn_clock, turns) = data;
+        let (entities, mut hunger_clock, player_entity, turn_clock, turns, intrinsics) = data;
 
         // If the turn clock isn't taking a turn this tick, don't bother ticking hunger.
         let mut ticked = false;
@@ -64,16 +74,32 @@ impl<'a> System<'a> for HungerSystem {
             if hunger_clock.duration >= MAX_SATIATION {
                 hunger_clock.duration = MAX_SATIATION;
             } else {
-                hunger_clock.duration -= BASE_CLOCK_DECREMENT_PER_TURN;
+                let mut modifier = 0;
+                let intrinsic_regen = if let Some(i) = intrinsics.get(entity) {
+                    i.list.contains(&crate::Intrinsic::Regeneration)
+                } else {
+                    false
+                };
+                if intrinsic_regen {
+                    modifier += 1;
+                }
+                hunger_clock.duration -= BASE_CLOCK_DECREMENT_PER_TURN + modifier;
             }
             let initial_state = hunger_clock.state;
             hunger_clock.state = get_hunger_state(hunger_clock.duration);
             if hunger_clock.state == HungerState::Starving {
-                add_effect(None, EffectType::Damage { amount: 1 }, Targets::Entity { target: entity });
+                add_effect(
+                    None,
+                    EffectType::Damage { amount: 1, damage_type: DamageType::Forced },
+                    Targets::Entity { target: entity }
+                );
             }
             if CONFIG.logging.log_ticks && entity == *player_entity {
-                rltk::console::log(
-                    format!("HUNGER SYSTEM: Ticked for player entity. [clock: {}]", hunger_clock.duration)
+                console::log(
+                    format!(
+                        "HUNGER SYSTEM: Ticked for player entity. [clock: {}]",
+                        hunger_clock.duration
+                    )
                 );
             }
             if hunger_clock.state == initial_state {

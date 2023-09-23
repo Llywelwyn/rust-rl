@@ -1,4 +1,4 @@
-## a roguelike in rust, playable @ [llywelwyn.github.io](https://llywelwyn.github.io/)
+## a roguelike in rust, playable @ [llyw.co.uk/rl/](https://llyw.co.uk/rl/)
 
 #### using _rltk/bracket-lib_, and _specs_
 
@@ -9,6 +9,8 @@ check out the page in the header for the wasm version, pick [a release of your c
 ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/b05e4f0b-2062-4abe-9fee-c679f9ef420d)
 
 this year for roguelikedev does the complete tutorial, i followed along with thebracket's [_roguelike tutorial - in rust_](https://bfnightly.bracketproductions.com). the notes i made during the sprint are being kept below for posterity - further changes since then are noted in [changelog.txt](https://github.com/Llywelwyn/rust-rl/blob/9150ed39e45bee536060cdc769d274e639021012/changelog.txt), and in the release notes.
+
+i'm also working on translating over my progress into blog entries on my site @ [llyw.co.uk](https://llyw.co.uk/), with a larger focus on some of the more interesting implementation details.
 
 ---
 

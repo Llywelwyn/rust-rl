@@ -1,5 +1,5 @@
 use crate::{ gamelog, gui::renderable_colour, Name, Quips, Renderable, TakingTurn, Viewshed };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub struct QuipSystem {}
@@ -19,8 +19,18 @@ impl<'a> System<'a> for QuipSystem {
 
     fn run(&mut self, data: Self::SystemData) {
         let (entities, mut quips, names, renderables, turns, player_pos, viewsheds, mut rng) = data;
-        for (entity, quip, name, viewshed, _turn) in (&entities, &mut quips, &names, &viewsheds, &turns).join() {
-            if !quip.available.is_empty() && viewshed.visible_tiles.contains(&player_pos) && rng.roll_dice(1, 6) == 1 {
+        for (entity, quip, name, viewshed, _turn) in (
+            &entities,
+            &mut quips,
+            &names,
+            &viewsheds,
+            &turns,
+        ).join() {
+            if
+                !quip.available.is_empty() &&
+                viewshed.visible_tiles.contains(&player_pos) &&
+                rng.roll_dice(1, 6) == 1
+            {
                 let quip_index = if quip.available.len() == 1 {
                     0
                 } else {

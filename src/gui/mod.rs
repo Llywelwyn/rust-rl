@@ -62,9 +62,9 @@ pub use farlook::*;
 
 /// Gives a popup box with a message and a title, and waits for a keypress.
 #[allow(unused)]
-pub fn yes_no(ctx: &mut Rltk, question: String) -> Option<bool> {
-    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), question);
-    ctx.print_color_centered(17, RGB::named(rltk::CYAN), RGB::named(rltk::BLACK), "(y)es or (n)o");
+pub fn yes_no(ctx: &mut BTerm, question: String) -> Option<bool> {
+    ctx.print_color_centered(15, RGB::named(YELLOW), RGB::named(BLACK), question);
+    ctx.print_color_centered(17, RGB::named(CYAN), RGB::named(BLACK), "(y)es or (n)o");
     match ctx.key {
         None => None,
         Some(key) =>
@@ -77,7 +77,7 @@ pub fn yes_no(ctx: &mut Rltk, question: String) -> Option<bool> {
 }
 
 pub fn draw_lerping_bar(
-    ctx: &mut Rltk,
+    ctx: &mut BTerm,
     sx: i32,
     sy: i32,
     width: i32,
@@ -181,8 +181,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         ctx.print_color(
             26 * TEXT_FONT_MOD,
             54,
-            RGB::named(rltk::WHITE),
-            RGB::named(rltk::BLACK),
+            RGB::named(WHITE),
+            RGB::named(BLACK),
             format!("XP{}/{}", stats.level, stats.xp)
         );
         // Draw attributes
@@ -327,7 +327,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         }
         // Draw equipment
         let renderables = ecs.read_storage::<Renderable>();
-        let mut equipment: Vec<(String, RGB, RGB, rltk::FontCharType)> = Vec::new();
+        let mut equipment: Vec<(String, RGB, RGB, FontCharType)> = Vec::new();
         let entities = ecs.entities();
         for (entity, _equipped, renderable) in (&entities, &equipped, &renderables)
             .join()
@@ -472,7 +472,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
                     let (render_fg, glyph) = if let Some(renderable) = renderables.get(entity) {
                         (renderable.fg, renderable.glyph)
                     } else {
-                        (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
+                        (RGB::named(WHITE), to_cp437('-'))
                     };
                     seen_entities.push((
                         obfuscate_name_ecs(ecs, entity).0,
@@ -587,7 +587,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
 
 pub fn get_input_direction(
     ecs: &mut World,
-    ctx: &mut Rltk,
+    ctx: &mut BTerm,
     function: fn(i: i32, j: i32, ecs: &mut World) -> RunState
 ) -> RunState {
     let (_, _, _, _, x_offset, y_offset) = camera::get_screen_bounds(ecs, ctx);
@@ -595,8 +595,8 @@ pub fn get_input_direction(
     ctx.print_color(
         1 + x_offset,
         1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(WHITE),
+        RGB::named(BLACK),
         "In what direction? [0-9]/[YUHJKLBN]"
     );
     match ctx.key {
@@ -681,14 +681,14 @@ pub fn print_options(
 
         x += 2;
         let fg = RGB::from_u8(item.renderables.0, item.renderables.1, item.renderables.2);
-        ctx.set(x, y, fg, RGB::named(rltk::BLACK), item.glyph);
+        ctx.set(x, y, fg, RGB::named(BLACK), item.glyph);
         x += 2;
 
         let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
         if item_count > &1 {
             // If more than one, print the number and pluralise
             // i.e. (a) 3 daggers
-            ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), item_count);
+            ctx.print_color(x, y, fg, RGB::named(BLACK), item_count);
             x += 2;
             ctx.print_color(
                 x,
@@ -701,7 +701,7 @@ pub fn print_options(
             width = if width > this_width { width } else { this_width };
         } else {
             if item.display_name.singular.to_lowercase().ends_with("s") {
-                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "some");
+                ctx.print_color(x, y, fg, RGB::named(BLACK), "some");
                 x += 5;
             } else if
                 ['a', 'e', 'i', 'o', 'u']
@@ -710,12 +710,12 @@ pub fn print_options(
             {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
-                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "an");
+                ctx.print_color(x, y, fg, RGB::named(BLACK), "an");
                 x += 3;
             } else {
                 // If one and not a vowel, print 'a'
                 // i.e. (a) a dagger
-                ctx.print_color(x, y, fg, RGB::named(rltk::BLACK), "a");
+                ctx.print_color(x, y, fg, RGB::named(BLACK), "a");
                 x += 2;
             }
             ctx.print_color(
@@ -951,7 +951,7 @@ pub fn item_colour(item: Entity, beatitudes: &ReadStorage<Beatitude>) -> (u8, u8
     return WHITE;
 }
 
-pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
+pub fn show_help(ctx: &mut BTerm) -> YesNoResult {
     let mut x = 3;
     let mut y = 12;
     let height = 22;
@@ -967,7 +967,7 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     );
     x += 2;
     y += 2;
-    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "MOVE COMMANDS");
+    ctx.print_color(x, y, RGB::named(GREEN), RGB::named(BLACK), "MOVE COMMANDS");
     y += 2;
     ctx.print(x, y, "y k u   7 8 9   > down");
     ctx.print(x, y + 1, " \\|/     \\|/");
@@ -975,7 +975,7 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     ctx.print(x, y + 3, " /|\\     /|\\");
     ctx.print(x, y + 4, "b j n   1 2 3   . wait");
     y += 7;
-    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "OBJECT INTERACTION");
+    ctx.print_color(x, y, RGB::named(GREEN), RGB::named(BLACK), "OBJECT INTERACTION");
     y += 2;
     ctx.print(x, y, "g get    d drop");
     y += 1;
@@ -985,7 +985,7 @@ pub fn show_help(ctx: &mut Rltk) -> YesNoResult {
     y += 1;
     ctx.print(x, y, "f force  x farlook");
     y += 2;
-    ctx.print_color(x, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "MOUSE CONTROL");
+    ctx.print_color(x, y, RGB::named(GREEN), RGB::named(BLACK), "MOUSE CONTROL");
     y += 2;
     ctx.print(x, y, "hover for tooltips");
 
@@ -1139,7 +1139,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     }
 }
 
-pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
     let player_inventory = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
 
@@ -1179,7 +1179,7 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = rltk::letter_to_option(key);
+                    let selection = letter_to_option(key);
                     if selection > -1 && selection < (count as i32) {
                         if on_overmap {
                             gamelog::Logger
@@ -1204,7 +1204,7 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     }
 }
 
-pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn remove_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let backpack = gs.ecs.read_storage::<Equipped>();
     let entities = gs.ecs.entities();
@@ -1216,8 +1216,8 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     ctx.print_color(
         1 + x_offset,
         1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(WHITE),
+        RGB::named(BLACK),
         "Unequip what? [aA-zZ][Esc.]"
     );
 
@@ -1235,7 +1235,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
     let x = 1 + x_offset;
     let mut y = 3 + y_offset;
 
-    ctx.draw_box(x, y, width, (count + 1) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_box(x, y, width, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
     y += 1;
 
     let mut j = 0;
@@ -1244,7 +1244,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
         let (mut fg, glyph) = if let Some(renderable) = renderables.get(*e) {
             (renderable.fg, renderable.glyph)
         } else {
-            (RGB::named(rltk::WHITE), rltk::to_cp437('-'))
+            (RGB::named(WHITE), to_cp437('-'))
         };
         ctx.set(
             x + 1,
@@ -1255,7 +1255,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
         );
         ctx.set(x + 3, y, fg, RGB::named(rltk::BLACK), glyph);
         fg = RGB::named(item_colour_ecs(&gs.ecs, *e));
-        ctx.print_color(x + 5, y, fg, RGB::named(rltk::BLACK), name);
+        ctx.print_color(x + 5, y, fg, RGB::named(BLACK), name);
         y += 1;
         j += 1;
     }
@@ -1266,7 +1266,7 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Opti
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = rltk::letter_to_option(key);
+                    let selection = letter_to_option(key);
                     if selection > -1 && selection < (count as i32) {
                         return (ItemMenuResult::Selected, Some(equippable[selection as usize].0));
                     }
@@ -1288,7 +1288,7 @@ pub enum TargetResult {
 
 pub fn ranged_target(
     gs: &mut State,
-    ctx: &mut Rltk,
+    ctx: &mut BTerm,
     x: i32,
     y: i32,
     range: i32,
@@ -1302,8 +1302,8 @@ pub fn ranged_target(
     ctx.print_color(
         1 + x_offset,
         1 + y_offset,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(WHITE),
+        RGB::named(BLACK),
         "Targeting which tile? [mouse input]"
     );
 
@@ -1313,7 +1313,7 @@ pub fn ranged_target(
     if let Some(visible) = visible {
         // We have a viewshed
         for idx in visible.visible_tiles.iter() {
-            let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
+            let distance = DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
             if distance <= (range as f32) {
                 let screen_x = idx.x - min_x;
                 let screen_y = idx.y - min_y;
@@ -1354,7 +1354,7 @@ pub fn ranged_target(
     }
     let mut result = (TargetResult::NoResponse { x, y }, None);
     if valid_target {
-        let path = rltk::line2d(
+        let path = line2d(
             LineAlg::Bresenham,
             Point::new(player_pos.x, player_pos.y),
             Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)
@@ -1374,7 +1374,7 @@ pub fn ranged_target(
         if aoe > 0 {
             // We adjust for camera position when getting FOV, but then we need to adjust back
             // when iterating through the tiles themselves, by taking away min_x/min_y.
-            let mut blast_tiles = rltk::field_of_view(
+            let mut blast_tiles = field_of_view(
                 Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1),
                 aoe,
                 &*map
@@ -1411,7 +1411,7 @@ pub fn ranged_target(
                 }
         };
     } else {
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::RED));
+        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(RED));
     }
 
     result = match ctx.key {
@@ -1450,7 +1450,7 @@ pub enum MainMenuResult {
     },
 }
 
-pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
+pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
     let save_exists = super::saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
     let assets = gs.ecs.fetch::<RexAssets>();
@@ -1464,8 +1464,8 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
         height -= 1;
     }
 
-    ctx.draw_box_double(x, y - 4, 13, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    ctx.print_color(x + 3, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "RUST-RL!");
+    ctx.draw_box_double(x, y - 4, 13, height, RGB::named(WHITE), RGB::named(BLACK));
+    ctx.print_color(x + 3, y - 2, RGB::named(YELLOW), RGB::named(BLACK), "RUST-RL!");
 
     if let RunState::MainMenu { menu_selection: selection } = *runstate {
         if save_exists {
@@ -1491,19 +1491,19 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
             y += 1;
         }
         if selection == MainMenuSelection::NewGame {
-            ctx.print_color(x + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "[");
-            ctx.print_color(x + 3, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "new game");
-            ctx.print_color(x + 11, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "]");
+            ctx.print_color(x + 2, y, RGB::named(YELLOW), RGB::named(BLACK), "[");
+            ctx.print_color(x + 3, y, RGB::named(GREEN), RGB::named(BLACK), "new game");
+            ctx.print_color(x + 11, y, RGB::named(YELLOW), RGB::named(BLACK), "]");
         } else {
-            ctx.print_color(x + 3, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "new game");
+            ctx.print_color(x + 3, y, RGB::named(WHITE), RGB::named(BLACK), "new game");
         }
         y += 1;
         if selection == MainMenuSelection::Quit {
-            ctx.print_color(x + 2, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "[");
-            ctx.print_color(x + 3, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "goodbye!");
-            ctx.print_color(x + 11, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "]");
+            ctx.print_color(x + 2, y, RGB::named(YELLOW), RGB::named(BLACK), "[");
+            ctx.print_color(x + 3, y, RGB::named(GREEN), RGB::named(BLACK), "goodbye!");
+            ctx.print_color(x + 11, y, RGB::named(YELLOW), RGB::named(BLACK), "]");
         } else {
-            ctx.print_color(x + 5, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "quit");
+            ctx.print_color(x + 5, y, RGB::named(WHITE), RGB::named(BLACK), "quit");
         }
 
         match ctx.key {
@@ -1578,18 +1578,18 @@ pub enum YesNoResult {
     No,
 }
 
-pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
+pub fn game_over(ctx: &mut BTerm) -> YesNoResult {
     let mut x = 3;
     let mut y = 12;
     let width = 45;
     let height = 20;
-    ctx.draw_box(x, y, width, height, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    ctx.print_color(x + 3, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "You died!");
+    ctx.draw_box(x, y, width, height, RGB::named(WHITE), RGB::named(BLACK));
+    ctx.print_color(x + 3, y, RGB::named(YELLOW), RGB::named(BLACK), "You died!");
     ctx.print_color(
         x + 3,
         y + height,
-        RGB::named(rltk::YELLOW),
-        RGB::named(rltk::BLACK),
+        RGB::named(YELLOW),
+        RGB::named(BLACK),
         " Write a morgue file? [y/n] "
     );
     x += 2;
@@ -1597,8 +1597,8 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
     ctx.print_color(
         x,
         y,
-        RGB::named(rltk::GREEN),
-        RGB::named(rltk::BLACK),
+        RGB::named(GREEN),
+        RGB::named(BLACK),
         format!("You survived for {} turns.", crate::gamelog::get_event_count(EVENT::COUNT_TURN))
     );
     y += 2;
@@ -1627,8 +1627,8 @@ pub fn game_over(ctx: &mut Rltk) -> YesNoResult {
         ctx.print_color(
             x + 1,
             y,
-            RGB::named(rltk::WHITE),
-            RGB::named(rltk::BLACK),
+            RGB::named(WHITE),
+            RGB::named(BLACK),
             format!(
                 "- kicked {} time(s), breaking {} object(s)",
                 crate::gamelog::get_event_count(EVENT::COUNT_KICK),

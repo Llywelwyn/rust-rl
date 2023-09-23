@@ -30,13 +30,12 @@ use crate::{
     SingleActivation,
     BUC,
     GrantsSpell,
-    KnownSpell,
     KnownSpells,
     Position,
     Viewshed,
 };
 use crate::data::messages::*;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs: &mut World) {
     // Check if the item has charges, etc.
@@ -47,8 +46,10 @@ pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs:
                 gamelog::Logger::new().append(NOCHARGES_DIDNOTHING).log();
                 return;
             }
-            gamelog::Logger::new().colour(rltk::YELLOW).append(NOCHARGES_WREST);
-            ecs.write_storage::<Consumable>().insert(item, Consumable {}).expect("Could not insert consumable");
+            gamelog::Logger::new().colour(YELLOW).append(NOCHARGES_WREST);
+            ecs.write_storage::<Consumable>()
+                .insert(item, Consumable {})
+                .expect("Could not insert consumable");
         }
         has_charges.uses -= 1;
     }
@@ -83,7 +84,12 @@ struct EventInfo {
 //       It does almost no sanity-checking to make sure the logs only appear if the effect is taking
 //       place on the player -- once monsters can use an item, their item usage will make logs for
 //       the player saying they were the one who used the item. This will need refactoring then.
-fn event_trigger(source: Option<Entity>, entity: Entity, target: &Targets, ecs: &mut World) -> bool {
+fn event_trigger(
+    source: Option<Entity>,
+    entity: Entity,
+    target: &Targets,
+    ecs: &mut World
+) -> bool {
     let buc = if let Some(beatitude) = ecs.read_storage::<Beatitude>().get(entity) {
         beatitude.buc.clone()
     } else {
@@ -147,7 +153,11 @@ fn handle_restore_nutrition(
     return (logger, false);
 }
 
-fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+fn handle_magic_mapper(
+    ecs: &mut World,
+    event: &mut EventInfo,
+    mut logger: gamelog::Logger
+) -> (gamelog::Logger, bool) {
     if ecs.read_storage::<MagicMapper>().get(event.entity).is_some() {
         let mut runstate = ecs.fetch_mut::<RunState>();
         let cursed = if event.buc == BUC::Cursed { true } else { false };
@@ -159,9 +169,17 @@ fn handle_magic_mapper(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
     return (logger, false);
 }
 
-fn handle_grant_spell(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
-    if let Some(granted_spell) = ecs.read_storage::<GrantsSpell>().get(event.entity) {
-        if let Some(known_spells) = ecs.write_storage::<KnownSpells>().get_mut(event.source.unwrap()) {
+fn handle_grant_spell(
+    ecs: &mut World,
+    event: &mut EventInfo,
+    logger: gamelog::Logger
+) -> (gamelog::Logger, bool) {
+    if let Some(_granted_spell) = ecs.read_storage::<GrantsSpell>().get(event.entity) {
+        if
+            let Some(_known_spells) = ecs
+                .write_storage::<KnownSpells>()
+                .get_mut(event.source.unwrap())
+        {
             // TODO: Check if the player knows *this* spell, and add it if not.
         } else {
             // TODO: Grant the KnownSpells component, and then add the spell.
@@ -170,7 +188,11 @@ fn handle_grant_spell(ecs: &mut World, event: &mut EventInfo, mut logger: gamelo
     return (logger, false);
 }
 
-fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+fn handle_healing(
+    ecs: &mut World,
+    event: &mut EventInfo,
+    mut logger: gamelog::Logger
+) -> (gamelog::Logger, bool) {
     if let Some(healing_item) = ecs.read_storage::<ProvidesHealing>().get(event.entity) {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let buc_mod = match event.buc {
@@ -178,14 +200,19 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
             BUC::Cursed => -1,
             _ => 0,
         };
-        let roll = rng.roll_dice(healing_item.n_dice + buc_mod, healing_item.sides) + healing_item.modifier;
+        let roll =
+            rng.roll_dice(healing_item.n_dice + buc_mod, healing_item.sides) +
+            healing_item.modifier;
         add_effect(
             event.source,
             EffectType::Healing { amount: roll, increment_max: get_noncursed(&event.buc) },
             event.target.clone()
         );
         for target in get_entity_targets(&event.target) {
-            if ecs.read_storage::<Prop>().get(target).is_some() || ecs.read_storage::<Item>().get(target).is_some() {
+            if
+                ecs.read_storage::<Prop>().get(target).is_some() ||
+                ecs.read_storage::<Item>().get(target).is_some()
+            {
                 continue;
             }
             let renderables = ecs.read_storage::<Renderable>();
@@ -211,11 +238,19 @@ fn handle_healing(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::L
     return (logger, false);
 }
 
-fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+fn handle_damage(
+    ecs: &mut World,
+    event: &mut EventInfo,
+    mut logger: gamelog::Logger
+) -> (gamelog::Logger, bool) {
     if let Some(damage_item) = ecs.read_storage::<InflictsDamage>().get(event.entity) {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let roll = rng.roll_dice(damage_item.n_dice, damage_item.sides) + damage_item.modifier;
-        add_effect(event.source, EffectType::Damage { amount: roll }, event.target.clone());
+        add_effect(
+            event.source,
+            EffectType::Damage { amount: roll, damage_type: damage_item.damage_type },
+            event.target.clone()
+        );
         for target in get_entity_targets(&event.target) {
             if ecs.read_storage::<Prop>().get(target).is_some() {
                 continue;
@@ -232,7 +267,9 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
                     .colour(WHITE)
                     .append(DAMAGE_PLAYER_HIT);
                 event.log = true;
-            } else if player_viewshed.visible_tiles.contains(&Point::new(target_pos.x, target_pos.y)) {
+            } else if
+                player_viewshed.visible_tiles.contains(&Point::new(target_pos.x, target_pos.y))
+            {
                 if ecs.read_storage::<Item>().get(target).is_some() {
                     if ecs.read_storage::<Destructible>().get(target).is_some() {
                         logger = logger
@@ -259,9 +296,17 @@ fn handle_damage(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Lo
 }
 
 #[allow(unused_mut)]
-fn handle_confusion(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+fn handle_confusion(
+    ecs: &mut World,
+    event: &mut EventInfo,
+    mut logger: gamelog::Logger
+) -> (gamelog::Logger, bool) {
     if let Some(confusion) = ecs.read_storage::<Confusion>().get(event.entity) {
-        add_effect(event.source, EffectType::Confusion { turns: confusion.turns }, event.target.clone());
+        add_effect(
+            event.source,
+            EffectType::Confusion { turns: confusion.turns },
+            event.target.clone()
+        );
         return (logger, true);
     }
     return (logger, false);
@@ -272,7 +317,11 @@ fn select_single(ecs: &World, runstate: RunState) {
     *new_runstate = runstate;
 }
 
-fn handle_identify(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+fn handle_identify(
+    ecs: &mut World,
+    event: &mut EventInfo,
+    mut logger: gamelog::Logger
+) -> (gamelog::Logger, bool) {
     if let Some(_i) = ecs.read_storage::<ProvidesIdentify>().get(event.entity) {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let mut dm = ecs.fetch_mut::<MasterDungeonMap>();
@@ -303,7 +352,10 @@ fn handle_identify(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::
                     .get(event.source.unwrap())
                     .map(|b| b.known)
                     .unwrap_or(true);
-                return in_this_backpack && (has_obfuscated_name || !already_identified || !known_beatitude);
+                let result =
+                    in_this_backpack &&
+                    (has_obfuscated_name || !already_identified || !known_beatitude);
+                return result;
             }) {
             to_identify.push((e, name.name.clone()));
         }
@@ -313,14 +365,20 @@ fn handle_identify(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::
                 beatitude.known = true;
             }
         }
-        logger = logger.append(IDENTIFY_ALL).buc(event.buc.clone(), None, Some(IDENTIFY_ALL_BLESSED));
+        logger = logger
+            .append(IDENTIFY_ALL)
+            .buc(event.buc.clone(), None, Some(IDENTIFY_ALL_BLESSED));
         event.log = true;
         return (logger, true);
     }
     return (logger, false);
 }
 
-fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamelog::Logger) -> (gamelog::Logger, bool) {
+fn handle_remove_curse(
+    ecs: &mut World,
+    event: &mut EventInfo,
+    mut logger: gamelog::Logger
+) -> (gamelog::Logger, bool) {
     if let Some(_r) = ecs.read_storage::<ProvidesRemoveCurse>().get(event.entity) {
         let mut to_decurse: Vec<Entity> = Vec::new();
         match event.buc {
@@ -338,7 +396,9 @@ fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
                     &ecs.read_storage::<Beatitude>(),
                 )
                     .join()
-                    .filter(|(_e, _i, bp, b)| bp.owner == event.source.unwrap() && b.buc == BUC::Cursed) {
+                    .filter(
+                        |(_e, _i, bp, b)| bp.owner == event.source.unwrap() && b.buc == BUC::Cursed
+                    ) {
                     to_decurse.push(entity);
                 }
             }
@@ -367,7 +427,9 @@ fn handle_remove_curse(ecs: &mut World, event: &mut EventInfo, mut logger: gamel
         }
         let mut beatitudes = ecs.write_storage::<Beatitude>();
         for e in to_decurse {
-            beatitudes.insert(e, Beatitude { buc: BUC::Uncursed, known: true }).expect("Unable to insert beatitude");
+            beatitudes
+                .insert(e, Beatitude { buc: BUC::Uncursed, known: true })
+                .expect("Unable to insert beatitude");
         }
         logger = logger.append(REMOVECURSE).buc(event.buc.clone(), None, Some(REMOVECURSE_BLESSED));
         event.log = true;

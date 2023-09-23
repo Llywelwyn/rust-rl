@@ -1,8 +1,11 @@
 # Build files, documentation, benchmarks
 target
+wasm/index.css
+wasm/index.html
 docs/gifs/*
 
 # VSCode/IDE config files
+Cargo.lock
 .vscode/*
 .rustfmt.toml
 .prettierignore

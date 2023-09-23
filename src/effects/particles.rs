@@ -1,6 +1,6 @@
 use super::{ add_effect, targeting, EffectSpawner, EffectType, Targets };
 use crate::{ Map, ParticleBuilder, SpawnParticleBurst, SpawnParticleLine, SpawnParticleSimple };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub fn particle_to_tile(ecs: &mut World, target: i32, effect: &EffectSpawner) {
@@ -8,9 +8,24 @@ pub fn particle_to_tile(ecs: &mut World, target: i32, effect: &EffectSpawner) {
         let map = ecs.fetch::<Map>();
         let mut particle_builder = ecs.fetch_mut::<ParticleBuilder>();
         if delay <= 0.0 {
-            particle_builder.request(target % map.width, target / map.width, fg, bg, glyph, lifespan);
+            particle_builder.request(
+                target % map.width,
+                target / map.width,
+                fg,
+                bg,
+                glyph,
+                lifespan
+            );
         } else {
-            particle_builder.delay(target % map.width, target / map.width, fg, bg, glyph, lifespan, delay);
+            particle_builder.delay(
+                target % map.width,
+                target / map.width,
+                fg,
+                bg,
+                glyph,
+                lifespan,
+                delay
+            );
         }
     }
 }
@@ -113,9 +128,14 @@ pub fn handle_line_particles(ecs: &World, entity: Entity, target: &Targets) {
     if let Some(part) = ecs.read_storage::<SpawnParticleLine>().get(entity) {
         if let Some(start_pos) = targeting::find_item_position(ecs, entity) {
             match target {
-                Targets::Tile { target } => spawn_line_particles(ecs, start_pos, *target as i32, part),
+                Targets::Tile { target } =>
+                    spawn_line_particles(ecs, start_pos, *target as i32, part),
                 Targets::TileList { targets } => {
-                    targets.iter().for_each(|target| spawn_line_particles(ecs, start_pos, *target as i32, part))
+                    targets
+                        .iter()
+                        .for_each(|target|
+                            spawn_line_particles(ecs, start_pos, *target as i32, part)
+                        )
                 }
                 Targets::Entity { target } => {
                     if let Some(end_pos) = targeting::entity_position(ecs, *target) {

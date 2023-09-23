@@ -1,12 +1,12 @@
-use super::{ Hidden, Map, Mind, Position, Prop, Renderable, Pools };
-use rltk::prelude::*;
+use super::{ Hidden, Map, Mind, Position, Prop, Renderable };
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
 use super::data::visuals::{ VIEWPORT_W, VIEWPORT_H };
 
 const SHOW_BOUNDARIES: bool = false;
 
-pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32, i32, i32) {
+pub fn get_screen_bounds(ecs: &World, _ctx: &mut BTerm) -> (i32, i32, i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
     let map = ecs.fetch::<Map>();
     let (x_chars, y_chars, mut x_offset, mut y_offset) = (VIEWPORT_W, VIEWPORT_H, 1, 10);
@@ -32,7 +32,7 @@ pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32, i
     (min_x, max_x, min_y, max_y, x_offset, y_offset)
 }
 
-pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
+pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
     let (min_x, max_x, min_y, max_y, x_offset, y_offset) = get_screen_bounds(ecs, ctx);
 
@@ -151,7 +151,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
     }
 }
 
-pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
+pub fn render_debug_map(map: &Map, ctx: &mut BTerm) {
     let player_pos = Point::new(map.width / 2, map.height / 2);
     let (x_chars, y_chars) = ctx.get_char_size();
 
@@ -182,7 +182,7 @@ pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
                     ctx.set(x, y, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
-                ctx.set(x, y, RGB::named(rltk::GRAY), RGB::named(rltk::BLACK), rltk::to_cp437('·'));
+                ctx.set(x, y, RGB::named(GRAY), RGB::named(BLACK), to_cp437('·'));
             }
             x += 1;
         }

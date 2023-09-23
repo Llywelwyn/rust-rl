@@ -2,7 +2,7 @@ use super::{ Skill, Skills };
 use crate::gui::{ Ancestry, Class };
 use crate::data::entity;
 use crate::data::char_create::*;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use std::cmp::max;
 
 /// Returns the attribute bonus for a given attribute score, where every 2 points above
@@ -12,13 +12,13 @@ pub fn attr_bonus(value: i32) -> i32 {
 }
 
 /// Returns the number of HP gained per level for a given constitution score.
-pub fn hp_per_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32) -> i32 {
+pub fn hp_per_level(rng: &mut RandomNumberGenerator, constitution: i32) -> i32 {
     return max(rng.roll_dice(1, entity::STANDARD_HIT_DIE) + attr_bonus(constitution), 1);
 }
 
 #[allow(dead_code)]
 /// Returns a total HP roll for a player, based on a given constitution score and level.
-pub fn player_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
+pub fn player_hp_at_level(rng: &mut RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
     let mut total = entity::STANDARD_HIT_DIE + attr_bonus(constitution);
     for _i in 0..level {
         total += hp_per_level(rng, constitution);
@@ -27,7 +27,7 @@ pub fn player_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i
 }
 
 /// Returns a total HP roll for an NPC, based on a given constitution score and level.
-pub fn npc_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
+pub fn npc_hp_at_level(rng: &mut RandomNumberGenerator, constitution: i32, level: i32) -> i32 {
     if level == 0 {
         return rng.roll_dice(1, entity::STANDARD_HIT_DIE_0);
     }
@@ -39,12 +39,12 @@ pub fn npc_hp_at_level(rng: &mut rltk::RandomNumberGenerator, constitution: i32,
 }
 
 /// Returns the number of mana gained per level for a given intelligence score.
-pub fn mana_per_level(rng: &mut rltk::RandomNumberGenerator, intelligence: i32) -> i32 {
+pub fn mana_per_level(rng: &mut RandomNumberGenerator, intelligence: i32) -> i32 {
     return max(rng.roll_dice(1, entity::STANDARD_MANA_DIE) + attr_bonus(intelligence), 1);
 }
 
 /// Returns the number of mana gained per level for a given intelligence score.
-pub fn mana_at_level(rng: &mut rltk::RandomNumberGenerator, intelligence: i32, level: i32) -> i32 {
+pub fn mana_at_level(rng: &mut RandomNumberGenerator, intelligence: i32, level: i32) -> i32 {
     let mut total = entity::MINIMUM_MANA;
     for _i in 0..level {
         total += mana_per_level(rng, intelligence);
@@ -63,7 +63,7 @@ pub fn skill_bonus(skill: Skill, skills: &Skills) -> i32 {
 
 /// Roll 4d6 and drop the lowest, for rolling d20-style stats
 #[allow(unused)]
-pub fn roll_4d6(rng: &mut rltk::RandomNumberGenerator) -> i32 {
+pub fn roll_4d6(rng: &mut RandomNumberGenerator) -> i32 {
     let mut rolls: Vec<i32> = Vec::new();
     for _i in 0..4 {
         rolls.push(rng.roll_dice(1, 6));

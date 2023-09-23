@@ -1,5 +1,5 @@
 use super::{ draw_corridor, BuilderMap, InitialMapBuilder, Rect, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 const MIN_ROOM_SIZE: i32 = 8;
 
@@ -9,7 +9,7 @@ pub struct BspInteriorBuilder {
 
 impl InitialMapBuilder for BspInteriorBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }

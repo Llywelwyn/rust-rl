@@ -1,5 +1,5 @@
 use crate::{ EntityMoved, Map, Position, TakingTurn, Telepath, Viewshed, WantsToApproach };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub struct ApproachAI {}
@@ -7,7 +7,6 @@ pub struct ApproachAI {}
 impl<'a> System<'a> for ApproachAI {
     #[allow(clippy::type_complexity)]
     type SystemData = (
-        WriteExpect<'a, RandomNumberGenerator>,
         WriteStorage<'a, TakingTurn>,
         WriteStorage<'a, WantsToApproach>,
         WriteStorage<'a, Position>,
@@ -20,7 +19,6 @@ impl<'a> System<'a> for ApproachAI {
 
     fn run(&mut self, data: Self::SystemData) {
         let (
-            mut rng,
             mut turns,
             mut wants_to_approach,
             mut positions,
@@ -50,7 +48,7 @@ impl<'a> System<'a> for ApproachAI {
             let mut curr_abs_diff = 100;
             let idx = map.xy_idx(pos.x, pos.y);
             for tar_idx in target_idxs {
-                let potential_path = rltk::a_star_search(idx, tar_idx, &mut *map);
+                let potential_path = a_star_search(idx, tar_idx, &mut *map);
                 if potential_path.success && potential_path.steps.len() > 1 {
                     if
                         path.is_none() ||

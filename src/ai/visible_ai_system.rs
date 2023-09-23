@@ -12,7 +12,7 @@ use crate::{
     WantsToApproach,
     WantsToFlee,
 };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::HashSet;
 
@@ -81,10 +81,16 @@ impl<'a> System<'a> for VisibleAI {
             }
             reactions.sort_by(|(a, _, _), (b, _, _)| {
                 let (a_x, a_y) = (a % (map.width as usize), a / (map.width as usize));
-                let dist_a = DistanceAlg::PythagorasSquared.distance2d(Point::new(a_x, a_y), Point::new(pos.x, pos.y));
+                let dist_a = DistanceAlg::PythagorasSquared.distance2d(
+                    Point::new(a_x, a_y),
+                    Point::new(pos.x, pos.y)
+                );
                 let dist_a_estimate = dist_a as i32;
                 let (b_x, b_y) = (b % (map.width as usize), b / (map.width as usize));
-                let dist_b = DistanceAlg::PythagorasSquared.distance2d(Point::new(b_x, b_y), Point::new(pos.x, pos.y));
+                let dist_b = DistanceAlg::PythagorasSquared.distance2d(
+                    Point::new(b_x, b_y),
+                    Point::new(pos.x, pos.y)
+                );
                 let dist_b_estimate = dist_b as i32;
                 return dist_b_estimate.cmp(&dist_a_estimate);
             });
@@ -96,7 +102,9 @@ impl<'a> System<'a> for VisibleAI {
                             wants_to_approach
                                 .insert(entity, WantsToApproach { idx: reaction.0 as i32 })
                                 .expect("Error inserting WantsToApproach");
-                            chasing.insert(entity, Chasing { target: reaction.2 }).expect("Unable to insert Chasing");
+                            chasing
+                                .insert(entity, Chasing { target: reaction.2 })
+                                .expect("Unable to insert Chasing");
                             continue;
                         }
                     }
@@ -108,7 +116,9 @@ impl<'a> System<'a> for VisibleAI {
                 }
             }
             if !flee.is_empty() {
-                wants_to_flee.insert(entity, WantsToFlee { indices: flee }).expect("Unable to insert");
+                wants_to_flee
+                    .insert(entity, WantsToFlee { indices: flee })
+                    .expect("Unable to insert");
             }
         }
     }

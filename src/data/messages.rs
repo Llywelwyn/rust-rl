@@ -32,7 +32,7 @@ pub const YOU_REMOVE_ITEM_CURSED: &str = "You can't remove the";
 
 /// Prefixes death message.
 pub const PLAYER_DIED: &str = "You died!";
-/// Death message specifiers. Appended after PLAYER_DIED.
+/// Death message specifiers. Appended after PlayerDied.
 pub const PLAYER_DIED_SUICIDE: &str = "You killed yourself";
 pub const PLAYER_DIED_NAMED_ATTACKER: &str = "You were killed by";
 pub const PLAYER_DIED_UNKNOWN: &str = "You were killed"; // Ultimately, this should never be used. Slowly include specific messages for any death.

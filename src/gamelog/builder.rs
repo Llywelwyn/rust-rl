@@ -1,6 +1,6 @@
 use super::{ append_entry, LogFragment };
 use crate::BUC;
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 
 pub struct Logger {
     current_colour: RGB,
@@ -10,7 +10,7 @@ pub struct Logger {
 impl Logger {
     /// Creates a blank builder for making message log entries.
     pub fn new() -> Self {
-        Logger { current_colour: RGB::named(rltk::WHITE), fragments: Vec::new() }
+        Logger { current_colour: RGB::named(WHITE), fragments: Vec::new() }
     }
 
     /// Sets the colour of the current message logger.
@@ -42,11 +42,23 @@ impl Logger {
 
     pub fn buc<T: ToString>(mut self, buc: BUC, cursed: Option<T>, blessed: Option<T>) -> Self {
         if buc == BUC::Cursed && cursed.is_some() {
-            self.fragments.push(LogFragment { colour: RGB::named(SALMON), text: cursed.unwrap().to_string() });
-            self.fragments.push(LogFragment { colour: self.current_colour, text: ". ".to_string() });
+            self.fragments.push(LogFragment {
+                colour: RGB::named(SALMON),
+                text: cursed.unwrap().to_string(),
+            });
+            self.fragments.push(LogFragment {
+                colour: self.current_colour,
+                text: ". ".to_string(),
+            });
         } else if buc == BUC::Blessed && blessed.is_some() {
-            self.fragments.push(LogFragment { colour: RGB::named(CYAN), text: blessed.unwrap().to_string() });
-            self.fragments.push(LogFragment { colour: self.current_colour, text: ". ".to_string() });
+            self.fragments.push(LogFragment {
+                colour: RGB::named(CYAN),
+                text: blessed.unwrap().to_string(),
+            });
+            self.fragments.push(LogFragment {
+                colour: self.current_colour,
+                text: ". ".to_string(),
+            });
         }
         return self;
     }

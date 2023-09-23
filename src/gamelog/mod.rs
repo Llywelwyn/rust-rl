@@ -7,7 +7,7 @@ mod events;
 pub use events::*;
 
 use serde::{ Deserialize, Serialize };
-use rltk::prelude::*;
+use bracket_lib::prelude::*;
 #[derive(Serialize, Deserialize, Clone)]
 pub struct LogFragment {
     pub colour: RGB,

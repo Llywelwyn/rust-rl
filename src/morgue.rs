@@ -6,8 +6,8 @@ use crate::gamelog;
 use crate::components::*;
 use crate::gui::{ Class, Ancestry, unobf_name_ecs };
 use specs::prelude::*;
-use rltk::prelude::*;
-use rltk::to_char;
+use bracket_lib::prelude::*;
+use to_char;
 use std::collections::HashMap;
 use crate::data::events::*;
 
@@ -49,7 +49,14 @@ fn create_file_name(ecs: &World, morgue_dir: &str) -> String {
         Ancestry::Catfolk => "catfolk",
         Ancestry::NULL => "NULL",
     };
-    return format!("{}/lv{}-{}-{}-{}.txt", morgue_dir, &pool.level, &ancestry, &class, get_timestamp());
+    return format!(
+        "{}/lv{}-{}-{}-{}.txt",
+        morgue_dir,
+        &pool.level,
+        &ancestry,
+        &class,
+        get_timestamp()
+    );
 }
 
 fn create_morgue_string(ecs: &World) -> String {
@@ -165,7 +172,12 @@ fn draw_map(ecs: &World) -> String {
                     }
                 });
             } else {
-                glyph_u16 = crate::map::themes::get_tile_renderables_for_id(idx, &*map, None, Some(true)).0;
+                glyph_u16 = crate::map::themes::get_tile_renderables_for_id(
+                    idx,
+                    &*map,
+                    None,
+                    Some(true)
+                ).0;
             }
             let char = to_char((glyph_u16 & 0xff) as u8);
             result.push_str(&char.to_string());
@@ -201,7 +213,11 @@ fn draw_equipment(ecs: &World) -> String {
             EquipmentSlot::Back => "back -",
             EquipmentSlot::Neck => "neck -",
         };
-        let name = if item.1 != 1 { unobf_name_ecs(ecs, item.0).1 } else { unobf_name_ecs(ecs, item.0).0 };
+        let name = if item.1 != 1 {
+            unobf_name_ecs(ecs, item.0).1
+        } else {
+            unobf_name_ecs(ecs, item.0).0
+        };
         result.push_str(&format!("{:>8} {}\n", slot, name));
     }
     result.push_str("\n");
@@ -211,7 +227,11 @@ fn draw_equipment(ecs: &World) -> String {
 fn draw_backpack(ecs: &World) -> String {
     // Get all of the player's backpack.
     let mut pack: HashMap<(String, String), (i32, Entity)> = HashMap::new();
-    for (entity, _bp, _n) in (&ecs.entities(), &ecs.read_storage::<InBackpack>(), &ecs.read_storage::<Name>())
+    for (entity, _bp, _n) in (
+        &ecs.entities(),
+        &ecs.read_storage::<InBackpack>(),
+        &ecs.read_storage::<Name>(),
+    )
         .join()
         .filter(|item| item.1.owner == *ecs.fetch::<Entity>()) {
         pack.entry(unobf_name_ecs(ecs, entity))

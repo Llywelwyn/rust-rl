@@ -1,5 +1,5 @@
 use super::{ BuilderMap, Map, MetaMapBuilder, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 mod common;
 use common::*;
 mod constraints;
@@ -11,7 +11,7 @@ use solver::*;
 pub struct WaveFunctionCollapseBuilder {}
 
 impl MetaMapBuilder for WaveFunctionCollapseBuilder {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
@@ -54,7 +54,12 @@ impl WaveFunctionCollapseBuilder {
         build_data.spawn_list.clear();
     }
 
-    fn render_tile_gallery(&mut self, constraints: &[MapChunk], chunk_size: i32, build_data: &mut BuilderMap) {
+    fn render_tile_gallery(
+        &mut self,
+        constraints: &[MapChunk],
+        chunk_size: i32,
+        build_data: &mut BuilderMap
+    ) {
         build_data.map = Map::new(
             false,
             0,

@@ -1,11 +1,11 @@
 use super::{ BuilderMap, InitialMapBuilder, Map, TileType };
-use rltk::RandomNumberGenerator;
+use bracket_lib::prelude::*;
 
 pub struct MazeBuilder {}
 
 impl InitialMapBuilder for MazeBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
     }
 }
@@ -75,7 +75,14 @@ struct Grid<'a> {
 
 impl<'a> Grid<'a> {
     fn new(width: i32, height: i32, rng: &mut RandomNumberGenerator) -> Grid {
-        let mut grid = Grid { width, height, cells: Vec::new(), backtrace: Vec::new(), current: 0, rng };
+        let mut grid = Grid {
+            width,
+            height,
+            cells: Vec::new(),
+            backtrace: Vec::new(),
+            current: 0,
+            rng,
+        };
 
         for row in 0..height {
             for column in 0..width {
@@ -122,7 +129,9 @@ impl<'a> Grid<'a> {
             if neighbors.len() == 1 {
                 return Some(neighbors[0]);
             } else {
-                return Some(neighbors[(self.rng.roll_dice(1, neighbors.len() as i32) - 1) as usize]);
+                return Some(
+                    neighbors[(self.rng.roll_dice(1, neighbors.len() as i32) - 1) as usize]
+                );
             }
         }
         None
@@ -141,7 +150,9 @@ impl<'a> Grid<'a> {
                     //   __lower_part__      __higher_part_
                     //   /            \      /            \
                     // --------cell1------ | cell2-----------
-                    let (lower_part, higher_part) = self.cells.split_at_mut(std::cmp::max(self.current, next));
+                    let (lower_part, higher_part) = self.cells.split_at_mut(
+                        std::cmp::max(self.current, next)
+                    );
                     let cell1 = &mut lower_part[std::cmp::min(self.current, next)];
                     let cell2 = &mut higher_part[0];
                     cell1.remove_walls(cell2);

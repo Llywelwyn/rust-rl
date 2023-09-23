@@ -5,7 +5,7 @@ use crate::data::names::*;
 
 lazy_static! {
     /// A count of each event that has happened over the run. i.e. "turns", "descended", "ascended"
-    static ref EVENT_COUNTER: Mutex<HashMap<String, i32>> = Mutex::new(HashMap::new());
+    pub static ref EVENT_COUNTER: Mutex<HashMap<String, i32>> = Mutex::new(HashMap::new());
     // A record of events that happened on a given turn. i.e. "Advanced to level 2".
     pub static ref EVENTS: Mutex<HashMap<u32, Vec<String>>> = Mutex::new(HashMap::new());
     // A record of floors visited, and monsters killed. Used to determine if an event is significant.
@@ -41,8 +41,9 @@ pub fn restore_events(events: HashMap<u32, Vec<String>>) {
 }
 /// Wipes all events - for starting a new game.
 pub fn clear_events() {
-    EVENT_COUNTER.lock().unwrap().clear();
-    EVENTS.lock().unwrap().clear();
+    let (mut events, mut event_counts) = (EVENTS.lock().unwrap(), EVENT_COUNTER.lock().unwrap());
+    events.clear();
+    event_counts.clear();
 }
 
 #[allow(unused_mut)]
@@ -73,12 +74,12 @@ pub fn record_event(event: EVENT) {
     let mut new_event: String = "unknown event".to_string();
     let mut significant_event = true;
     match event {
-        EVENT::TURN(n) => {
+        EVENT::Turn(n) => {
             modify_event_count(EVENT::COUNT_TURN, n);
             significant_event = false;
         }
         // If de-levelling is ever implemented, this needs refactoring (along with a lot of stuff).
-        EVENT::LEVEL(n) => {
+        EVENT::Level(n) => {
             modify_event_count(EVENT::COUNT_LEVEL, n);
             let new_lvl = get_event_count(EVENT::COUNT_LEVEL);
             if new_lvl == 1 {
@@ -87,7 +88,7 @@ pub fn record_event(event: EVENT) {
                 new_event = format!("Advanced to level {}", new_lvl);
             }
         }
-        EVENT::CHANGED_FLOOR(n) => {
+        EVENT::ChangedFloor(n) => {
             modify_event_count(EVENT::COUNT_CHANGED_FLOOR, 1);
             if VISITED.lock().unwrap().contains(&n) {
                 significant_event = false;
@@ -96,23 +97,23 @@ pub fn record_event(event: EVENT) {
                 new_event = format!("Visited {} for the first time", n);
             }
         }
-        EVENT::KICKED_SOMETHING(n) => {
+        EVENT::KickedSomething(n) => {
             modify_event_count(EVENT::COUNT_KICK, n);
             significant_event = false;
         }
-        EVENT::BROKE_DOOR(n) => {
+        EVENT::BrokeDoor(n) => {
             modify_event_count(EVENT::COUNT_BROKE_DOOR, n);
             significant_event = false;
         }
-        EVENT::PLAYER_CONFUSED(n) => {
+        EVENT::PlayerConfused(n) => {
             modify_event_count(EVENT::COUNT_PLAYER_CONFUSED, n);
             significant_event = false;
         }
-        EVENT::LOOKED_FOR_HELP(n) => {
+        EVENT::LookedForHelp(n) => {
             modify_event_count(EVENT::COUNT_LOOKED_FOR_HELP, n);
             significant_event = false;
         }
-        EVENT::KILLED(name) => {
+        EVENT::Killed(name) => {
             modify_event_count(EVENT::COUNT_KILLED, 1);
             if KILLED.lock().unwrap().contains(&name) {
                 significant_event = false;
@@ -121,13 +122,13 @@ pub fn record_event(event: EVENT) {
                 new_event = format!("Killed your first {}", name);
             }
         }
-        EVENT::DISCOVERED(name) => {
+        EVENT::Discovered(name) => {
             new_event = format!("Discovered {}", name);
         }
-        EVENT::IDENTIFIED(name) => {
+        EVENT::Identified(name) => {
             new_event = format!("Identified {}", name);
         }
-        EVENT::PLAYER_DIED(str) => {
+        EVENT::PlayerDied(str) => {
             // Generating the String is handled in the death effect, to avoid passing the ecs here.
             new_event = format!("{}", str);
         }
