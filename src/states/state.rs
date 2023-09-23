@@ -24,9 +24,14 @@ use crate::saveload_system;
 use crate::morgue;
 use crate::damage_system;
 use crate::data::prelude::*;
+use notan::prelude::*;
+use std::collections::HashMap;
 
+#[derive(AppState)]
 pub struct State {
     pub ecs: World,
+    pub base_texture: Texture,
+    pub atlas: HashMap<String, Texture>,
     pub mapgen_next_state: Option<RunState>,
     pub mapgen_history: Vec<Map>,
     pub mapgen_index: usize,

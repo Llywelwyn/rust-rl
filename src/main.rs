@@ -1,52 +1,40 @@
 use rust_rl::*;
+use notan::prelude::*;
+use notan::draw::create_textures_from_atlas;
+use notan::draw::{ CreateFont, CreateDraw, DrawImages };
 use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use bracket_lib::prelude::*;
+use std::collections::HashMap;
 
-const DISPLAYWIDTH: i32 = 100;
-const DISPLAYHEIGHT: i32 = 56;
+const TILESIZE: u32 = 16;
+const DISPLAYWIDTH: u32 = 100 * TILESIZE;
+const DISPLAYHEIGHT: u32 = 56 * TILESIZE;
 
-fn main() -> BError {
-    // Embedded resources for use in wasm build
-    {
-        const WORLD_16_16_BYTES: &[u8] = include_bytes!("../resources/world16x16.png");
-        const CURSES_16_16_BYTES: &[u8] = include_bytes!("../resources/curses16x16.png");
-        const CURSES_8_16_BYTES: &[u8] = include_bytes!("../resources/curses8x16.png");
-        const SINGLE_1_1_BYTES: &[u8] = include_bytes!("../resources/healthbar22x2.png");
-        let mut lock = bracket_lib::terminal::EMBED.lock();
-        lock.add_resource("resources/world16x16.png".to_string(), WORLD_16_16_BYTES);
-        lock.add_resource("resources/curses16x16.png".to_string(), CURSES_16_16_BYTES);
-        lock.add_resource("resources/curses8x16.png".to_string(), CURSES_8_16_BYTES);
-        lock.add_resource("resources/healthbar22x2.png".to_string(), SINGLE_1_1_BYTES);
-    }
+#[notan_main]
+fn main() -> Result<(), String> {
+    let win_config = WindowConfig::new().set_size(DISPLAYWIDTH, DISPLAYHEIGHT).set_vsync(true);
+    notan
+        ::init_with(setup)
+        .add_config(win_config)
+        .add_config(notan::draw::DrawConfig)
+        .draw(draw)
+        .build()
+}
 
-    let world_sheet = SpriteSheet {
-        filename: "resources/world16x16.png".to_string(),
-        sprites: register_spritesheet(16, 16, 19, 16),
-        backing: None,
-    };
-
-    let mut context = BTermBuilder::new()
-        .with_title("rust-rl")
-        .with_dimensions(DISPLAYWIDTH, DISPLAYHEIGHT)
-        .with_font("curses16x16.png", 16, 16)
-        .with_font("curses8x16.png", 8, 16)
-        .with_font("healthbar22x2.png", 1, 1)
-        .with_tile_dimensions(16, 16)
-        .with_gutter(2)
-        .with_sprite_console(DISPLAYWIDTH * 16, DISPLAYHEIGHT * 16, 0)
-        .with_sprite_sheet(world_sheet)
-        .with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "curses16x16.png")
-        .with_simple_console_no_bg(DISPLAYWIDTH, DISPLAYHEIGHT, "curses16x16.png")
-        .with_sparse_console(DISPLAYWIDTH * 2, DISPLAYHEIGHT, "curses8x16.png")
-        .with_sparse_console(DISPLAYWIDTH * 16, DISPLAYHEIGHT * 16, "healthbar22x2.png")
-        .build()?;
-    if config::CONFIG.visuals.with_scanlines {
-        context.with_post_scanlines(config::CONFIG.visuals.with_screen_burn);
-    }
+fn setup(gfx: &mut Graphics) -> State {
+    let texture = gfx
+        .create_texture()
+        .from_image(include_bytes!("../resources/td.png"))
+        .build()
+        .unwrap();
+    let data = include_bytes!("../resources/td.json");
+    let atlas = create_textures_from_atlas(data, &texture).unwrap();
 
     let mut gs = State {
         ecs: World::new(),
+        base_texture: texture,
+        atlas,
         mapgen_next_state: Some(RunState::MainMenu {
             menu_selection: gui::MainMenuSelection::NewGame,
         }),
@@ -155,17 +143,22 @@ fn main() -> BError {
     gamelog::record_event(data::events::EVENT::Level(1));
     gs.generate_world_map(1, TileType::Floor);
 
-    main_loop(context, gs)
+    gs
 }
 
-fn register_spritesheet(width: i32, height: i32, rows: i32, columns: i32) -> Vec<Sprite> {
-    let mut sprites: Vec<Sprite> = Vec::new();
-    for y in 0..rows {
-        for x in 0..columns {
-            sprites.push(
-                Sprite::new(Rect::with_size(x * width + 1, y * height + 1, width, height))
-            );
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    let mut draw = gfx.create_draw();
+    draw.clear(Color::BLACK);
+    let mut x = 10.0;
+    let mut y = 10.0;
+    // Draw base texture
+    state.atlas.iter().for_each(|(k, tex)| {
+        if y + tex.height() > (gfx.size().1 as f32) * 0.8 {
+            y = 10.0;
+            x += 17.0;
         }
-    }
-    sprites
+        draw.image(tex).position(x, y);
+        y += tex.height() + 1.0;
+    });
+    gfx.render(&draw);
 }
