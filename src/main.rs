@@ -430,6 +430,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         _ => {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             draw_camera(&gs.ecs, &mut draw, &gs.atlas);
+            crate::gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
         }
     }
     match *gs.ecs.fetch::<RunState>() {

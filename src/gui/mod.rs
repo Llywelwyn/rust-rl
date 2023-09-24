@@ -44,6 +44,10 @@ use crate::consts::visuals::{
     VIEWPORT_W,
     VIEWPORT_H,
 };
+use crate::consts::{ TILESIZE, FONTSIZE };
+use notan::prelude::*;
+use notan::draw::{ Draw, DrawTextSection };
+use std::collections::HashMap;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
@@ -109,6 +113,52 @@ pub fn draw_lerping_bar(
 }
 
 pub const TEXT_FONT_MOD: i32 = 2;
+
+pub fn draw_ui2(
+    ecs: &World,
+    draw: &mut Draw,
+    atlas: &HashMap<String, Texture>,
+    font: &notan::draw::Font
+) {
+    let pools = ecs.read_storage::<Pools>();
+    let attributes = ecs.read_storage::<Attributes>();
+    let players = ecs.read_storage::<Player>();
+    let hunger = ecs.read_storage::<HungerClock>();
+    let burden = ecs.read_storage::<Burden>();
+    let skills = ecs.read_storage::<Skills>();
+    for (_p, stats, attributes, hunger, skills) in (
+        &players,
+        &pools,
+        &attributes,
+        &hunger,
+        &skills,
+    ).join() {
+        let initial_x = 26.0 * TILESIZE;
+        let mut x = initial_x;
+        let y = 53.0 * TILESIZE;
+        // TODO: Draw hp/mana bars
+        // Draw AC
+        let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
+        let mut armour_ac_bonus = 0;
+        let equipped = ecs.read_storage::<Equipped>();
+        let ac = ecs.read_storage::<ArmourClassBonus>();
+        let player_entity = ecs.fetch::<Entity>();
+        for (wielded, ac) in (&equipped, &ac).join() {
+            if wielded.owner == *player_entity {
+                armour_ac_bonus += ac.amount;
+            }
+        }
+        let armour_class =
+            stats.bac - attributes.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus;
+        draw.text(&font, "AC").position(x, y).color(Color::PINK).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", armour_class)).position(x, y).size(FONTSIZE);
+        draw.text(&font, &format!("XP{}/{}", stats.level, stats.xp))
+            .position(initial_x, y + TILESIZE)
+            .size(FONTSIZE);
+        // TODO: Finish ui (placeholder)
+    }
+}
 
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     ctx.set_active_console(TEXT_LAYER);
