@@ -6,7 +6,7 @@ use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use bracket_lib::prelude::*;
 use std::collections::HashMap;
-use crate::consts::{ DISPLAYHEIGHT, DISPLAYWIDTH, TILESIZE };
+use crate::consts::{ DISPLAYHEIGHT, DISPLAYWIDTH, TILESIZE, FONTSIZE };
 
 #[notan_main]
 fn main() -> Result<(), String> {
@@ -30,7 +30,7 @@ fn setup(gfx: &mut Graphics) -> State {
         .unwrap();
     let data = include_bytes!("../resources/td.json");
     let atlas = create_textures_from_atlas(data, &texture).unwrap();
-    let font = gfx.create_font(include_bytes!("../resources/Ubuntu-B.ttf")).unwrap();
+    let font = gfx.create_font(include_bytes!("../resources/PressStart2P-Regular.ttf")).unwrap();
     let mut gs = State {
         ecs: World::new(),
         base_texture: texture,
@@ -436,7 +436,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         RunState::Farlook { x, y } => {
             draw.text(&gs.font, "RunState::Farlook")
                 .position(((x + 2) as f32) * TILESIZE, (y as f32) * TILESIZE)
-                .size(TILESIZE);
+                .size(FONTSIZE);
             crate::gui::draw_farlook(x, y, &mut draw, &gs.atlas);
             //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop
         }
