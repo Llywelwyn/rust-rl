@@ -31,6 +31,7 @@ pub struct State {
     pub ecs: World,
     pub base_texture: Texture,
     pub atlas: HashMap<String, Texture>,
+    pub font: notan::draw::Font,
     pub mapgen_next_state: Option<RunState>,
     pub mapgen_history: Vec<Map>,
     pub mapgen_index: usize,
@@ -168,18 +169,7 @@ impl State {
             let runstate = self.ecs.fetch::<RunState>();
             new_runstate = *runstate;
         }
-
         // Particle ticker here
-
-        match new_runstate {
-            | RunState::MainMenu { .. }
-            | RunState::CharacterCreation { .. }
-            | RunState::PreRun { .. } => {}
-            _ => {
-                // Draw map and ui
-            }
-        }
-
         match new_runstate {
             RunState::PreRun => {
                 self.run_systems();
@@ -215,7 +205,7 @@ impl State {
                             new_runstate = RunState::AwaitingInput;
                         }
                         RunState::MagicMapReveal { row, cursed } => {
-                            new_runstate = RunState::MagicMapReveal { row: row, cursed: cursed };
+                            new_runstate = RunState::MagicMapReveal { row, cursed };
                         }
                         RunState::ShowRemoveCurse => {
                             new_runstate = RunState::ShowRemoveCurse;

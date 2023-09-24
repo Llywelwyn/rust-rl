@@ -1,19 +1,21 @@
 use rust_rl::*;
 use notan::prelude::*;
 use notan::draw::create_textures_from_atlas;
-use notan::draw::{ CreateFont, CreateDraw, DrawImages };
+use notan::draw::{ CreateFont, CreateDraw, DrawImages, Draw, DrawTextSection };
 use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use bracket_lib::prelude::*;
 use std::collections::HashMap;
 
 const TILESIZE: f32 = 16.0;
-const DISPLAYWIDTH: u32 = 100 * (TILESIZE as u32);
-const DISPLAYHEIGHT: u32 = 56 * (TILESIZE as u32);
+const DISPLAYWIDTH: u32 = 100;
+const DISPLAYHEIGHT: u32 = 56;
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = WindowConfig::new().set_size(DISPLAYWIDTH, DISPLAYHEIGHT).set_vsync(true);
+    let win_config = WindowConfig::new()
+        .set_size(DISPLAYWIDTH * (TILESIZE as u32), DISPLAYHEIGHT * (TILESIZE as u32))
+        .set_vsync(true);
     notan
         ::init_with(setup)
         .add_config(win_config)
@@ -31,11 +33,12 @@ fn setup(gfx: &mut Graphics) -> State {
         .unwrap();
     let data = include_bytes!("../resources/td.json");
     let atlas = create_textures_from_atlas(data, &texture).unwrap();
-
+    let font = gfx.create_font(include_bytes!("../resources/Ubuntu-B.ttf")).unwrap();
     let mut gs = State {
         ecs: World::new(),
         base_texture: texture,
         atlas,
+        font,
         mapgen_next_state: Some(RunState::MainMenu {
             menu_selection: gui::MainMenuSelection::NewGame,
         }),
@@ -148,7 +151,6 @@ fn setup(gfx: &mut Graphics) -> State {
 }
 const ASCII_MODE: bool = false; // Change this to config setting
 const SHOW_BOUNDARIES: bool = false; // Config setting
-use notan::draw::Draw;
 enum DrawType {
     None,
     Visible,
@@ -284,11 +286,13 @@ fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, atlas: &HashMap<S
                             &*map,
                             Some(*ecs.fetch::<Point>())
                         );
-                        let px = idx_to_px(
-                            map.xy_idx(tile_x + bounds.x_offset, tile_y + bounds.y_offset),
-                            &map
-                        );
-                        draw.image(atlas.get(id).unwrap()).position(px.0, px.1).color(tint);
+                        let px = idx_to_px(map.xy_idx(tile_x, tile_y), &map);
+                        draw.image(atlas.get(id).unwrap())
+                            .position(
+                                px.0 + (bounds.x_offset as f32) * TILESIZE,
+                                px.1 + (bounds.y_offset as f32) * TILESIZE
+                            )
+                            .color(tint);
                     }
                 }
             } else if SHOW_BOUNDARIES {
@@ -299,10 +303,112 @@ fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, atlas: &HashMap<S
 }
 
 fn draw_farlook(x: i32, y: i32, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
-    draw.image(atlas.get("ui_select_a1").unwrap()).position(
+    draw.image(atlas.get("ui_select_c1").unwrap()).position(
         (x as f32) * TILESIZE,
         (y as f32) * TILESIZE
     );
+}
+
+struct BoxDraw {
+    frame: String,
+    fill: bool,
+    top_left: (i32, i32),
+    top_right: (i32, i32),
+    bottom_left: (i32, i32),
+    bottom_right: (i32, i32),
+}
+fn draw_spritebox(panel: BoxDraw, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
+    draw.image(atlas.get(&format!("{}_1", panel.frame)).unwrap()).position(
+        (panel.top_left.0 as f32) * TILESIZE,
+        (panel.top_left.1 as f32) * TILESIZE
+    );
+    for i in panel.top_left.0 + 1..panel.top_right.0 {
+        draw.image(atlas.get(&format!("{}_2", panel.frame)).unwrap()).position(
+            (i as f32) * TILESIZE,
+            (panel.top_left.1 as f32) * TILESIZE
+        );
+    }
+    draw.image(atlas.get(&format!("{}_3", panel.frame)).unwrap()).position(
+        (panel.top_right.0 as f32) * TILESIZE,
+        (panel.top_right.1 as f32) * TILESIZE
+    );
+    for i in panel.top_left.1 + 1..panel.bottom_left.1 {
+        draw.image(atlas.get(&format!("{}_4", panel.frame)).unwrap()).position(
+            (panel.top_left.0 as f32) * TILESIZE,
+            (i as f32) * TILESIZE
+        );
+    }
+    if panel.fill {
+        for i in panel.top_left.0 + 1..panel.top_right.0 {
+            for j in panel.top_left.1 + 1..panel.bottom_left.1 {
+                draw.image(atlas.get(&format!("{}_5", panel.frame)).unwrap()).position(
+                    (i as f32) * TILESIZE,
+                    (j as f32) * TILESIZE
+                );
+            }
+        }
+    }
+    for i in panel.top_right.1 + 1..panel.bottom_right.1 {
+        draw.image(atlas.get(&format!("{}_6", panel.frame)).unwrap()).position(
+            (panel.top_right.0 as f32) * TILESIZE,
+            (i as f32) * TILESIZE
+        );
+    }
+    draw.image(atlas.get(&format!("{}_7", panel.frame)).unwrap()).position(
+        (panel.bottom_left.0 as f32) * TILESIZE,
+        (panel.bottom_left.1 as f32) * TILESIZE
+    );
+    for i in panel.bottom_left.0 + 1..panel.bottom_right.0 {
+        draw.image(atlas.get(&format!("{}_8", panel.frame)).unwrap()).position(
+            (i as f32) * TILESIZE,
+            (panel.bottom_left.1 as f32) * TILESIZE
+        );
+    }
+    draw.image(atlas.get(&format!("{}_9", panel.frame)).unwrap()).position(
+        (panel.bottom_right.0 as f32) * TILESIZE,
+        (panel.bottom_right.1 as f32) * TILESIZE
+    );
+}
+
+use crate::data::visuals::{ VIEWPORT_H, VIEWPORT_W };
+fn draw_bg(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
+    let offset = crate::camera::get_offset();
+    let log = BoxDraw {
+        frame: "ui_panel_window".to_string(),
+        fill: true,
+        top_left: (0, 0),
+        top_right: (offset.x + VIEWPORT_W, 0),
+        bottom_left: (0, offset.y - 2),
+        bottom_right: (offset.x + VIEWPORT_W, offset.y - 2),
+    };
+    let game = BoxDraw {
+        frame: "ui_panel_window".to_string(),
+        fill: false,
+        top_left: (offset.x - 1, offset.y - 1),
+        top_right: (offset.x + VIEWPORT_W, offset.y - 1),
+        bottom_left: (offset.x - 1, offset.y + VIEWPORT_H),
+        bottom_right: (offset.x + VIEWPORT_W, offset.y + VIEWPORT_H),
+    };
+    let attr = BoxDraw {
+        frame: "ui_panel_window".to_string(),
+        fill: true,
+        top_left: (offset.x - 1, offset.y + VIEWPORT_H + 1),
+        top_right: (offset.x + VIEWPORT_W, offset.y + VIEWPORT_H + 1),
+        bottom_left: (offset.x - 1, (DISPLAYHEIGHT as i32) - 1),
+        bottom_right: (offset.x + VIEWPORT_W, (DISPLAYHEIGHT as i32) - 1),
+    };
+    let sidebox = BoxDraw {
+        frame: "ui_panel_window".to_string(),
+        fill: true,
+        top_left: (offset.x + VIEWPORT_W + 1, 0),
+        top_right: ((DISPLAYWIDTH as i32) - 1, 0),
+        bottom_left: (offset.x + VIEWPORT_W + 1, (DISPLAYHEIGHT as i32) - 1),
+        bottom_right: ((DISPLAYWIDTH as i32) - 1, (DISPLAYHEIGHT as i32) - 1),
+    };
+    draw_spritebox(log, draw, atlas);
+    draw_spritebox(game, draw, atlas);
+    draw_spritebox(attr, draw, atlas);
+    draw_spritebox(sidebox, draw, atlas);
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
@@ -313,11 +419,16 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         | RunState::CharacterCreation { .. }
         | RunState::PreRun { .. } => {}
         _ => {
+            draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             draw_camera(&gs.ecs, &mut draw, &gs.atlas);
         }
     }
     match *gs.ecs.fetch::<RunState>() {
         RunState::Farlook { x, y } => {
+            draw.text(&gs.font, "RunState::Farlook").position(
+                ((x + 2) as f32) * TILESIZE,
+                (y as f32) * TILESIZE
+            );
             draw_farlook(x, y, &mut draw, &gs.atlas);
             //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop
         }
