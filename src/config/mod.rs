@@ -61,11 +61,11 @@ impl Config {
                 requires_write |= config.logging.apply_values(&parsed_config);
                 requires_write |= config.visuals.apply_values(&parsed_config);
                 if requires_write {
+                    console::log("Parsed config, but some values were changed. Saving new ver.");
                     if let Err(write_err) = config.save_to_file(filename) {
                         console::log(format!("Error writing config: {:?}", write_err));
                     }
                 }
-
                 return config;
             }
         }
@@ -101,6 +101,8 @@ impl Section for LogConfig {
     fn apply_values(&mut self, parsed_config: &Value) -> bool {
         if let Some(section) = parsed_config.get("logging") {
             let mut missing = false;
+            apply_bool_value!(self, section, missing, show_mapgen);
+            apply_bool_value!(self, section, missing, log_combat);
             apply_bool_value!(self, section, missing, log_spawning);
             apply_bool_value!(self, section, missing, log_ticks);
             missing

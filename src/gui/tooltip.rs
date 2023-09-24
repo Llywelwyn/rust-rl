@@ -64,7 +64,7 @@ impl Tooltip {
 
 #[rustfmt::skip]
 pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm, xy: Option<(i32, i32)>) {
-    let bounds = get_screen_bounds(ecs);
+    let bounds = get_screen_bounds(ecs, false);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();

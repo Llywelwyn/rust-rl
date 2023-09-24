@@ -248,7 +248,7 @@ impl State {
             }
             //RunState::GameOver
             RunState::GoToLevel(id, dest_tile) => {
-                self.goto_id(id, dest_tile);
+                self.goto_id(id, dest_tile); // TODO: This causes issues being before swapping runstate?
                 self.mapgen_next_state = Some(RunState::PreRun);
                 new_runstate = RunState::MapGeneration;
             }
@@ -287,7 +287,31 @@ impl State {
                     new_runstate = RunState::MagicMapReveal { row: row + 1, cursed: cursed };
                 }
             }
-            // RunState::MapGeneration
+            RunState::MapGeneration => {
+                if !config::CONFIG.logging.show_mapgen {
+                    new_runstate = self.mapgen_next_state.unwrap();
+                } else {
+                    if self.mapgen_history.len() > 0 {
+                        console::log(
+                            format!(
+                                "mapgen_index: {} -- mapgen_history.len(): {} -- mapgen_timer: {} -- ctx.timer.delta_f32(): {}",
+                                self.mapgen_index,
+                                self.mapgen_history.len(),
+                                self.mapgen_timer,
+                                ctx.timer.delta_f32()
+                            )
+                        );
+                        self.mapgen_timer += ctx.timer.delta_f32();
+                        if self.mapgen_timer > 10.0 / (self.mapgen_history.len() as f32) {
+                            self.mapgen_timer = 0.0;
+                            self.mapgen_index += 1;
+                            if self.mapgen_index >= self.mapgen_history.len() {
+                                new_runstate = self.mapgen_next_state.unwrap();
+                            }
+                        }
+                    }
+                }
+            }
             _ => {}
         }
         {
@@ -446,7 +470,7 @@ impl State {
                         if let Some(ranged_item) = ranged_item {
                             let is_aoe = self.ecs.read_storage::<AOE>();
                             let aoe_item = is_aoe.get(item_entity);
-                            let bounds = camera::get_screen_bounds(&self.ecs);
+                            let bounds = camera::get_screen_bounds(&self.ecs, false);
                             let ppos = self.ecs.fetch::<Point>();
                             if let Some(aoe_item) = aoe_item {
                                 new_runstate = RunState::ShowTargeting {

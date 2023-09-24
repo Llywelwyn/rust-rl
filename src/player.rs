@@ -749,7 +749,7 @@ pub fn player_input(gs: &mut State, ctx: &mut App, on_overmap: bool) -> RunState
                 return RunState::SaveGame;
             }
             KeyCode::X => {
-                let bounds = get_screen_bounds(&gs.ecs);
+                let bounds = get_screen_bounds(&gs.ecs, false);
                 let ppos = gs.ecs.fetch::<Point>();
                 let (x, y) = (
                     ppos.x + bounds.x_offset - bounds.min_x,

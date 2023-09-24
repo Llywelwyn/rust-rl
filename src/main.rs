@@ -168,12 +168,12 @@ struct DrawInfo {
     e: Entity,
     draw_type: DrawType,
 }
+
 fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     let map = ecs.fetch::<Map>();
-
-    render_map_in_view(&*map, ecs, draw, atlas);
+    render_map_in_view(&*map, ecs, draw, atlas, false);
     {
-        let bounds = crate::camera::get_screen_bounds(ecs);
+        let bounds = crate::camera::get_screen_bounds(ecs, false);
         let positions = ecs.read_storage::<Position>();
         let renderables = ecs.read_storage::<Renderable>();
         let hidden = ecs.read_storage::<Hidden>();
@@ -237,7 +237,7 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
             }
         }
         let mut entries: Vec<(&DrawKey, &DrawInfo)> = to_draw.iter().collect();
-        entries.sort_by_key(|&(k, _v)| k.render_order);
+        entries.sort_by_key(|&(k, _v)| std::cmp::Reverse(k.render_order));
         for entry in entries.iter() {
             match entry.1.draw_type {
                 DrawType::Visible | DrawType::Telepathy => {
@@ -265,13 +265,21 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     }
 }
 
-fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
-    let bounds = crate::camera::get_screen_bounds(ecs);
+fn render_map_in_view(
+    map: &Map,
+    ecs: &World,
+    draw: &mut Draw,
+    atlas: &HashMap<String, Texture>,
+    mapgen: bool
+) {
+    let bounds = crate::camera::get_screen_bounds(ecs, mapgen);
+    let mut y = 0;
     for tile_y in bounds.min_y..bounds.max_y {
+        let mut x = 0;
         for tile_x in bounds.min_x..bounds.max_x {
             if crate::camera::in_bounds(tile_x, tile_y, 0, 0, map.width, map.height) {
                 let idx = map.xy_idx(tile_x, tile_y);
-                if map.revealed_tiles[idx] {
+                if map.revealed_tiles[idx] || mapgen {
                     if ASCII_MODE {
                         let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(
                             idx,
@@ -286,11 +294,10 @@ fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, atlas: &HashMap<S
                             &*map,
                             Some(*ecs.fetch::<Point>())
                         );
-                        let px = idx_to_px(map.xy_idx(tile_x, tile_y), &map);
                         draw.image(atlas.get(id).unwrap())
                             .position(
-                                px.0 + (bounds.x_offset as f32) * TILESIZE,
-                                px.1 + (bounds.y_offset as f32) * TILESIZE
+                                ((x + bounds.x_offset) as f32) * TILESIZE,
+                                ((y + bounds.y_offset) as f32) * TILESIZE
                             )
                             .color(tint);
                     }
@@ -298,7 +305,9 @@ fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, atlas: &HashMap<S
             } else if SHOW_BOUNDARIES {
                 // TODO: Draw boundaries
             }
+            x += 1;
         }
+        y += 1;
     }
 }
 
@@ -418,6 +427,16 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         | RunState::MainMenu { .. }
         | RunState::CharacterCreation { .. }
         | RunState::PreRun { .. } => {}
+        RunState::MapGeneration => {
+            draw_bg(&gs.ecs, &mut draw, &gs.atlas);
+            render_map_in_view(
+                &gs.mapgen_history[gs.mapgen_index],
+                &gs.ecs,
+                &mut draw,
+                &gs.atlas,
+                true
+            );
+        }
         _ => {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             draw_camera(&gs.ecs, &mut draw, &gs.atlas);
@@ -440,8 +459,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
 
 fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
     (
-        ((idx % (map.width as usize)) as i32 as f32) * (TILESIZE as f32),
-        ((idx / (map.width as usize)) as i32 as f32) * (TILESIZE as f32),
+        ((idx % (map.width as usize)) as f32) * (TILESIZE as f32),
+        ((idx / (map.width as usize)) as f32) * (TILESIZE as f32),
     )
 }
 

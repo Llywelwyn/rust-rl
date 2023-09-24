@@ -1191,7 +1191,7 @@ pub fn ranged_target(
     range: i32,
     aoe: i32
 ) -> (TargetResult, Option<Point>) {
-    let bounds = camera::get_screen_bounds(&gs.ecs);
+    let bounds = camera::get_screen_bounds(&gs.ecs, false);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
@@ -1235,7 +1235,7 @@ pub fn ranged_target(
 
     // Draw mouse cursor
     let mouse_pos = (x, y);
-    let bounds = camera::get_screen_bounds(&gs.ecs);
+    let bounds = camera::get_screen_bounds(&gs.ecs, false);
     let x = x.clamp(bounds.x_offset, bounds.x_offset - 1 + VIEWPORT_W);
     let y = y.clamp(bounds.y_offset, bounds.y_offset - 1 + VIEWPORT_H);
 

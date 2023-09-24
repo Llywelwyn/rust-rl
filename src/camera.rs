@@ -25,9 +25,14 @@ pub struct ScreenBounds {
     pub y_offset: i32,
 }
 
-pub fn get_screen_bounds(ecs: &World) -> ScreenBounds {
-    let player_pos = ecs.fetch::<Point>();
+pub fn get_screen_bounds(ecs: &World, debug: bool) -> ScreenBounds {
     let map = ecs.fetch::<Map>();
+    let player_pos = if !debug {
+        *ecs.fetch::<Point>()
+    } else {
+        Point::new(map.width / 2, map.height / 2)
+    };
+
     let (x_chars, y_chars, mut x_offset, mut y_offset) = (VIEWPORT_W, VIEWPORT_H, 1, 10);
 
     let centre_x = (x_chars / 2) as i32;
@@ -57,7 +62,7 @@ pub fn in_bounds(x: i32, y: i32, min_x: i32, min_y: i32, upper_x: i32, upper_y: 
 
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
-    let bounds = get_screen_bounds(ecs);
+    let bounds = get_screen_bounds(ecs, false);
 
     // Render map
     let mut y = 0;
