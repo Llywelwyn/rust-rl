@@ -1,11 +1,4 @@
-use super::{
-    State,
-    RunState,
-    tooltip::draw_tooltips,
-    camera::get_screen_bounds,
-    VIEWPORT_H,
-    VIEWPORT_W,
-};
+use super::{ State, RunState, tooltip::draw_tooltips, camera::get_offset, VIEWPORT_H, VIEWPORT_W };
 use bracket_lib::prelude::*;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -19,19 +12,19 @@ pub enum FarlookResult {
 
 pub fn show_farlook(gs: &mut State, ctx: &mut BTerm) -> FarlookResult {
     let runstate = gs.ecs.fetch::<RunState>();
-    let (_min_x, _max_x, _min_y, _max_y, x_offset, y_offset) = get_screen_bounds(&gs.ecs);
+    let offsets = get_offset();
 
     ctx.print_color(
-        1 + x_offset,
-        1 + y_offset,
+        1 + offsets.x,
+        1 + offsets.y,
         RGB::named(WHITE),
         RGB::named(BLACK),
         "Look at what? [move keys][Esc.]"
     );
 
     if let RunState::Farlook { x, y } = *runstate {
-        let x = x.clamp(x_offset, x_offset - 1 + VIEWPORT_W);
-        let y = y.clamp(y_offset, y_offset - 1 + VIEWPORT_H);
+        let x = x.clamp(offsets.x, offsets.x - 1 + VIEWPORT_W);
+        let y = y.clamp(offsets.y, offsets.y - 1 + VIEWPORT_H);
 
         ctx.set(x, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437('X'));
         draw_tooltips(&gs.ecs, ctx, Some((x, y)));
@@ -55,6 +48,6 @@ pub fn show_farlook(gs: &mut State, ctx: &mut BTerm) -> FarlookResult {
     } else {
         let ppos = gs.ecs.fetch::<Point>();
         // TODO: PPOS + offsets (should get these from screen_bounds())
-        return FarlookResult::NoResponse { x: ppos.x + x_offset, y: ppos.x + y_offset };
+        return FarlookResult::NoResponse { x: ppos.x + offsets.x, y: ppos.x + offsets.y };
     }
 }

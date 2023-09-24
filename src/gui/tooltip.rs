@@ -64,7 +64,7 @@ impl Tooltip {
 
 #[rustfmt::skip]
 pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm, xy: Option<(i32, i32)>) {
-    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(ecs);
+    let bounds = get_screen_bounds(ecs);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
@@ -77,8 +77,8 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm, xy: Option<(i32, i32)>) {
 
     let mouse_pos = if xy.is_none() { ctx.mouse_pos() } else { xy.unwrap() };
     let mut mouse_pos_adjusted = mouse_pos;
-    mouse_pos_adjusted.0 += min_x - x_offset;
-    mouse_pos_adjusted.1 += min_y - y_offset;
+    mouse_pos_adjusted.0 += bounds.min_x - bounds.x_offset;
+    mouse_pos_adjusted.1 += bounds.min_y - bounds.y_offset;
     if mouse_pos_adjusted.0 >= map.width
         || mouse_pos_adjusted.1 >= map.height
         || mouse_pos_adjusted.1 < 0 // Might need to be 1, and -1 from map height/width.

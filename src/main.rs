@@ -7,9 +7,9 @@ use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use bracket_lib::prelude::*;
 use std::collections::HashMap;
 
-const TILESIZE: u32 = 16;
-const DISPLAYWIDTH: u32 = 100 * TILESIZE;
-const DISPLAYHEIGHT: u32 = 56 * TILESIZE;
+const TILESIZE: f32 = 16.0;
+const DISPLAYWIDTH: u32 = 100 * (TILESIZE as u32);
+const DISPLAYHEIGHT: u32 = 56 * (TILESIZE as u32);
 
 #[notan_main]
 fn main() -> Result<(), String> {
@@ -155,8 +155,11 @@ enum DrawType {
     VisibleAndRemember,
     Telepathy,
 }
+
+#[derive(PartialEq, Eq, Hash)]
 struct DrawKey {
-    idx: usize,
+    x: i32,
+    y: i32,
     render_order: i32,
 }
 struct DrawInfo {
@@ -165,9 +168,10 @@ struct DrawInfo {
 }
 fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     let map = ecs.fetch::<Map>();
-    let bounds = crate::camera::get_screen_bounds(ecs);
-    render_map_in_view(&*map, ecs, draw, bounds);
+
+    render_map_in_view(&*map, ecs, draw, atlas);
     {
+        let bounds = crate::camera::get_screen_bounds(ecs);
         let positions = ecs.read_storage::<Position>();
         let renderables = ecs.read_storage::<Renderable>();
         let hidden = ecs.read_storage::<Hidden>();
@@ -180,8 +184,8 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
         let mut to_draw: HashMap<DrawKey, DrawInfo> = HashMap::new();
         for (pos, render, e, _h) in data.iter() {
             let idx = map.xy_idx(pos.x, pos.y);
-            let entity_offset_x = pos.x - bounds.x_offset;
-            let entity_offset_y = pos.y - bounds.y_offset;
+            let offset_x = pos.x - bounds.min_x + bounds.x_offset;
+            let offset_y = pos.y - bounds.min_y + bounds.y_offset;
             if
                 crate::camera::in_bounds(
                     pos.x,
@@ -211,6 +215,8 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
                         // draw these, but it uses a unique enum variant so
                         // it can be treated differently if needed in future.
                         DrawType::Telepathy
+                    } else {
+                        DrawType::None
                     }
                 } else {
                     // If we don't see it, and we don't sense it with
@@ -219,16 +225,17 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
                 };
                 match draw_type {
                     DrawType::None => {}
-                    _ =>
+                    _ => {
                         to_draw.insert(
-                            DrawKey { idx, render_order: render.render_order },
-                            DrawInfo { e, draw_type }
-                        ),
+                            DrawKey { x: offset_x, y: offset_y, render_order: render.render_order },
+                            DrawInfo { e: *e, draw_type }
+                        );
+                    }
                 }
             }
         }
         let mut entries: Vec<(&DrawKey, &DrawInfo)> = to_draw.iter().collect();
-        entries.sort_by_key(|&(k, _v)| *k.render_order);
+        entries.sort_by_key(|&(k, _v)| k.render_order);
         for entry in entries.iter() {
             match entry.1.draw_type {
                 DrawType::Visible | DrawType::Telepathy => {
@@ -237,10 +244,17 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
                             // Draw health bar
                         }
                     }
+                    draw.image(atlas.get("ui_heart_full").unwrap()).position(
+                        (entry.0.x as f32) * TILESIZE,
+                        (entry.0.y as f32) * TILESIZE
+                    );
                     // Draw entity
                 }
                 DrawType::VisibleAndRemember => {
-                    // Draw it, and remember it
+                    draw.image(atlas.get("ui_crystal_full").unwrap()).position(
+                        (entry.0.x as f32) * TILESIZE,
+                        (entry.0.y as f32) * TILESIZE
+                    );
                 }
                 _ => {}
             }
@@ -248,8 +262,8 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     }
 }
 
-use crate::camera::ScreenBounds;
-fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, bounds: ScreenBounds) {
+fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
+    let bounds = crate::camera::get_screen_bounds(ecs);
     for tile_y in bounds.min_y..bounds.max_y {
         for tile_x in bounds.min_x..bounds.max_x {
             if crate::camera::in_bounds(tile_x, tile_y, 0, 0, map.width, map.height) {
@@ -286,8 +300,7 @@ fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, bounds: ScreenBou
 fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
-
-    match gs.ecs.fetch::<RunState>() {
+    match *gs.ecs.fetch::<RunState>() {
         | RunState::MainMenu { .. }
         | RunState::CharacterCreation { .. }
         | RunState::PreRun { .. } => {}
@@ -299,7 +312,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let map = gs.ecs.fetch::<Map>();
     let ppos = gs.ecs.fetch::<Point>();
     let offsets = crate::camera::get_offset();
-    let px = idx_to_px(map.xy_idx(ppos.x + offsets.0, ppos.y + offsets.1), &map);
+    let px = idx_to_px(map.xy_idx(ppos.x + offsets.x, ppos.y + offsets.y), &map);
     draw.image(gs.atlas.get("ui_heart_full").unwrap()).position(px.0, px.1);
     // Render batch
     gfx.render(&draw);

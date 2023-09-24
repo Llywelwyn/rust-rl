@@ -749,9 +749,12 @@ pub fn player_input(gs: &mut State, ctx: &mut App, on_overmap: bool) -> RunState
                 return RunState::SaveGame;
             }
             KeyCode::X => {
-                let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(&gs.ecs);
+                let bounds = get_screen_bounds(&gs.ecs);
                 let ppos = gs.ecs.fetch::<Point>();
-                let (x, y) = (ppos.x + x_offset - min_x, ppos.y + y_offset - min_y);
+                let (x, y) = (
+                    ppos.x + bounds.x_offset - bounds.min_x,
+                    ppos.y + bounds.y_offset - bounds.min_y,
+                );
                 return RunState::Farlook { x, y };
             }
             _ => {}

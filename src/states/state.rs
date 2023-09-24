@@ -446,21 +446,20 @@ impl State {
                         if let Some(ranged_item) = ranged_item {
                             let is_aoe = self.ecs.read_storage::<AOE>();
                             let aoe_item = is_aoe.get(item_entity);
-                            let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) =
-                                camera::get_screen_bounds(&self.ecs);
+                            let bounds = camera::get_screen_bounds(&self.ecs);
                             let ppos = self.ecs.fetch::<Point>();
                             if let Some(aoe_item) = aoe_item {
                                 new_runstate = RunState::ShowTargeting {
-                                    x: ppos.x + x_offset - min_x,
-                                    y: ppos.y + y_offset - min_y,
+                                    x: ppos.x + bounds.x_offset - bounds.min_x,
+                                    y: ppos.y + bounds.y_offset - bounds.min_y,
                                     range: ranged_item.range,
                                     item: item_entity,
                                     aoe: aoe_item.radius,
                                 };
                             } else {
                                 new_runstate = RunState::ShowTargeting {
-                                    x: ppos.x + x_offset - min_x,
-                                    y: ppos.y + y_offset - min_y,
+                                    x: ppos.x + bounds.x_offset - bounds.min_x,
+                                    y: ppos.y + bounds.y_offset - bounds.min_y,
                                     range: ranged_item.range,
                                     item: item_entity,
                                     aoe: 0,

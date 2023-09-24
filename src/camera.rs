@@ -7,8 +7,13 @@ use super::data::prelude::*;
 
 const SHOW_BOUNDARIES: bool = false;
 
-pub fn get_offset() -> (i32, i32) {
-    return (1, 10);
+pub struct Offsets {
+    pub x: i32,
+    pub y: i32,
+}
+
+pub fn get_offset() -> Offsets {
+    return Offsets { x: 1, y: 10 };
 }
 
 pub struct ScreenBounds {
@@ -52,13 +57,13 @@ pub fn in_bounds(x: i32, y: i32, min_x: i32, min_y: i32, upper_x: i32, upper_y: 
 
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
-    let (min_x, max_x, min_y, max_y, x_offset, y_offset) = get_screen_bounds(ecs);
+    let bounds = get_screen_bounds(ecs);
 
     // Render map
     let mut y = 0;
-    for t_y in min_y..max_y {
+    for t_y in bounds.min_y..bounds.max_y {
         let mut x = 0;
-        for t_x in min_x..max_x {
+        for t_x in bounds.min_x..bounds.max_x {
             if t_x >= 0 && t_x < map.width && t_y >= 0 && t_y < map.height {
                 let idx = map.xy_idx(t_x, t_y);
                 if map.revealed_tiles[idx] {
@@ -69,7 +74,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                             Some(*ecs.fetch::<Point>()),
                             None
                         );
-                        ctx.set(x + x_offset, y + y_offset, fg, bg, glyph);
+                        ctx.set(x + bounds.x_offset, y + bounds.y_offset, fg, bg, glyph);
                     } else {
                         ctx.set_active_console(0);
                         let (id, tint) = crate::map::themes::get_sprite_for_id(
@@ -78,7 +83,12 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                             Some(*ecs.fetch::<Point>())
                         );
                         ctx.add_sprite(
-                            Rect::with_size(x * 16 + x_offset * 16, y * 16 + y_offset * 16, 16, 16),
+                            Rect::with_size(
+                                x * 16 + bounds.x_offset * 16,
+                                y * 16 + bounds.y_offset * 16,
+                                16,
+                                16
+                            ),
                             0,
                             tint,
                             0 // Ya
@@ -88,8 +98,8 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                 }
             } else if SHOW_BOUNDARIES {
                 ctx.set(
-                    x + x_offset,
-                    y + y_offset,
+                    x + bounds.x_offset,
+                    y + bounds.y_offset,
                     RGB::named(DARKSLATEGRAY),
                     RGB::named(BLACK),
                     to_cp437('#')
@@ -117,9 +127,14 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
         data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
         for (pos, render, ent, _hidden) in data.iter() {
             let idx = map.xy_idx(pos.x, pos.y);
-            let entity_offset_x = pos.x - min_x;
-            let entity_offset_y = pos.y - min_y;
-            if pos.x < max_x && pos.y < max_y && pos.x >= min_x && pos.y >= min_y {
+            let entity_offset_x = pos.x - bounds.min_x;
+            let entity_offset_y = pos.y - bounds.min_y;
+            if
+                pos.x < bounds.max_x &&
+                pos.y < bounds.max_y &&
+                pos.x >= bounds.min_x &&
+                pos.y >= bounds.min_y
+            {
                 let mut draw = false;
                 let mut fg = render.fg;
                 let bg = BLACK;
@@ -152,8 +167,8 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                         ctx.set_active_console(0);
                         ctx.add_sprite(
                             Rect::with_size(
-                                entity_offset_x * 16 + x_offset * 16,
-                                entity_offset_y * 16 + y_offset * 16,
+                                entity_offset_x * 16 + bounds.x_offset * 16,
+                                entity_offset_y * 16 + bounds.y_offset * 16,
                                 16,
                                 16
                             ),
@@ -164,8 +179,8 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                         ctx.set_active_console(ENTITY_LAYER);
                     } else {
                         ctx.set(
-                            entity_offset_x + x_offset,
-                            entity_offset_y + y_offset,
+                            entity_offset_x + bounds.x_offset,
+                            entity_offset_y + bounds.y_offset,
                             fg,
                             bg,
                             render.glyph
@@ -176,8 +191,8 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                             ctx.set_active_console(HP_BAR_LAYER);
                             crate::gui::draw_lerping_bar(
                                 ctx,
-                                (entity_offset_x + x_offset) * 16 + 2,
-                                (entity_offset_y + y_offset) * 16 - 1,
+                                (entity_offset_x + bounds.x_offset) * 16 + 2,
+                                (entity_offset_y + bounds.y_offset) * 16 - 1,
                                 14,
                                 pool.hit_points.current,
                                 pool.hit_points.max,

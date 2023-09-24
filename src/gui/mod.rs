@@ -549,11 +549,11 @@ pub fn get_input_direction(
     ctx: &mut BTerm,
     function: fn(i: i32, j: i32, ecs: &mut World) -> RunState
 ) -> RunState {
-    let (_, _, _, _, x_offset, y_offset) = camera::get_screen_bounds(ecs);
+    let offsets = camera::get_offset();
 
     ctx.print_color(
-        1 + x_offset,
-        1 + y_offset,
+        1 + offsets.x,
+        1 + offsets.y,
         RGB::named(WHITE),
         RGB::named(BLACK),
         "In what direction? [0-9]/[YUHJKLBN]"
@@ -1191,14 +1191,14 @@ pub fn ranged_target(
     range: i32,
     aoe: i32
 ) -> (TargetResult, Option<Point>) {
-    let (min_x, max_x, min_y, max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs);
+    let bounds = camera::get_screen_bounds(&gs.ecs);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
 
     ctx.print_color(
-        1 + x_offset,
-        1 + y_offset,
+        1 + bounds.x_offset,
+        1 + bounds.y_offset,
         RGB::named(WHITE),
         RGB::named(BLACK),
         "Targeting which tile? [mouse input]"
@@ -1212,15 +1212,19 @@ pub fn ranged_target(
         for idx in visible.visible_tiles.iter() {
             let distance = DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
             if distance <= (range as f32) {
-                let screen_x = idx.x - min_x;
-                let screen_y = idx.y - min_y;
+                let screen_x = idx.x - bounds.min_x;
+                let screen_y = idx.y - bounds.min_y;
                 if
                     screen_x > 1 &&
-                    screen_x < max_x - min_x - 1 &&
+                    screen_x < bounds.max_x - bounds.min_x - 1 &&
                     screen_y > 1 &&
-                    screen_y < max_y - min_y - 1
+                    screen_y < bounds.max_y - bounds.min_y - 1
                 {
-                    ctx.set_bg(screen_x + x_offset, screen_y + y_offset, TARGETING_VALID_COL);
+                    ctx.set_bg(
+                        screen_x + bounds.x_offset,
+                        screen_y + bounds.y_offset,
+                        TARGETING_VALID_COL
+                    );
                     available_cells.push(idx);
                 }
             }
@@ -1231,13 +1235,13 @@ pub fn ranged_target(
 
     // Draw mouse cursor
     let mouse_pos = (x, y);
-    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = camera::get_screen_bounds(&gs.ecs);
-    let x = x.clamp(x_offset, x_offset - 1 + VIEWPORT_W);
-    let y = y.clamp(y_offset, y_offset - 1 + VIEWPORT_H);
+    let bounds = camera::get_screen_bounds(&gs.ecs);
+    let x = x.clamp(bounds.x_offset, bounds.x_offset - 1 + VIEWPORT_W);
+    let y = y.clamp(bounds.y_offset, bounds.y_offset - 1 + VIEWPORT_H);
 
     let mut mouse_pos_adjusted = mouse_pos;
-    mouse_pos_adjusted.0 += min_x - x_offset;
-    mouse_pos_adjusted.1 += min_y - y_offset;
+    mouse_pos_adjusted.0 += bounds.min_x - bounds.x_offset;
+    mouse_pos_adjusted.1 += bounds.min_y - bounds.y_offset;
     let map = gs.ecs.fetch::<Map>();
     let mut valid_target = false;
     for idx in available_cells.iter() {
@@ -1257,8 +1261,8 @@ pub fn ranged_target(
                 continue;
             }
             ctx.set(
-                point.x + x_offset - min_x,
-                point.y + y_offset - min_y,
+                point.x + bounds.x_offset - bounds.min_x,
+                point.y + bounds.y_offset - bounds.min_y,
                 RGB::named(TARGETING_LINE_COL),
                 RGB::named(TARGETING_VALID_COL),
                 to_cp437('~')
@@ -1285,7 +1289,11 @@ pub fn ranged_target(
                     let col2 = BLACK;
                     ((col1.0 + col2.0) / 2, (col1.1 + col2.1) / 2, (col1.2 + col2.2) / 2)
                 };
-                ctx.set_bg(tile.x - min_x + x_offset, tile.y - min_y + y_offset, bg);
+                ctx.set_bg(
+                    tile.x - bounds.min_x + bounds.x_offset,
+                    tile.y - bounds.min_y + bounds.y_offset,
+                    bg
+                );
             }
         }
 
