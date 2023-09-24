@@ -296,6 +296,8 @@ impl State {
         }
         damage_system::delete_the_dead(&mut self.ecs);
     }
+
+    // Deprecated
     fn tick(&mut self, ctx: &mut BTerm) {
         let mut new_runstate;
         {

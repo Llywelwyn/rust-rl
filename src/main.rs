@@ -146,18 +146,60 @@ fn setup(gfx: &mut Graphics) -> State {
 
     gs
 }
+const ASCII_MODE: bool = false; // Change this to config setting
+const SHOW_BOUNDARIES: bool = false; // Config setting
+use notan::draw::Draw;
+fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
+    let map = ecs.fetch::<Map>();
+    let bounds = crate::camera::get_screen_bounds(ecs);
+    render_map_in_view(&*map, ecs, draw, bounds);
+}
+
+use crate::camera::ScreenBounds;
+fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, bounds: ScreenBounds) {
+    for tile_y in bounds.min_y..bounds.max_y {
+        for tile_x in bounds.min_x..bounds.max_x {
+            if crate::camera::in_bounds(tile_x, tile_y, map.width, map.height) {
+                let idx = map.xy_idx(tile_x, tile_y);
+                if map.revealed_tiles[idx] {
+                    if ASCII_MODE {
+                        let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(
+                            idx,
+                            &*map,
+                            Some(*ecs.fetch::<Point>()),
+                            None
+                        );
+                        //  TODO: Draw ASCII
+                    } else {
+                        let (id, tint) = crate::map::themes::get_sprite_for_id(
+                            idx,
+                            &*map,
+                            Some(*ecs.fetch::<Point>())
+                        );
+                        let px = idx_to_px(
+                            map.xy_idx(tile_x + bounds.x_offset, tile_y + bounds.y_offset),
+                            &map
+                        );
+                        draw.image(atlas.get(id).unwrap()).position(px.0, px.1);
+                    }
+                }
+            } else if SHOW_BOUNDARIES {
+                // TODO: Draw boundaries
+            }
+        }
+    }
+}
 
 fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
     // Draw map
+    draw_camera(&gs.ecs, &mut draw, &gs.atlas);
+    // Draw player (replace this with draw entities).
     let map = gs.ecs.fetch::<Map>();
-    for (i, _tile) in map.tiles.iter().enumerate() {
-        let px = idx_to_px(i, &map);
-        draw.image(gs.atlas.get("floor_grass_d").unwrap()).position(px.0, px.1);
-    }
     let ppos = gs.ecs.fetch::<Point>();
-    let px = idx_to_px(map.xy_idx(ppos.x, ppos.y), &map);
+    let offsets = crate::camera::get_offset();
+    let px = idx_to_px(map.xy_idx(ppos.x + offsets.0, ppos.y + offsets.1), &map);
     draw.image(gs.atlas.get("ui_heart_full").unwrap()).position(px.0, px.1);
     // Render batch
     gfx.render(&draw);

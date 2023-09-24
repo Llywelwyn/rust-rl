@@ -40,6 +40,8 @@ use std::cmp::{ max, min };
 use crate::data::events::*;
 use crate::data::ids::*;
 use crate::gui::with_article;
+use notan::prelude::*;
+use std::collections::HashMap;
 
 pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
@@ -645,195 +647,117 @@ fn get_item(ecs: &mut World) -> RunState {
     }
 }
 
-use notan::prelude::*;
+fn try_descend(ecs: &mut World) -> RunState {
+    let dest = try_change_level(ecs, false);
+    let curr_map_id = ecs.fetch::<Map>().id;
+    return match dest {
+        Destination::None => RunState::AwaitingInput,
+        Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
+        Destination::PreviousLevel => RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
+        Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
+        Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
+    };
+}
+fn try_ascend(ecs: &mut World) -> RunState {
+    let dest = try_change_level(ecs, true);
+    let curr_map_id = ecs.fetch::<Map>().id;
+    return match dest {
+        Destination::None => RunState::AwaitingInput,
+        Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
+        Destination::PreviousLevel => RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
+        Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
+        Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
+    };
+}
+
 pub fn player_input(gs: &mut State, ctx: &mut App, on_overmap: bool) -> RunState {
     let key = &ctx.keyboard;
-    if key.was_pressed(KeyCode::Numpad4) {
-        return try_move_player(-1, 0, &mut gs.ecs);
-    } else if key.was_pressed(KeyCode::Numpad6) {
-        return try_move_player(1, 0, &mut gs.ecs);
-    } else if key.was_pressed(KeyCode::Numpad8) {
-        return try_move_player(0, -1, &mut gs.ecs);
-    } else if key.was_pressed(KeyCode::Numpad2) {
-        return try_move_player(0, 1, &mut gs.ecs);
-    } else if key.was_pressed(KeyCode::Numpad9) {
-        return try_move_player(1, -1, &mut gs.ecs);
-    } else if key.was_pressed(KeyCode::Numpad7) {
-        return try_move_player(-1, -1, &mut gs.ecs);
-    } else if key.was_pressed(KeyCode::Numpad3) {
-        return try_move_player(1, 1, &mut gs.ecs);
-    } else if key.was_pressed(KeyCode::Numpad1) {
-        return try_move_player(-1, 1, &mut gs.ecs);
-    } else if key.was_pressed(KeyCode::Period) {
-        if key.shift() {
-            let dest = try_change_level(&mut gs.ecs, false);
-            let curr_map_id = gs.ecs.fetch::<Map>().id;
-            return match dest {
-                // If we have no destination, do nothing.
-                Destination::None => RunState::AwaitingInput,
-                // If we want to go to the next level, go to the up-stair tile of id + 1.
-                Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
-                // If we want to go to the previous level, go to the down-stair tile of id - 1.
-                Destination::PreviousLevel =>
-                    RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
-                Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
-                Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
-            };
-        } else {
-            return skip_turn(&mut gs.ecs); // (Wait a turn)
-        }
-    } else if key.was_pressed(KeyCode::Comma) {
-        if key.shift() {
-            let dest = try_change_level(&mut gs.ecs, false);
-            let curr_map_id = gs.ecs.fetch::<Map>().id;
-            return match dest {
-                // If we have no destination, do nothing.
-                Destination::None => RunState::AwaitingInput,
-                // If we want to go to the next level, go to the up-stair tile of id + 1.
-                Destination::NextLevel => RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
-                // If we want to go to the previous level, go to the down-stair tile of id - 1.
-                Destination::PreviousLevel =>
-                    RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
-                Destination::ToLocal(id) => RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
-                Destination::ToOvermap(id) => RunState::GoToLevel(id, TileType::ToOvermap(id)),
-            };
-        } else {
-            return skip_turn(&mut gs.ecs); // (Wait a turn)
+    // Movement
+    for keycode in key.pressed.iter() {
+        match *keycode {
+            KeyCode::Numpad1 | KeyCode::B => {
+                return try_move_player(-1, 1, &mut gs.ecs);
+            }
+            KeyCode::Numpad2 | KeyCode::Down | KeyCode::J => {
+                return try_move_player(0, 1, &mut gs.ecs);
+            }
+            KeyCode::Numpad3 | KeyCode::N => {
+                return try_move_player(1, 1, &mut gs.ecs);
+            }
+            KeyCode::Numpad4 | KeyCode::Left | KeyCode::H => {
+                return try_move_player(-1, 0, &mut gs.ecs);
+            }
+            KeyCode::Numpad6 | KeyCode::Right | KeyCode::L => {
+                return try_move_player(1, 0, &mut gs.ecs);
+            }
+            KeyCode::Numpad7 | KeyCode::Y => {
+                return try_move_player(-1, -1, &mut gs.ecs);
+            }
+            KeyCode::Numpad8 | KeyCode::Up | KeyCode::K => {
+                return try_move_player(0, -1, &mut gs.ecs);
+            }
+            KeyCode::Numpad9 | KeyCode::U => {
+                return try_move_player(1, -1, &mut gs.ecs);
+            }
+            KeyCode::Period => {
+                if key.shift() {
+                    return try_descend(&mut gs.ecs);
+                }
+                return skip_turn(&mut gs.ecs);
+            }
+            KeyCode::Comma => {
+                if key.shift() {
+                    return try_ascend(&mut gs.ecs);
+                }
+            }
+            KeyCode::Slash => {
+                if key.shift() {
+                    return RunState::HelpScreen;
+                }
+            }
+            KeyCode::C => {
+                if !on_overmap {
+                    return RunState::ActionWithDirection { function: try_door };
+                }
+            }
+            KeyCode::O => {
+                if !on_overmap {
+                    return RunState::ActionWithDirection { function: open };
+                }
+            }
+            KeyCode::F => {
+                if !on_overmap {
+                    return RunState::ActionWithDirection { function: kick };
+                }
+            }
+            KeyCode::G => {
+                return get_item(&mut gs.ecs);
+            }
+            KeyCode::I => {
+                return RunState::ShowInventory;
+            }
+            KeyCode::D => {
+                return RunState::ShowDropItem;
+            }
+            KeyCode::R => {
+                return RunState::ShowRemoveItem;
+            }
+            KeyCode::Minus => {
+                return RunState::ShowCheatMenu;
+            }
+            KeyCode::Escape => {
+                return RunState::SaveGame;
+            }
+            KeyCode::X => {
+                let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(&gs.ecs);
+                let ppos = gs.ecs.fetch::<Point>();
+                let (x, y) = (ppos.x + x_offset - min_x, ppos.y + y_offset - min_y);
+                return RunState::Farlook { x, y };
+            }
+            _ => {}
         }
     }
     return RunState::AwaitingInput;
-
-    /*match ctx.key {
-        None => {
-            return RunState::AwaitingInput;
-        }
-        Some(key) =>
-            match key {
-                // Cardinals
-                VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
-                    return try_move_player(-1, 0, &mut gs.ecs);
-                }
-                VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
-                    return try_move_player(1, 0, &mut gs.ecs);
-                }
-                VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                    return try_move_player(0, -1, &mut gs.ecs);
-                }
-                VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                    return try_move_player(0, 1, &mut gs.ecs);
-                }
-                // Diagonals
-                VirtualKeyCode::Numpad9 | VirtualKeyCode::U => {
-                    return try_move_player(1, -1, &mut gs.ecs);
-                }
-                VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => {
-                    return try_move_player(-1, -1, &mut gs.ecs);
-                }
-                VirtualKeyCode::Numpad3 | VirtualKeyCode::N => {
-                    return try_move_player(1, 1, &mut gs.ecs);
-                }
-                VirtualKeyCode::Numpad1 | VirtualKeyCode::B => {
-                    return try_move_player(-1, 1, &mut gs.ecs);
-                }
-                // id
-                VirtualKeyCode::Period => {
-                    if ctx.shift {
-                        let dest = try_change_level(&mut gs.ecs, false);
-                        let curr_map_id = gs.ecs.fetch::<Map>().id;
-                        return match dest {
-                            // If we have no destination, do nothing.
-                            Destination::None => RunState::AwaitingInput,
-                            // If we want to go to the next level, go to the up-stair tile of id + 1.
-                            Destination::NextLevel =>
-                                RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
-                            // If we want to go to the previous level, go to the down-stair tile of id - 1.
-                            Destination::PreviousLevel =>
-                                RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
-                            Destination::ToLocal(id) =>
-                                RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
-                            Destination::ToOvermap(id) =>
-                                RunState::GoToLevel(id, TileType::ToOvermap(id)),
-                        };
-                    } else {
-                        return skip_turn(&mut gs.ecs); // (Wait a turn)
-                    }
-                }
-                VirtualKeyCode::Comma => {
-                    if ctx.shift {
-                        let dest = try_change_level(&mut gs.ecs, true);
-                        let curr_map_id = gs.ecs.fetch::<Map>().id;
-                        return match dest {
-                            Destination::None => RunState::AwaitingInput,
-                            Destination::NextLevel =>
-                                RunState::GoToLevel(curr_map_id + 1, TileType::UpStair),
-                            Destination::PreviousLevel =>
-                                RunState::GoToLevel(curr_map_id - 1, TileType::DownStair),
-                            Destination::ToLocal(id) =>
-                                RunState::GoToLevel(ID_OVERMAP, TileType::ToLocal(id)),
-                            Destination::ToOvermap(id) =>
-                                RunState::GoToLevel(id, TileType::ToOvermap(id)),
-                        };
-                    }
-                }
-                VirtualKeyCode::Slash => {
-                    if ctx.shift {
-                        return RunState::HelpScreen;
-                    }
-                }
-                VirtualKeyCode::NumpadDecimal => {
-                    return skip_turn(&mut gs.ecs);
-                }
-
-                // Items
-                VirtualKeyCode::C => {
-                    if !on_overmap {
-                        return RunState::ActionWithDirection { function: try_door };
-                    }
-                }
-                VirtualKeyCode::O => {
-                    if !on_overmap {
-                        return RunState::ActionWithDirection { function: open };
-                    }
-                }
-                VirtualKeyCode::F => {
-                    if !on_overmap {
-                        return RunState::ActionWithDirection { function: kick };
-                    }
-                }
-                VirtualKeyCode::G => {
-                    return get_item(&mut gs.ecs);
-                }
-                VirtualKeyCode::I => {
-                    return RunState::ShowInventory;
-                }
-                VirtualKeyCode::D => {
-                    return RunState::ShowDropItem;
-                }
-                VirtualKeyCode::R => {
-                    return RunState::ShowRemoveItem;
-                }
-                // Other
-                VirtualKeyCode::Minus => {
-                    return RunState::ShowCheatMenu;
-                }
-                VirtualKeyCode::Escape => {
-                    return RunState::SaveGame;
-                }
-                VirtualKeyCode::X => {
-                    let (min_x, _max_x, min_y, _max_y, x_offset, y_offset) = get_screen_bounds(
-                        &gs.ecs,
-                        ctx
-                    );
-                    let ppos = gs.ecs.fetch::<Point>();
-                    let (x, y) = (ppos.x + x_offset - min_x, ppos.y + y_offset - min_y);
-                    return RunState::Farlook { x, y };
-                }
-                _ => {
-                    return RunState::AwaitingInput;
-                }
-            }
-    }
-    return RunState::AwaitingInput;*/
 }
 
 fn try_change_level(ecs: &mut World, backtracking: bool) -> Destination {

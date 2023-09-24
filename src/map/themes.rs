@@ -5,21 +5,21 @@ use crate::data::ids::*;
 use bracket_lib::prelude::*;
 use std::ops::{ Add, Mul };
 
-pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (usize, RGBA) {
+pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&str, RGBA) {
     let x = (idx as i32) % map.width;
     let y = (idx as i32) / map.width;
-    let tile = map.tiles[idx];
-    let base = match tile {
+    let sprite = map.tiles[idx].sprite();
+    /*let base = match tile {
         TileType::Wall => wall_sprite(tile.sprite(), map, x, y),
         _ => tile.sprite(),
     };
-    let sprite_id = pick_variant(base, tile.variants(), idx, map);
+    let sprite_id = pick_variant(base, tile.variants(), idx, map);*/
     let tint = if !map.visible_tiles[idx] {
         RGBA::from_f32(0.75, 0.75, 0.75, 1.0)
     } else {
         RGBA::named(WHITE)
     };
-    return (sprite_id, tint);
+    return (sprite, tint);
 }
 /// Gets the renderables for a tile, with darkening/offset/post-processing/etc. Passing a val for "debug" will ignore viewshed.
 pub fn get_tile_renderables_for_id(

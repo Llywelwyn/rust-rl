@@ -7,7 +7,20 @@ use super::data::prelude::*;
 
 const SHOW_BOUNDARIES: bool = false;
 
-pub fn get_screen_bounds(ecs: &World) -> (i32, i32, i32, i32, i32, i32) {
+pub fn get_offset() -> (i32, i32) {
+    return (1, 10);
+}
+
+pub struct ScreenBounds {
+    pub min_x: i32,
+    pub max_x: i32,
+    pub min_y: i32,
+    pub max_y: i32,
+    pub x_offset: i32,
+    pub y_offset: i32,
+}
+
+pub fn get_screen_bounds(ecs: &World) -> ScreenBounds {
     let player_pos = ecs.fetch::<Point>();
     let map = ecs.fetch::<Map>();
     let (x_chars, y_chars, mut x_offset, mut y_offset) = (VIEWPORT_W, VIEWPORT_H, 1, 10);
@@ -30,7 +43,11 @@ pub fn get_screen_bounds(ecs: &World) -> (i32, i32, i32, i32, i32, i32) {
     let max_x = min_x + (x_chars as i32);
     let max_y = min_y + (y_chars as i32);
 
-    (min_x, max_x, min_y, max_y, x_offset, y_offset)
+    ScreenBounds { min_x, max_x, min_y, max_y, x_offset, y_offset }
+}
+
+pub fn in_bounds(x: i32, y: i32, upper_x: i32, upper_y: i32) -> bool {
+    x >= 0 && x < upper_x && y >= 0 && y < upper_y
 }
 
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
@@ -64,7 +81,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                             Rect::with_size(x * 16 + x_offset * 16, y * 16 + y_offset * 16, 16, 16),
                             0,
                             tint,
-                            id
+                            0 // Ya
                         );
                         ctx.set_active_console(TILE_LAYER);
                     }

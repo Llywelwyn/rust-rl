@@ -30,27 +30,27 @@ pub enum TileType {
 }
 
 impl TileType {
-    pub fn sprite(&self) -> usize {
+    pub fn sprite(&self) -> &str {
         match self {
-            TileType::ImpassableMountain => STATUE,
-            TileType::Wall => WALL_BASE,
-            TileType::DeepWater => WATER_DEEP,
-            TileType::Fence => WALL_BASE,
-            TileType::Bars => WALL_BASE,
-            TileType::Floor => FLOOR,
-            TileType::WoodFloor => FLOOR_WOOD,
-            TileType::Gravel => FLOOR,
-            TileType::Road => PATH_GRASS,
-            TileType::Grass => FLOOR_GRASS,
-            TileType::Foliage => FLOOR_GRASS,
-            TileType::HeavyFoliage => FLOOR_GRASS,
-            TileType::Sand => FLOOR,
-            TileType::ShallowWater => WATER_DEEP,
-            TileType::Bridge => FLOOR,
-            TileType::DownStair => STAIR_D,
-            TileType::UpStair => STAIR_A,
-            TileType::ToLocal(_) => MUSHROOM,
-            TileType::ToOvermap(_) => MUSHROOM_ORANGE,
+            TileType::ImpassableMountain => "statue_warrior",
+            TileType::Wall => "wall_cave_h_a",
+            TileType::DeepWater => "water",
+            TileType::Fence => "wall_cave_h_a",
+            TileType::Bars => "wall_cave_h_a",
+            TileType::Floor => "floor_cobble_a",
+            TileType::WoodFloor => "floor_wood_a",
+            TileType::Gravel => "floor_cobble_b",
+            TileType::Road => "floor_cobble_c",
+            TileType::Grass => "floor_grass_a",
+            TileType::Foliage => "floor_grass_b",
+            TileType::HeavyFoliage => "floor_grass_c",
+            TileType::Sand => "floor_cobble_c",
+            TileType::ShallowWater => "water",
+            TileType::Bridge => "floor_cobble_a",
+            TileType::DownStair => "wall_cave_stair_down",
+            TileType::UpStair => "wall_cave_stair_up",
+            TileType::ToLocal(_) => "wall_crypt_stair_down",
+            TileType::ToOvermap(_) => "wall_crypt_stair_up",
         }
     }
 
