@@ -90,7 +90,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                                 16
                             ),
                             0,
-                            tint,
+                            RGBA::named(WHITE),
                             0 // Ya
                         );
                         ctx.set_active_console(TILE_LAYER);

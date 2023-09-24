@@ -4,8 +4,9 @@ use crate::config::CONFIG;
 use crate::data::ids::*;
 use bracket_lib::prelude::*;
 use std::ops::{ Add, Mul };
+use notan::prelude::*;
 
-pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&str, RGBA) {
+pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&str, Color) {
     let x = (idx as i32) % map.width;
     let y = (idx as i32) / map.width;
     let sprite = map.tiles[idx].sprite();
@@ -15,9 +16,9 @@ pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&s
     };
     let sprite_id = pick_variant(base, tile.variants(), idx, map);*/
     let tint = if !map.visible_tiles[idx] {
-        RGBA::from_f32(0.75, 0.75, 0.75, 1.0)
+        Color::from_rgb(0.75, 0.75, 0.75)
     } else {
-        RGBA::named(WHITE)
+        Color::WHITE
     };
     return (sprite, tint);
 }

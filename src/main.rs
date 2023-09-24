@@ -180,7 +180,7 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
         let minds = ecs.read_storage::<Mind>();
         let pools = ecs.read_storage::<Pools>();
         let entities = ecs.entities();
-        let mut data = (&positions, &renderables, &entities, !&hidden).join().collect::<Vec<_>>();
+        let data = (&positions, &renderables, &entities, !&hidden).join().collect::<Vec<_>>();
         let mut to_draw: HashMap<DrawKey, DrawInfo> = HashMap::new();
         for (pos, render, e, _h) in data.iter() {
             let idx = map.xy_idx(pos.x, pos.y);
@@ -255,6 +255,7 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
                         (entry.0.x as f32) * TILESIZE,
                         (entry.0.y as f32) * TILESIZE
                     );
+                    // TODO: Update map memory.
                 }
                 _ => {}
             }
@@ -287,7 +288,7 @@ fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, atlas: &HashMap<S
                             map.xy_idx(tile_x + bounds.x_offset, tile_y + bounds.y_offset),
                             &map
                         );
-                        draw.image(atlas.get(id).unwrap()).position(px.0, px.1);
+                        draw.image(atlas.get(id).unwrap()).position(px.0, px.1).color(tint);
                     }
                 }
             } else if SHOW_BOUNDARIES {
@@ -295,6 +296,13 @@ fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, atlas: &HashMap<S
             }
         }
     }
+}
+
+fn draw_farlook(x: i32, y: i32, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
+    draw.image(atlas.get("ui_select_a1").unwrap()).position(
+        (x as f32) * TILESIZE,
+        (y as f32) * TILESIZE
+    );
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
@@ -308,12 +316,13 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             draw_camera(&gs.ecs, &mut draw, &gs.atlas);
         }
     }
-    // Draw player (replace this with draw entities).
-    let map = gs.ecs.fetch::<Map>();
-    let ppos = gs.ecs.fetch::<Point>();
-    let offsets = crate::camera::get_offset();
-    let px = idx_to_px(map.xy_idx(ppos.x + offsets.x, ppos.y + offsets.y), &map);
-    draw.image(gs.atlas.get("ui_heart_full").unwrap()).position(px.0, px.1);
+    match *gs.ecs.fetch::<RunState>() {
+        RunState::Farlook { x, y } => {
+            draw_farlook(x, y, &mut draw, &gs.atlas);
+            //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop
+        }
+        _ => {}
+    }
     // Render batch
     gfx.render(&draw);
 }

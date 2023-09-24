@@ -229,7 +229,17 @@ impl State {
                     }
                 }
             }
-            // RunState::Farlook
+            RunState::Farlook { .. } => {
+                let result = gui::show_farlook(self, ctx);
+                match result {
+                    gui::FarlookResult::NoResponse { x, y } => {
+                        new_runstate = RunState::Farlook { x, y };
+                    }
+                    gui::FarlookResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                }
+            }
             // RunState::ShowCheatMenu
             // RunState::ShowInventory
             // RunState::ShowDropItem
@@ -379,7 +389,7 @@ impl State {
                 }
             }
             RunState::Farlook { .. } => {
-                let result = gui::show_farlook(self, ctx);
+                let result = gui::FarlookResult::Cancel; //gui::show_farlook(self, ctx);
                 match result {
                     gui::FarlookResult::NoResponse { x, y } => {
                         new_runstate = RunState::Farlook { x, y };
