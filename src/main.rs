@@ -149,17 +149,110 @@ fn setup(gfx: &mut Graphics) -> State {
 const ASCII_MODE: bool = false; // Change this to config setting
 const SHOW_BOUNDARIES: bool = false; // Config setting
 use notan::draw::Draw;
+enum DrawType {
+    None,
+    Visible,
+    VisibleAndRemember,
+    Telepathy,
+}
+struct DrawKey {
+    idx: usize,
+    render_order: i32,
+}
+struct DrawInfo {
+    e: Entity,
+    draw_type: DrawType,
+}
 fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     let map = ecs.fetch::<Map>();
     let bounds = crate::camera::get_screen_bounds(ecs);
     render_map_in_view(&*map, ecs, draw, bounds);
+    {
+        let positions = ecs.read_storage::<Position>();
+        let renderables = ecs.read_storage::<Renderable>();
+        let hidden = ecs.read_storage::<Hidden>();
+        let props = ecs.read_storage::<Prop>();
+        let items = ecs.read_storage::<Item>();
+        let minds = ecs.read_storage::<Mind>();
+        let pools = ecs.read_storage::<Pools>();
+        let entities = ecs.entities();
+        let mut data = (&positions, &renderables, &entities, !&hidden).join().collect::<Vec<_>>();
+        let mut to_draw: HashMap<DrawKey, DrawInfo> = HashMap::new();
+        for (pos, render, e, _h) in data.iter() {
+            let idx = map.xy_idx(pos.x, pos.y);
+            let entity_offset_x = pos.x - bounds.x_offset;
+            let entity_offset_y = pos.y - bounds.y_offset;
+            if
+                crate::camera::in_bounds(
+                    pos.x,
+                    pos.y,
+                    bounds.min_x,
+                    bounds.min_y,
+                    bounds.max_x,
+                    bounds.max_y
+                )
+            {
+                let draw_type = if map.visible_tiles[idx] {
+                    let is_prop = props.get(*e);
+                    let is_item = items.get(*e);
+                    if is_prop.is_some() || is_item.is_some() {
+                        // If it's a static entity, we want to draw it, and
+                        // also save it's location so that we remember where
+                        // it was last seen after it leaves vision.
+                        DrawType::VisibleAndRemember
+                    } else {
+                        // If it's anything else, just draw it.
+                        DrawType::Visible
+                    }
+                } else if map.telepath_tiles[idx] {
+                    let has_mind = minds.get(*e);
+                    if has_mind.is_some() {
+                        // Mobs we see through telepathy - generally we just
+                        // draw these, but it uses a unique enum variant so
+                        // it can be treated differently if needed in future.
+                        DrawType::Telepathy
+                    }
+                } else {
+                    // If we don't see it, and we don't sense it with
+                    // telepathy, don't draw it at all.
+                    DrawType::None
+                };
+                match draw_type {
+                    DrawType::None => {}
+                    _ =>
+                        to_draw.insert(
+                            DrawKey { idx, render_order: render.render_order },
+                            DrawInfo { e, draw_type }
+                        ),
+                }
+            }
+        }
+        let mut entries: Vec<(&DrawKey, &DrawInfo)> = to_draw.iter().collect();
+        entries.sort_by_key(|&(k, _v)| *k.render_order);
+        for entry in entries.iter() {
+            match entry.1.draw_type {
+                DrawType::Visible | DrawType::Telepathy => {
+                    if let Some(pool) = pools.get(entry.1.e) {
+                        if pool.hit_points.current < pool.hit_points.max {
+                            // Draw health bar
+                        }
+                    }
+                    // Draw entity
+                }
+                DrawType::VisibleAndRemember => {
+                    // Draw it, and remember it
+                }
+                _ => {}
+            }
+        }
+    }
 }
 
 use crate::camera::ScreenBounds;
 fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, bounds: ScreenBounds) {
     for tile_y in bounds.min_y..bounds.max_y {
         for tile_x in bounds.min_x..bounds.max_x {
-            if crate::camera::in_bounds(tile_x, tile_y, map.width, map.height) {
+            if crate::camera::in_bounds(tile_x, tile_y, 0, 0, map.width, map.height) {
                 let idx = map.xy_idx(tile_x, tile_y);
                 if map.revealed_tiles[idx] {
                     if ASCII_MODE {
@@ -193,8 +286,15 @@ fn render_map_in_view(map: &Map, ecs: &World, draw: &mut Draw, bounds: ScreenBou
 fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
-    // Draw map
-    draw_camera(&gs.ecs, &mut draw, &gs.atlas);
+
+    match gs.ecs.fetch::<RunState>() {
+        | RunState::MainMenu { .. }
+        | RunState::CharacterCreation { .. }
+        | RunState::PreRun { .. } => {}
+        _ => {
+            draw_camera(&gs.ecs, &mut draw, &gs.atlas);
+        }
+    }
     // Draw player (replace this with draw entities).
     let map = gs.ecs.fetch::<Map>();
     let ppos = gs.ecs.fetch::<Point>();

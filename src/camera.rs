@@ -46,8 +46,8 @@ pub fn get_screen_bounds(ecs: &World) -> ScreenBounds {
     ScreenBounds { min_x, max_x, min_y, max_y, x_offset, y_offset }
 }
 
-pub fn in_bounds(x: i32, y: i32, upper_x: i32, upper_y: i32) -> bool {
-    x >= 0 && x < upper_x && y >= 0 && y < upper_y
+pub fn in_bounds(x: i32, y: i32, min_x: i32, min_y: i32, upper_x: i32, upper_y: i32) -> bool {
+    x >= min_x && x < upper_x && y >= min_y && y < upper_y
 }
 
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
