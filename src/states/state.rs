@@ -169,7 +169,7 @@ impl State {
             let runstate = self.ecs.fetch::<RunState>();
             new_runstate = *runstate;
         }
-        // Particle ticker here
+        particle_system::particle_ticker(&mut self.ecs, ctx);
         match new_runstate {
             RunState::PreRun => {
                 self.run_systems();
@@ -377,7 +377,7 @@ impl State {
         ctx.cls();
         ctx.set_active_console(0);
         ctx.cls();
-        particle_system::particle_ticker(&mut self.ecs, ctx);
+        //particle_system::particle_ticker(&mut self.ecs, ctx);
 
         match new_runstate {
             RunState::MainMenu { .. } => {}

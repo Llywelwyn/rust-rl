@@ -1,6 +1,9 @@
 use super::{ State, RunState, tooltip::draw_tooltips, camera::get_offset, VIEWPORT_H, VIEWPORT_W };
 use bracket_lib::prelude::*;
 use notan::prelude::*;
+use notan::draw::{ Draw, DrawImages };
+use std::collections::HashMap;
+use crate::consts::TILESIZE;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum FarlookResult {
@@ -56,4 +59,11 @@ pub fn show_farlook(gs: &mut State, ctx: &mut App) -> FarlookResult {
         let ppos = gs.ecs.fetch::<Point>();
         return FarlookResult::NoResponse { x: ppos.x + offsets.x, y: ppos.x + offsets.y };
     }
+}
+
+pub fn draw_farlook(x: i32, y: i32, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
+    draw.image(atlas.get("ui_select_c1").unwrap()).position(
+        (x as f32) * TILESIZE,
+        (y as f32) * TILESIZE
+    );
 }

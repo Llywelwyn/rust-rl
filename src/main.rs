@@ -308,13 +308,6 @@ fn render_map_in_view(
     }
 }
 
-fn draw_farlook(x: i32, y: i32, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
-    draw.image(atlas.get("ui_select_c1").unwrap()).position(
-        (x as f32) * TILESIZE,
-        (y as f32) * TILESIZE
-    );
-}
-
 struct BoxDraw {
     frame: String,
     fill: bool,
@@ -377,7 +370,7 @@ fn draw_spritebox(panel: BoxDraw, draw: &mut Draw, atlas: &HashMap<String, Textu
 }
 
 use crate::consts::visuals::{ VIEWPORT_H, VIEWPORT_W };
-fn draw_bg(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
+fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     let offset = crate::camera::get_offset();
     let log = BoxDraw {
         frame: "ui_panel_window".to_string(),
@@ -441,11 +434,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     }
     match *gs.ecs.fetch::<RunState>() {
         RunState::Farlook { x, y } => {
-            draw.text(&gs.font, "RunState::Farlook").position(
-                ((x + 2) as f32) * TILESIZE,
-                (y as f32) * TILESIZE
-            );
-            draw_farlook(x, y, &mut draw, &gs.atlas);
+            draw.text(&gs.font, "RunState::Farlook")
+                .position(((x + 2) as f32) * TILESIZE, (y as f32) * TILESIZE)
+                .size(TILESIZE);
+            crate::gui::draw_farlook(x, y, &mut draw, &gs.atlas);
             //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop
         }
         RunState::ShowCheatMenu => {

@@ -1,5 +1,6 @@
 use super::{ ParticleLifetime, Position, Renderable, BTerm };
 use bracket_lib::prelude::*;
+use notan::prelude::*;
 use specs::prelude::*;
 use crate::consts::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME };
 
@@ -8,19 +9,19 @@ use crate::consts::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME
 // running through a list and removing the frame_time_ms from the
 // delay. When delay is <= 0, make a particle_builder.request for
 // the particle.
-pub fn particle_ticker(ecs: &mut World, ctx: &BTerm) {
+pub fn particle_ticker(ecs: &mut World, ctx: &App) {
     cull_dead_particles(ecs, ctx);
     create_delayed_particles(ecs, ctx);
 }
 
-fn cull_dead_particles(ecs: &mut World, ctx: &BTerm) {
+fn cull_dead_particles(ecs: &mut World, ctx: &App) {
     let mut dead_particles: Vec<Entity> = Vec::new();
     {
         // Age out particles
         let mut particles = ecs.write_storage::<ParticleLifetime>();
         let entities = ecs.entities();
         for (entity, mut particle) in (&entities, &mut particles).join() {
-            particle.lifetime_ms -= ctx.frame_time_ms;
+            particle.lifetime_ms -= ctx.timer.delta_f32() * 1000.0;
             if particle.lifetime_ms < 0.0 {
                 dead_particles.push(entity);
             }
@@ -39,11 +40,11 @@ pub fn check_queue(ecs: &World) -> bool {
     return false;
 }
 
-fn create_delayed_particles(ecs: &mut World, ctx: &BTerm) {
+fn create_delayed_particles(ecs: &mut World, ctx: &App) {
     let mut particle_builder = ecs.write_resource::<ParticleBuilder>();
     let mut handled_particles: Vec<ParticleRequest> = Vec::new();
     for delayed_particle in particle_builder.delayed_requests.iter_mut() {
-        delayed_particle.delay -= ctx.frame_time_ms;
+        delayed_particle.delay -= ctx.timer.delta_f32() * 1000.0;
         if delayed_particle.delay < 0.0 {
             handled_particles.push(ParticleRequest {
                 x: delayed_particle.particle.x,
