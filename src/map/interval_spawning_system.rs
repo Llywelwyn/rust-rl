@@ -10,7 +10,7 @@ use crate::{
 };
 use specs::prelude::*;
 use bracket_lib::prelude::*;
-use crate::data::events::*;
+use crate::consts::events::*;
 
 const TRY_SPAWN_CHANCE: i32 = 70;
 const FEATURE_MESSAGE_CHANCE: i32 = 110;

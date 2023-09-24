@@ -16,7 +16,7 @@ use crate::{
     BUC,
 };
 use specs::prelude::*;
-use crate::data::messages;
+use crate::consts::messages;
 use bracket_lib::prelude::*;
 
 pub struct ItemEquipSystem {}

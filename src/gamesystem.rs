@@ -1,7 +1,7 @@
 use super::{ Skill, Skills };
 use crate::gui::{ Ancestry, Class };
-use crate::data::entity;
-use crate::data::char_create::*;
+use crate::consts::entity;
+use crate::consts::char_create::*;
 use bracket_lib::prelude::*;
 use std::cmp::max;
 

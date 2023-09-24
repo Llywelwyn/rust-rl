@@ -17,10 +17,10 @@ use crate::{
     HasDamageModifiers,
 };
 use crate::gui::with_article;
-use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
-use crate::data::messages::LEVELUP_PLAYER;
-use crate::data::events::*;
-use crate::data::messages::*;
+use crate::consts::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
+use crate::consts::messages::LEVELUP_PLAYER;
+use crate::consts::events::*;
+use crate::consts::messages::*;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 

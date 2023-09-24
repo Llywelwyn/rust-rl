@@ -28,8 +28,8 @@ use super::{
     HasDamageModifiers,
     Intrinsics,
 };
-use crate::data::entity;
-use crate::data::visuals::BLOODSTAIN_COLOUR;
+use crate::consts::entity;
+use crate::consts::visuals::BLOODSTAIN_COLOUR;
 use crate::gamesystem::*;
 use bracket_lib::prelude::*;
 use specs::prelude::*;

@@ -8,8 +8,8 @@ use super::{
     RunState,
     State,
 };
-use crate::data::entity;
-use crate::data::char_create::*;
+use crate::consts::entity;
+use crate::consts::char_create::*;
 use crate::{
     raws,
     Attribute,
@@ -28,7 +28,7 @@ use bracket_lib::prelude::*;
 use serde::{ Deserialize, Serialize };
 use specs::prelude::*;
 use std::collections::HashMap;
-use crate::data::prelude::*;
+use crate::consts::prelude::*;
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
 pub enum Ancestry {

@@ -1,7 +1,7 @@
 use std::collections::{ HashSet, HashMap };
 use std::sync::Mutex;
-use crate::data::events::EVENT;
-use crate::data::names::*;
+use crate::consts::events::EVENT;
+use crate::consts::names::*;
 
 lazy_static! {
     /// A count of each event that has happened over the run. i.e. "turns", "descended", "ascended"

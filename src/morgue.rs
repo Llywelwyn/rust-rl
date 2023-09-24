@@ -9,7 +9,7 @@ use specs::prelude::*;
 use bracket_lib::prelude::*;
 use to_char;
 use std::collections::HashMap;
-use crate::data::events::*;
+use crate::consts::events::*;
 
 #[cfg(target_arch = "wasm32")]
 pub fn create_morgue_file(ecs: &World) {

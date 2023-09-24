@@ -1,5 +1,5 @@
 use serde::{ Deserialize, Serialize };
-use crate::data::sprites::*;
+use crate::consts::sprites::*;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum TileType {

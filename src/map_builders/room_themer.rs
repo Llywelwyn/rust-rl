@@ -1,6 +1,6 @@
 use super::{ BuilderMap, MetaMapBuilder, Rect, TileType };
 use crate::tile_walkable;
-use crate::data::messages::{
+use crate::consts::messages::{
     FEATURE_TREANTS,
     FEATURE_BARRACKS_GOBLIN,
     FEATURE_BARRACKS_KOBOLD,

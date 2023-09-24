@@ -4,7 +4,7 @@ pub mod prefab_levels;
 pub mod prefab_sections;
 pub mod prefab_vaults;
 use std::collections::HashSet;
-use crate::data::ids::*;
+use crate::consts::ids::*;
 
 #[derive(PartialEq, Copy, Clone)]
 #[allow(dead_code)]

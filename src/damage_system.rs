@@ -14,7 +14,7 @@ use super::{
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use crate::data::events;
+use crate::consts::events;
 
 pub fn delete_the_dead(ecs: &mut World) {
     let mut dead: Vec<Entity> = Vec::new();

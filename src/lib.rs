@@ -26,7 +26,7 @@ pub mod trigger_system;
 pub mod inventory;
 pub mod particle_system;
 pub mod ai;
-pub mod data;
+pub mod consts;
 pub mod config;
 pub mod effects;
 pub mod gamesystem;

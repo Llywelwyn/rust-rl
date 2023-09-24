@@ -12,7 +12,7 @@ use crate::{
     Intrinsics,
 };
 use specs::prelude::*;
-use crate::data::events::*;
+use crate::consts::events::*;
 
 pub struct RegenSystem {}
 

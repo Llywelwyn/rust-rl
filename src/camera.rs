@@ -2,8 +2,8 @@ use super::{ Hidden, Map, Mind, Position, Prop, Renderable, Pools };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
-use super::data::visuals::{ VIEWPORT_W, VIEWPORT_H };
-use super::data::prelude::*;
+use super::consts::visuals::{ VIEWPORT_W, VIEWPORT_H };
+use super::consts::prelude::*;
 
 const SHOW_BOUNDARIES: bool = false;
 
@@ -147,7 +147,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                 if map.visible_tiles[idx] {
                     draw = true;
                 } else {
-                    fg = fg.mul(crate::data::visuals::NON_VISIBLE_MULTIPLIER);
+                    fg = fg.mul(crate::consts::visuals::NON_VISIBLE_MULTIPLIER);
                     // We don't darken BG, because get_tile_renderables_for_id handles this.
                 }
 

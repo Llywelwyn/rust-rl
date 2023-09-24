@@ -1,6 +1,6 @@
 // tests/gamelog_test.rs
 use rust_rl::gamelog::*;
-use rust_rl::data::events::*;
+use rust_rl::consts::events::*;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 

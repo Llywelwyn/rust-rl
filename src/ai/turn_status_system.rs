@@ -12,7 +12,7 @@ use crate::{
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use crate::data::events::*;
+use crate::consts::events::*;
 
 pub struct TurnStatusSystem {}
 

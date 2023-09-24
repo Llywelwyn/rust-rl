@@ -37,8 +37,8 @@ use super::{
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{ max, min };
-use crate::data::events::*;
-use crate::data::ids::*;
+use crate::consts::events::*;
+use crate::consts::ids::*;
 use crate::gui::with_article;
 use notan::prelude::*;
 use std::collections::HashMap;

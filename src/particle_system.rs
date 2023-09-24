@@ -1,7 +1,7 @@
 use super::{ ParticleLifetime, Position, Renderable, BTerm };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use crate::data::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME };
+use crate::consts::visuals::{ DEFAULT_PARTICLE_LIFETIME, SHORT_PARTICLE_LIFETIME };
 
 /// Runs each tick, deleting particles who are past their expiry.
 // Should make an addition to this to also spawn delayed particles,

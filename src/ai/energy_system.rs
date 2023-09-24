@@ -1,4 +1,4 @@
-use crate::data::entity::*;
+use crate::consts::entity::*;
 use crate::{
     Burden,
     BurdenLevel,
@@ -15,7 +15,7 @@ use crate::{
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::config::CONFIG;
-use crate::data::events::*;
+use crate::consts::events::*;
 
 pub struct EnergySystem {}
 

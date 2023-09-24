@@ -34,7 +34,7 @@ use crate::{
     Position,
     Viewshed,
 };
-use crate::data::messages::*;
+use crate::consts::messages::*;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs: &mut World) {

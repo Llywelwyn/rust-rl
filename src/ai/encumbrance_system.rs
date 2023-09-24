@@ -1,7 +1,7 @@
 use crate::{ gamelog, Attributes, Burden, EquipmentChanged, Equipped, InBackpack, Item, Pools };
 use specs::prelude::*;
 use std::collections::HashMap;
-use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
+use crate::consts::entity::CARRY_CAPACITY_PER_STRENGTH;
 
 pub struct EncumbranceSystem {}
 
@@ -20,7 +20,17 @@ impl<'a> System<'a> for EncumbranceSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut equip_dirty, entities, items, backpacks, wielded, mut pools, attributes, player, mut burdened) = data;
+        let (
+            mut equip_dirty,
+            entities,
+            items,
+            backpacks,
+            wielded,
+            mut pools,
+            attributes,
+            player,
+            mut burdened,
+        ) = data;
         if equip_dirty.is_empty() {
             return;
         }
@@ -50,7 +60,8 @@ impl<'a> System<'a> for EncumbranceSystem {
                 pool.weight = *weight;
                 if let Some(attr) = attributes.get(*entity) {
                     let carry_capacity_lbs =
-                        (attr.strength.base + attr.strength.modifiers) * CARRY_CAPACITY_PER_STRENGTH;
+                        (attr.strength.base + attr.strength.modifiers) *
+                        CARRY_CAPACITY_PER_STRENGTH;
                     if (pool.weight as i32) > 3 * carry_capacity_lbs {
                         // Overloaded
                         burdened

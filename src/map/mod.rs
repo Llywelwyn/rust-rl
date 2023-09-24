@@ -16,7 +16,7 @@ pub use interval_spawning_system::{ maybe_map_message, try_spawn_interval };
 pub mod dungeon;
 pub use dungeon::{ level_transition, MasterDungeonMap };
 pub mod themes;
-use super::data::visuals::{
+use super::consts::visuals::{
     BRIGHTEN_FG_COLOUR_BY,
     GLOBAL_OFFSET_MIN_CLAMP,
     GLOBAL_OFFSET_MAX_CLAMP,

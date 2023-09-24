@@ -9,7 +9,7 @@ use crate::{
     Player,
 };
 use specs::prelude::*;
-use crate::data::events::*;
+use crate::consts::events::*;
 use crate::gamelog;
 
 pub struct ItemIdentificationSystem {}

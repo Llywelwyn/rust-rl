@@ -11,8 +11,8 @@ use super::{
     RGB,
 };
 use crate::TileType;
-use crate::data::ids::*;
-use crate::data::prelude::*;
+use crate::consts::ids::*;
+use crate::consts::prelude::*;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 

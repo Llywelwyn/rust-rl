@@ -1,6 +1,6 @@
 use super::{ BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType, FillEdges };
 use std::collections::HashSet;
-use crate::data::names::*;
+use crate::consts::names::*;
 use bracket_lib::prelude::*;
 
 pub fn town_builder(

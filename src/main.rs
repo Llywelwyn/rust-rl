@@ -6,10 +6,7 @@ use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use bracket_lib::prelude::*;
 use std::collections::HashMap;
-
-const TILESIZE: f32 = 16.0;
-const DISPLAYWIDTH: u32 = 100;
-const DISPLAYHEIGHT: u32 = 56;
+use crate::consts::{ DISPLAYHEIGHT, DISPLAYWIDTH, TILESIZE };
 
 #[notan_main]
 fn main() -> Result<(), String> {
@@ -144,7 +141,7 @@ fn setup(gfx: &mut Graphics) -> State {
     gs.ecs.insert(rex_assets::RexAssets::new());
 
     gamelog::setup_log();
-    gamelog::record_event(data::events::EVENT::Level(1));
+    gamelog::record_event(consts::events::EVENT::Level(1));
     gs.generate_world_map(1, TileType::Floor);
 
     gs
@@ -379,7 +376,7 @@ fn draw_spritebox(panel: BoxDraw, draw: &mut Draw, atlas: &HashMap<String, Textu
     );
 }
 
-use crate::data::visuals::{ VIEWPORT_H, VIEWPORT_W };
+use crate::consts::visuals::{ VIEWPORT_H, VIEWPORT_W };
 fn draw_bg(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     let offset = crate::camera::get_offset();
     let log = BoxDraw {
@@ -450,6 +447,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             );
             draw_farlook(x, y, &mut draw, &gs.atlas);
             //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop
+        }
+        RunState::ShowCheatMenu => {
+            crate::gui::draw_cheat_menu(&mut draw, &gs.atlas, &gs.font);
         }
         _ => {}
     }

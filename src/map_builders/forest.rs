@@ -12,7 +12,7 @@ use super::{
     Foliage,
 };
 use bracket_lib::prelude::*;
-use crate::data::names::*;
+use crate::consts::names::*;
 
 pub fn forest_builder(
     new_id: i32,

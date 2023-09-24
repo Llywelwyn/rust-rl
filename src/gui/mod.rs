@@ -32,11 +32,11 @@ use super::{
     Skills,
     Viewshed,
     BUC,
-    data::ids::get_local_col,
+    consts::ids::get_local_col,
 };
-use crate::data::prelude::*;
-use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
-use crate::data::visuals::{
+use crate::consts::prelude::*;
+use crate::consts::entity::CARRY_CAPACITY_PER_STRENGTH;
+use crate::consts::visuals::{
     TARGETING_LINE_COL,
     TARGETING_CURSOR_COL,
     TARGETING_AOE_COL,
@@ -57,7 +57,7 @@ mod identify_menu;
 pub use identify_menu::*;
 mod tooltip;
 pub use cheat_menu::*;
-use crate::data::events::*;
+use crate::consts::events::*;
 mod farlook;
 pub use farlook::*;
 

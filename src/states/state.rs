@@ -13,8 +13,8 @@ use crate::visibility_system::VisibilitySystem;
 use crate::ai;
 use crate::gamelog;
 use crate::spawner;
-use crate::data::ids::*;
-use crate::data::events::*;
+use crate::consts::ids::*;
+use crate::consts::events::*;
 use crate::components::*;
 use crate::player::*;
 use crate::gui;
@@ -230,7 +230,49 @@ impl State {
                     }
                 }
             }
-            // RunState::ShowCheatMenu
+            RunState::ShowCheatMenu => {
+                let result = gui::show_cheat_menu(self, ctx);
+                match result {
+                    gui::CheatMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                    gui::CheatMenuResult::NoResponse => {}
+                    gui::CheatMenuResult::Ascend => {
+                        let id = self.ecs.fetch::<Map>().id - 1;
+                        self.goto_id(id, TileType::DownStair);
+                        self.mapgen_next_state = Some(RunState::PreRun);
+                        new_runstate = RunState::MapGeneration;
+                    }
+                    gui::CheatMenuResult::Descend => {
+                        let id = self.ecs.fetch::<Map>().id + 1;
+                        self.goto_id(id, TileType::UpStair);
+                        self.mapgen_next_state = Some(RunState::PreRun);
+                        new_runstate = RunState::MapGeneration;
+                    }
+                    gui::CheatMenuResult::Heal => {
+                        let player = self.ecs.fetch::<Entity>();
+                        let mut pools = self.ecs.write_storage::<Pools>();
+                        let mut player_pools = pools.get_mut(*player).unwrap();
+                        player_pools.hit_points.current = player_pools.hit_points.max;
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                    gui::CheatMenuResult::MagicMap => {
+                        let mut map = self.ecs.fetch_mut::<Map>();
+                        for v in map.revealed_tiles.iter_mut() {
+                            *v = true;
+                        }
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                    gui::CheatMenuResult::GodMode => {
+                        let player = self.ecs.fetch::<Entity>();
+                        let mut pools = self.ecs.write_storage::<Pools>();
+                        let mut player_pools = pools.get_mut(*player).unwrap();
+                        gamelog::Logger::new().append("TOGGLED GOD MODE!").log();
+                        player_pools.god = !player_pools.god;
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                }
+            }
             // RunState::ShowInventory
             // RunState::ShowDropItem
             // RunState::ShowRemoveItem
@@ -248,7 +290,7 @@ impl State {
             }
             //RunState::GameOver
             RunState::GoToLevel(id, dest_tile) => {
-                self.goto_id(id, dest_tile); // TODO: This causes issues being before swapping runstate?
+                self.goto_id(id, dest_tile);
                 self.mapgen_next_state = Some(RunState::PreRun);
                 new_runstate = RunState::MapGeneration;
             }
@@ -414,7 +456,7 @@ impl State {
                 }
             }
             RunState::ShowCheatMenu => {
-                let result = gui::show_cheat_menu(self, ctx);
+                let result = gui::CheatMenuResult::Cancel; //gui::show_cheat_menu(self, ctx);
                 match result {
                     gui::CheatMenuResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;

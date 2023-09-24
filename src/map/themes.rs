@@ -1,7 +1,7 @@
 use super::{ Map, Point, TileType };
-use crate::data::visuals::*;
+use crate::consts::visuals::*;
 use crate::config::CONFIG;
-use crate::data::ids::*;
+use crate::consts::ids::*;
 use bracket_lib::prelude::*;
 use std::ops::{ Add, Mul };
 use notan::prelude::*;
@@ -361,7 +361,7 @@ fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
     let distance = DistanceAlg::Pythagoras.distance2d(pos, other_pos) as f32; // Get distance in tiles.
     let interp_factor =
         (distance - START_DARKEN_AT_N_TILES) /
-        ((crate::data::entity::DEFAULT_VIEWSHED_STANDARD as f32) - START_DARKEN_AT_N_TILES);
+        ((crate::consts::entity::DEFAULT_VIEWSHED_STANDARD as f32) - START_DARKEN_AT_N_TILES);
     let interp_factor = interp_factor.max(0.0).min(1.0); // Clamp [0-1]
     let result =
         1.0 -

@@ -13,7 +13,7 @@ use crate::{
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use crate::data::messages;
+use crate::consts::messages;
 
 pub struct ItemRemoveSystem {}
 

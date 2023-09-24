@@ -10,3 +10,7 @@ pub mod sprites;
 pub mod prelude {
     pub use super::visuals::{ TILE_LAYER, ENTITY_LAYER, TEXT_LAYER, HP_BAR_LAYER };
 }
+
+pub const TILESIZE: f32 = 16.0;
+pub const DISPLAYWIDTH: u32 = 100;
+pub const DISPLAYHEIGHT: u32 = 56;
