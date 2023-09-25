@@ -437,7 +437,7 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     draw_spritebox(sidebox, draw, atlas);
 }
 
-fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
+fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
     let mut log = false;
@@ -481,21 +481,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         _ => {}
     }
     gfx.render(&draw);
-    if log {
-        gamelog::render_log(
-            gfx,
-            &gs.font,
-            &(TILESIZE, TILESIZE * 8.0 + 4.0),
-            (VIEWPORT_W as f32) * TILESIZE
-        );
-    }
-}
-
-fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
-    (
-        ((idx % (map.width as usize)) as f32) * (TILESIZE as f32),
-        ((idx / (map.width as usize)) as f32) * (TILESIZE as f32),
-    )
+    gamelog::render(log, gfx, &gs.font);
 }
 
 fn update(ctx: &mut App, state: &mut State) {

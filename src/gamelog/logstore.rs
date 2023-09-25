@@ -5,11 +5,20 @@ use std::collections::BTreeMap;
 use notan::prelude::*;
 use notan::text::CreateText;
 use crate::consts::{ TILESIZE, FONTSIZE };
+use crate::consts::visuals::VIEWPORT_W;
 
 lazy_static! {
     pub static ref LOG: Mutex<BTreeMap<i32, Vec<LogFragment>>> = Mutex::new(BTreeMap::new());
 }
 
+/// Render with defaults, to avoid having to pass so many args.
+pub fn render(draw: bool, gfx: &mut Graphics, font: &notan::draw::Font) {
+    if draw {
+        render_log(gfx, &font, &(TILESIZE, TILESIZE * 8.0 + 4.0), (VIEWPORT_W as f32) * TILESIZE);
+    }
+}
+
+/// Render with specific params.
 pub fn render_log(gfx: &mut Graphics, font: &notan::draw::Font, pos: &(f32, f32), width: f32) {
     let mut text = gfx.create_text();
     let log = LOG.lock().unwrap();
