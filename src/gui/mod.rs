@@ -206,6 +206,24 @@ pub fn draw_ui2(
                     .h_align_right();
             }
         }
+        let map = ecs.fetch::<Map>();
+        let id = if map.depth > 0 {
+            format!("{}{}", map.short_name, map.depth)
+        } else {
+            format!("{}", map.short_name)
+        };
+        draw.text(&font, &id)
+            .position(((VIEWPORT_W + 1) as f32) * TILESIZE, row2)
+            .color(Color::WHITE) // get_local_col()
+            .size(FONTSIZE)
+            .h_align_right();
+        let turns = crate::gamelog::get_event_count(EVENT::COUNT_TURN);
+        x = draw.last_text_bounds().min_x() - TILESIZE;
+        draw.text(&font, &format!("T{}", turns))
+            .position(x, row2)
+            .color(Color::YELLOW)
+            .size(FONTSIZE)
+            .h_align_right();
         if stats.god {
             draw.text(&font, "--- GODMODE: ON ---")
                 .position(20.0 * TILESIZE, 20.0 * TILESIZE)
