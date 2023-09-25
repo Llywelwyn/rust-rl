@@ -454,7 +454,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             draw_camera(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
-            print_log(&mut draw, &gs.font, Point::new(1, 7), false, 7, VIEWPORT_W + 22);
+            //print_log(&mut draw, &gs.font, Point::new(1, 7), false, 7, VIEWPORT_W + 22);
         }
     }
     match *gs.ecs.fetch::<RunState>() {
@@ -474,6 +474,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         _ => {}
     }
     gfx.render(&draw);
+    write(gfx, &gs.font, &(TILESIZE, TILESIZE * 8.0), true);
 }
 
 fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
@@ -557,4 +558,67 @@ pub fn print_log(
             x = pos.x;
             x_px = (x as f32) * TILESIZE;
         });
+}
+
+use std::collections::BTreeMap;
+fn write(gfx: &mut Graphics, font: &notan::draw::Font, pos: &(f32, f32), desc: bool) {
+    use notan::text::CreateText;
+    let mut text = gfx.create_text();
+    let log = get_log();
+    let latest: Vec<_> = log.iter().rev().take(4).rev().collect();
+    let mut initial = true;
+    for (_, entries) in latest {
+        let mut wrote = false;
+        for (message, colour) in entries.iter() {
+            if initial {
+                if desc {
+                    text.add(&message)
+                        .font(font)
+                        .position(pos.0, pos.1)
+                        .size(FONTSIZE)
+                        .max_width((VIEWPORT_W as f32) * TILESIZE)
+                        .color(*colour)
+                        .v_align_bottom();
+                } else {
+                    text.add(&message)
+                        .font(font)
+                        .position(pos.0, pos.1)
+                        .size(FONTSIZE)
+                        .max_width((VIEWPORT_W as f32) * TILESIZE)
+                        .color(*colour);
+                }
+                initial = false;
+            } else {
+                text.chain(&message).color(*colour).size(FONTSIZE);
+            }
+            wrote = true;
+        }
+        if wrote {
+            text.chain("\n");
+        }
+    }
+    gfx.render(&text);
+}
+
+fn get_log() -> BTreeMap<i32, Vec<(String, Color)>> {
+    let mut log: BTreeMap<i32, Vec<(String, Color)>> = BTreeMap::new();
+    log.entry(4).or_insert_with(Vec::new).push(("This is a".to_string(), Color::WHITE));
+    log.entry(4).or_insert_with(Vec::new).push((" test".to_string(), Color::RED));
+    log.entry(5).or_insert_with(Vec::new).push(("This is the fifth".to_string(), Color::WHITE));
+    log.entry(5).or_insert_with(Vec::new).push((" test".to_string(), Color::BLUE));
+    log.entry(6).or_insert_with(Vec::new).push(("This is the sixth".to_string(), Color::WHITE));
+    log.entry(6).or_insert_with(Vec::new).push((" test".to_string(), Color::BLUE));
+    log.entry(7).or_insert_with(Vec::new).push(("This is the seventh".to_string(), Color::WHITE));
+    log.entry(7).or_insert_with(Vec::new).push((" test".to_string(), Color::BLUE));
+    log.entry(8).or_insert_with(Vec::new).push(("This is the eighth".to_string(), Color::WHITE));
+    log.entry(8)
+        .or_insert_with(Vec::new)
+        .push((
+            " test with a very long message, so that I can test the line wrapping.".to_string(),
+            Color::BLUE,
+        ));
+    log.entry(9).or_insert_with(Vec::new).push(("This is the ninth".to_string(), Color::WHITE));
+    log.entry(9).or_insert_with(Vec::new).push((" test".to_string(), Color::BLUE));
+
+    log
 }

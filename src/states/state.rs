@@ -299,7 +299,6 @@ impl State {
             // RunState::HelpScreen
             RunState::MagicMapReveal { row, cursed } => {
                 let mut map = self.ecs.fetch_mut::<Map>();
-
                 // Could probably toss this into a function somewhere, and/or
                 // have multiple simple animations for it.
                 for x in 0..map.width {
