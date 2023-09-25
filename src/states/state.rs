@@ -279,7 +279,9 @@ impl State {
             // RunState::ShowTargeting
             // RunState::ShowRemoveCurse
             // RunState::ShowIdentify
-            // RunState::ActionWithDirection
+            RunState::ActionWithDirection { function } => {
+                new_runstate = gui::get_input_direction(&mut self.ecs, ctx, function);
+            }
             // RunState::MainMenu
             // RunState::CharacterCreation
             RunState::SaveGame => {
@@ -645,7 +647,7 @@ impl State {
                 }
             }
             RunState::ActionWithDirection { function } => {
-                new_runstate = gui::get_input_direction(&mut self.ecs, ctx, function);
+                new_runstate = RunState::AwaitingInput; //gui::get_input_direction(&mut self.ecs, ctx, function);
             }
             RunState::MainMenu { .. } => {
                 let result = gui::main_menu(self, ctx);

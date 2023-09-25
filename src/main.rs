@@ -440,13 +440,15 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         | RunState::PreRun { .. } => {}
         RunState::MapGeneration => {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
-            render_map_in_view(
-                &gs.mapgen_history[gs.mapgen_index],
-                &gs.ecs,
-                &mut draw,
-                &gs.atlas,
-                true
-            );
+            if config::CONFIG.logging.show_mapgen {
+                render_map_in_view(
+                    &gs.mapgen_history[gs.mapgen_index],
+                    &gs.ecs,
+                    &mut draw,
+                    &gs.atlas,
+                    true
+                );
+            }
         }
         _ => {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
@@ -457,18 +459,20 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     }
     match *gs.ecs.fetch::<RunState>() {
         RunState::Farlook { x, y } => {
-            draw.text(&gs.font, "RunState::Farlook")
-                .position(((x + 2) as f32) * TILESIZE, (y as f32) * TILESIZE)
-                .size(FONTSIZE);
             gui::draw_farlook(x, y, &mut draw, &gs.atlas);
             //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop
         }
         RunState::ShowCheatMenu => {
             gui::draw_cheat_menu(&mut draw, &gs.atlas, &gs.font);
         }
+        RunState::ActionWithDirection { .. } => {
+            let offset = crate::camera::get_offset();
+            draw.text(&gs.font, "In what direction? [0-9]/[YUHJKLBN]")
+                .position(((offset.x + 1) as f32) * TILESIZE, ((offset.y + 1) as f32) * TILESIZE)
+                .size(TILESIZE);
+        }
         _ => {}
     }
-    // Render batch
     gfx.render(&draw);
 }
 

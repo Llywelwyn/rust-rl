@@ -732,58 +732,46 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
 
 pub fn get_input_direction(
     ecs: &mut World,
-    ctx: &mut BTerm,
+    ctx: &mut App,
     function: fn(i: i32, j: i32, ecs: &mut World) -> RunState
 ) -> RunState {
-    let offsets = camera::get_offset();
-
-    ctx.print_color(
-        1 + offsets.x,
-        1 + offsets.y,
-        RGB::named(WHITE),
-        RGB::named(BLACK),
-        "In what direction? [0-9]/[YUHJKLBN]"
-    );
-    match ctx.key {
-        None => {
-            return RunState::ActionWithDirection { function };
-        }
-        Some(key) =>
-            match key {
-                VirtualKeyCode::Escape => {
-                    return RunState::AwaitingInput;
-                }
-                // Cardinals
-                VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
-                    return function(-1, 0, ecs);
-                }
-                VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
-                    return function(1, 0, ecs);
-                }
-                VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                    return function(0, -1, ecs);
-                }
-                VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                    return function(0, 1, ecs);
-                }
-                // Diagonals
-                VirtualKeyCode::Numpad9 | VirtualKeyCode::U => {
-                    return function(1, -1, ecs);
-                }
-                VirtualKeyCode::Numpad7 | VirtualKeyCode::Y => {
-                    return function(-1, -1, ecs);
-                }
-                VirtualKeyCode::Numpad3 | VirtualKeyCode::N => {
-                    return function(1, 1, ecs);
-                }
-                VirtualKeyCode::Numpad1 | VirtualKeyCode::B => {
-                    return function(-1, 1, ecs);
-                }
-                _ => {
-                    return RunState::ActionWithDirection { function };
-                }
+    let key = &ctx.keyboard;
+    for keycode in key.pressed.iter() {
+        match *keycode {
+            KeyCode::Escape => {
+                return RunState::AwaitingInput;
             }
+            KeyCode::Numpad1 | KeyCode::B => {
+                return function(-1, 1, ecs);
+            }
+            KeyCode::Numpad2 | KeyCode::J | KeyCode::Down => {
+                return function(0, 1, ecs);
+            }
+            KeyCode::Numpad3 | KeyCode::N => {
+                return function(1, 1, ecs);
+            }
+            KeyCode::Numpad4 | KeyCode::H | KeyCode::Left => {
+                return function(-1, 0, ecs);
+            }
+            KeyCode::Numpad5 | KeyCode::Period => {
+                return function(0, 0, ecs);
+            }
+            KeyCode::Numpad6 | KeyCode::L | KeyCode::Right => {
+                return function(1, 0, ecs);
+            }
+            KeyCode::Numpad7 | KeyCode::Y => {
+                return function(-1, -1, ecs);
+            }
+            KeyCode::Numpad8 | KeyCode::K | KeyCode::Up => {
+                return function(0, -1, ecs);
+            }
+            KeyCode::Numpad9 | KeyCode::U => {
+                return function(1, -1, ecs);
+            }
+            _ => {}
+        }
     }
+    RunState::ActionWithDirection { function }
 }
 
 #[derive(PartialEq, Copy, Clone)]
