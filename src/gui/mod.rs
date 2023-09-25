@@ -212,6 +212,50 @@ pub fn draw_ui2(
                 .color(Color::YELLOW)
                 .size(FONTSIZE);
         }
+        // Equipment
+        let renderables = ecs.read_storage::<Renderable>();
+        let mut equipment: Vec<(String, RGB, RGB, FontCharType)> = Vec::new();
+        let entities = ecs.entities();
+        for (entity, _equipped, renderable) in (&entities, &equipped, &renderables)
+            .join()
+            .filter(|item| item.1.owner == *player_entity) {
+            equipment.push((
+                obfuscate_name_ecs(ecs, entity).0,
+                RGB::named(item_colour_ecs(ecs, entity)),
+                renderable.fg,
+                renderable.glyph,
+            ));
+        }
+        let mut y = 1;
+        // TODO: Fix all of this to work with notan colours, and sprites.
+        if !equipment.is_empty() {
+            draw.text(&font, "Equipment")
+                .position(((VIEWPORT_W + 3) as f32) * TILESIZE, (y as f32) * TILESIZE)
+                .size(FONTSIZE);
+            let mut j: u8 = 0;
+            for item in equipment {
+                y += 1;
+                x = ((VIEWPORT_W + 3) as f32) * TILESIZE;
+                draw.text(&font, &format!("{}", (97 + j) as char))
+                    .position(x, (y as f32) * TILESIZE)
+                    .color(Color::YELLOW)
+                    .size(FONTSIZE);
+                j += 1;
+                x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
+                draw.text(&font, &format!("{}", item.3 as u8 as char))
+                    .position(x, (y as f32) * TILESIZE)
+                    .size(FONTSIZE); // Colours here - and below.
+                x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
+                draw.text(&font, &item.0)
+                    .position(x, (y as f32) * TILESIZE)
+                    .size(FONTSIZE);
+                x = draw.last_text_bounds().max_x() + 1.0 * TILESIZE;
+                draw.text(&font, "(worn)")
+                    .position(x, (y as f32) * TILESIZE)
+                    .size(FONTSIZE);
+            }
+            //y += 2;
+        }
     }
 }
 
