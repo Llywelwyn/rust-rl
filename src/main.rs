@@ -449,8 +449,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             draw_camera(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
-            // print_log
-            draw_log(&mut draw, &gs.font);
+            print_log(&mut draw, &gs.font, Point::new(1, 7), false, 7, VIEWPORT_W - 1);
+            //draw_log(&mut draw, &gs.font);
         }
     }
     match *gs.ecs.fetch::<RunState>() {
@@ -500,4 +500,76 @@ fn draw_log(draw: &mut notan::draw::Draw, font: &notan::draw::Font) {
         .size(FONTSIZE)
         .color(Color::WHITE)
         .max_width((VIEWPORT_W as f32) * TILESIZE);
+}
+
+pub fn print_log(
+    draw: &mut notan::draw::Draw,
+    font: &notan::draw::Font,
+    pos: Point,
+    _descending: bool,
+    len: usize,
+    maximum_len: i32
+) {
+    let mut y = pos.y;
+    let mut x = pos.x;
+    let mut x_px = (x as f32) * TILESIZE;
+    // Reverse the log, take the number we want to show, and iterate through them
+    gamelog::LOG
+        .lock()
+        .unwrap()
+        .iter()
+        .rev()
+        .take(len)
+        .for_each(|log| {
+            let mut entry_len = -2;
+            // Iterate through each message fragment, and get the total length
+            // in lines, by adding the length of every fragment and dividing it
+            // by the maximum length we desire. Then shuffle our start-y by that much.
+            log.iter().for_each(|frag| {
+                entry_len += frag.text.len() as i32;
+            });
+            let lines = entry_len / maximum_len;
+            y -= lines;
+            let mut i = 0;
+            log.iter().for_each(|frag| {
+                // Split every fragment up into single characters.
+                let parts = frag.text.split("");
+                for part in parts {
+                    // This is an extremely hacky solution to a problem I don't understand yet.
+                    // -- without this, the lines *here* and the line count *above* wont match.
+                    if part == "" || part == "\\" {
+                        continue;
+                    }
+                    if i > entry_len {
+                        break;
+                    }
+                    i += 1;
+                    if x + (part.len() as i32) > pos.x + maximum_len {
+                        if y > pos.y - (len as i32) {
+                            draw.text(&font, "-")
+                                .position(x_px, (y as f32) * TILESIZE)
+                                .size(FONTSIZE);
+                        }
+                        y += 1;
+                        x = pos.x;
+                        x_px = (x as f32) * TILESIZE;
+                    }
+                    // Stay within bounds
+                    if y > pos.y - (len as i32) {
+                        draw.text(&font, part)
+                            .position(x_px, (y as f32) * TILESIZE)
+                            .size(FONTSIZE)
+                            .color(Color::from_rgb(frag.colour.r, frag.colour.g, frag.colour.b));
+                    }
+                    x += part.len() as i32;
+                    x_px = draw.last_text_bounds().max_x();
+                }
+            });
+            // Take away one from the y-axis, because we want to start each entry
+            // on a new line, and go up an additional amount depending on how many
+            // lines our *previous* entry took.
+            y -= 1 + lines;
+            x = pos.x;
+            x_px = (x as f32) * TILESIZE;
+        });
 }
