@@ -135,7 +135,8 @@ pub fn draw_ui2(
     ).join() {
         let initial_x = 26.0 * TILESIZE;
         let mut x = initial_x;
-        let y = 53.0 * TILESIZE;
+        let row1 = 53.0 * TILESIZE;
+        let row2 = row1 + TILESIZE;
         // TODO: Draw hp/mana bars
         // Draw AC
         let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
@@ -150,13 +151,67 @@ pub fn draw_ui2(
         }
         let armour_class =
             stats.bac - attributes.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus;
-        draw.text(&font, "AC").position(x, y).color(Color::PINK).size(FONTSIZE);
+        draw.text(&font, "AC").position(x, row1).color(Color::PINK).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", armour_class)).position(x, y).size(FONTSIZE);
+        draw.text(&font, &format!("{}", armour_class)).position(x, row1).size(FONTSIZE);
         draw.text(&font, &format!("XP{}/{}", stats.level, stats.xp))
-            .position(initial_x, y + TILESIZE)
+            .position(initial_x, row2)
             .size(FONTSIZE);
-        // TODO: Finish ui (placeholder)
+        x = 38.0 * TILESIZE;
+        draw.text(&font, "STR").position(x, row1).color(Color::RED).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", attributes.strength.base)).position(x, row1).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x() + TILESIZE;
+        draw.text(&font, "DEX").position(x, row1).color(Color::GREEN).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", attributes.dexterity.base))
+            .position(x, row1)
+            .size(FONTSIZE);
+        x = draw.last_text_bounds().max_x() + TILESIZE;
+        draw.text(&font, "CON").position(x, row1).color(Color::ORANGE).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", attributes.constitution.base))
+            .position(x, row1)
+            .size(FONTSIZE);
+        x = 38.0 * TILESIZE;
+        draw.text(&font, "INT").position(x, row2).color(Color::BLUE).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", attributes.intelligence.base))
+            .position(x, row2)
+            .size(FONTSIZE);
+        x = draw.last_text_bounds().max_x() + TILESIZE;
+        draw.text(&font, "WIS").position(x, row2).color(Color::YELLOW).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", attributes.wisdom.base)).position(x, row2).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x() + TILESIZE;
+        draw.text(&font, "CHA").position(x, row2).color(Color::PURPLE).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", attributes.charisma.base)).position(x, row2).size(FONTSIZE);
+        let hungertxt = match hunger.state {
+            HungerState::Satiated => "Satiated",
+            HungerState::Normal => "Normal",
+            HungerState::Hungry => "Hungry",
+            HungerState::Weak => "Weak",
+            HungerState::Fainting => "Fainting",
+            HungerState::Starving => "Starving",
+        };
+        match hunger.state {
+            HungerState::Normal => {}
+            _ => {
+                let col = get_hunger_colour(hunger.state);
+                draw.text(&font, hungertxt)
+                    .position(((VIEWPORT_W + 1) as f32) * TILESIZE, row1)
+                    .color(Color::from_bytes(col.0, col.1, col.2, 255))
+                    .size(FONTSIZE)
+                    .h_align_right();
+            }
+        }
+        if stats.god {
+            draw.text(&font, "--- GODMODE: ON ---")
+                .position(20.0 * TILESIZE, 20.0 * TILESIZE)
+                .color(Color::YELLOW)
+                .size(FONTSIZE);
+        }
     }
 }
 
