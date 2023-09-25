@@ -12,6 +12,9 @@ use crate::consts::{ DISPLAYHEIGHT, DISPLAYWIDTH, TILESIZE, FONTSIZE };
 fn main() -> Result<(), String> {
     let win_config = WindowConfig::new()
         .set_size(DISPLAYWIDTH * (TILESIZE as u32), DISPLAYHEIGHT * (TILESIZE as u32))
+        .set_title("RUST-RL")
+        .set_resizable(false)
+        .set_taskbar_icon_data(Some(include_bytes!("../resources/icon.png")))
         .set_vsync(true);
     notan
         ::init_with(setup)
@@ -449,7 +452,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             draw_camera(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
-            print_log(&mut draw, &gs.font, Point::new(1, 7), false, 7, VIEWPORT_W - 1);
+            print_log(&mut draw, &gs.font, Point::new(1, 7), false, 7, VIEWPORT_W + 22);
         }
     }
     match *gs.ecs.fetch::<RunState>() {
