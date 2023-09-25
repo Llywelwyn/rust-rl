@@ -166,7 +166,12 @@ struct DrawInfo {
     draw_type: DrawType,
 }
 
-fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
+fn draw_camera(
+    ecs: &World,
+    draw: &mut Draw,
+    atlas: &HashMap<String, Texture>,
+    font: &notan::draw::Font
+) {
     let map = ecs.fetch::<Map>();
     render_map_in_view(&*map, ecs, draw, atlas, false);
     {
@@ -243,17 +248,30 @@ fn draw_camera(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
                             // Draw health bar
                         }
                     }
-                    draw.image(atlas.get("ui_heart_full").unwrap()).position(
-                        (entry.0.x as f32) * TILESIZE,
-                        (entry.0.y as f32) * TILESIZE
-                    );
+                    // TODO: Use sprites here, not text drawing. Put bitmap font into atlas.
+                    let renderable = renderables.get(entry.1.e).unwrap();
+                    draw.text(&font, &format!("{}", renderable.glyph as u8 as char))
+                        .position(
+                            ((entry.0.x as f32) + 0.5) * TILESIZE,
+                            ((entry.0.y as f32) + 0.5) * TILESIZE
+                        )
+                        .color(Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b))
+                        .size(FONTSIZE + 2.0)
+                        .h_align_center()
+                        .v_align_middle();
                     // Draw entity
                 }
                 DrawType::VisibleAndRemember => {
-                    draw.image(atlas.get("ui_crystal_full").unwrap()).position(
-                        (entry.0.x as f32) * TILESIZE,
-                        (entry.0.y as f32) * TILESIZE
-                    );
+                    let renderable = renderables.get(entry.1.e).unwrap();
+                    draw.text(&font, &format!("{}", renderable.glyph as u8 as char))
+                        .position(
+                            ((entry.0.x as f32) + 0.5) * TILESIZE,
+                            ((entry.0.y as f32) + 0.5) * TILESIZE
+                        )
+                        .color(Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b))
+                        .size(FONTSIZE + 2.0)
+                        .h_align_center()
+                        .v_align_middle();
                     // TODO: Update map memory.
                 }
                 _ => {}
@@ -373,15 +391,15 @@ use crate::consts::visuals::{ VIEWPORT_H, VIEWPORT_W };
 fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     let offset = crate::camera::get_offset();
     let log = BoxDraw {
-        frame: "ui_panel_window".to_string(),
-        fill: true,
+        frame: "ui_panel_white".to_string(),
+        fill: false,
         top_left: (0, 0),
         top_right: (offset.x + VIEWPORT_W, 0),
         bottom_left: (0, offset.y - 2),
         bottom_right: (offset.x + VIEWPORT_W, offset.y - 2),
     };
     let game = BoxDraw {
-        frame: "ui_panel_window".to_string(),
+        frame: "ui_panel_white".to_string(),
         fill: false,
         top_left: (offset.x - 1, offset.y - 1),
         top_right: (offset.x + VIEWPORT_W, offset.y - 1),
@@ -389,16 +407,16 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
         bottom_right: (offset.x + VIEWPORT_W, offset.y + VIEWPORT_H),
     };
     let attr = BoxDraw {
-        frame: "ui_panel_window".to_string(),
-        fill: true,
+        frame: "ui_panel_white".to_string(),
+        fill: false,
         top_left: (offset.x - 1, offset.y + VIEWPORT_H + 1),
         top_right: (offset.x + VIEWPORT_W, offset.y + VIEWPORT_H + 1),
         bottom_left: (offset.x - 1, (DISPLAYHEIGHT as i32) - 1),
         bottom_right: (offset.x + VIEWPORT_W, (DISPLAYHEIGHT as i32) - 1),
     };
     let sidebox = BoxDraw {
-        frame: "ui_panel_window".to_string(),
-        fill: true,
+        frame: "ui_panel_white".to_string(),
+        fill: false,
         top_left: (offset.x + VIEWPORT_W + 1, 0),
         top_right: ((DISPLAYWIDTH as i32) - 1, 0),
         bottom_left: (offset.x + VIEWPORT_W + 1, (DISPLAYHEIGHT as i32) - 1),
@@ -429,7 +447,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         }
         _ => {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
-            draw_camera(&gs.ecs, &mut draw, &gs.atlas);
+            draw_camera(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             crate::gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
         }
     }
