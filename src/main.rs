@@ -473,10 +473,10 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             gui::draw_cheat_menu(&mut draw, &gs.atlas, &gs.font);
         }
         RunState::ActionWithDirection { .. } => {
-            let offset = crate::camera::get_offset();
-            draw.text(&gs.font, "In what direction? [0-9]/[YUHJKLBN]")
-                .position(((offset.x + 1) as f32) * TILESIZE, ((offset.y + 1) as f32) * TILESIZE)
-                .size(TILESIZE);
+            corner_text("In what direction? [0-9]/[YUHJKLBN]", &mut draw, &gs.font);
+        }
+        RunState::GameOver => {
+            corner_text("Create morgue file? [Y/N]", &mut draw, &gs.font);
         }
         _ => {}
     }
@@ -486,4 +486,11 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
 
 fn update(ctx: &mut App, state: &mut State) {
     state.update(ctx);
+}
+
+fn corner_text(text: &str, draw: &mut Draw, font: &notan::draw::Font) {
+    let offset = crate::camera::get_offset();
+    draw.text(&font, &text)
+        .position(((offset.x + 1) as f32) * TILESIZE, ((offset.y + 1) as f32) * TILESIZE)
+        .size(FONTSIZE);
 }

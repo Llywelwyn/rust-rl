@@ -85,6 +85,7 @@ pub fn get_attribute_rolls(
     ancestry: Ancestry
 ) -> (i32, i32, i32, i32, i32, i32) {
     let (mut str, mut dex, mut con, mut int, mut wis, mut cha) = match class {
+        Class::Unset => VILLAGER_MIN_ATTR,
         Class::Fighter => FIGHTER_MIN_ATTR,
         Class::Rogue => ROGUE_MIN_ATTR,
         Class::Wizard => WIZARD_MIN_ATTR,
@@ -92,6 +93,7 @@ pub fn get_attribute_rolls(
     };
     let mut remaining_points = TOTAL_ATTRIBUTE_POINTS_MAXIMUM - (str + dex + con + int + wis + cha);
     let improve_chance: [i32; 6] = match class {
+        Class::Unset => VILLAGER_IMPR_CHANCE,
         Class::Fighter => FIGHTER_IMPR_CHANCE,
         Class::Rogue => ROGUE_IMPR_CHANCE,
         Class::Wizard => WIZARD_IMPR_CHANCE,

@@ -36,6 +36,7 @@ fn create_file_name(ecs: &World, morgue_dir: &str) -> String {
     let pools = ecs.read_storage::<Pools>();
     let pool = pools.get(*e).unwrap();
     let class = match ecs.read_storage::<HasClass>().get(*e).unwrap().name {
+        Class::Unset => "classless",
         Class::Fighter => "fighter",
         Class::Wizard => "wizard",
         Class::Rogue => "rogue",
@@ -47,7 +48,7 @@ fn create_file_name(ecs: &World, morgue_dir: &str) -> String {
         Ancestry::Dwarf => "dwarf",
         Ancestry::Gnome => "gnome",
         Ancestry::Catfolk => "catfolk",
-        Ancestry::NULL => "NULL",
+        Ancestry::Unset => "NULL",
     };
     return format!(
         "{}/lv{}-{}-{}-{}.txt",
@@ -64,6 +65,7 @@ fn create_morgue_string(ecs: &World) -> String {
     let mut morgue_info: String = Default::default();
     let e = ecs.fetch::<Entity>();
     let class = match ecs.read_storage::<HasClass>().get(*e).unwrap().name {
+        Class::Unset => "classless",
         Class::Fighter => "fighter",
         Class::Wizard => "wizard",
         Class::Rogue => "rogue",
@@ -75,7 +77,7 @@ fn create_morgue_string(ecs: &World) -> String {
         Ancestry::Dwarf => "dwarf",
         Ancestry::Gnome => "gnome",
         Ancestry::Catfolk => "catfolk",
-        Ancestry::NULL => "NULL",
+        Ancestry::Unset => "NULL",
     };
     let pools = ecs.read_storage::<Pools>();
     let pool = pools.get(*e).unwrap();

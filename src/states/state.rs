@@ -290,7 +290,24 @@ impl State {
                     menu_selection: gui::MainMenuSelection::LoadGame,
                 };
             }
-            //RunState::GameOver
+            RunState::GameOver => {
+                let result = gui::game_over(ctx);
+                let write_to_morgue: Option<bool> = match result {
+                    gui::YesNoResult::NoSelection => None,
+                    gui::YesNoResult::No => Some(false),
+                    gui::YesNoResult::Yes => Some(true),
+                };
+                if let Some(response) = write_to_morgue {
+                    if response {
+                        morgue::create_morgue_file(&self.ecs);
+                    }
+                    self.game_over_cleanup();
+                    new_runstate = RunState::MapGeneration;
+                    self.mapgen_next_state = Some(RunState::MainMenu {
+                        menu_selection: gui::MainMenuSelection::NewGame,
+                    });
+                }
+            }
             RunState::GoToLevel(id, dest_tile) => {
                 self.goto_id(id, dest_tile);
                 self.mapgen_next_state = Some(RunState::PreRun);
@@ -680,7 +697,7 @@ impl State {
                         new_runstate = RunState::CharacterCreation { ancestry, class };
                     }
                     gui::CharCreateResult::Selected { ancestry, class } => {
-                        if ancestry == gui::Ancestry::NULL {
+                        if ancestry == gui::Ancestry::Unset {
                             new_runstate = RunState::MainMenu {
                                 menu_selection: gui::MainMenuSelection::NewGame,
                             };
@@ -699,7 +716,7 @@ impl State {
                 };
             }
             RunState::GameOver => {
-                let result = gui::game_over(ctx);
+                let result = gui::YesNoResult::No; //gui::game_over(ctx);
                 let write_to_morgue: Option<bool> = match result {
                     gui::YesNoResult::NoSelection => None,
                     gui::YesNoResult::No => Some(false),

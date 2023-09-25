@@ -32,7 +32,7 @@ use crate::consts::prelude::*;
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
 pub enum Ancestry {
-    NULL,
+    Unset,
     Human,
     Dwarf,
     Gnome,
@@ -42,6 +42,7 @@ pub enum Ancestry {
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
 pub enum Class {
+    Unset,
     Fighter,
     Rogue,
     Wizard,
@@ -212,7 +213,7 @@ pub fn character_creation(gs: &mut State, ctx: &mut BTerm) -> CharCreateResult {
             Some(key) =>
                 match key {
                     VirtualKeyCode::Escape => {
-                        return CharCreateResult::Selected { ancestry: Ancestry::NULL, class };
+                        return CharCreateResult::Selected { ancestry: Ancestry::Unset, class };
                     }
                     VirtualKeyCode::Return => {
                         return CharCreateResult::Selected { ancestry, class };
@@ -413,6 +414,9 @@ fn get_starting_inventory(
     let mut carried: Vec<String> = Vec::new();
     let starting_food: &str;
     match class {
+        Class::Unset => {
+            starting_food = VILLAGER_STARTING_FOOD;
+        }
         Class::Fighter => {
             starting_food = FIGHTER_STARTING_FOOD;
             equipped = vec![

@@ -1641,94 +1641,19 @@ pub enum YesNoResult {
     No,
 }
 
-pub fn game_over(ctx: &mut BTerm) -> YesNoResult {
-    let mut x = 3;
-    let mut y = 12;
-    let width = 45;
-    let height = 20;
-    ctx.draw_box(x, y, width, height, RGB::named(WHITE), RGB::named(BLACK));
-    ctx.print_color(x + 3, y, RGB::named(YELLOW), RGB::named(BLACK), "You died!");
-    ctx.print_color(
-        x + 3,
-        y + height,
-        RGB::named(YELLOW),
-        RGB::named(BLACK),
-        " Write a morgue file? [y/n] "
-    );
-    x += 2;
-    y += 2;
-    ctx.print_color(
-        x,
-        y,
-        RGB::named(GREEN),
-        RGB::named(BLACK),
-        format!("You survived for {} turns.", crate::gamelog::get_event_count(EVENT::COUNT_TURN))
-    );
-    y += 2;
-    ctx.print_color(x, y, RGB::named(GREEN), RGB::named(BLACK), format!("And in the process, you"));
-    y += 1;
-    if crate::gamelog::get_event_count(EVENT::COUNT_CHANGED_FLOOR) > 0 {
-        ctx.print_color(
-            x + 1,
-            y,
-            RGB::named(WHITE),
-            RGB::named(BLACK),
-            format!(
-                "- changed floor {} times",
-                crate::gamelog::get_event_count(EVENT::COUNT_CHANGED_FLOOR)
-            )
-        );
-        y += 1;
-    }
-    if crate::gamelog::get_event_count(EVENT::COUNT_KICK) > 0 {
-        ctx.print_color(
-            x + 1,
-            y,
-            RGB::named(WHITE),
-            RGB::named(BLACK),
-            format!(
-                "- kicked {} time(s), breaking {} object(s)",
-                crate::gamelog::get_event_count(EVENT::COUNT_KICK),
-                crate::gamelog::get_event_count(EVENT::COUNT_BROKE_DOOR)
-            )
-        );
-        y += 1;
-    }
-    if crate::gamelog::get_event_count(EVENT::COUNT_KILLED) > 0 {
-        ctx.print_color(
-            x + 1,
-            y,
-            RGB::named(WHITE),
-            RGB::named(BLACK),
-            format!(
-                "- slew {} other creature(s)",
-                crate::gamelog::get_event_count(EVENT::COUNT_KILLED)
-            )
-        );
-        y += 1;
-    }
-    if crate::gamelog::get_event_count(EVENT::COUNT_LOOKED_FOR_HELP) > 0 {
-        ctx.print_color(
-            x + 1,
-            y,
-            RGB::named(WHITE),
-            RGB::named(BLACK),
-            format!(
-                "- forgot the controls {} time(s)",
-                crate::gamelog::get_event_count(EVENT::COUNT_LOOKED_FOR_HELP)
-            )
-        );
-    }
-
-    match ctx.key {
-        None => YesNoResult::NoSelection,
-        Some(key) =>
-            match key {
-                VirtualKeyCode::N => YesNoResult::No,
-                VirtualKeyCode::Y => YesNoResult::Yes,
-                _ => YesNoResult::NoSelection,
+pub fn game_over(ctx: &mut App) -> YesNoResult {
+    for keycode in &ctx.keyboard.pressed {
+        match *keycode {
+            KeyCode::N => {
+                return YesNoResult::No;
             }
+            KeyCode::Y => {
+                return YesNoResult::Yes;
+            }
+            _ => {}
+        }
     }
+    YesNoResult::NoSelection
 }
 
 pub fn with_article(name: &String) -> String {

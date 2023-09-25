@@ -1022,7 +1022,7 @@ fn get_ancestry_string(ancestry: Ancestry) -> &'static str {
         Ancestry::Gnome => {
             return "gnome";
         }
-        Ancestry::NULL => {
+        Ancestry::Unset => {
             return "NULL";
         }
     }

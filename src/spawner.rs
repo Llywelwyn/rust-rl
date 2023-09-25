@@ -27,7 +27,10 @@ use super::{
     Bleeds,
     HasDamageModifiers,
     Intrinsics,
+    HasAncestry,
+    HasClass,
 };
+use crate::gui::{ Ancestry, Class };
 use crate::consts::entity;
 use crate::consts::visuals::BLOODSTAIN_COLOUR;
 use crate::gamesystem::*;
@@ -63,6 +66,8 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Player {})
         .with(Mind {})
         .with(Faction { name: "player".to_string() })
+        .with(HasAncestry { name: Ancestry::Unset })
+        .with(HasClass { name: Class::Unset })
         .with(Viewshed {
             visible_tiles: Vec::new(),
             range: entity::DEFAULT_VIEWSHED_STANDARD,
