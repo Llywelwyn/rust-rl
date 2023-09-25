@@ -44,7 +44,7 @@ use crate::consts::visuals::{
     VIEWPORT_W,
     VIEWPORT_H,
 };
-use crate::consts::{ TILESIZE, FONTSIZE };
+use crate::consts::{ TILESIZE, FONTSIZE, DISPLAYWIDTH };
 use notan::prelude::*;
 use notan::draw::{ Draw, DrawTextSection };
 use std::collections::HashMap;
@@ -254,8 +254,27 @@ pub fn draw_ui2(
                     .position(x, (y as f32) * TILESIZE)
                     .size(FONTSIZE);
             }
-            //y += 2;
+            y += 2;
         }
+        // Backpack
+        x = ((VIEWPORT_W + 3) as f32) * TILESIZE;
+        draw.text(&font, "Backpack")
+            .position(x, (y as f32) * TILESIZE)
+            .size(FONTSIZE);
+        draw.text(
+            &font,
+            &format!(
+                "[{:.1}/{} lbs]",
+                stats.weight,
+                (attributes.strength.base + attributes.strength.modifiers) *
+                    CARRY_CAPACITY_PER_STRENGTH
+            )
+        )
+            .position(((DISPLAYWIDTH - 1) as f32) * TILESIZE, (y as f32) * TILESIZE)
+            .size(FONTSIZE)
+            .h_align_right();
+        let player_inventory = get_player_inventory(&ecs);
+        // TODO: print_options()
     }
 }
 
