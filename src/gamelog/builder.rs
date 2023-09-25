@@ -65,6 +65,7 @@ impl Logger {
 
     /// Pushes the finished log entry.
     pub fn log(self) {
-        return append_entry(self.fragments);
+        let key = crate::gamelog::get_event_count(crate::consts::events::EVENT::COUNT_TURN);
+        return append_entry(key, self.fragments);
     }
 }

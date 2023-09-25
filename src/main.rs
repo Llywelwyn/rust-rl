@@ -33,7 +33,7 @@ fn setup(gfx: &mut Graphics) -> State {
         .unwrap();
     let data = include_bytes!("../resources/td.json");
     let atlas = create_textures_from_atlas(data, &texture).unwrap();
-    let font = gfx.create_font(include_bytes!("../resources/PressStart2P-Regular.ttf")).unwrap();
+    let font = gfx.create_font(include_bytes!("../resources/Ac437_ATT_PC6300.ttf")).unwrap();
     let mut gs = State {
         ecs: World::new(),
         base_texture: texture,
@@ -253,26 +253,32 @@ fn draw_camera(
                     }
                     // TODO: Use sprites here, not text drawing. Put bitmap font into atlas.
                     let renderable = renderables.get(entry.1.e).unwrap();
-                    draw.text(&font, &format!("{}", renderable.glyph as u8 as char))
+                    draw.text(
+                        &font,
+                        &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
+                    )
                         .position(
                             ((entry.0.x as f32) + 0.5) * TILESIZE,
                             ((entry.0.y as f32) + 0.5) * TILESIZE
                         )
                         .color(Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b))
-                        .size(FONTSIZE + 2.0)
+                        .size(FONTSIZE)
                         .h_align_center()
                         .v_align_middle();
                     // Draw entity
                 }
                 DrawType::VisibleAndRemember => {
                     let renderable = renderables.get(entry.1.e).unwrap();
-                    draw.text(&font, &format!("{}", renderable.glyph as u8 as char))
+                    draw.text(
+                        &font,
+                        &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
+                    )
                         .position(
                             ((entry.0.x as f32) + 0.5) * TILESIZE,
                             ((entry.0.y as f32) + 0.5) * TILESIZE
                         )
                         .color(Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b))
-                        .size(FONTSIZE + 2.0)
+                        .size(FONTSIZE)
                         .h_align_center()
                         .v_align_middle();
                     // TODO: Update map memory.
@@ -434,13 +440,14 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
 fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
+    let mut log = false;
     match *gs.ecs.fetch::<RunState>() {
         | RunState::MainMenu { .. }
         | RunState::CharacterCreation { .. }
         | RunState::PreRun { .. } => {}
         RunState::MapGeneration => {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
-            if config::CONFIG.logging.show_mapgen {
+            if config::CONFIG.logging.show_mapgen && gs.mapgen_history.len() > 0 {
                 render_map_in_view(
                     &gs.mapgen_history[gs.mapgen_index],
                     &gs.ecs,
@@ -454,7 +461,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             draw_camera(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
-            //print_log(&mut draw, &gs.font, Point::new(1, 7), false, 7, VIEWPORT_W + 22);
+            log = true;
         }
     }
     match *gs.ecs.fetch::<RunState>() {
@@ -474,7 +481,14 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         _ => {}
     }
     gfx.render(&draw);
-    write(gfx, &gs.font, &(TILESIZE, TILESIZE * 8.0), true);
+    if log {
+        gamelog::render_log(
+            gfx,
+            &gs.font,
+            &(TILESIZE, TILESIZE * 8.0 + 4.0),
+            (VIEWPORT_W as f32) * TILESIZE
+        );
+    }
 }
 
 fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
@@ -486,139 +500,4 @@ fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
 
 fn update(ctx: &mut App, state: &mut State) {
     state.update(ctx);
-}
-
-pub fn print_log(
-    draw: &mut notan::draw::Draw,
-    font: &notan::draw::Font,
-    pos: Point,
-    _descending: bool,
-    len: usize,
-    maximum_len: i32
-) {
-    let mut y = pos.y;
-    let mut x = pos.x;
-    let mut x_px = (x as f32) * TILESIZE;
-    // Reverse the log, take the number we want to show, and iterate through them
-    gamelog::LOG
-        .lock()
-        .unwrap()
-        .iter()
-        .rev()
-        .take(len)
-        .for_each(|log| {
-            let mut entry_len = -2;
-            // Iterate through each message fragment, and get the total length
-            // in lines, by adding the length of every fragment and dividing it
-            // by the maximum length we desire. Then shuffle our start-y by that much.
-            log.iter().for_each(|frag| {
-                entry_len += frag.text.len() as i32;
-            });
-            let lines = entry_len / maximum_len;
-            y -= lines;
-            let mut i = 0;
-            log.iter().for_each(|frag| {
-                // Split every fragment up into single characters.
-                let parts = frag.text.split("");
-                for part in parts {
-                    // This is an extremely hacky solution to a problem I don't understand yet.
-                    // -- without this, the lines *here* and the line count *above* wont match.
-                    if part == "" || part == "\\" {
-                        continue;
-                    }
-                    if i > entry_len {
-                        break;
-                    }
-                    i += 1;
-                    if x + (part.len() as i32) > pos.x + maximum_len {
-                        if y > pos.y - (len as i32) {
-                            draw.text(&font, "-")
-                                .position(x_px, (y as f32) * TILESIZE)
-                                .size(FONTSIZE);
-                        }
-                        y += 1;
-                        x = pos.x;
-                        x_px = (x as f32) * TILESIZE;
-                    }
-                    // Stay within bounds
-                    if y > pos.y - (len as i32) {
-                        draw.text(&font, part)
-                            .position(x_px, (y as f32) * TILESIZE)
-                            .size(FONTSIZE)
-                            .color(Color::from_rgb(frag.colour.r, frag.colour.g, frag.colour.b));
-                    }
-                    x += part.len() as i32;
-                    x_px = draw.last_text_bounds().max_x();
-                }
-            });
-            // Take away one from the y-axis, because we want to start each entry
-            // on a new line, and go up an additional amount depending on how many
-            // lines our *previous* entry took.
-            y -= 1 + lines;
-            x = pos.x;
-            x_px = (x as f32) * TILESIZE;
-        });
-}
-
-use std::collections::BTreeMap;
-fn write(gfx: &mut Graphics, font: &notan::draw::Font, pos: &(f32, f32), desc: bool) {
-    use notan::text::CreateText;
-    let mut text = gfx.create_text();
-    let log = get_log();
-    let latest: Vec<_> = log.iter().rev().take(4).rev().collect();
-    let mut initial = true;
-    for (_, entries) in latest {
-        let mut wrote = false;
-        for (message, colour) in entries.iter() {
-            if initial {
-                if desc {
-                    text.add(&message)
-                        .font(font)
-                        .position(pos.0, pos.1)
-                        .size(FONTSIZE)
-                        .max_width((VIEWPORT_W as f32) * TILESIZE)
-                        .color(*colour)
-                        .v_align_bottom();
-                } else {
-                    text.add(&message)
-                        .font(font)
-                        .position(pos.0, pos.1)
-                        .size(FONTSIZE)
-                        .max_width((VIEWPORT_W as f32) * TILESIZE)
-                        .color(*colour);
-                }
-                initial = false;
-            } else {
-                text.chain(&message).color(*colour).size(FONTSIZE);
-            }
-            wrote = true;
-        }
-        if wrote {
-            text.chain("\n");
-        }
-    }
-    gfx.render(&text);
-}
-
-fn get_log() -> BTreeMap<i32, Vec<(String, Color)>> {
-    let mut log: BTreeMap<i32, Vec<(String, Color)>> = BTreeMap::new();
-    log.entry(4).or_insert_with(Vec::new).push(("This is a".to_string(), Color::WHITE));
-    log.entry(4).or_insert_with(Vec::new).push((" test".to_string(), Color::RED));
-    log.entry(5).or_insert_with(Vec::new).push(("This is the fifth".to_string(), Color::WHITE));
-    log.entry(5).or_insert_with(Vec::new).push((" test".to_string(), Color::BLUE));
-    log.entry(6).or_insert_with(Vec::new).push(("This is the sixth".to_string(), Color::WHITE));
-    log.entry(6).or_insert_with(Vec::new).push((" test".to_string(), Color::BLUE));
-    log.entry(7).or_insert_with(Vec::new).push(("This is the seventh".to_string(), Color::WHITE));
-    log.entry(7).or_insert_with(Vec::new).push((" test".to_string(), Color::BLUE));
-    log.entry(8).or_insert_with(Vec::new).push(("This is the eighth".to_string(), Color::WHITE));
-    log.entry(8)
-        .or_insert_with(Vec::new)
-        .push((
-            " test with a very long message, so that I can test the line wrapping.".to_string(),
-            Color::BLUE,
-        ));
-    log.entry(9).or_insert_with(Vec::new).push(("This is the ninth".to_string(), Color::WHITE));
-    log.entry(9).or_insert_with(Vec::new).push((" test".to_string(), Color::BLUE));
-
-    log
 }

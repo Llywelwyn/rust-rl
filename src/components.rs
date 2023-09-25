@@ -20,7 +20,7 @@ pub struct SerializationHelper {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct DMSerializationHelper {
     pub map: super::map::MasterDungeonMap,
-    pub log: Vec<Vec<crate::gamelog::LogFragment>>,
+    pub log: std::collections::BTreeMap<i32, Vec<crate::gamelog::LogFragment>>,
     pub event_counts: HashMap<String, i32>,
     pub events: HashMap<u32, Vec<String>>,
 }

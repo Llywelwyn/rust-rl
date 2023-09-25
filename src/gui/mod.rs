@@ -660,13 +660,13 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     }
 
     // Render the message log at [1, 7], ascending, with 7 lines and a max width of 68.
-    gamelog::print_log(
+    /*gamelog::print_log(
         &mut BACKEND_INTERNAL.lock().consoles[TEXT_LAYER].console,
         Point::new(1 * TEXT_FONT_MOD, 7),
         false,
         7,
         (VIEWPORT_W - 1) * TEXT_FONT_MOD
-    );
+    );*/
 
     // Render id
     let map = ecs.fetch::<Map>();
