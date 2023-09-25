@@ -331,7 +331,7 @@ impl State {
                 }
             }
             RunState::MapGeneration => {
-                if !config::CONFIG.logging.show_mapgen {
+                if !config::CONFIG.logging.show_mapgen || self.mapgen_history.len() <= 0 {
                     new_runstate = self.mapgen_next_state.unwrap();
                 } else {
                     if self.mapgen_history.len() > 0 {
