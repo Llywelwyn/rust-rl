@@ -448,7 +448,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         _ => {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             draw_camera(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
-            crate::gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
+            gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
+            // print_log
+            draw_log(&mut draw, &gs.font);
         }
     }
     match *gs.ecs.fetch::<RunState>() {
@@ -456,11 +458,11 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             draw.text(&gs.font, "RunState::Farlook")
                 .position(((x + 2) as f32) * TILESIZE, (y as f32) * TILESIZE)
                 .size(FONTSIZE);
-            crate::gui::draw_farlook(x, y, &mut draw, &gs.atlas);
+            gui::draw_farlook(x, y, &mut draw, &gs.atlas);
             //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop
         }
         RunState::ShowCheatMenu => {
-            crate::gui::draw_cheat_menu(&mut draw, &gs.atlas, &gs.font);
+            gui::draw_cheat_menu(&mut draw, &gs.atlas, &gs.font);
         }
         _ => {}
     }
@@ -477,4 +479,25 @@ fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
 
 fn update(ctx: &mut App, state: &mut State) {
     state.update(ctx);
+}
+
+// TODO: This is *very* temporary, like with the rest of the UI rendering. It
+// needs returning to how it was pre-port to Notan, eventually.
+fn draw_log(draw: &mut notan::draw::Draw, font: &notan::draw::Font) {
+    let log = gamelog::LOG.lock().unwrap();
+    let mut text: String = Default::default();
+    log.iter()
+        .rev()
+        .take(9)
+        .for_each(|log| {
+            log.iter().for_each(|frag| {
+                text += &frag.text.to_string();
+            });
+            text += "\n";
+        });
+    draw.text(font, &text)
+        .position(TILESIZE, TILESIZE)
+        .size(FONTSIZE)
+        .color(Color::WHITE)
+        .max_width((VIEWPORT_W as f32) * TILESIZE);
 }

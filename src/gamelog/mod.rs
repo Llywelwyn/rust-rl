@@ -2,7 +2,7 @@ mod builder;
 pub use builder::*;
 mod logstore;
 use logstore::*;
-pub use logstore::{ clear_log, clone_log, print_log, restore_log, setup_log };
+pub use logstore::{ LOG, clear_log, clone_log, print_log, restore_log, setup_log };
 mod events;
 pub use events::*;
 

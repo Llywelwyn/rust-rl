@@ -3,7 +3,7 @@ use bracket_lib::prelude::*;
 use std::sync::Mutex;
 
 lazy_static! {
-    static ref LOG: Mutex<Vec<Vec<LogFragment>>> = Mutex::new(Vec::new());
+    pub static ref LOG: Mutex<Vec<Vec<LogFragment>>> = Mutex::new(Vec::new());
 }
 
 #[allow(dead_code)]
