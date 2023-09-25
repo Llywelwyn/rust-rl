@@ -391,7 +391,7 @@ use crate::consts::visuals::{ VIEWPORT_H, VIEWPORT_W };
 fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     let offset = crate::camera::get_offset();
     let log = BoxDraw {
-        frame: "ui_panel_white".to_string(),
+        frame: "line".to_string(),
         fill: false,
         top_left: (0, 0),
         top_right: (offset.x + VIEWPORT_W, 0),
@@ -399,7 +399,7 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
         bottom_right: (offset.x + VIEWPORT_W, offset.y - 2),
     };
     let game = BoxDraw {
-        frame: "ui_panel_white".to_string(),
+        frame: "line".to_string(),
         fill: false,
         top_left: (offset.x - 1, offset.y - 1),
         top_right: (offset.x + VIEWPORT_W, offset.y - 1),
@@ -407,7 +407,7 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
         bottom_right: (offset.x + VIEWPORT_W, offset.y + VIEWPORT_H),
     };
     let attr = BoxDraw {
-        frame: "ui_panel_white".to_string(),
+        frame: "line".to_string(),
         fill: false,
         top_left: (offset.x - 1, offset.y + VIEWPORT_H + 1),
         top_right: (offset.x + VIEWPORT_W, offset.y + VIEWPORT_H + 1),
@@ -415,7 +415,7 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
         bottom_right: (offset.x + VIEWPORT_W, (DISPLAYHEIGHT as i32) - 1),
     };
     let sidebox = BoxDraw {
-        frame: "ui_panel_white".to_string(),
+        frame: "line".to_string(),
         fill: false,
         top_left: (offset.x + VIEWPORT_W + 1, 0),
         top_right: ((DISPLAYWIDTH as i32) - 1, 0),
