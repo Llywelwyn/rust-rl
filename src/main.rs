@@ -450,7 +450,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             draw_camera(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             print_log(&mut draw, &gs.font, Point::new(1, 7), false, 7, VIEWPORT_W - 1);
-            //draw_log(&mut draw, &gs.font);
         }
     }
     match *gs.ecs.fetch::<RunState>() {
@@ -479,27 +478,6 @@ fn idx_to_px(idx: usize, map: &Map) -> (f32, f32) {
 
 fn update(ctx: &mut App, state: &mut State) {
     state.update(ctx);
-}
-
-// TODO: This is *very* temporary, like with the rest of the UI rendering. It
-// needs returning to how it was pre-port to Notan, eventually.
-fn draw_log(draw: &mut notan::draw::Draw, font: &notan::draw::Font) {
-    let log = gamelog::LOG.lock().unwrap();
-    let mut text: String = Default::default();
-    log.iter()
-        .rev()
-        .take(9)
-        .for_each(|log| {
-            log.iter().for_each(|frag| {
-                text += &frag.text.to_string();
-            });
-            text += "\n";
-        });
-    draw.text(font, &text)
-        .position(TILESIZE, TILESIZE)
-        .size(FONTSIZE)
-        .color(Color::WHITE)
-        .max_width((VIEWPORT_W as f32) * TILESIZE);
 }
 
 pub fn print_log(
