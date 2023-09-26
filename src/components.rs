@@ -81,7 +81,7 @@ impl SpriteInfo {
     }
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
+#[derive(Debug, Component, ConvertSaveload, Clone)]
 pub struct Renderable {
     pub glyph: FontCharType,
     pub sprite: Option<SpriteInfo>,
@@ -99,11 +99,20 @@ pub struct Renderable {
 
 impl Renderable {
     pub fn swap(&mut self) {
+        let mut did_something = false;
         if let Some(alt_render_order) = &mut self.alt_render_order {
             std::mem::swap(&mut self.render_order, alt_render_order);
+            did_something = true;
         }
         if let Some(sprite) = &mut self.sprite {
             *sprite = sprite.swap();
+            did_something = true;
+        }
+        if !did_something {
+            unreachable!(
+                ".swap() was called on a Renderable component, but nothing happened. {:?}",
+                self
+            );
         }
     }
 }
