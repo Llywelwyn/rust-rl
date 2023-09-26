@@ -9,7 +9,7 @@ use notan::prelude::*;
 pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&str, Color) {
     let f = map.colour_offset[idx].0.0; // Using offset as a source of random.
     let sprite = match map.tiles[idx] {
-        TileType::Wall => map.tiles[idx].sprite(check_if_base(idx, map), f),
+        TileType::Wall => map.tiles[idx].sprite(check_if_base(TileType::Wall, idx, map), f),
         _ => map.tiles[idx].sprite(false, f),
     };
     let tint = if !map.visible_tiles[idx] {
@@ -150,18 +150,23 @@ fn get_forest_theme_renderables(idx:usize, map: &Map, debug: Option<bool>) -> (F
     return (glyph, fg, bg, offsets, bg_offsets);
 }
 
-fn is_revealed_and_wall(map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool {
+fn is_revealed_and(tt: TileType, map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool {
     let idx = map.xy_idx(x, y);
-    map.tiles[idx] == TileType::Wall &&
-        (if debug.is_none() { map.revealed_tiles[idx] } else { true })
+    map.tiles[idx] == tt && (if debug.is_none() { map.revealed_tiles[idx] } else { true })
 }
 
-fn check_if_base(idx: usize, map: &Map) -> bool {
+fn check_if_base(tt: TileType, idx: usize, map: &Map) -> bool {
     let x = (idx as i32) % map.width;
     let y = (idx as i32) / map.width;
-    if is_revealed_and_wall(map, x, y + 1, None) {
+    // If we're on the edge, it can only be a base sprite.
+    if y > map.height - 2 {
+        return true;
+    }
+    // If the tile below is a revealed wall, we're not the base.
+    if is_revealed_and(tt, map, x, y + 1, None) {
         return false;
     }
+    // If the tile below isn't a revealed wall, we're the base.
     return true;
 }
 
@@ -179,37 +184,37 @@ fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> FontCharType {
     let mut mask: u8 = 0;
     let diagonals_matter: Vec<u8> = vec![7, 11, 13, 14, 15];
 
-    if is_revealed_and_wall(map, x, y - 1, debug) {
+    if is_revealed_and(TileType::Wall, map, x, y - 1, debug) {
         // N
         mask += 1;
     }
-    if is_revealed_and_wall(map, x, y + 1, debug) {
+    if is_revealed_and(TileType::Wall, map, x, y + 1, debug) {
         // S
         mask += 2;
     }
-    if is_revealed_and_wall(map, x - 1, y, debug) {
+    if is_revealed_and(TileType::Wall, map, x - 1, y, debug) {
         // W
         mask += 4;
     }
-    if is_revealed_and_wall(map, x + 1, y, debug) {
+    if is_revealed_and(TileType::Wall, map, x + 1, y, debug) {
         // E
         mask += 8;
     }
 
     if diagonals_matter.contains(&mask) {
-        if is_revealed_and_wall(map, x + 1, y - 1, debug) {
+        if is_revealed_and(TileType::Wall, map, x + 1, y - 1, debug) {
             // Top right
             mask += 16;
         }
-        if is_revealed_and_wall(map, x - 1, y - 1, debug) {
+        if is_revealed_and(TileType::Wall, map, x - 1, y - 1, debug) {
             // Top left
             mask += 32;
         }
-        if is_revealed_and_wall(map, x + 1, y + 1, debug) {
+        if is_revealed_and(TileType::Wall, map, x + 1, y + 1, debug) {
             // Bottom right
             mask += 64;
         }
-        if is_revealed_and_wall(map, x - 1, y + 1, debug) {
+        if is_revealed_and(TileType::Wall, map, x - 1, y + 1, debug) {
             // Bottom left
             mask += 128;
         }

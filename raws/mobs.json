@@ -2,7 +2,7 @@
     {
         "id": "npc_barkeep",
         "name": "barkeep",
-        "renderable": { "glyph": "@", "sprite": "@", "fg": "#EE82EE", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "@", "sprite": { "id": "@" }, "fg": "#EE82EE", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "IS_HUMAN"],
         "vision_range": 4,
         "quips": ["Drink?", "Something to eat?", "Don't go out on an empty stomach."]
@@ -10,7 +10,7 @@
     {
         "id": "npc_townsperson",
         "name": "townsperson",
-        "renderable": { "glyph": "@", "sprite": "@", "fg": "#9fa86c", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "@", "sprite": { "id": "@" }, "fg": "#9fa86c", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "RANDOM_PATH", "IS_HUMAN"],
         "vision_range": 4,
         "quips": ["Hello!", "Good morning.", "<a quiet complaint about chores>"]
@@ -18,7 +18,7 @@
     {
         "id": "npc_drunk",
         "name": "drunk",
-        "renderable": { "glyph": "@", "sprite": "@", "fg": "#a0a83c", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "@", "sprite": { "id": "@" }, "fg": "#a0a83c", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "IS_HUMAN"],
         "vision_range": 4,
         "quips": ["Hic!", "H-Hic'.", "Get me 'nother, would you?"]
@@ -26,7 +26,7 @@
     {
         "id": "npc_fisher",
         "name": "fisher",
-        "renderable": { "glyph": "@", "sprite": "@", "fg": "#3ca3a8", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "@", "sprite": { "id": "@" }, "fg": "#3ca3a8", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "IS_HUMAN"],
         "vision_range": 4,
         "quips": ["Hey."]
@@ -34,7 +34,7 @@
     {
         "id": "npc_dockworker",
         "name": "dock worker",
-        "renderable": { "glyph": "@", "sprite": "@", "fg": "#68d8de", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "@", "sprite": { "id": "@" }, "fg": "#68d8de", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "IS_HUMAN"],
         "vision_range": 4,
         "quips": ["No boat for a few days.", "Not much for us to do."]
@@ -42,7 +42,7 @@
     {
         "id": "npc_priest",
         "name": "priest",
-        "renderable": { "glyph": "@", "sprite": "@", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "@", "sprite": { "id": "@" }, "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "IS_HUMAN"],
         "vision_range": 4,
         "quips": ["Light's givings.", "<a quiet prayer>", "Bless you."]
@@ -50,7 +50,7 @@
     {
         "id": "npc_miner",
         "name": "miner",
-        "renderable": { "glyph": "@", "sprite": "@", "fg": "#946123", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "@", "sprite": { "id": "@" }, "fg": "#946123", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "IS_HUMAN"],
         "vision_range": 4,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
@@ -59,7 +59,7 @@
     {
         "id": "npc_guard",
         "name": "smalltown guard",
-        "renderable": { "glyph": "@", "sprite": "@", "fg": "#034efc", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "@", "sprite": { "id": "@" }, "fg": "#034efc", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL", "RANDOM_PATH", "IS_HUMAN"],
         "level": 2,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d8" }],
@@ -69,7 +69,7 @@
     {
         "id": "rat",
         "name": "rat",
-        "renderable": { "glyph": "r", "sprite": "r", "fg": "#aa6000", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "r", "sprite": { "id": "r" }, "fg": "#aa6000", "bg": "#000000", "order": 1 },
         "flags": [],
         "bac": 6,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }],
@@ -78,7 +78,7 @@
     {
         "id": "chicken",
         "name": "chicken",
-        "renderable": { "glyph": "c", "sprite": "c", "fg": "#BB6000", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "c", "sprite": { "id": "c" }, "fg": "#BB6000", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE"],
         "bac": 8,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
@@ -86,7 +86,7 @@
     {
         "id": "deer_little",
         "name": "fawn",
-        "renderable": { "glyph": "q", "sprite": "q", "fg": "#a57037", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "q", "sprite": { "id": "q" }, "fg": "#a57037", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE"],
         "bac": 8,
         "attacks": [{ "name": "kicks", "hit_bonus": 0, "damage": "1d2" }]
@@ -94,7 +94,7 @@
     {
         "id": "sheep_little",
         "name": "lamb",
-        "renderable": { "glyph": "q", "sprite": "q", "fg": "#e7e7e7", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "q", "sprite": { "id": "q" }, "fg": "#e7e7e7", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE", "SMALL_GROUP"],
         "bac": 10,
         "attacks": [{ "name": "kicks", "hit_bonus": 0, "damage": "1d2" }]
@@ -102,7 +102,7 @@
     {
         "id": "chicken_little",
         "name": "chick",
-        "renderable": { "glyph": "c", "sprite": "c", "fg": "#fae478", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "c", "sprite": { "id": "c" }, "fg": "#fae478", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE"],
         "bac": 10,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
@@ -110,7 +110,7 @@
     {
         "id": "horse_little",
         "name": "pony",
-        "renderable": { "glyph": "u", "sprite": "u", "fg": "#b36c29", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "u", "sprite": { "id": "u" }, "fg": "#b36c29", "bg": "#000000", "order": 1 },
         "flags": ["HERBIVORE", "MULTIATTACK"],
         "level": 3,
         "bac": 6,
@@ -124,7 +124,7 @@
     {
         "id": "horse",
         "name": "horse",
-        "renderable": { "glyph": "u", "sprite": "u", "fg": "#744d29", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "u", "sprite": { "id": "u" }, "fg": "#744d29", "bg": "#000000", "order": 1 },
         "flags": ["MULTIATTACK"],
         "level": 5,
         "bac": 5,
@@ -137,7 +137,7 @@
     {
         "id": "horse_large",
         "name": "warhorse",
-        "renderable": { "glyph": "u", "sprite": "u", "fg": "#8a3520", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "u", "sprite": { "id": "u" }, "fg": "#8a3520", "bg": "#000000", "order": 1 },
         "flags": ["MULTIATTACK"],
         "level": 7,
         "bac": 4,
@@ -150,7 +150,7 @@
     {
         "id": "rat_giant",
         "name": "giant rat",
-        "renderable": { "glyph": "r", "sprite": "r", "fg": "#bb8000", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "r", "sprite": { "id": "r" }, "fg": "#bb8000", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 1,
         "bac": 7,
@@ -160,7 +160,7 @@
     {
         "id": "dog_little",
         "name": "little dog",
-        "renderable": { "glyph": "d", "sprite": "d", "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "d", "sprite": { "id": "d" }, "fg": "#FFFFFF", "bg": "#000000", "order": 1 },
         "flags": ["NEUTRAL"],
         "level": 2,
         "bac": 6,
@@ -171,7 +171,7 @@
     {
         "id": "dog",
         "name": "dog",
-        "renderable": { "glyph": "d", "sprite": "d", "fg": "#EEEEEE", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "d", "sprite": { "id": "d" }, "fg": "#EEEEEE", "bg": "#000000", "order": 1 },
         "flags": [],
         "level": 4,
         "bac": 5,
@@ -181,7 +181,7 @@
     {
         "id": "dog_large",
         "name": "large dog",
-        "renderable": { "glyph": "d", "sprite": "d", "fg": "#DDDDDD", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "d", "sprite": { "id": "d" }, "fg": "#DDDDDD", "bg": "#000000", "order": 1 },
         "flags": [],
         "level": 6,
         "bac": 4,
@@ -191,7 +191,7 @@
     {
         "id": "gnome",
         "name": "gnome",
-        "renderable": { "glyph": "G", "sprite": "g2", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "G", "sprite": { "id": "g2" }, "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP", "IS_GNOME"],
         "level": 1,
         "speed": 6,
@@ -201,7 +201,7 @@
     {
         "id": "zombie_gnome",
         "name": "gnome zombie",
-        "renderable": { "glyph": "z", "sprite": "z", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "z", "sprite": { "id": "z" }, "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["MINDLESS"],
         "level": 1,
         "speed": 6,
@@ -212,7 +212,7 @@
     {
         "id": "goblin",
         "name": "goblin",
-        "renderable": { "glyph": "g", "sprite": "g", "fg": "#00FF00", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "g", "sprite": { "id": "g" }, "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": [],
         "level": 1,
         "speed": 9,
@@ -221,7 +221,7 @@
     {
         "id": "kobold",
         "name": "kobold",
-        "renderable": { "glyph": "k", "sprite": "k", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "k", "sprite": { "id": "k" }, "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": [],
         "level": 1,
         "speed": 6,
@@ -231,7 +231,7 @@
     {
         "id": "zombie_kobold",
         "name": "kobold zombie",
-        "renderable": { "glyph": "z", "sprite": "z", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "z", "sprite": { "id": "z" }, "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["MINDLESS"],
         "level": 1,
         "speed": 6,
@@ -242,7 +242,7 @@
     {
         "id": "kobold_large",
         "name": "large kobold",
-        "renderable": { "glyph": "k", "sprite": "k", "fg": "#70461b", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "k", "sprite": { "id": "k" }, "fg": "#70461b", "bg": "#000000", "order": 1 },
         "flags": [],
         "level": 1,
         "speed": 6,
@@ -253,7 +253,7 @@
     {
         "id": "zombie_orc",
         "name": "orc zombie",
-        "renderable": { "glyph": "z", "sprite": "z", "fg": "#dbd830", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "z", "sprite": { "id": "z" }, "fg": "#dbd830", "bg": "#000000", "order": 1 },
         "flags": ["MINDLESS"],
         "level": 2,
         "bac": 9,
@@ -265,7 +265,7 @@
     {
         "id": "dwarf",
         "name": "dwarf",
-        "renderable": { "glyph": "h", "sprite": "h", "fg": "#d61b1b", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "h", "sprite": { "id": "h" }, "fg": "#d61b1b", "bg": "#000000", "order": 1 },
         "flags": ["IS_DWARF"],
         "level": 2,
         "bac": 10,
@@ -277,7 +277,7 @@
     {
         "id": "zombie_dwarf",
         "name": "dwarf zombie",
-        "renderable": { "glyph": "z", "sprite": "z", "fg": "#d61b1b", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "z", "sprite": { "id": "z" }, "fg": "#d61b1b", "bg": "#000000", "order": 1 },
         "flags": ["MINDLESS"],
         "level": 2,
         "bac": 9,
@@ -289,7 +289,7 @@
     {
         "id": "kobold_captain",
         "name": "kobold captain",
-        "renderable": { "glyph": "k", "sprite": "k", "fg": "#9331ac", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "k", "sprite": { "id": "k" }, "fg": "#9331ac", "bg": "#000000", "order": 1 },
         "flags": [],
         "level": 2,
         "speed": 6,
@@ -300,7 +300,7 @@
     {
         "id": "spider_cave",
         "name": "cave spider",
-        "renderable": { "glyph": "s", "sprite": "s", "fg": "#6b6b6b", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "s", "sprite": { "id": "s" }, "fg": "#6b6b6b", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 1,
         "bac": 3,
@@ -311,7 +311,7 @@
     {
         "id": "ant_worker",
         "name": "worker ant",
-        "renderable": { "glyph": "a", "sprite": "a", "fg": "#ca7631", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "a", "sprite": { "id": "a" }, "fg": "#ca7631", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 2,
         "bac": 3,
@@ -322,7 +322,7 @@
     {
         "id": "ant_soldier",
         "name": "soldier ant",
-        "renderable": { "glyph": "a", "sprite": "a", "fg": "#ca3f26", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "a", "sprite": { "id": "a" }, "fg": "#ca3f26", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP", "POISON_RES"],
         "level": 3,
         "bac": 3,
@@ -336,7 +336,7 @@
     {
         "id": "caterpillar_cave",
         "name": "caterpillar",
-        "renderable": { "glyph": "a", "sprite": "a", "fg": "#6b6b6b", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "a", "sprite": { "id": "a" }, "fg": "#6b6b6b", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 1,
         "bac": 3,
@@ -347,7 +347,7 @@
     {
         "id": "caterpillar_giant",
         "name": "giant caterpillar",
-        "renderable": { "glyph": "a", "sprite": "a", "fg": "#b9aeae", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "a", "sprite": { "id": "a" }, "fg": "#b9aeae", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 2,
         "bac": 7,
@@ -358,7 +358,7 @@
     {
         "id": "jackal",
         "name": "jackal",
-        "renderable": { "glyph": "d", "sprite": "d", "fg": "#AA5500", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "d", "sprite": { "id": "d" }, "fg": "#AA5500", "bg": "#000000", "order": 1 },
         "flags": ["CARNIVORE", "SMALL_GROUP"],
         "bac": 7,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d2" }]
@@ -366,7 +366,7 @@
     {
         "id": "fox",
         "name": "fox",
-        "renderable": { "glyph": "d", "sprite": "d", "fg": "#FF0000", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "d", "sprite": { "id": "d" }, "fg": "#FF0000", "bg": "#000000", "order": 1 },
         "flags": ["CARNIVORE"],
         "bac": 7,
         "attacks": [{ "name": "bites", "hit_bonus": 0, "damage": "1d3" }]
@@ -374,7 +374,7 @@
     {
         "id": "coyote",
         "name": "coyote",
-        "renderable": { "glyph": "d", "sprite": "d", "fg": "#6E3215", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "d", "sprite": { "id": "d" }, "fg": "#6E3215", "bg": "#000000", "order": 1 },
         "flags": ["CARNIVORE", "SMALL_GROUP"],
         "level": 1,
         "bac": 7,
@@ -383,7 +383,7 @@
     {
         "id": "wolf",
         "name": "wolf",
-        "renderable": { "glyph": "d", "sprite": "d", "fg": "#5E4225", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "d", "sprite": { "id": "d" }, "fg": "#5E4225", "bg": "#000000", "order": 1 },
         "flags": ["CARNIVORE"],
         "level": 5,
         "bac": 4,
@@ -392,7 +392,7 @@
     {
         "id": "goblin_chieftain",
         "name": "goblin chieftain",
-        "renderable": { "glyph": "g", "sprite": "g", "fg": "#9331ac", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "g", "sprite": { "id": "g" }, "fg": "#9331ac", "bg": "#000000", "order": 1 },
         "flags": [],
         "level": 2,
         "speed": 9,
@@ -402,7 +402,7 @@
     {
         "id": "orc",
         "name": "orc",
-        "renderable": { "glyph": "o", "sprite": "o", "fg": "#00FF00", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "o", "sprite": { "id": "o" }, "fg": "#00FF00", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 1,
         "speed": 9,
@@ -412,7 +412,7 @@
     {
         "id": "orc_hill",
         "name": "hill orc",
-        "renderable": { "glyph": "o", "sprite": "o", "fg": "#dbd830", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "o", "sprite": { "id": "o" }, "fg": "#dbd830", "bg": "#000000", "order": 1 },
         "flags": ["LARGE_GROUP"],
         "level": 2,
         "speed": 9,
@@ -422,7 +422,7 @@
     {
         "id": "orc_captain",
         "name": "orc captain",
-        "renderable": { "glyph": "o", "sprite": "o", "fg": "#9331ac", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "o", "sprite": { "id": "o" }, "fg": "#9331ac", "bg": "#000000", "order": 1 },
         "flags": ["MULTIATTACK"],
         "level": 5,
         "speed": 5,
@@ -435,7 +435,7 @@
     {
         "id": "warg",
         "name": "warg",
-        "renderable": { "glyph": "d", "sprite": "d", "fg": "#8b7164", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "d", "sprite": { "id": "d" }, "fg": "#8b7164", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 7,
         "bac": 4,
@@ -446,7 +446,7 @@
     {
         "id": "jaguar",
         "name": "jaguar",
-        "renderable": { "glyph": "f", "sprite": "f", "fg": "#d3b947", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "f", "sprite": { "id": "f" }, "fg": "#d3b947", "bg": "#000000", "order": 1 },
         "flags": ["MULTIATTACK"],
         "level": 4,
         "bac": 6,
@@ -461,7 +461,7 @@
     {
         "id": "lynx",
         "name": "lynx",
-        "renderable": { "glyph": "f", "sprite": "f", "fg": "#b5d347", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "f", "sprite": { "id": "f" }, "fg": "#b5d347", "bg": "#000000", "order": 1 },
         "flags": ["MULTIATTACK"],
         "level": 5,
         "bac": 6,
@@ -476,7 +476,7 @@
     {
         "id": "panther",
         "name": "panther",
-        "renderable": { "glyph": "f", "sprite": "f", "fg": "#58554e", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "f", "sprite": { "id": "f" }, "fg": "#58554e", "bg": "#000000", "order": 1 },
         "flags": ["MULTIATTACK"],
         "level": 5,
         "bac": 6,
@@ -491,7 +491,7 @@
     {
         "id": "ogre",
         "name": "ogre",
-        "renderable": { "glyph": "O", "sprite": "o2", "fg": "#10A70d", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "O", "sprite": { "id": "o2" }, "fg": "#10A70d", "bg": "#000000", "order": 1 },
         "flags": ["SMALL_GROUP"],
         "level": 5,
         "bac": 5,
@@ -502,7 +502,7 @@
     {
         "id": "treant_small",
         "name": "treant sapling",
-        "renderable": { "glyph": "♠️", "sprite": "spade", "fg": "#10570d", "bg": "#000000", "order": 1 },
+        "renderable": { "glyph": "♠️", "sprite": { "id": "spade" }, "fg": "#10570d", "bg": "#000000", "order": 1 },
         "flags": ["LARGE_GROUP", "GREEN_BLOOD", "FIRE_WEAK"],
         "level": 2,
         "bac": 12,

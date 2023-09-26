@@ -126,7 +126,7 @@ fn draw_bar(
     let fill_width = (percent * (w as f32)) as i32;
     for x in 0..w {
         let suffix = if x == 0 { "1" } else if x == w - 1 { "3" } else { "2" };
-        let fill = if x <= fill_width { "full" } else { "empty" };
+        let fill = if x < fill_width { "full" } else { "empty" };
         let sprite = if let Some(sprite) = atlas.get(&format!("{}_{}_{}", sprite, fill, suffix)) {
             sprite
         } else {

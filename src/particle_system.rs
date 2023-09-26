@@ -83,7 +83,6 @@ fn create_delayed_particles(ecs: &mut World, ctx: &App) {
         renderables
             .insert(p, Renderable {
                 sprite: None, // TODO: Particle sprite
-                colour_sprite: false,
                 fg: handled.fg,
                 bg: handled.bg,
                 glyph: handled.glyph,
@@ -309,8 +308,7 @@ impl<'a> System<'a> for ParticleSpawnSystem {
                 .expect("Could not insert position");
             renderables
                 .insert(p, Renderable {
-                    sprite: None, // TODO: Particle sprite
-                    colour_sprite: false,
+                    sprite: None, // TODO: Particle sprites
                     fg: new_particle.fg,
                     bg: new_particle.bg,
                     glyph: new_particle.glyph,

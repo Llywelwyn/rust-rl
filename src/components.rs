@@ -38,11 +38,53 @@ pub struct OtherLevelPosition {
     pub id: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SpriteInfo {
+    pub id: String,
+    pub recolour: bool,
+    pub alt: Option<String>,
+    pub offset: (f32, f32),
+    pub alt_offset: (f32, f32),
+}
+
+impl SpriteInfo {
+    pub fn new(id: &str) -> Self {
+        Self {
+            id: id.to_string(),
+            recolour: false,
+            alt: None,
+            offset: (0.0, 0.0),
+            alt_offset: (0.0, 0.0),
+        }
+    }
+    pub fn colourable(id: &str) -> Self {
+        Self {
+            id: id.to_string(),
+            recolour: true,
+            alt: None,
+            offset: (0.0, 0.0),
+            alt_offset: (0.0, 0.0),
+        }
+    }
+    pub fn swap(&self) -> Self {
+        if let Some(alt_sprite) = &self.alt {
+            Self {
+                id: alt_sprite.clone(),
+                recolour: self.recolour,
+                alt: Some(self.id.clone()),
+                offset: self.alt_offset,
+                alt_offset: self.offset,
+            }
+        } else {
+            unreachable!("Tried to call .swap() on a sprite with no alt: {:?}", self);
+        }
+    }
+}
+
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Renderable {
     pub glyph: FontCharType,
-    pub sprite: Option<String>,
-    pub colour_sprite: bool,
+    pub sprite: Option<SpriteInfo>,
     pub fg: RGB,
     pub bg: RGB,
     pub render_order: i32,

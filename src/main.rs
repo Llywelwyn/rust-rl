@@ -253,16 +253,19 @@ fn draw_camera(
                     }
                     // TODO: Use sprites here, not text drawing. Put bitmap font into atlas.
                     let renderable = renderables.get(entry.1.e).unwrap();
-                    if let Some(sprite_id) = &renderable.sprite {
-                        let sprite = if let Some(sprite) = atlas.get(sprite_id) {
+                    if let Some(spriteinfo) = &renderable.sprite {
+                        let id = if let Some(sprite) = atlas.get(&spriteinfo.id) {
                             sprite
                         } else {
-                            panic!("No entity sprite found for ID: {}", sprite_id);
+                            panic!("No entity sprite found for ID: {}", spriteinfo.id);
                         };
-                        draw.image(sprite)
-                            .position((entry.0.x as f32) * TILESIZE, (entry.0.y as f32) * TILESIZE)
+                        draw.image(id)
+                            .position(
+                                ((entry.0.x as f32) + spriteinfo.offset.0) * TILESIZE,
+                                ((entry.0.y as f32) + spriteinfo.offset.1) * TILESIZE
+                            )
                             .color(
-                                if renderable.colour_sprite {
+                                if spriteinfo.recolour {
                                     Color::from_rgb(
                                         renderable.fg.r,
                                         renderable.fg.g,
@@ -293,16 +296,19 @@ fn draw_camera(
                 DrawType::VisibleAndRemember => {
                     // TODO: PUT THIS INTO A FUNCTION!
                     let renderable = renderables.get(entry.1.e).unwrap();
-                    if let Some(sprite_id) = &renderable.sprite {
-                        let sprite = if let Some(sprite) = atlas.get(sprite_id) {
+                    if let Some(spriteinfo) = &renderable.sprite {
+                        let id = if let Some(sprite) = atlas.get(&spriteinfo.id) {
                             sprite
                         } else {
-                            panic!("No entity sprite found for ID: {}", sprite_id);
+                            panic!("No entity sprite found for ID: {}", spriteinfo.id);
                         };
-                        draw.image(sprite)
-                            .position((entry.0.x as f32) * TILESIZE, (entry.0.y as f32) * TILESIZE)
+                        draw.image(id)
+                            .position(
+                                ((entry.0.x as f32) + spriteinfo.offset.0) * TILESIZE,
+                                ((entry.0.y as f32) + spriteinfo.offset.1) * TILESIZE
+                            )
                             .color(
-                                if renderable.colour_sprite {
+                                if spriteinfo.recolour {
                                     Color::from_rgb(
                                         renderable.fg.r,
                                         renderable.fg.g,
