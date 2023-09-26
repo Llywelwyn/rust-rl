@@ -22,7 +22,7 @@
     {
         "id": "scroll_identify",
         "name": { "name": "scroll of identify", "plural": "scrolls of identify" },
-        "renderable": { "glyph": "?", "fg": "#0FFFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#0FFFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 100,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "IDENTIFY"],
@@ -31,7 +31,7 @@
     {
         "id": "scroll_removecurse",
         "name": { "name": "scroll of remove curse", "plural": "scrolls of remove curse" },
-        "renderable": { "glyph": "?", "fg": "#0FFFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#0FFFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "REMOVE_CURSE"],
@@ -40,7 +40,7 @@
     {
         "id": "scroll_health",
         "name": { "name": "scroll of healing word", "plural": "scrolls of healing word" },
-        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
@@ -50,7 +50,7 @@
     {
         "id": "scroll_mass_health",
         "name": { "name": "scroll of mass healing word", "plural": "scrolls of mass healing word" },
-        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
@@ -60,7 +60,7 @@
     {
         "id": "scroll_magicmissile",
         "name": { "name": "scroll of magic missile", "plural": "scrolls of magic missile" },
-        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
@@ -70,7 +70,7 @@
     {
         "id": "scroll_embers",
         "name": { "name": "scroll of embers", "plural": "scrolls of embers" },
-        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 100,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
@@ -80,7 +80,7 @@
     {
         "id": "scroll_fireball",
         "name": { "name": "scroll of fireball", "plural": "scrolls of fireball" },
-        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
@@ -95,7 +95,7 @@
     {
         "id": "scroll_confusion",
         "name": { "name": "scroll of confusion", "plural": "scrolls of confusion" },
-        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 100,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
@@ -105,7 +105,7 @@
     {
         "id": "scroll_mass_confusion",
         "name": { "name": "scroll of mass confusion", "plural": "scrolls of mass confusion" },
-        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 200,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE"],
@@ -115,7 +115,7 @@
     {
         "id": "scroll_magicmap",
         "name": { "name": "scroll of magic mapping", "plural": "scrolls of magic mapping" },
-        "renderable": { "glyph": "?", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
         "weight": 0.5,
         "value": 50,
         "flags": ["CONSUMABLE", "DESTRUCTIBLE", "MAGICMAP"],
