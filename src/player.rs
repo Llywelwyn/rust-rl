@@ -115,12 +115,16 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             }
                         } else {
                             door.open = false;
-                            blocks_visibility
-                                .insert(potential_target, BlocksVisibility {})
-                                .expect("Unable to insert BlocksVisibility.");
-                            blocks_movement
-                                .insert(potential_target, BlocksTile {})
-                                .expect("Unable to insert BlocksTile.");
+                            if door.blocks_vis {
+                                blocks_visibility
+                                    .insert(potential_target, BlocksVisibility {})
+                                    .expect("Unable to insert BlocksVisibility.");
+                            }
+                            if door.blocks_move {
+                                blocks_movement
+                                    .insert(potential_target, BlocksTile {})
+                                    .expect("Unable to insert BlocksTile.");
+                            }
                             if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger
                                     ::new()

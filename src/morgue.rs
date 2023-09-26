@@ -164,10 +164,10 @@ fn draw_map(ecs: &World) -> String {
             if idx == map.xy_idx(point.x, point.y) {
                 glyph_u16 = to_cp437('@');
             } else if crate::spatial::has_tile_content(idx) {
-                let mut render_order = 0;
+                let mut render_order = 4;
                 crate::spatial::for_each_tile_content(idx, |e| {
                     if let Some(renderable) = ecs.read_storage::<Renderable>().get(e) {
-                        if renderable.render_order >= render_order {
+                        if renderable.render_order <= render_order {
                             render_order = renderable.render_order;
                             glyph_u16 = renderable.glyph;
                         }

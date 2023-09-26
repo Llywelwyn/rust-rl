@@ -53,11 +53,6 @@ macro_rules! apply_flags {
                 "BLOCKS_VISIBILITY" => $eb = $eb.with(BlocksVisibility {}),
                 "ENTRY_TRIGGER" => $eb = $eb.with(EntryTrigger {}),
                 "SINGLE_ACTIVATION" => $eb = $eb.with(SingleActivation {}),
-                "DOOR" => {
-                    $eb = $eb.with(Door { open: false });
-                    $eb = $eb.with(BlocksVisibility {});
-                    $eb = $eb.with(BlocksTile {});
-                }
                 // --- EFFECT FLAGS ---
                 "FOOD" => $eb = $eb.with(ProvidesNutrition {}),
                 "CONSUMABLE" => $eb = $eb.with(Consumable {}),
@@ -656,6 +651,23 @@ pub fn spawn_named_prop(
         if let Some(effects_list) = &prop_template.effects {
             apply_effects!(effects_list, eb);
         }
+
+        if let Some(door) = &prop_template.door {
+            eb = eb.with(Door {
+                open: door.open,
+                locked: door.locked,
+                blocks_vis: door.blocks_vis,
+                blocks_move: door.blocks_move,
+            });
+            if !door.open {
+                if door.blocks_vis {
+                    eb = eb.with(BlocksVisibility {});
+                }
+                if door.blocks_move {
+                    eb = eb.with(BlocksTile {});
+                }
+            }
+        }
         // BUILD THE ENTITY
         return Some(eb.build());
     }
@@ -701,11 +713,11 @@ fn get_renderable_component(
                 recolour: if let Some(colour) = spriteinfo.colour {
                     colour
                 } else {
-                    false
+                    true
                 },
                 alt: spriteinfo.alt.clone(),
-                offset: (x, y),
-                alt_offset: (x, y),
+                offset: (x, -y), // Invert y so that positive y = move upwards.
+                alt_offset: (alt_x, -alt_y),
             })
         } else {
             None

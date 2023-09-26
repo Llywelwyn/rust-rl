@@ -271,6 +271,7 @@ impl TownBuilder {
             building.1 + building.3 / 2
         );
         build_data.map.tiles[exit_idx] = TileType::DownStair;
+        build_data.spawn_list.push((exit_idx, "trapdoor".to_string()));
         let mut to_place: Vec<&str> = vec!["npc_miner", "npc_miner", "npc_guard", "prop_chair"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, exit_idx)
     }

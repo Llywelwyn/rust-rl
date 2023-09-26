@@ -88,6 +88,12 @@ pub struct Renderable {
     pub fg: RGB,
     pub bg: RGB,
     pub render_order: i32,
+    // 0 = always on top: particle effects
+    // 1 = things that should appear infront of the player: railings, etc.
+    // 2 = the player
+    // 3 = other mobs
+    // 4 = interactable items
+    // 5 = other props: table, etc.
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -175,6 +181,9 @@ pub struct BlocksVisibility {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Door {
     pub open: bool,
+    pub locked: bool,
+    pub blocks_vis: bool,
+    pub blocks_move: bool,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
