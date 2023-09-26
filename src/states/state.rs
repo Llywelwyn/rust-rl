@@ -362,7 +362,10 @@ impl State {
                             )
                         );
                         self.mapgen_timer += ctx.timer.delta_f32();
-                        if self.mapgen_timer > 10.0 / (self.mapgen_history.len() as f32) {
+                        if
+                            self.mapgen_timer > 10.0 / (self.mapgen_history.len() as f32) ||
+                            self.mapgen_timer > 1.0
+                        {
                             self.mapgen_timer = 0.0;
                             self.mapgen_index += 1;
                             if self.mapgen_index >= self.mapgen_history.len() {

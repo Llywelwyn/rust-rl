@@ -2,13 +2,13 @@
     {
         "id": "door",
         "name": "door",
-        "renderable": { "glyph": "+", "sprite": 17, "fg": "#00FFFF", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "+", "sprite": "door_wood_h_closed", "colour_sprite": false, "fg": "#00FFFF", "bg": "#000000", "order": 2 },
         "flags": ["DOOR"]
     },
     {
         "id": "prop_altar",
         "name": "altar",
-        "renderable": { "glyph": "_", "fg": "#FFFFFF", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "_", "sprite": "tombstone", "colour_sprite": false, "fg": "#FFFFFF", "bg": "#000000", "order": 2 },
         "flags": ["ENTRY_TRIGGER"],
         "effects": { "heal": "8d8" }
     },
@@ -21,64 +21,64 @@
     {
         "id": "prop_table",
         "name": "table",
-        "renderable": { "glyph": "-", "sprite": 52, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "-", "sprite": "table", "colour_sprite": false, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "prop_hay",
         "name": "hay",
-        "renderable": { "glyph": "%", "fg": "#c7ad39", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "%", "sprite": "%", "fg": "#c7ad39", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "prop_statue",
         "name": "statue",
-        "renderable": { "glyph": "@", "sprite": 29, "fg": "#ffffff", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "@", "sprite": "statue_warrior", "colour_sprite": false, "fg": "#ffffff", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "prop_bed",
         "name": "bed",
-        "renderable": { "glyph": "=", "sprite": 50, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "=", "sprite": "bed", "colour_sprite": false, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "prop_chair",
         "name": "chair",
-        "renderable": { "glyph": "└", "sprite": 51, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "└", "sprite": "chair", "colour_sprite": false, "fg": "#AAAAAA", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "prop_candle",
         "name": "candle",
-        "renderable": { "glyph": "Ä", "sprite": 3, "fg": "#FFA500", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "Ä", "sprite": "candles_a1", "colour_sprite": false, "fg": "#FFA500", "bg": "#000000", "order": 2 },
         "flags": []
     },
     {
         "id": "trap_bear",
         "name": "bear trap",
-        "renderable": { "glyph": "^", "fg": "#e6e6e6", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "^", "sprite": "trap", "colour_sprite": false, "fg": "#e6e6e6", "bg": "#000000", "order": 2 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "damage": "2d4" }
     },
     {
         "id": "trap_mini_mine",
         "name": "mini-mine",
-        "renderable": { "glyph": "^", "fg": "#ff1e00", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "^", "sprite": "^", "fg": "#ff1e00", "bg": "#000000", "order": 2 },
         "flags": ["ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "damage": "2d4", "aoe": "3" }
     },
     {
         "id": "trap_stonefall",
         "name": "stonefall trap",
-        "renderable": { "glyph": "^", "fg": "#beb5a7", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "^", "sprite": "^", "fg": "#beb5a7", "bg": "#000000", "order": 2 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "damage": "2d10" }
     },
     {
         "id": "trap_confusion",
         "name": "magic trap",
-        "renderable": { "glyph": "^", "fg": "#df07df", "bg": "#000000", "order": 2 },
+        "renderable": { "glyph": "^", "sprite": "magic_e1", "colour_sprite": false, "fg": "#df07df", "bg": "#000000", "order": 2 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "confusion": "3" }
     }

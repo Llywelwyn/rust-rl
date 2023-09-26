@@ -83,6 +83,7 @@ fn create_delayed_particles(ecs: &mut World, ctx: &App) {
         renderables
             .insert(p, Renderable {
                 sprite: None, // TODO: Particle sprite
+                colour_sprite: false,
                 fg: handled.fg,
                 bg: handled.bg,
                 glyph: handled.glyph,
@@ -309,6 +310,7 @@ impl<'a> System<'a> for ParticleSpawnSystem {
             renderables
                 .insert(p, Renderable {
                     sprite: None, // TODO: Particle sprite
+                    colour_sprite: false,
                     fg: new_particle.fg,
                     bg: new_particle.bg,
                     glyph: new_particle.glyph,

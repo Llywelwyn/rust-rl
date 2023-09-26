@@ -253,34 +253,82 @@ fn draw_camera(
                     }
                     // TODO: Use sprites here, not text drawing. Put bitmap font into atlas.
                     let renderable = renderables.get(entry.1.e).unwrap();
-                    draw.text(
-                        &font,
-                        &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
-                    )
-                        .position(
-                            ((entry.0.x as f32) + 0.5) * TILESIZE,
-                            ((entry.0.y as f32) + 0.5) * TILESIZE
+                    if let Some(sprite_id) = &renderable.sprite {
+                        let sprite = if let Some(sprite) = atlas.get(sprite_id) {
+                            sprite
+                        } else {
+                            panic!("No entity sprite found for ID: {}", sprite_id);
+                        };
+                        draw.image(sprite)
+                            .position((entry.0.x as f32) * TILESIZE, (entry.0.y as f32) * TILESIZE)
+                            .color(
+                                if renderable.colour_sprite {
+                                    Color::from_rgb(
+                                        renderable.fg.r,
+                                        renderable.fg.g,
+                                        renderable.fg.b
+                                    )
+                                } else {
+                                    Color::WHITE
+                                }
+                            );
+                    } else {
+                        // Fallback to drawing text.
+                        draw.text(
+                            &font,
+                            &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
                         )
-                        .color(Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b))
-                        .size(FONTSIZE)
-                        .h_align_center()
-                        .v_align_middle();
-                    // Draw entity
+                            .position(
+                                ((entry.0.x as f32) + 0.5) * TILESIZE,
+                                ((entry.0.y as f32) + 0.5) * TILESIZE
+                            )
+                            .color(
+                                Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b)
+                            )
+                            .size(FONTSIZE)
+                            .h_align_center()
+                            .v_align_middle();
+                    }
                 }
                 DrawType::VisibleAndRemember => {
+                    // TODO: PUT THIS INTO A FUNCTION!
                     let renderable = renderables.get(entry.1.e).unwrap();
-                    draw.text(
-                        &font,
-                        &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
-                    )
-                        .position(
-                            ((entry.0.x as f32) + 0.5) * TILESIZE,
-                            ((entry.0.y as f32) + 0.5) * TILESIZE
+                    if let Some(sprite_id) = &renderable.sprite {
+                        let sprite = if let Some(sprite) = atlas.get(sprite_id) {
+                            sprite
+                        } else {
+                            panic!("No entity sprite found for ID: {}", sprite_id);
+                        };
+                        draw.image(sprite)
+                            .position((entry.0.x as f32) * TILESIZE, (entry.0.y as f32) * TILESIZE)
+                            .color(
+                                if renderable.colour_sprite {
+                                    Color::from_rgb(
+                                        renderable.fg.r,
+                                        renderable.fg.g,
+                                        renderable.fg.b
+                                    )
+                                } else {
+                                    Color::WHITE
+                                }
+                            );
+                    } else {
+                        // Fallback to drawing text.
+                        draw.text(
+                            &font,
+                            &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
                         )
-                        .color(Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b))
-                        .size(FONTSIZE)
-                        .h_align_center()
-                        .v_align_middle();
+                            .position(
+                                ((entry.0.x as f32) + 0.5) * TILESIZE,
+                                ((entry.0.y as f32) + 0.5) * TILESIZE
+                            )
+                            .color(
+                                Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b)
+                            )
+                            .size(FONTSIZE)
+                            .h_align_center()
+                            .v_align_middle();
+                    }
                     // TODO: Update map memory.
                 }
                 _ => {}
@@ -318,7 +366,12 @@ fn render_map_in_view(
                             &*map,
                             Some(*ecs.fetch::<Point>())
                         );
-                        draw.image(atlas.get(id).unwrap())
+                        let sprite = if let Some(sprite) = atlas.get(id) {
+                            sprite
+                        } else {
+                            panic!("No sprite found for ID: {}", id);
+                        };
+                        draw.image(sprite)
                             .position(
                                 ((x + bounds.x_offset) as f32) * TILESIZE,
                                 ((y + bounds.y_offset) as f32) * TILESIZE

@@ -168,7 +168,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                     }
                 }
                 if draw {
-                    if let Some(sprite) = render.sprite {
+                    /* if let Some(sprite) = render.sprite {
                         ctx.set_active_console(0);
                         ctx.add_sprite(
                             Rect::with_size(
@@ -182,7 +182,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                             sprite
                         );
                         ctx.set_active_console(ENTITY_LAYER);
-                    } else {
+                    } else  */ {
                         ctx.set(
                             entity_offset_x + bounds.x_offset,
                             entity_offset_y + bounds.y_offset,

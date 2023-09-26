@@ -18,12 +18,12 @@ pub fn render(draw: bool, gfx: &mut Graphics, font: &notan::draw::Font) {
     }
 }
 
-/// Render with specific params.
+/// Render with specificied params.
 pub fn render_log(gfx: &mut Graphics, font: &notan::draw::Font, pos: &(f32, f32), width: f32) {
     let mut text = gfx.create_text();
     let log = LOG.lock().unwrap();
     let latest: Vec<_> = log.iter().rev().take(5).collect();
-    let mut init = false;
+    let mut initialised = false;
     let mut y = pos.1;
     for (_, entries) in latest {
         let mut written_on_line = false;
@@ -37,14 +37,14 @@ pub fn render_log(gfx: &mut Graphics, font: &notan::draw::Font, pos: &(f32, f32)
                     .color(Color::from_rgb(frag.colour.r, frag.colour.g, frag.colour.b))
                     .v_align_bottom();
                 written_on_line = true;
-                init = true;
+                initialised = true;
             } else {
                 text.chain(&frag.text)
                     .color(Color::from_rgb(frag.colour.r, frag.colour.g, frag.colour.b))
                     .size(FONTSIZE);
             }
         }
-        if init {
+        if initialised {
             y = text.last_bounds().min_y();
         }
     }

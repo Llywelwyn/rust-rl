@@ -7,14 +7,11 @@ use std::ops::{ Add, Mul };
 use notan::prelude::*;
 
 pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&str, Color) {
-    let x = (idx as i32) % map.width;
-    let y = (idx as i32) / map.width;
-    let sprite = map.tiles[idx].sprite();
-    /*let base = match tile {
-        TileType::Wall => wall_sprite(tile.sprite(), map, x, y),
-        _ => tile.sprite(),
+    let f = map.colour_offset[idx].0.0; // Using offset as a source of random.
+    let sprite = match map.tiles[idx] {
+        TileType::Wall => map.tiles[idx].sprite(check_if_base(idx, map), f),
+        _ => map.tiles[idx].sprite(false, f),
     };
-    let sprite_id = pick_variant(base, tile.variants(), idx, map);*/
     let tint = if !map.visible_tiles[idx] {
         Color::from_rgb(0.75, 0.75, 0.75)
     } else {
@@ -159,18 +156,13 @@ fn is_revealed_and_wall(map: &Map, x: i32, y: i32, debug: Option<bool>) -> bool 
         (if debug.is_none() { map.revealed_tiles[idx] } else { true })
 }
 
-fn wall_sprite(id: usize, map: &Map, x: i32, y: i32) -> usize {
-    if y > map.height - (2 as i32) {
-        return id;
-    }
+fn check_if_base(idx: usize, map: &Map) -> bool {
+    let x = (idx as i32) % map.width;
+    let y = (idx as i32) / map.width;
     if is_revealed_and_wall(map, x, y + 1, None) {
-        return id + 6;
+        return false;
     }
-    return id;
-}
-
-fn pick_variant(base: usize, variants: usize, idx: usize, map: &Map) -> usize {
-    return base + ((map.colour_offset[idx].0.0 * (variants as f32)) as usize);
+    return true;
 }
 
 fn wall_glyph(map: &Map, x: i32, y: i32, debug: Option<bool>) -> FontCharType {

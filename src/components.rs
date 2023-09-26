@@ -41,7 +41,8 @@ pub struct OtherLevelPosition {
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Renderable {
     pub glyph: FontCharType,
-    pub sprite: Option<usize>,
+    pub sprite: Option<String>,
+    pub colour_sprite: bool,
     pub fg: RGB,
     pub bg: RGB,
     pub render_order: i32,

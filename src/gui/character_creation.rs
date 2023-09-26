@@ -275,6 +275,7 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                 .insert(*player, Renderable {
                     glyph: to_cp437(DWARF_GLYPH),
                     sprite: None, // TODO: Dwarf sprite
+                    colour_sprite: true,
                     fg: RGB::named(DWARF_COLOUR),
                     bg: RGB::named(BLACK),
                     render_order: 0,
@@ -287,6 +288,7 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                 .insert(*player, Renderable {
                     glyph: to_cp437(ELF_GLYPH),
                     sprite: None, // TODO: Elf sprite
+                    colour_sprite: true,
                     fg: RGB::named(ELF_COLOUR),
                     bg: RGB::named(BLACK),
                     render_order: 0,
@@ -313,6 +315,7 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                 .insert(*player, Renderable {
                     glyph: to_cp437(CATFOLK_GLYPH),
                     sprite: None, // TODO: Catfolk sprite
+                    colour_sprite: true,
                     fg: RGB::named(CATFOLK_COLOUR),
                     bg: RGB::named(BLACK),
                     render_order: 0,

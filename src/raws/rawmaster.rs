@@ -691,10 +691,11 @@ fn get_renderable_component(
 ) -> crate::components::Renderable {
     crate::components::Renderable {
         glyph: to_cp437(renderable.glyph.chars().next().unwrap()),
-        sprite: if let Some(sprite) = &renderable.sprite {
-            Some(sprite.clone())
+        sprite: renderable.sprite.clone(),
+        colour_sprite: if renderable.colour_sprite.is_some() {
+            renderable.colour_sprite.clone().unwrap()
         } else {
-            None
+            true
         },
         fg: RGB::from_hex(&renderable.fg).expect("Invalid RGB"),
         bg: RGB::from_hex(&renderable.bg).expect("Invalid RGB"),

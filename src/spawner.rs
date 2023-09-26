@@ -57,7 +57,8 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(BlocksTile {})
         .with(Renderable {
             glyph: to_cp437('@'),
-            sprite: None, // TODO: Player sprite
+            sprite: Some("@".to_string()), // TODO: Player sprite
+            colour_sprite: true,
             fg: RGB::named(YELLOW),
             bg: RGB::named(BLACK),
             render_order: 0,

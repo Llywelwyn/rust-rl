@@ -1,5 +1,5 @@
 use serde::{ Deserialize, Serialize };
-use crate::consts::sprites::*;
+use bracket_lib::random::RandomNumberGenerator;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum TileType {
@@ -30,52 +30,84 @@ pub enum TileType {
 }
 
 impl TileType {
-    pub fn sprite(&self) -> &str {
-        match self {
-            TileType::ImpassableMountain => "statue_warrior",
-            TileType::Wall => "wall_cave_h_a",
-            TileType::DeepWater => "water",
-            TileType::Fence => "wall_cave_h_a",
-            TileType::Bars => "wall_cave_h_a",
-            TileType::Floor => "floor_cobble_a",
-            TileType::WoodFloor => "floor_wood_a",
-            TileType::Gravel => "floor_cobble_b",
-            TileType::Road => "floor_cobble_c",
-            TileType::Grass => "floor_grass_a",
-            TileType::Foliage => "floor_grass_b",
-            TileType::HeavyFoliage => "floor_grass_c",
-            TileType::Sand => "floor_cobble_c",
-            TileType::ShallowWater => "water",
-            TileType::Bridge => "floor_cobble_a",
-            TileType::DownStair => "wall_cave_stair_down",
-            TileType::UpStair => "wall_cave_stair_up",
-            TileType::ToLocal(_) => "wall_crypt_stair_down",
-            TileType::ToOvermap(_) => "wall_crypt_stair_up",
+    pub fn sprite(&self, base: bool, float: f32) -> &str {
+        if base {
+            return self.h(float);
         }
+        return self.v(float);
     }
-
-    pub fn variants(&self) -> usize {
-        match self {
-            TileType::ImpassableMountain => 1,
-            TileType::Wall => 4,
-            TileType::DeepWater => 2,
-            TileType::Fence => 1,
-            TileType::Bars => 1,
-            TileType::Floor => 6,
-            TileType::WoodFloor => 3,
-            TileType::Gravel => 1,
-            TileType::Road => 4,
-            TileType::Grass => 6,
-            TileType::Foliage => 1,
-            TileType::HeavyFoliage => 1,
-            TileType::Sand => 1,
-            TileType::ShallowWater => 2,
-            TileType::Bridge => 1,
-            TileType::DownStair => 1,
-            TileType::UpStair => 1,
-            TileType::ToLocal(_) => 1,
-            TileType::ToOvermap(_) => 1,
-        }
+    fn h(&self, float: f32) -> &str {
+        let options = match self {
+            TileType::Wall =>
+                vec![
+                    "wall_cave_h_a",
+                    "wall_cave_h_b",
+                    "wall_cave_h_c",
+                    "wall_cave_h_d",
+                    "wall_cave_h_crack"
+                ],
+            _ => unreachable!("Tried to get a h (base) sprite for a non-wall tile."),
+        };
+        return options[(float * (options.len() as f32)) as usize];
+    }
+    fn v(&self, float: f32) -> &str {
+        let options = match self {
+            TileType::ImpassableMountain => vec!["statue_warrior"],
+            TileType::Wall =>
+                vec![
+                    "wall_cave_v_a",
+                    "wall_cave_v_b",
+                    "wall_cave_v_c",
+                    "wall_cave_v_d",
+                    "wall_cave_v_crack"
+                ],
+            TileType::DeepWater => vec!["water", "water_a1", "water_a2"],
+            TileType::Fence => vec!["wall_cave_h_a"],
+            TileType::Bars => vec!["wall_cave_h_a"],
+            TileType::Floor =>
+                vec![
+                    "floor_cobble_a",
+                    "floor_cobble_b",
+                    "floor_cobble_c",
+                    "floor_cobble_d",
+                    "floor_cobble_e",
+                    "floor_cobble_f"
+                ],
+            TileType::WoodFloor =>
+                vec!["floor_wood_a", "floor_wood_b", "floor_wood_c", "floor_wood_d"],
+            TileType::Gravel => vec!["floor_cobble_b"],
+            TileType::Road =>
+                vec![
+                    "floor_tile_a",
+                    "floor_tile_b",
+                    "floor_tile_c",
+                    "floor_tile_d",
+                    "floor_mossy_a",
+                    "floor_mossy_b",
+                    "floor_mossy_c",
+                    "floor_mossy_d",
+                    "floor_mossy_e"
+                ],
+            TileType::Grass =>
+                vec![
+                    "floor_grass_a",
+                    "floor_grass_b",
+                    "floor_grass_c",
+                    "floor_grass_d",
+                    "floor_grass_e",
+                    "floor_grass_f"
+                ],
+            TileType::Foliage => vec!["floor_grass_b"],
+            TileType::HeavyFoliage => vec!["floor_grass_c"],
+            TileType::Sand => vec!["floor_cobble_c"],
+            TileType::ShallowWater => vec!["water"],
+            TileType::Bridge => vec!["floor_cobble_a"],
+            TileType::DownStair => vec!["wall_cave_stair_down"],
+            TileType::UpStair => vec!["wall_cave_stair_up"],
+            TileType::ToLocal(_) => vec!["wall_crypt_stair_down"],
+            TileType::ToOvermap(_) => vec!["wall_crypt_stair_up"],
+        };
+        return options[(float * (options.len() as f32)) as usize];
     }
 }
 

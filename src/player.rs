@@ -136,7 +136,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             let mut renderables = ecs.write_storage::<Renderable>();
                             let render_data = renderables.get_mut(potential_target).unwrap();
                             render_data.glyph = to_cp437('+'); // Nethack open door, maybe just use '/' instead.
-                            render_data.sprite = Some(17); // TODO: Enum
+                            render_data.sprite = Some("door_wood_h_closed".to_string()); // TODO: Enum
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
                         result = RunState::Ticking;
@@ -234,7 +234,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                             let mut renderables = ecs.write_storage::<Renderable>();
                             let render_data = renderables.get_mut(potential_target).unwrap();
                             render_data.glyph = to_cp437('▓'); // Nethack open door, maybe just use '/' instead.
-                            render_data.sprite = Some(18); // TODO: Enum
+                            render_data.sprite = Some("door_wood_h_open".to_string()); // TODO: Enum
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
                         result = RunState::Ticking;
