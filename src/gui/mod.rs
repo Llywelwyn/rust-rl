@@ -46,7 +46,7 @@ use crate::consts::visuals::{
 };
 use crate::consts::{ TILESIZE, FONTSIZE, DISPLAYWIDTH };
 use notan::prelude::*;
-use notan::draw::{ Draw, DrawTextSection };
+use notan::draw::{ Draw, DrawTextSection, DrawImages };
 use std::collections::HashMap;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -112,6 +112,30 @@ pub fn draw_lerping_bar(
     }
 }
 
+fn draw_bar(
+    draw: &mut Draw,
+    atlas: &HashMap<String, Texture>,
+    sx: f32,
+    y: f32,
+    w: i32,
+    n: i32,
+    max: i32,
+    sprite: &str
+) {
+    let percent = (n as f32) / (max as f32);
+    let fill_width = (percent * (w as f32)) as i32;
+    for x in 0..w {
+        let suffix = if x == 0 { "1" } else if x == w - 1 { "3" } else { "2" };
+        let fill = if x <= fill_width { "full" } else { "empty" };
+        let sprite = if let Some(sprite) = atlas.get(&format!("{}_{}_{}", sprite, fill, suffix)) {
+            sprite
+        } else {
+            panic!("No sprite found in atlas: {}_{}_{}", sprite, fill, suffix)
+        };
+        draw.image(sprite).position(sx + (x as f32) * TILESIZE, y);
+    }
+}
+
 pub const TEXT_FONT_MOD: i32 = 2;
 
 pub fn draw_ui2(
@@ -137,7 +161,26 @@ pub fn draw_ui2(
         let mut x = initial_x;
         let row1 = 53.0 * TILESIZE;
         let row2 = row1 + TILESIZE;
-        // TODO: Draw hp/mana bars
+        draw_bar(
+            draw,
+            atlas,
+            2.0 * TILESIZE,
+            row1,
+            22,
+            stats.hit_points.current,
+            stats.hit_points.max,
+            "ui_hp"
+        );
+        draw_bar(
+            draw,
+            atlas,
+            2.0 * TILESIZE,
+            row2,
+            22,
+            stats.mana.current,
+            stats.mana.max,
+            "ui_mp"
+        );
         // Draw AC
         let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
         let mut armour_ac_bonus = 0;
