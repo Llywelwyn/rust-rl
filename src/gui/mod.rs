@@ -224,6 +224,19 @@ pub fn draw_ui2(
             .color(Color::YELLOW)
             .size(FONTSIZE)
             .h_align_right();
+        if let Some(burden) = burden.get(*player_entity) {
+            use crate::BurdenLevel;
+            let (text, colour) = match burden.level {
+                BurdenLevel::Burdened => ("Burdened", RGB::named(BROWN1)),
+                BurdenLevel::Strained => ("Strained", RGB::named(ORANGE)),
+                BurdenLevel::Overloaded => ("Overloaded", RGB::named(RED)),
+            };
+            draw.text(&font, &text)
+                .position((VIEWPORT_W as f32) * TILESIZE, 50.0 * TILESIZE)
+                .color(Color::from_rgb(colour.r, colour.g, colour.b))
+                .size(FONTSIZE)
+                .h_align_right();
+        }
         if stats.god {
             draw.text(&font, "--- GODMODE: ON ---")
                 .position(20.0 * TILESIZE, 20.0 * TILESIZE)
