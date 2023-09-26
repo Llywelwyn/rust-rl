@@ -1,7 +1,7 @@
 use rust_rl::*;
 use notan::prelude::*;
 use notan::draw::create_textures_from_atlas;
-use notan::draw::{ CreateFont, CreateDraw, DrawImages, Draw, DrawTextSection };
+use notan::draw::{ CreateFont, CreateDraw, DrawImages, Draw, DrawTextSection, DrawShapes };
 use specs::prelude::*;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use bracket_lib::prelude::*;
@@ -244,14 +244,9 @@ fn draw_camera(
         let mut entries: Vec<(&DrawKey, &DrawInfo)> = to_draw.iter().collect();
         entries.sort_by_key(|&(k, _v)| std::cmp::Reverse(k.render_order));
         for entry in entries.iter() {
+            // TODO: ABSTRACT THESE INTO FUNCTIONS ONCE FUNCTIONALITY IS SETTLED ON.
             match entry.1.draw_type {
                 DrawType::Visible | DrawType::Telepathy => {
-                    if let Some(pool) = pools.get(entry.1.e) {
-                        if pool.hit_points.current < pool.hit_points.max {
-                            // Draw health bar
-                        }
-                    }
-                    // TODO: Use sprites here, not text drawing. Put bitmap font into atlas.
                     let renderable = renderables.get(entry.1.e).unwrap();
                     if let Some(spriteinfo) = &renderable.sprite {
                         let id = if let Some(sprite) = atlas.get(&spriteinfo.id) {
@@ -275,6 +270,35 @@ fn draw_camera(
                                     Color::WHITE
                                 }
                             );
+                        if let Some(pool) = pools.get(entry.1.e) {
+                            if pool.hit_points.current < pool.hit_points.max {
+                                // TODO: Draw HP bar. Callback, so it's always on top?
+                                let fill: f32 =
+                                    f32::max(pool.hit_points.current as f32, 0.0) /
+                                    (pool.hit_points.max as f32);
+                                draw.line(
+                                    ((entry.0.x as f32) * TILESIZE, (entry.0.y as f32) * TILESIZE),
+                                    (
+                                        ((entry.0.x as f32) + fill) * TILESIZE,
+                                        (entry.0.y as f32) * TILESIZE,
+                                    )
+                                )
+                                    .color(Color::GREEN)
+                                    .width(1.0);
+                                draw.line(
+                                    (
+                                        ((entry.0.x as f32) + fill) * TILESIZE,
+                                        (entry.0.y as f32) * TILESIZE,
+                                    ),
+                                    (
+                                        ((entry.0.x as f32) + 1.0) * TILESIZE,
+                                        (entry.0.y as f32) * TILESIZE,
+                                    )
+                                )
+                                    .color(Color::RED)
+                                    .width(1.0);
+                            }
+                        }
                     } else {
                         // Fallback to drawing text.
                         draw.text(
