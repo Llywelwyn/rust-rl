@@ -87,6 +87,7 @@ fn create_delayed_particles(ecs: &mut World, ctx: &App) {
                 bg: handled.bg,
                 glyph: handled.glyph,
                 render_order: 0,
+                alt_render_order: None,
             })
             .expect("Could not insert renderables");
         particles
@@ -313,6 +314,7 @@ impl<'a> System<'a> for ParticleSpawnSystem {
                     bg: new_particle.bg,
                     glyph: new_particle.glyph,
                     render_order: 0,
+                    alt_render_order: None,
                 })
                 .expect("Could not insert renderables");
             particles

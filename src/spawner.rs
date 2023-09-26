@@ -62,6 +62,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             fg: RGB::named(YELLOW),
             bg: RGB::named(BLACK),
             render_order: 2,
+            alt_render_order: None,
         })
         .with(Bleeds { colour: RGB::named(BLOODSTAIN_COLOUR) })
         .with(Player {})

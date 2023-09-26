@@ -725,6 +725,11 @@ fn get_renderable_component(
         fg: RGB::from_hex(&renderable.fg).expect("Invalid RGB"),
         bg: RGB::from_hex(&renderable.bg).expect("Invalid RGB"),
         render_order: renderable.order,
+        alt_render_order: if let Some(alt_order) = renderable.alt_order {
+            Some(alt_order)
+        } else {
+            None
+        },
     }
 }
 

@@ -45,6 +45,7 @@ pub struct Renderable {
     pub fg: String,
     pub bg: String,
     pub order: i32,
+    pub alt_order: Option<i32>,
 }
 
 #[derive(Deserialize, Debug)]

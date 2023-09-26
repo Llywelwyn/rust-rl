@@ -66,7 +66,7 @@ impl SpriteInfo {
             alt_offset: (0.0, 0.0),
         }
     }
-    pub fn swap(&self) -> Self {
+    fn swap(&self) -> Self {
         if let Some(alt_sprite) = &self.alt {
             Self {
                 id: alt_sprite.clone(),
@@ -88,12 +88,24 @@ pub struct Renderable {
     pub fg: RGB,
     pub bg: RGB,
     pub render_order: i32,
+    pub alt_render_order: Option<i32>,
     // 0 = always on top: particle effects
     // 1 = things that should appear infront of the player: railings, etc.
     // 2 = the player
     // 3 = other mobs
     // 4 = interactable items
     // 5 = other props: table, etc.
+}
+
+impl Renderable {
+    pub fn swap(&mut self) {
+        if let Some(alt_render_order) = &mut self.alt_render_order {
+            std::mem::swap(&mut self.render_order, alt_render_order);
+        }
+        if let Some(sprite) = &mut self.sprite {
+            *sprite = sprite.swap();
+        }
+    }
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

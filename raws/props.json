@@ -8,8 +8,8 @@
     {
         "id": "trapdoor",
         "name": "trapdoor",
-        "renderable": { "glyph": "+", "sprite": { "id": "trapdoor_closed", "alt": "trapdoor_open2", "colour": false, "alt_y": 1.0 }, "fg": "#00FFFF", "bg": "#000000", "order": 1 },
-        "door": { "open": false, "locked": false, "blocks_vis": false, "blocks_move": true }
+        "renderable": { "glyph": "+", "sprite": { "id": "trapdoor_closed", "alt": "trapdoor_open2", "colour": false, "alt_y": 1.0 }, "fg": "#00FFFF", "bg": "#000000", "order": 5, "alt_order": 1 },
+        "door": { "open": false, "locked": false, "blocks_vis": false, "blocks_move": false }
     },
     {
         "id": "prop_altar",

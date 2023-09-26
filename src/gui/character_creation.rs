@@ -278,6 +278,7 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                     fg: RGB::named(DWARF_COLOUR),
                     bg: RGB::named(BLACK),
                     render_order: 0,
+                    alt_render_order: None,
                 })
                 .expect("Unable to insert renderable component");
             *player_skills.skills.entry(Skill::Defence).or_insert(0) += DWARF_DEFENCE_MOD;
@@ -290,6 +291,7 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                     fg: RGB::named(ELF_COLOUR),
                     bg: RGB::named(BLACK),
                     render_order: 0,
+                    alt_render_order: None,
                 })
                 .expect("Unable to insert renderable component");
             let mut telepaths = ecs.write_storage::<Telepath>();
@@ -316,6 +318,7 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                     fg: RGB::named(CATFOLK_COLOUR),
                     bg: RGB::named(BLACK),
                     render_order: 0,
+                    alt_render_order: None,
                 })
                 .expect("Unable to insert renderable component");
             let mut speeds = ecs.write_storage::<Energy>();

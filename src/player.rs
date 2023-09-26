@@ -139,9 +139,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                             std::mem::drop(renderables);
                             let mut renderables = ecs.write_storage::<Renderable>();
                             let render_data = renderables.get_mut(potential_target).unwrap();
-                            if let Some(sprite) = &mut render_data.sprite {
-                                *sprite = sprite.swap();
-                            }
+                            render_data.swap();
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
                         result = RunState::Ticking;
@@ -238,9 +236,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                             std::mem::drop(renderables);
                             let mut renderables = ecs.write_storage::<Renderable>();
                             let render_data = renderables.get_mut(potential_target).unwrap();
-                            if let Some(sprite) = &mut render_data.sprite {
-                                *sprite = sprite.swap();
-                            }
+                            render_data.swap();
                             door_pos = Some(Point::new(pos.x + delta_x, pos.y + delta_y));
                         }
                         result = RunState::Ticking;
@@ -502,7 +498,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                 }
                 let door = doors.get_mut(potential_target);
                 if let Some(door) = door {
-                    if door.open == false {
+                    if door.open == false && door.blocks_move {
                         if let Some(name) = names.get(potential_target) {
                             let colour = if
                                 let Some(_) = ecs.read_storage::<Item>().get(potential_target)
@@ -774,6 +770,18 @@ fn try_change_level(ecs: &mut World, backtracking: bool) -> Destination {
     let map = ecs.fetch::<Map>();
     let player_idx = map.xy_idx(player_pos.x, player_pos.y);
     let this_tile = map.tiles[player_idx];
+    let mut blocked = false;
+    crate::spatial::for_each_tile_content(player_idx, |potential| {
+        if let Some(is_door) = ecs.read_storage::<Door>().get(potential) {
+            if is_door.open == false {
+                blocked = true;
+                gamelog::Logger::new().append("The way is blocked.").log();
+            }
+        }
+    });
+    if blocked {
+        return Destination::None;
+    }
     return get_dest(this_tile, backtracking);
 }
 
