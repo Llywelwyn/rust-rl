@@ -258,6 +258,16 @@ pub struct Attribute {
     pub base: i32,
     pub modifiers: i32,
     pub bonus: i32,
+    pub exercise: i32,
+}
+
+impl Attribute {
+    pub fn improve(&mut self) {
+        self.exercise += 1;
+    }
+    pub fn abuse(&mut self) {
+        self.exercise -= 1;
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
@@ -289,7 +299,6 @@ pub struct GrantsSpell {
 }
 
 // TODO: GrantsIntrinsic, Intrinsics, etc. ? Done the same way as spells?
-
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Attributes {
     pub strength: Attribute,
@@ -298,6 +307,65 @@ pub struct Attributes {
     pub intelligence: Attribute,
     pub wisdom: Attribute,
     pub charisma: Attribute,
+}
+
+impl Attributes {
+    pub const STR: i32 = 0;
+    pub const DEX: i32 = 1;
+    pub const CON: i32 = 2;
+    pub const INT: i32 = 3;
+    pub const WIS: i32 = 4;
+    pub const CHA: i32 = 5;
+    pub fn exercise(&mut self, attr: i32, improve: bool) {
+        match attr {
+            Self::STR => {
+                if improve {
+                    console::log("Improving strength.");
+                    console::log(format!("Value before: {}", self.strength.exercise));
+                    self.strength.improve();
+                    console::log(format!("Value after: {}", self.strength.exercise));
+                } else {
+                    self.strength.abuse();
+                }
+            }
+            Self::DEX => {
+                if improve {
+                    self.dexterity.improve();
+                } else {
+                    self.dexterity.abuse();
+                }
+            }
+            Self::CON => {
+                if improve {
+                    self.constitution.improve();
+                } else {
+                    self.constitution.abuse();
+                }
+            }
+            Self::INT => {
+                if improve {
+                    self.intelligence.improve();
+                } else {
+                    self.intelligence.abuse();
+                }
+            }
+            Self::WIS => {
+                if improve {
+                    self.wisdom.improve();
+                } else {
+                    self.wisdom.abuse();
+                }
+            }
+            Self::CHA => {
+                if improve {
+                    self.charisma.improve();
+                } else {
+                    self.charisma.abuse();
+                }
+            }
+            _ => unreachable!("Tried to exercise an attribute that doesn't exist."),
+        }
+    }
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]

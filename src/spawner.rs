@@ -79,12 +79,12 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(HungerClock { state: HungerState::Satiated, duration: 1200 })
         .with(Attributes {
             // These are overwritten with chargen later -- placeholders.
-            strength: Attribute { base: 10, modifiers: 0, bonus: 0 },
-            dexterity: Attribute { base: 10, modifiers: 0, bonus: 0 },
-            constitution: Attribute { base: 10, modifiers: 0, bonus: 0 },
-            intelligence: Attribute { base: 10, modifiers: 0, bonus: 0 },
-            wisdom: Attribute { base: 10, modifiers: 0, bonus: 0 },
-            charisma: Attribute { base: 10, modifiers: 0, bonus: 0 },
+            strength: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
+            dexterity: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
+            constitution: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
+            intelligence: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
+            wisdom: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
+            charisma: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
         })
         .with(Pools {
             // These are overwritten with chargen later -- placeholders.

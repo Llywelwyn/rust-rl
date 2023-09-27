@@ -11,6 +11,7 @@ mod hunger;
 mod particles;
 mod targeting;
 mod triggers;
+mod attr;
 
 pub use targeting::aoe_tiles;
 
@@ -30,6 +31,10 @@ pub enum EffectType {
     Healing {
         amount: i32,
         increment_max: bool,
+    },
+    Exercise {
+        attribute: i32,
+        increment: bool,
     },
     Confusion {
         turns: i32,
@@ -162,6 +167,7 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     match &effect.effect_type {
         EffectType::Damage { .. } => damage::inflict_damage(ecs, effect, target),
         EffectType::Healing { .. } => damage::heal_damage(ecs, effect, target),
+        EffectType::Exercise { .. } => attr::exercise(ecs, effect, target),
         EffectType::Confusion { .. } => damage::add_confusion(ecs, effect, target),
         EffectType::Bloodstain { colour } => {
             if let Some(pos) = targeting::entity_position(ecs, target) {
