@@ -154,7 +154,6 @@ const SHOW_BOUNDARIES: bool = false; // Config setting
 enum DrawType {
     None,
     Visible,
-    VisibleAndRemember,
     Telepathy,
 }
 
@@ -170,12 +169,12 @@ struct DrawInfo {
 }
 
 fn draw_camera(
+    map: &Map,
     ecs: &World,
     draw: &mut Draw,
     atlas: &HashMap<String, Texture>,
     font: &notan::draw::Font
 ) {
-    let map = ecs.fetch::<Map>();
     render_map_in_view(&*map, ecs, draw, atlas, false);
     {
         let bounds = crate::camera::get_screen_bounds(ecs, false);
@@ -204,17 +203,8 @@ fn draw_camera(
                 )
             {
                 let draw_type = if map.visible_tiles[idx] {
-                    let is_prop = props.get(*e);
-                    let is_item = items.get(*e);
-                    if is_prop.is_some() || is_item.is_some() {
-                        // If it's a static entity, we want to draw it, and
-                        // also save it's location so that we remember where
-                        // it was last seen after it leaves vision.
-                        DrawType::VisibleAndRemember
-                    } else {
-                        // If it's anything else, just draw it.
-                        DrawType::Visible
-                    }
+                    // If it's anything else, just draw it.
+                    DrawType::Visible
                 } else if map.telepath_tiles[idx] {
                     let has_mind = minds.get(*e);
                     if has_mind.is_some() {
@@ -317,50 +307,6 @@ fn draw_camera(
                             .v_align_middle();
                     }
                 }
-                DrawType::VisibleAndRemember => {
-                    // TODO: PUT THIS INTO A FUNCTION!
-                    let renderable = renderables.get(entry.1.e).unwrap();
-                    if let Some(spriteinfo) = &renderable.sprite {
-                        let id = if let Some(sprite) = atlas.get(&spriteinfo.id) {
-                            sprite
-                        } else {
-                            panic!("No entity sprite found for ID: {}", spriteinfo.id);
-                        };
-                        draw.image(id)
-                            .position(
-                                ((entry.0.x as f32) + spriteinfo.offset.0) * TILESIZE,
-                                ((entry.0.y as f32) + spriteinfo.offset.1) * TILESIZE
-                            )
-                            .color(
-                                if spriteinfo.recolour {
-                                    Color::from_rgb(
-                                        renderable.fg.r,
-                                        renderable.fg.g,
-                                        renderable.fg.b
-                                    )
-                                } else {
-                                    Color::WHITE
-                                }
-                            );
-                    } else {
-                        // Fallback to drawing text.
-                        draw.text(
-                            &font,
-                            &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
-                        )
-                            .position(
-                                ((entry.0.x as f32) + 0.5) * TILESIZE,
-                                ((entry.0.y as f32) + 0.5) * TILESIZE
-                            )
-                            .color(
-                                Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b)
-                            )
-                            .size(FONTSIZE)
-                            .h_align_center()
-                            .v_align_middle();
-                    }
-                    // TODO: Update map memory.
-                }
                 _ => {}
             }
         }
@@ -407,6 +353,34 @@ fn render_map_in_view(
                                 ((y + bounds.y_offset) as f32) * TILESIZE
                             )
                             .color(tint);
+                    }
+                    if !map.visible_tiles[idx] {
+                        // Recall map memory. TODO: Improve this? Optimize? Do we need to remember more fields?
+                        if let Some(memories) = map.memory.get(&idx) {
+                            let mut sorted: Vec<_> = memories.iter().collect();
+                            sorted.sort_by(|a, b| a.render_order.cmp(&b.render_order));
+                            for memory in sorted.iter() {
+                                let sprite = if let Some(sprite) = atlas.get(&memory.sprite) {
+                                    sprite
+                                } else {
+                                    panic!("No sprite found for ID: {}", memory.sprite);
+                                };
+                                draw.image(sprite)
+                                    .position(
+                                        (((x + bounds.x_offset) as f32) + memory.offset.0) *
+                                            TILESIZE,
+                                        (((y + bounds.y_offset) as f32) + memory.offset.1) *
+                                            TILESIZE
+                                    )
+                                    .color(
+                                        if memory.recolour {
+                                            Color::from_rgb(memory.fg.r, memory.fg.g, memory.fg.b)
+                                        } else {
+                                            Color::from_rgb(0.75, 0.75, 0.75)
+                                        }
+                                    );
+                            }
+                        }
                     }
                 }
             } else if SHOW_BOUNDARIES {
@@ -524,7 +498,8 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
     let mut log = false;
-    match *gs.ecs.fetch::<RunState>() {
+    let runstate = *gs.ecs.fetch::<RunState>();
+    match runstate {
         | RunState::MainMenu { .. }
         | RunState::CharacterCreation { .. }
         | RunState::PreRun { .. } => {}
@@ -541,13 +516,14 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             }
         }
         _ => {
+            let map = gs.ecs.fetch::<Map>();
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
-            draw_camera(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
+            draw_camera(&*map, &gs.ecs, &mut draw, &gs.atlas, &gs.font);
             gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             log = true;
         }
     }
-    match *gs.ecs.fetch::<RunState>() {
+    match runstate {
         RunState::Farlook { x, y } => {
             gui::draw_farlook(x, y, &mut draw, &gs.atlas);
             //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop

@@ -26,6 +26,15 @@ use super::consts::visuals::{
 // i.e. on a map size of 40*40, only entities to the left of the player are rendered.
 //      on a map size of 42*42, the player can see entities up to 2 tiles to their right.
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct MapMemory {
+    pub sprite: String,
+    pub fg: RGB,
+    pub recolour: bool,
+    pub offset: (f32, f32),
+    pub render_order: i32,
+}
+
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Map {
     pub overmap: bool,
@@ -33,6 +42,7 @@ pub struct Map {
     pub width: i32,
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
+    pub memory: HashMap<usize, Vec<MapMemory>>,
     pub visible_tiles: Vec<bool>,
     pub lit_tiles: Vec<bool>,
     pub telepath_tiles: Vec<bool>,
@@ -71,6 +81,7 @@ impl Map {
             width: width,
             height: height,
             revealed_tiles: vec![false; map_tile_count],
+            memory: HashMap::new(),
             visible_tiles: vec![false; map_tile_count],
             lit_tiles: vec![true; map_tile_count], // NYI: Light sources. Once those exist, we can set this to false.
             telepath_tiles: vec![false; map_tile_count],

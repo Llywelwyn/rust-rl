@@ -10,6 +10,8 @@ use super::{
     Telepath,
     Viewshed,
     Renderable,
+    Prop,
+    Item,
     gui::renderable_colour,
     tile_blocks_telepathy,
 };
@@ -35,6 +37,8 @@ impl<'a> System<'a> for VisibilitySystem {
         ReadStorage<'a, Blind>,
         ReadStorage<'a, BlocksVisibility>,
         ReadStorage<'a, Renderable>,
+        ReadStorage<'a, Prop>,
+        ReadStorage<'a, Item>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -51,6 +55,8 @@ impl<'a> System<'a> for VisibilitySystem {
             blind_entities,
             blocks_visibility,
             renderables,
+            prop,
+            item,
         ) = data;
 
         map.view_blocked.clear();
@@ -59,6 +65,7 @@ impl<'a> System<'a> for VisibilitySystem {
             map.view_blocked.insert(idx);
         }
 
+        let mut player_was_dirty = false;
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
                 viewshed.dirty = false;
@@ -81,6 +88,7 @@ impl<'a> System<'a> for VisibilitySystem {
                 // If this is the player, reveal what they can see
                 let _p: Option<&Player> = player.get(ent);
                 if let Some(_p) = _p {
+                    player_was_dirty = true;
                     for t in map.visible_tiles.iter_mut() {
                         *t = false;
                     }
@@ -135,6 +143,37 @@ impl<'a> System<'a> for VisibilitySystem {
                     for vis in telepath.telepath_tiles.iter() {
                         let idx = map.xy_idx(vis.x, vis.y);
                         map.telepath_tiles[idx] = true;
+                    }
+                }
+            }
+        }
+
+        if player_was_dirty {
+            // Refresh the memory of our visible tiles, by removing whatever
+            // was stored for every index we can currently see, and placing
+            // back in updated data.
+            let mut to_remove: Vec<usize> = Vec::new();
+            for (i, &t) in map.visible_tiles.iter().enumerate() {
+                if t {
+                    to_remove.push(i);
+                }
+            }
+            for idx in to_remove.iter() {
+                map.memory.remove(idx);
+            }
+            for (e, r, p, _h) in (&entities, &renderables, &pos, !&hidden).join() {
+                if prop.get(e).is_some() || item.get(e).is_some() {
+                    let idx = map.xy_idx(p.x, p.y);
+                    if map.visible_tiles[idx] {
+                        if let Some(spriteinfo) = &r.sprite {
+                            map.memory.entry(idx).or_insert(Vec::new()).push(crate::MapMemory {
+                                sprite: spriteinfo.id.clone(),
+                                fg: r.fg,
+                                recolour: spriteinfo.recolour,
+                                offset: spriteinfo.offset,
+                                render_order: r.render_order,
+                            });
+                        }
                     }
                 }
             }
