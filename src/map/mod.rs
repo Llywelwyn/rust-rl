@@ -20,6 +20,8 @@ use super::consts::visuals::{
     BRIGHTEN_FG_COLOUR_BY,
     GLOBAL_OFFSET_MIN_CLAMP,
     GLOBAL_OFFSET_MAX_CLAMP,
+    SPRITE_OFFSET_MIN_CLAMP,
+    SPRITE_OFFSET_MAX_CLAMP,
 };
 
 // FIXME: If the map size gets too small, entities stop being rendered starting from the right.
@@ -110,9 +112,9 @@ impl Map {
                 rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
             );
             map.colour_offset[idx].1 = (
-                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
-                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
-                rng.range(GLOBAL_OFFSET_MIN_CLAMP, GLOBAL_OFFSET_MAX_CLAMP),
+                rng.range(SPRITE_OFFSET_MIN_CLAMP, SPRITE_OFFSET_MAX_CLAMP),
+                rng.range(SPRITE_OFFSET_MIN_CLAMP, SPRITE_OFFSET_MAX_CLAMP),
+                rng.range(SPRITE_OFFSET_MIN_CLAMP, SPRITE_OFFSET_MAX_CLAMP),
             );
         }
 

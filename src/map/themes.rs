@@ -12,13 +12,30 @@ pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&s
         TileType::Wall => map.tiles[idx].sprite(check_if_base(TileType::Wall, idx, map), f),
         _ => map.tiles[idx].sprite(false, f),
     };
-    let tint = if !map.visible_tiles[idx] {
-        Color::from_rgb(0.75, 0.75, 0.75)
+    let base = if !map.visible_tiles[idx] {
+        NON_VISIBLE_MULTIPLIER
     } else {
-        Color::WHITE
+        if other_pos.is_some() {
+            darken_by_distance(
+                Point::new((idx as i32) % map.width, (idx as i32) / map.width),
+                other_pos.unwrap()
+            )
+        } else {
+            1.0
+        }
     };
+    let offsets = get_normalised_offsets(idx, map);
+    let tint = Color::from_rgb(base * offsets.0, base * offsets.1, base * offsets.2);
     return (sprite, tint);
 }
+
+fn get_normalised_offsets(idx: usize, map: &Map) -> (f32, f32, f32) {
+    let offsets = map.colour_offset[idx].1;
+    let max = f32::max(f32::max(offsets.0, offsets.1), offsets.2);
+    let normalised = (offsets.0 / max, offsets.1 / max, offsets.2 / max);
+    normalised
+}
+
 /// Gets the renderables for a tile, with darkening/offset/post-processing/etc. Passing a val for "debug" will ignore viewshed.
 pub fn get_tile_renderables_for_id(
     idx: usize,
@@ -354,7 +371,7 @@ pub fn multiply_by_float(rgb: RGB, offsets: (f32, f32, f32)) -> RGB {
     return RGB::from_f32(r, g, b);
 }
 
-fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
+pub fn darken_by_distance(pos: Point, other_pos: Point) -> f32 {
     let distance = DistanceAlg::Pythagoras.distance2d(pos, other_pos) as f32; // Get distance in tiles.
     let interp_factor =
         (distance - START_DARKEN_AT_N_TILES) /

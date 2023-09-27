@@ -181,8 +181,6 @@ fn draw_camera(
         let positions = ecs.read_storage::<Position>();
         let renderables = ecs.read_storage::<Renderable>();
         let hidden = ecs.read_storage::<Hidden>();
-        let props = ecs.read_storage::<Prop>();
-        let items = ecs.read_storage::<Item>();
         let minds = ecs.read_storage::<Mind>();
         let pools = ecs.read_storage::<Pools>();
         let entities = ecs.entities();
@@ -257,7 +255,14 @@ fn draw_camera(
                                         renderable.fg.b
                                     )
                                 } else {
-                                    Color::WHITE
+                                    let mul = themes::darken_by_distance(
+                                        Point::new(
+                                            entry.0.x + bounds.min_x - bounds.x_offset,
+                                            entry.0.y + bounds.min_y - bounds.y_offset
+                                        ),
+                                        *ecs.fetch::<Point>()
+                                    );
+                                    Color::from_rgb(mul, mul, mul)
                                 }
                             );
                         if let Some(pool) = pools.get(entry.1.e) {
@@ -376,7 +381,8 @@ fn render_map_in_view(
                                         if memory.recolour {
                                             Color::from_rgb(memory.fg.r, memory.fg.g, memory.fg.b)
                                         } else {
-                                            Color::from_rgb(0.75, 0.75, 0.75)
+                                            let mult = 0.3;
+                                            Color::from_rgb(mult, mult, mult)
                                         }
                                     );
                             }
