@@ -102,7 +102,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                                     .append("is blocked.")
                                     .log();
                             }
-                        } else if rng.roll_dice(1, 6) + attributes.strength.bonus < 2 {
+                        } else if rng.roll_dice(1, 6) + attributes.strength.modifier() < 2 {
                             if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger
                                     ::new()
@@ -208,7 +208,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                 if let Some(door) = door {
                     if door.open == false {
                         let renderables = ecs.read_storage::<Renderable>();
-                        if rng.roll_dice(1, 6) + attributes.strength.bonus < 2 {
+                        if rng.roll_dice(1, 6) + attributes.strength.modifier() < 2 {
                             if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger
                                     ::new()
@@ -345,7 +345,7 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         Targets::Entity { target: potential_target }
                                     );
                                     // ~33% chance of breaking it down + str
-                                    if rng.roll_dice(1, 10) + attributes.strength.bonus > 6 {
+                                    if rng.roll_dice(1, 10) + attributes.strength.modifier() > 6 {
                                         gamelog::Logger
                                             ::new()
                                             .append("As you kick the")

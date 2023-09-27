@@ -256,17 +256,35 @@ pub struct Pools {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Attribute {
     pub base: i32,
-    pub modifiers: i32,
-    pub bonus: i32,
+    pub bonuses: i32,
     pub exercise: i32,
 }
 
 impl Attribute {
+    pub fn new(base: i32) -> Self {
+        Self {
+            base,
+            bonuses: 0,
+            exercise: 0,
+        }
+    }
+    // Raw attribute score. e.g. 10 base, + 4 from armour: 14 strength.
+    pub fn current(&self) -> i32 {
+        self.base + self.bonuses
+    }
+    // Attribute bonus. e.g. 14 strength = +2, 8 strength = -1
+    pub fn modifier(&self) -> i32 {
+        crate::gamesystem::attr_bonus(self.current())
+    }
     pub fn improve(&mut self) {
-        self.exercise += 1;
+        if self.exercise < 50 {
+            self.exercise += 1;
+        }
     }
     pub fn abuse(&mut self) {
-        self.exercise -= 1;
+        if self.exercise > -50 {
+            self.exercise -= 1;
+        }
     }
 }
 
@@ -316,14 +334,31 @@ impl Attributes {
     pub const INT: i32 = 3;
     pub const WIS: i32 = 4;
     pub const CHA: i32 = 5;
+    pub fn default() -> Self {
+        Self {
+            strength: Attribute::new(10),
+            dexterity: Attribute::new(10),
+            constitution: Attribute::new(10),
+            intelligence: Attribute::new(10),
+            wisdom: Attribute::new(10),
+            charisma: Attribute::new(10),
+        }
+    }
+    pub fn with_stats(str: i32, dex: i32, con: i32, int: i32, wis: i32, cha: i32) -> Self {
+        Self {
+            strength: Attribute::new(str),
+            dexterity: Attribute::new(dex),
+            constitution: Attribute::new(con),
+            intelligence: Attribute::new(int),
+            wisdom: Attribute::new(wis),
+            charisma: Attribute::new(cha),
+        }
+    }
     pub fn exercise(&mut self, attr: i32, improve: bool) {
         match attr {
             Self::STR => {
                 if improve {
-                    console::log("Improving strength.");
-                    console::log(format!("Value before: {}", self.strength.exercise));
                     self.strength.improve();
-                    console::log(format!("Value after: {}", self.strength.exercise));
                 } else {
                     self.strength.abuse();
                 }

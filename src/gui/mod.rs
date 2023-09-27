@@ -193,7 +193,7 @@ pub fn draw_ui2(
             }
         }
         let armour_class =
-            stats.bac - attributes.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus;
+            stats.bac - attributes.dexterity.modifier() / 2 - skill_ac_bonus - armour_ac_bonus;
         draw.text(&font, "AC").position(x, row1).color(Color::PINK).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
         draw.text(&font, &format!("{}", armour_class)).position(x, row1).size(FONTSIZE);
@@ -340,7 +340,7 @@ pub fn draw_ui2(
             &format!(
                 "[{:.1}/{} lbs]",
                 stats.weight,
-                (attributes.strength.base + attributes.strength.modifiers) *
+                (attributes.strength.base + attributes.strength.bonuses) *
                     CARRY_CAPACITY_PER_STRENGTH
             )
         )
@@ -405,7 +405,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             }
         }
         let armour_class =
-            stats.bac - attributes.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus;
+            stats.bac - attributes.dexterity.modifier() / 2 - skill_ac_bonus - armour_ac_bonus;
         ctx.print_color(26 * TEXT_FONT_MOD, 53, RGB::named(PINK), RGB::named(BLACK), "AC");
         ctx.print_color(28 * TEXT_FONT_MOD, 53, RGB::named(WHITE), RGB::named(BLACK), armour_class);
         // Draw level
@@ -607,7 +607,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             &format!(
                 "[{:.1}/{} lbs]",
                 stats.weight,
-                (attributes.strength.base + attributes.strength.modifiers) *
+                (attributes.strength.base + attributes.strength.bonuses) *
                     CARRY_CAPACITY_PER_STRENGTH
             )
         );

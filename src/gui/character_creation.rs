@@ -352,39 +352,7 @@ pub fn setup_player_class(ecs: &mut World, class: Class, ancestry: Ancestry) {
         let mut attributes = ecs.write_storage::<Attributes>();
         let (str, dex, con, int, wis, cha) = get_attribute_rolls(&mut rng, class, ancestry);
         attributes
-            .insert(player, Attributes {
-                strength: Attribute {
-                    base: str,
-                    modifiers: 0,
-                    bonus: attr_bonus(str),
-                    exercise: 0,
-                },
-                dexterity: Attribute {
-                    base: dex,
-                    modifiers: 0,
-                    bonus: attr_bonus(dex),
-                    exercise: 0,
-                },
-                constitution: Attribute {
-                    base: con,
-                    modifiers: 0,
-                    bonus: attr_bonus(con),
-                    exercise: 0,
-                },
-                intelligence: Attribute {
-                    base: int,
-                    modifiers: 0,
-                    bonus: attr_bonus(int),
-                    exercise: 0,
-                },
-                wisdom: Attribute { base: wis, modifiers: 0, bonus: attr_bonus(wis), exercise: 0 },
-                charisma: Attribute {
-                    base: cha,
-                    modifiers: 0,
-                    bonus: attr_bonus(cha),
-                    exercise: 0,
-                },
-            })
+            .insert(player, Attributes::with_stats(str, dex, con, int, wis, cha))
             .expect("Unable to insert attributes component");
 
         let mut pools = ecs.write_storage::<Pools>();

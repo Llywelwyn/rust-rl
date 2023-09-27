@@ -118,18 +118,18 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm, xy: Option<(i32, i32)>) {
             let attr = attributes.get(entity);
             if let Some(a) = attr {
                 let mut s = "".to_string();
-                if a.strength.bonus < -2 { s += "weak "};
-                if a.strength.bonus > 2 { s += "strong "};
-                if a.dexterity.bonus < -2 { s += "clumsy "};
-                if a.dexterity.bonus > 2 { s += "agile "};
-                if a.constitution.bonus < -2 { s += "frail "};
-                if a.constitution.bonus > 2 { s += "hardy "};
-                if a.intelligence.bonus < -2 { s += "dim "};
-                if a.intelligence.bonus > 2 { s += "smart "};
-                if a.wisdom.bonus < -2 { s += "unwise "};
-                if a.wisdom.bonus > 2 { s += "wisened "};
-                if a.charisma.bonus < -2 { s += "ugly"};
-                if a.charisma.bonus > 2 { s += "attractive"};
+                if a.strength.modifier() < -2 { s += "weak "};
+                if a.strength.modifier() > 2 { s += "strong "};
+                if a.dexterity.modifier() < -2 { s += "clumsy "};
+                if a.dexterity.modifier() > 2 { s += "agile "};
+                if a.constitution.modifier() < -2 { s += "frail "};
+                if a.constitution.modifier() > 2 { s += "hardy "};
+                if a.intelligence.modifier() < -2 { s += "dim "};
+                if a.intelligence.modifier() > 2 { s += "smart "};
+                if a.wisdom.modifier() < -2 { s += "unwise "};
+                if a.wisdom.modifier() > 2 { s += "wisened "};
+                if a.charisma.modifier() < -2 { s += "ugly"};
+                if a.charisma.modifier() > 2 { s += "attractive"};
                 if !s.is_empty() {
                     if s.ends_with(" ") {
                         s.pop();

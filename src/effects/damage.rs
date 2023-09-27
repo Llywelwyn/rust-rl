@@ -319,11 +319,11 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 let mut rng = ecs.write_resource::<RandomNumberGenerator>();
                 let hp_gained = hp_per_level(
                     &mut rng,
-                    source_attributes.constitution.base + source_attributes.constitution.modifiers
+                    source_attributes.constitution.base + source_attributes.constitution.bonuses
                 );
                 let mana_gained = mana_per_level(
                     &mut rng,
-                    source_attributes.intelligence.base + source_attributes.intelligence.modifiers
+                    source_attributes.intelligence.base + source_attributes.intelligence.bonuses
                 );
                 source_pools.hit_points.max += hp_gained;
                 source_pools.hit_points.current += hp_gained;

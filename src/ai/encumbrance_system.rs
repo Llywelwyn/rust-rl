@@ -60,8 +60,7 @@ impl<'a> System<'a> for EncumbranceSystem {
                 pool.weight = *weight;
                 if let Some(attr) = attributes.get(*entity) {
                     let carry_capacity_lbs =
-                        (attr.strength.base + attr.strength.modifiers) *
-                        CARRY_CAPACITY_PER_STRENGTH;
+                        (attr.strength.base + attr.strength.bonuses) * CARRY_CAPACITY_PER_STRENGTH;
                     if (pool.weight as i32) > 3 * carry_capacity_lbs {
                         // Overloaded
                         burdened

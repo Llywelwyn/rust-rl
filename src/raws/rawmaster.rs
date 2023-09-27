@@ -440,66 +440,29 @@ pub fn spawn_named_mob(
         }
 
         // Setup combat stats
-        let mut attr = Attributes {
-            strength: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
-            dexterity: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
-            constitution: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
-            intelligence: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
-            wisdom: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
-            charisma: Attribute { base: 10, modifiers: 0, bonus: 0, exercise: 0 },
-        };
+        let mut attr = Attributes::default();
         let mut mob_con = 10;
         let mut mob_int = 10;
         if let Some(attributes) = &mob_template.attributes {
             if let Some(str) = attributes.str {
-                attr.strength = Attribute {
-                    base: str,
-                    modifiers: 0,
-                    bonus: attr_bonus(str),
-                    exercise: 0,
-                };
+                attr.strength = Attribute::new(str);
             }
             if let Some(dex) = attributes.dex {
-                attr.strength = Attribute {
-                    base: dex,
-                    modifiers: 0,
-                    bonus: attr_bonus(dex),
-                    exercise: 0,
-                };
+                attr.strength = Attribute::new(dex);
             }
             if let Some(con) = attributes.con {
-                attr.constitution = Attribute {
-                    base: con,
-                    modifiers: 0,
-                    bonus: attr_bonus(con),
-                    exercise: 0,
-                };
+                attr.constitution = Attribute::new(con);
                 mob_con = con;
             }
             if let Some(int) = attributes.int {
-                attr.intelligence = Attribute {
-                    base: int,
-                    modifiers: 0,
-                    bonus: attr_bonus(int),
-                    exercise: 0,
-                };
+                attr.intelligence = Attribute::new(int);
                 mob_int = int;
             }
             if let Some(wis) = attributes.wis {
-                attr.wisdom = Attribute {
-                    base: wis,
-                    modifiers: 0,
-                    bonus: attr_bonus(wis),
-                    exercise: 0,
-                };
+                attr.wisdom = Attribute::new(wis);
             }
             if let Some(cha) = attributes.cha {
-                attr.charisma = Attribute {
-                    base: cha,
-                    modifiers: 0,
-                    bonus: attr_bonus(cha),
-                    exercise: 0,
-                };
+                attr.charisma = Attribute::new(cha);
             }
         }
         eb = eb.with(attr);

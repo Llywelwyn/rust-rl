@@ -149,7 +149,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 let attack_verb = attack.1;
                 // Get all offensive bonuses
                 let d20 = rng.roll_dice(1, 20);
-                let attribute_hit_bonus = attacker_attributes.dexterity.bonus;
+                let attribute_hit_bonus = attacker_attributes.dexterity.modifier();
                 let skill_hit_bonus = gamesystem::skill_bonus(Skill::Melee, &*attacker_skills);
                 let mut equipment_hit_bonus = weapon_info.hit_bonus;
                 for (wielded, to_hit) in (&equipped, &to_hit).join() {
@@ -187,7 +187,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
                 // Get armour class
                 let bac = target_pools.bac;
-                let attribute_ac_bonus = target_attributes.dexterity.bonus / 2;
+                let attribute_ac_bonus = target_attributes.dexterity.modifier() / 2;
                 let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*target_skills);
                 let mut armour_ac_bonus = 0;
                 for (wielded, ac) in (&equipped, &ac).join() {
@@ -245,19 +245,19 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     let mut attribute_damage_bonus = weapon_info.damage_bonus;
                     match weapon_info.attribute {
                         WeaponAttribute::Dexterity => {
-                            attribute_damage_bonus += attacker_attributes.dexterity.bonus;
+                            attribute_damage_bonus += attacker_attributes.dexterity.modifier();
                         }
                         WeaponAttribute::Strength => {
-                            attribute_damage_bonus += attacker_attributes.strength.bonus;
+                            attribute_damage_bonus += attacker_attributes.strength.modifier();
                         }
                         WeaponAttribute::Finesse => {
                             if
-                                attacker_attributes.dexterity.bonus >
-                                attacker_attributes.strength.bonus
+                                attacker_attributes.dexterity.modifier() >
+                                attacker_attributes.strength.modifier()
                             {
-                                attribute_damage_bonus += attacker_attributes.dexterity.bonus;
+                                attribute_damage_bonus += attacker_attributes.dexterity.modifier();
                             } else {
-                                attribute_damage_bonus += attacker_attributes.strength.bonus;
+                                attribute_damage_bonus += attacker_attributes.strength.modifier();
                             }
                         }
                     }
