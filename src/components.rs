@@ -354,6 +354,17 @@ impl Attributes {
             charisma: Attribute::new(cha),
         }
     }
+    pub fn attr_from_index(&self, attr: i32) -> &Attribute {
+        match attr {
+            Self::STR => &self.strength,
+            Self::DEX => &self.dexterity,
+            Self::CON => &self.constitution,
+            Self::INT => &self.intelligence,
+            Self::WIS => &self.wisdom,
+            Self::CHA => &self.charisma,
+            _ => unreachable!("Tried to get an attribute that doesn't exist."),
+        }
+    }
     pub fn exercise(&mut self, attr: i32, improve: bool) {
         match attr {
             Self::STR => {

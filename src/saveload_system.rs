@@ -28,7 +28,13 @@ macro_rules! serialize_individually {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub fn save_game(_ecs: &mut World) {}
+pub fn save_game(_ecs: &mut World) {
+    console::log(
+        "Unfortunately, saving isn't supported in any easy way on the web. Sorry!
+         You can, at least, save your morgue file after dying - it'll be written
+         to the log, and just needs saving into a text file."
+    )
+}
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn save_game(ecs: &mut World) {
