@@ -177,15 +177,17 @@ pub fn draw_ui2(
         &hunger,
         &skills,
     ).join() {
-        let initial_x = 26.0 * TILESIZE;
+        let initial_x = 24.0 * TILESIZE;
         let mut x = initial_x;
         let row1 = 53.0 * TILESIZE;
         let row2 = row1 + TILESIZE;
+        const BAR_X: f32 = 1.0;
+        const BAR_WIDTH: f32 = 22.0;
         draw_bar(
             draw,
-            2.0,
+            BAR_X,
             53.5,
-            22.0,
+            BAR_WIDTH,
             TILESIZE,
             stats.hit_points.current,
             stats.hit_points.max,
@@ -194,9 +196,9 @@ pub fn draw_ui2(
         );
         draw_bar(
             draw,
-            2.0,
+            BAR_X,
             54.5,
-            22.0,
+            BAR_WIDTH,
             TILESIZE,
             stats.mana.current,
             stats.mana.max,
@@ -223,6 +225,12 @@ pub fn draw_ui2(
             stats.mana.max,
             "ui_mp"
         );*/
+        draw.text(&font, &format!("HP{}({})", stats.hit_points.current, stats.hit_points.max))
+            .position(x, row1)
+            .size(FONTSIZE);
+        draw.text(&font, &format!("MP{}({})", stats.mana.current, stats.mana.max))
+            .position(x, row2)
+            .size(FONTSIZE);
         // Draw AC
         let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
         let mut armour_ac_bonus = 0;
@@ -234,16 +242,17 @@ pub fn draw_ui2(
                 armour_ac_bonus += ac.amount;
             }
         }
+        x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
         let armour_class =
             stats.bac - attributes.dexterity.modifier() / 2 - skill_ac_bonus - armour_ac_bonus;
         draw.text(&font, "AC").position(x, row1).color(Color::PINK).size(FONTSIZE);
-        x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", armour_class)).position(x, row1).size(FONTSIZE);
+        let last_x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", armour_class)).position(last_x, row1).size(FONTSIZE);
         draw.text(&font, &format!("XP{}/{}", stats.level, stats.xp))
-            .position(initial_x, row2)
+            .position(x, row2)
             .size(FONTSIZE);
-        x = 38.0 * TILESIZE;
-        draw.text(&font, "STR").position(x, row1).color(Color::RED).size(FONTSIZE);
+        let attribute_x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
+        draw.text(&font, "STR").position(attribute_x, row1).color(Color::RED).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
         draw.text(&font, &format!("{}", attributes.strength.base)).position(x, row1).size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
@@ -258,8 +267,7 @@ pub fn draw_ui2(
         draw.text(&font, &format!("{}", attributes.constitution.base))
             .position(x, row1)
             .size(FONTSIZE);
-        x = 38.0 * TILESIZE;
-        draw.text(&font, "INT").position(x, row2).color(Color::BLUE).size(FONTSIZE);
+        draw.text(&font, "INT").position(attribute_x, row2).color(Color::BLUE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
         draw.text(&font, &format!("{}", attributes.intelligence.base))
             .position(x, row2)
