@@ -46,7 +46,7 @@ use crate::consts::visuals::{
 };
 use crate::consts::{ TILESIZE, FONTSIZE, DISPLAYWIDTH };
 use notan::prelude::*;
-use notan::draw::{ Draw, DrawTextSection, DrawImages };
+use notan::draw::{ Draw, DrawTextSection, DrawImages, DrawShapes };
 use std::collections::HashMap;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -112,7 +112,7 @@ pub fn draw_lerping_bar(
     }
 }
 
-fn draw_bar(
+fn draw_bar_sprite(
     draw: &mut Draw,
     atlas: &HashMap<String, Texture>,
     sx: f32,
@@ -137,6 +137,26 @@ fn draw_bar(
 }
 
 pub const TEXT_FONT_MOD: i32 = 2;
+
+pub fn draw_bar(
+    draw: &mut notan::draw::Draw,
+    x: f32,
+    y: f32,
+    width: f32, // Tiles
+    height: f32, // Px
+    current: i32,
+    max: i32,
+    full: Color,
+    empty: Color
+) {
+    let fill: f32 = (f32::max(current as f32, 0.0) / (max as f32)) * width;
+    draw.line((x * TILESIZE, y * TILESIZE), ((x + fill) * TILESIZE, y * TILESIZE))
+        .color(full)
+        .width(height);
+    draw.line(((x + fill) * TILESIZE, y * TILESIZE), ((x + width) * TILESIZE, y * TILESIZE))
+        .color(empty)
+        .width(height);
+}
 
 pub fn draw_ui2(
     ecs: &World,
@@ -163,6 +183,28 @@ pub fn draw_ui2(
         let row2 = row1 + TILESIZE;
         draw_bar(
             draw,
+            2.0,
+            53.5,
+            22.0,
+            TILESIZE,
+            stats.hit_points.current,
+            stats.hit_points.max,
+            Color::GREEN,
+            Color::BLACK
+        );
+        draw_bar(
+            draw,
+            2.0,
+            54.5,
+            22.0,
+            TILESIZE,
+            stats.mana.current,
+            stats.mana.max,
+            Color::BLUE,
+            Color::BLACK
+        );
+        /*draw_bar_sprite(
+            draw,
             atlas,
             2.0 * TILESIZE,
             row1,
@@ -171,7 +213,7 @@ pub fn draw_ui2(
             stats.hit_points.max,
             "ui_hp"
         );
-        draw_bar(
+        draw_bar_sprite(
             draw,
             atlas,
             2.0 * TILESIZE,
@@ -180,7 +222,7 @@ pub fn draw_ui2(
             stats.mana.current,
             stats.mana.max,
             "ui_mp"
-        );
+        );*/
         // Draw AC
         let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
         let mut armour_ac_bonus = 0;

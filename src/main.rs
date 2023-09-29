@@ -267,31 +267,17 @@ fn draw_camera(
                             );
                         if let Some(pool) = pools.get(entry.1.e) {
                             if pool.hit_points.current < pool.hit_points.max {
-                                // TODO: Draw HP bar. Callback, so it's always on top?
-                                let fill: f32 =
-                                    f32::max(pool.hit_points.current as f32, 0.0) /
-                                    (pool.hit_points.max as f32);
-                                draw.line(
-                                    ((entry.0.x as f32) * TILESIZE, (entry.0.y as f32) * TILESIZE),
-                                    (
-                                        ((entry.0.x as f32) + fill) * TILESIZE,
-                                        (entry.0.y as f32) * TILESIZE,
-                                    )
-                                )
-                                    .color(Color::GREEN)
-                                    .width(1.0);
-                                draw.line(
-                                    (
-                                        ((entry.0.x as f32) + fill) * TILESIZE,
-                                        (entry.0.y as f32) * TILESIZE,
-                                    ),
-                                    (
-                                        ((entry.0.x as f32) + 1.0) * TILESIZE,
-                                        (entry.0.y as f32) * TILESIZE,
-                                    )
-                                )
-                                    .color(Color::RED)
-                                    .width(1.0);
+                                gui::draw_bar(
+                                    draw,
+                                    entry.0.x as f32,
+                                    entry.0.y as f32,
+                                    1.0,
+                                    1.0,
+                                    pool.hit_points.current,
+                                    pool.hit_points.max,
+                                    Color::GREEN,
+                                    Color::RED
+                                );
                             }
                         }
                     } else {
