@@ -213,12 +213,12 @@ fn random_start_position(rng: &mut RandomNumberGenerator) -> (XStart, YStart) {
 }
 
 fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderChain, end: bool) {
-    let build_roll = rng.roll_dice(1, 3);
+    let build_roll = rng.roll_dice(1, 2); // TODO: BSP Interiors, change this to 1d3 and uncomment.
     // Start with a room builder.
     match build_roll {
         1 => builder.start_with(SimpleMapBuilder::new(None)),
-        2 => builder.start_with(BspDungeonBuilder::new()),
-        _ => builder.start_with(BspInteriorBuilder::new()),
+        _ => builder.start_with(BspDungeonBuilder::new()),
+        //_ => builder.start_with(BspInteriorBuilder::new()),
     }
 
     // BspInterior makes its own doorways. If we're not using that one,
@@ -437,6 +437,8 @@ pub fn random_builder(
     builder
 }
 
+use crate::consts::prelude::*;
+
 pub fn level_builder(
     id: i32,
     rng: &mut RandomNumberGenerator,
@@ -452,8 +454,8 @@ pub fn level_builder(
             random_builder(
                 id,
                 rng,
-                width,
-                height,
+                VIEWPORT_W,
+                VIEWPORT_H,
                 2,
                 1,
                 initial_player_level,
@@ -464,8 +466,8 @@ pub fn level_builder(
             random_builder(
                 id,
                 rng,
-                width,
-                height,
+                VIEWPORT_W,
+                VIEWPORT_H,
                 4 + diff(ID_INFINITE, id),
                 1 + diff(ID_INFINITE, id),
                 initial_player_level,
@@ -476,8 +478,8 @@ pub fn level_builder(
             random_builder(
                 id,
                 rng,
-                width,
-                height,
+                VIEWPORT_W,
+                VIEWPORT_H,
                 1,
                 404,
                 initial_player_level,

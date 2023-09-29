@@ -9,6 +9,7 @@ pub mod sprites;
 
 pub mod prelude {
     pub use super::visuals::{ TILE_LAYER, ENTITY_LAYER, TEXT_LAYER, HP_BAR_LAYER };
+    pub use super::visuals::{ VIEWPORT_H, VIEWPORT_W };
 }
 
 pub const TILESIZE: f32 = 16.0;
