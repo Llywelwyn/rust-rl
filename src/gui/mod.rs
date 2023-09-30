@@ -949,53 +949,26 @@ pub fn print_options(
 
         let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
         if item_count > &1 {
-            // If more than one, print the number and pluralise
-            // i.e. (a) 3 daggers
-            draw.text(font, &format!("{}", item_count))
+            draw.text(font, &format!("{} {}", item_count, item.display_name.plural))
                 .position(x, y)
                 .color(Color::from_rgb(fg.r, fg.g, fg.b))
                 .size(FONTSIZE);
-            x = draw.last_text_bounds().max_x() + TILESIZE;
-            draw.text(font, &item.display_name.plural)
-                .position(x, y)
-                .color(Color::from_rgb(fg.r, fg.g, fg.b))
-                .size(FONTSIZE);
-            //let this_width = x - initial_x + (item.display_name.plural.len() as i32);
-            //width = if width > this_width { width } else { this_width };
         } else {
-            if item.display_name.singular.to_lowercase().ends_with("s") {
-                draw.text(font, "some")
-                    .position(x, y)
-                    .color(Color::from_rgb(fg.r, fg.g, fg.b))
-                    .size(FONTSIZE);
-                x = draw.last_text_bounds().max_x() + TILESIZE;
+            let prefix = if item.display_name.singular.to_lowercase().ends_with("s") {
+                "some"
             } else if
                 ['a', 'e', 'i', 'o', 'u']
                     .iter()
                     .any(|&v| item.display_name.singular.to_lowercase().starts_with(v))
             {
-                // If one and starts with a vowel, print 'an'
-                // i.e. (a) an apple
-                draw.text(font, "an")
-                    .position(x, y)
-                    .color(Color::from_rgb(fg.r, fg.g, fg.b))
-                    .size(FONTSIZE);
-                x = draw.last_text_bounds().max_x() + TILESIZE;
+                "an"
             } else {
-                // If one and not a vowel, print 'a'
-                // i.e. (a) a dagger
-                draw.text(font, "a")
-                    .position(x, y)
-                    .color(Color::from_rgb(fg.r, fg.g, fg.b))
-                    .size(FONTSIZE);
-                x = draw.last_text_bounds().max_x() + TILESIZE;
-            }
-            draw.text(font, &item.display_name.singular)
+                "a"
+            };
+            draw.text(font, &format!("{} {}", prefix, item.display_name.singular))
                 .position(x, y)
                 .color(Color::from_rgb(fg.r, fg.g, fg.b))
                 .size(FONTSIZE);
-            //let this_width = x - initial_x + (item.display_name.singular.len() as i32);
-            //width = if width > this_width { width } else { this_width };
         }
         y += TILESIZE;
         j += 1;
@@ -1681,7 +1654,7 @@ pub fn main_menu(gs: &mut State, ctx: &mut App) -> MainMenuResult {
             KeyCode::L => {
                 return MainMenuResult::NoSelection { selected: MainMenuSelection::LoadGame };
             }
-            KeyCode::Up | KeyCode::Numpad8 | KeyCode::K => {
+            KeyCode::Down | KeyCode::Numpad2 | KeyCode::J => {
                 let mut new_selection;
                 match selection {
                     MainMenuSelection::NewGame => {
@@ -1699,7 +1672,7 @@ pub fn main_menu(gs: &mut State, ctx: &mut App) -> MainMenuResult {
                 }
                 return MainMenuResult::NoSelection { selected: new_selection };
             }
-            KeyCode::Down | KeyCode::Numpad2 | KeyCode::J => {
+            KeyCode::Up | KeyCode::Numpad8 | KeyCode::K => {
                 let mut new_selection;
                 match selection {
                     MainMenuSelection::NewGame => {
