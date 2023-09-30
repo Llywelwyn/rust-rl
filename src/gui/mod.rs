@@ -177,10 +177,6 @@ pub fn draw_ui2(
         &hunger,
         &skills,
     ).join() {
-        let initial_x = 24.0 * TILESIZE;
-        let mut x = initial_x;
-        let row1 = 53.0 * TILESIZE;
-        let row2 = row1 + TILESIZE;
         const BAR_X: f32 = 1.0;
         const BAR_WIDTH: f32 = 22.0;
         draw_bar(
@@ -205,32 +201,51 @@ pub fn draw_ui2(
             Color::BLUE,
             Color::BLACK
         );
-        /*draw_bar_sprite(
-            draw,
-            atlas,
-            2.0 * TILESIZE,
-            row1,
-            22,
-            stats.hit_points.current,
-            stats.hit_points.max,
-            "ui_hp"
+        let initial_x = 24.0 * TILESIZE;
+        let mut x = initial_x;
+        let row1 = 53.0 * TILESIZE;
+        let row2 = row1 + TILESIZE;
+        let hp_colours: (RGB, RGB, RGB) = (
+            RGB::named(GREEN),
+            RGB::named(RED),
+            RGB::from_f32(0.0, 0.5, 0.0),
         );
-        draw_bar_sprite(
-            draw,
-            atlas,
-            2.0 * TILESIZE,
-            row2,
-            22,
-            stats.mana.current,
-            stats.mana.max,
-            "ui_mp"
-        );*/
-        draw.text(&font, &format!("HP{}({})", stats.hit_points.current, stats.hit_points.max))
+        let mp_colours: (RGB, RGB, RGB) = (
+            RGB::named(CYAN),
+            RGB::named(RED),
+            RGB::from_f32(0.0, 0.5, 0.5),
+        );
+        let hp: RGB = hp_colours.1.lerp(
+            hp_colours.0,
+            (stats.hit_points.current as f32) / (stats.hit_points.max as f32)
+        );
+        let mp: RGB = mp_colours.1.lerp(
+            mp_colours.0,
+            (stats.mana.current as f32) / (stats.mana.max as f32)
+        );
+        draw.text(&font, "HP").position(x, row1).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", stats.hit_points.current))
             .position(x, row1)
-            .size(FONTSIZE);
-        draw.text(&font, &format!("MP{}({})", stats.mana.current, stats.mana.max))
+            .size(FONTSIZE)
+            .color(Color::from_rgb(hp.r, hp.g, hp.b));
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("({})", stats.hit_points.max))
+            .position(x, row1)
+            .size(FONTSIZE)
+            .color(Color::from_rgb(hp_colours.2.r, hp_colours.2.g, hp_colours.2.b));
+        x = initial_x;
+        draw.text(&font, "MP").position(x, row2).size(FONTSIZE);
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("{}", stats.mana.current))
             .position(x, row2)
-            .size(FONTSIZE);
+            .size(FONTSIZE)
+            .color(Color::from_rgb(mp.r, mp.g, mp.b));
+        x = draw.last_text_bounds().max_x();
+        draw.text(&font, &format!("({})", stats.mana.max))
+            .position(x, row2)
+            .size(FONTSIZE)
+            .color(Color::from_rgb(mp_colours.2.r, mp_colours.2.g, mp_colours.2.b));
         // Draw AC
         let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
         let mut armour_ac_bonus = 0;
@@ -1631,113 +1646,69 @@ pub enum MainMenuResult {
     },
 }
 
-pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
+pub fn main_menu(gs: &mut State, ctx: &mut App) -> MainMenuResult {
     let save_exists = super::saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
-    let assets = gs.ecs.fetch::<RexAssets>();
+    let selection = match *runstate {
+        RunState::MainMenu { menu_selection: sel } => sel,
+        _ => MainMenuSelection::NewGame,
+    };
 
-    ctx.render_xp_sprite(&assets.menu, 0, 0);
-
-    let x = 46;
-    let mut y = 26;
-    let mut height = 8;
-    if !save_exists {
-        height -= 1;
-    }
-
-    ctx.draw_box_double(x, y - 4, 13, height, RGB::named(WHITE), RGB::named(BLACK));
-    ctx.print_color(x + 3, y - 2, RGB::named(YELLOW), RGB::named(BLACK), "RUST-RL!");
-
-    if let RunState::MainMenu { menu_selection: selection } = *runstate {
-        if save_exists {
-            if selection == MainMenuSelection::LoadGame {
-                ctx.print_color(x + 2, y, RGB::named(YELLOW), RGB::named(BLACK), "[");
-                ctx.print_color(x + 3, y, RGB::named(GREEN), RGB::named(BLACK), "continue");
-                ctx.print_color(x + 11, y, RGB::named(YELLOW), RGB::named(BLACK), "]");
-            } else {
-                ctx.print_color(x + 3, y, RGB::named(WHITE), RGB::named(BLACK), "continue");
+    let key = &ctx.keyboard;
+    for keycode in key.pressed.iter() {
+        match *keycode {
+            KeyCode::Escape | KeyCode::C => {
+                return MainMenuResult::NoSelection { selected: MainMenuSelection::Quit };
             }
-            y += 1;
-        }
-        if selection == MainMenuSelection::NewGame {
-            ctx.print_color(x + 2, y, RGB::named(YELLOW), RGB::named(BLACK), "[");
-            ctx.print_color(x + 3, y, RGB::named(GREEN), RGB::named(BLACK), "new game");
-            ctx.print_color(x + 11, y, RGB::named(YELLOW), RGB::named(BLACK), "]");
-        } else {
-            ctx.print_color(x + 3, y, RGB::named(WHITE), RGB::named(BLACK), "new game");
-        }
-        y += 1;
-        if selection == MainMenuSelection::Quit {
-            ctx.print_color(x + 2, y, RGB::named(YELLOW), RGB::named(BLACK), "[");
-            ctx.print_color(x + 3, y, RGB::named(GREEN), RGB::named(BLACK), "goodbye!");
-            ctx.print_color(x + 11, y, RGB::named(YELLOW), RGB::named(BLACK), "]");
-        } else {
-            ctx.print_color(x + 5, y, RGB::named(WHITE), RGB::named(BLACK), "quit");
-        }
-
-        match ctx.key {
-            None => {
-                return MainMenuResult::NoSelection { selected: selection };
+            KeyCode::N => {
+                return MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame };
             }
-            Some(key) =>
-                match key {
-                    VirtualKeyCode::Escape | VirtualKeyCode::C => {
-                        return MainMenuResult::NoSelection { selected: MainMenuSelection::Quit };
+            KeyCode::L => {
+                return MainMenuResult::NoSelection { selected: MainMenuSelection::LoadGame };
+            }
+            KeyCode::Up | KeyCode::Numpad8 | KeyCode::K => {
+                let mut new_selection;
+                match selection {
+                    MainMenuSelection::NewGame => {
+                        new_selection = MainMenuSelection::LoadGame;
                     }
-                    VirtualKeyCode::N => {
-                        return MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame };
+                    MainMenuSelection::LoadGame => {
+                        new_selection = MainMenuSelection::Quit;
                     }
-                    VirtualKeyCode::L => {
-                        return MainMenuResult::NoSelection {
-                            selected: MainMenuSelection::LoadGame,
-                        };
-                    }
-                    VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                        let mut new_selection;
-                        match selection {
-                            MainMenuSelection::NewGame => {
-                                new_selection = MainMenuSelection::LoadGame;
-                            }
-                            MainMenuSelection::LoadGame => {
-                                new_selection = MainMenuSelection::Quit;
-                            }
-                            MainMenuSelection::Quit => {
-                                new_selection = MainMenuSelection::NewGame;
-                            }
-                        }
-                        if new_selection == MainMenuSelection::LoadGame && !save_exists {
-                            new_selection = MainMenuSelection::NewGame;
-                        }
-                        return MainMenuResult::NoSelection { selected: new_selection };
-                    }
-                    VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                        let mut new_selection;
-                        match selection {
-                            MainMenuSelection::NewGame => {
-                                new_selection = MainMenuSelection::Quit;
-                            }
-                            MainMenuSelection::LoadGame => {
-                                new_selection = MainMenuSelection::NewGame;
-                            }
-                            MainMenuSelection::Quit => {
-                                new_selection = MainMenuSelection::LoadGame;
-                            }
-                        }
-                        if new_selection == MainMenuSelection::LoadGame && !save_exists {
-                            new_selection = MainMenuSelection::Quit;
-                        }
-                        return MainMenuResult::NoSelection { selected: new_selection };
-                    }
-                    VirtualKeyCode::Return | VirtualKeyCode::NumpadEnter => {
-                        return MainMenuResult::Selected { selected: selection };
-                    }
-                    _ => {
-                        return MainMenuResult::NoSelection { selected: selection };
+                    MainMenuSelection::Quit => {
+                        new_selection = MainMenuSelection::NewGame;
                     }
                 }
+                if new_selection == MainMenuSelection::LoadGame && !save_exists {
+                    new_selection = MainMenuSelection::NewGame;
+                }
+                return MainMenuResult::NoSelection { selected: new_selection };
+            }
+            KeyCode::Down | KeyCode::Numpad2 | KeyCode::J => {
+                let mut new_selection;
+                match selection {
+                    MainMenuSelection::NewGame => {
+                        new_selection = MainMenuSelection::Quit;
+                    }
+                    MainMenuSelection::LoadGame => {
+                        new_selection = MainMenuSelection::NewGame;
+                    }
+                    MainMenuSelection::Quit => {
+                        new_selection = MainMenuSelection::LoadGame;
+                    }
+                }
+                if new_selection == MainMenuSelection::LoadGame && !save_exists {
+                    new_selection = MainMenuSelection::Quit;
+                }
+                return MainMenuResult::NoSelection { selected: new_selection };
+            }
+            KeyCode::Return | KeyCode::NumpadEnter => {
+                return MainMenuResult::Selected { selected: selection };
+            }
+            _ => {}
         }
     }
-    MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame }
+    return MainMenuResult::NoSelection { selected: selection };
 }
 
 #[derive(PartialEq, Copy, Clone)]

@@ -282,7 +282,31 @@ impl State {
             RunState::ActionWithDirection { function } => {
                 new_runstate = gui::get_input_direction(&mut self.ecs, ctx, function);
             }
-            // RunState::MainMenu
+            RunState::MainMenu { .. } => {
+                let result = gui::main_menu(self, ctx);
+                match result {
+                    gui::MainMenuResult::NoSelection { selected } => {
+                        new_runstate = RunState::MainMenu { menu_selection: selected };
+                    }
+                    gui::MainMenuResult::Selected { selected } =>
+                        match selected {
+                            gui::MainMenuSelection::NewGame => {
+                                new_runstate = RunState::CharacterCreation {
+                                    ancestry: gui::Ancestry::Human,
+                                    class: gui::Class::Fighter,
+                                };
+                            }
+                            gui::MainMenuSelection::LoadGame => {
+                                saveload_system::load_game(&mut self.ecs);
+                                new_runstate = RunState::AwaitingInput;
+                                saveload_system::delete_save();
+                            }
+                            gui::MainMenuSelection::Quit => {
+                                ::std::process::exit(0);
+                            }
+                        }
+                }
+            }
             // RunState::CharacterCreation
             RunState::SaveGame => {
                 saveload_system::save_game(&mut self.ecs);
@@ -669,7 +693,9 @@ impl State {
                 new_runstate = RunState::AwaitingInput; //gui::get_input_direction(&mut self.ecs, ctx, function);
             }
             RunState::MainMenu { .. } => {
-                let result = gui::main_menu(self, ctx);
+                let result = gui::MainMenuResult::Selected {
+                    selected: gui::MainMenuSelection::NewGame,
+                }; //gui::main_menu(self, ctx);
                 match result {
                     gui::MainMenuResult::NoSelection { selected } => {
                         new_runstate = RunState::MainMenu { menu_selection: selected };

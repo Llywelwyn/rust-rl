@@ -139,7 +139,7 @@ fn setup(gfx: &mut Graphics) -> State {
     gs.ecs.insert(gui::Ancestry::Human); // ancestry
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity); // Player entity
-    gs.ecs.insert(RunState::AwaitingInput {}); // TODO: Set this back to RunState::MapGen
+    gs.ecs.insert(RunState::MapGeneration {}); // TODO: Set this back to RunState::MapGen
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());
 
@@ -492,9 +492,13 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut log = false;
     let runstate = *gs.ecs.fetch::<RunState>();
     match runstate {
-        | RunState::MainMenu { .. }
-        | RunState::CharacterCreation { .. }
-        | RunState::PreRun { .. } => {}
+        RunState::MainMenu { .. } => {
+            // Draw main menu
+        }
+        RunState::CharacterCreation { .. } => {
+            // Draw character creation
+        }
+        RunState::PreRun { .. } => {}
         RunState::MapGeneration => {
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
             if config::CONFIG.logging.show_mapgen && gs.mapgen_history.len() > 0 {
@@ -506,6 +510,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
                     true
                 );
             }
+            gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
         }
         _ => {
             let map = gs.ecs.fetch::<Map>();
