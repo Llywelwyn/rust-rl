@@ -430,7 +430,7 @@ fn get_starting_inventory(
         }
         Class::Villager => {
             starting_food = VILLAGER_STARTING_FOOD;
-            pick_random_table_item(rng, &mut equipped, "villager_equipment", "1", None);
+            pick_random_table_item(rng, &mut equipped, "villager_equipment", "1d1", None);
         }
     }
     pick_random_table_item(rng, &mut carried, "food", starting_food, None);
@@ -444,7 +444,9 @@ fn pick_random_table_item(
     dice_str: &'static str,
     difficulty: Option<i32>
 ) {
-    let dice = parse_dice_string(dice_str).expect("Error parsing dice");
+    let dice = parse_dice_string(dice_str).expect(
+        format!("Error parsing dice: {}", dice_str).as_str()
+    );
     for _i in 0..rng.roll_dice(dice.n_dice, dice.die_type) + dice.bonus {
         push_to.push(raws::table_by_name(&raws::RAWS.lock().unwrap(), table, difficulty).roll(rng));
     }

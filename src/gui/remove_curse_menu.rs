@@ -128,7 +128,7 @@ pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<
         "Decurse which item? [aA-zZ][Esc.]"
     );
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
-    print_options(&player_inventory, x + 1, y + 1, ctx);
+
     // Input
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),

@@ -690,8 +690,6 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         );
         y += 1;
         let player_inventory = get_player_inventory(&ecs);
-        y = print_options(&player_inventory, (VIEWPORT_W + 3) * TEXT_FONT_MOD, y, ctx).0;
-
         // Draw spells - if we have any -- NYI!
         if let Some(known_spells) = ecs.read_storage::<KnownSpells>().get(*player_entity) {
             y += 1;
@@ -915,42 +913,60 @@ pub enum ItemMenuResult {
 }
 
 pub fn print_options(
+    draw: &mut Draw,
+    font: &notan::draw::Font,
     inventory: &PlayerInventory,
-    mut x: i32,
-    mut y: i32,
-    ctx: &mut BTerm
-) -> (i32, i32) {
+    mut x: f32,
+    mut y: f32
+) -> (f32, i32) {
     let mut j = 0;
-    let initial_x: i32 = x;
+    let initial_x: f32 = x;
     let mut width: i32 = -1;
     for (item, (_e, item_count)) in inventory {
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
         if j < 26 {
-            ctx.set(x, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + (j as FontCharType));
+            draw.text(font, &format!("{}", (97 + j) as u8 as char))
+                .position(x, y)
+                .color(Color::YELLOW)
+                .size(FONTSIZE);
         } else {
             // If we somehow have more than 26, start using capitals
-            ctx.set(x, y, RGB::named(YELLOW), RGB::named(BLACK), 65 - 26 + (j as FontCharType));
+            draw.text(font, &format!("{}", (65 - 26 + j) as u8 as char))
+                .position(x, y)
+                .color(Color::YELLOW)
+                .size(FONTSIZE);
         }
-
-        x += 2;
+        x = draw.last_text_bounds().max_x() + TILESIZE;
         let fg = RGB::from_u8(item.renderables.0, item.renderables.1, item.renderables.2);
-        ctx.set(x, y, fg, RGB::named(BLACK), item.glyph);
-        x += 2;
+        draw.text(font, &format!("{}", item.glyph as u8 as char))
+            .position(x, y)
+            .size(FONTSIZE)
+            .color(Color::from_rgb(fg.r, fg.g, fg.b));
+        x = draw.last_text_bounds().max_x() + TILESIZE;
 
         let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
         if item_count > &1 {
             // If more than one, print the number and pluralise
             // i.e. (a) 3 daggers
-            ctx.print_color(x, y, fg, RGB::named(BLACK), item_count);
-            x += 2;
-            ctx.print_color(x, y, fg, RGB::named(BLACK), item.display_name.plural.to_string());
-            let this_width = x - initial_x + (item.display_name.plural.len() as i32);
-            width = if width > this_width { width } else { this_width };
+            draw.text(font, &format!("{}", item_count))
+                .position(x, y)
+                .color(Color::from_rgb(fg.r, fg.g, fg.b))
+                .size(FONTSIZE);
+            x = draw.last_text_bounds().max_x() + TILESIZE;
+            draw.text(font, &item.display_name.plural)
+                .position(x, y)
+                .color(Color::from_rgb(fg.r, fg.g, fg.b))
+                .size(FONTSIZE);
+            //let this_width = x - initial_x + (item.display_name.plural.len() as i32);
+            //width = if width > this_width { width } else { this_width };
         } else {
             if item.display_name.singular.to_lowercase().ends_with("s") {
-                ctx.print_color(x, y, fg, RGB::named(BLACK), "some");
-                x += 5;
+                draw.text(font, "some")
+                    .position(x, y)
+                    .color(Color::from_rgb(fg.r, fg.g, fg.b))
+                    .size(FONTSIZE);
+                x = draw.last_text_bounds().max_x() + TILESIZE;
             } else if
                 ['a', 'e', 'i', 'o', 'u']
                     .iter()
@@ -958,23 +974,31 @@ pub fn print_options(
             {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
-                ctx.print_color(x, y, fg, RGB::named(BLACK), "an");
-                x += 3;
+                draw.text(font, "an")
+                    .position(x, y)
+                    .color(Color::from_rgb(fg.r, fg.g, fg.b))
+                    .size(FONTSIZE);
+                x = draw.last_text_bounds().max_x() + TILESIZE;
             } else {
                 // If one and not a vowel, print 'a'
                 // i.e. (a) a dagger
-                ctx.print_color(x, y, fg, RGB::named(BLACK), "a");
-                x += 2;
+                draw.text(font, "a")
+                    .position(x, y)
+                    .color(Color::from_rgb(fg.r, fg.g, fg.b))
+                    .size(FONTSIZE);
+                x = draw.last_text_bounds().max_x() + TILESIZE;
             }
-            ctx.print_color(x, y, fg, RGB::named(BLACK), item.display_name.singular.to_string());
-            let this_width = x - initial_x + (item.display_name.singular.len() as i32);
-            width = if width > this_width { width } else { this_width };
+            draw.text(font, &item.display_name.singular)
+                .position(x, y)
+                .color(Color::from_rgb(fg.r, fg.g, fg.b))
+                .size(FONTSIZE);
+            //let this_width = x - initial_x + (item.display_name.singular.len() as i32);
+            //width = if width > this_width { width } else { this_width };
         }
 
-        y += 1;
+        y = draw.last_text_bounds().max_y();
         j += 1;
     }
-
     return (y, width);
 }
 
@@ -1306,60 +1330,43 @@ pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
     return player_inventory;
 }
 
-pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
-    ctx.set_active_console(TEXT_LAYER);
+pub fn draw_inventory() {
+    // Draw
+}
 
+pub fn show_inventory(gs: &mut State, ctx: &mut App) -> (ItemMenuResult, Option<Entity>) {
     let player_inventory = get_player_inventory(&gs.ecs);
+    let on_overmap = gs.ecs.fetch::<Map>().overmap;
     let count = player_inventory.len();
 
-    let (x_offset, y_offset) = (1 * TEXT_FONT_MOD, 10);
-
-    let on_overmap = gs.ecs.fetch::<Map>().overmap;
-    let message = if !on_overmap {
-        "Interact with what item? [aA-zZ][Esc.]"
-    } else {
-        "You can't use items on the overmap [Esc.]"
-    };
-
-    ctx.print_color(1 + x_offset, 1 + y_offset, RGB::named(WHITE), RGB::named(BLACK), message);
-
-    let x = 1 + x_offset;
-    let y = 3 + y_offset;
-    let width = get_max_inventory_width(&player_inventory);
-    ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
-    print_options(&player_inventory, x + 1, y + 1, ctx);
-
-    ctx.set_active_console(TILE_LAYER);
-
-    match ctx.key {
-        None => (ItemMenuResult::NoResponse, None),
-        Some(key) =>
-            match key {
-                VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
-                _ => {
-                    let selection = letter_to_option::letter_to_option(key, ctx.shift);
-                    if selection > -1 && selection < (count as i32) {
-                        if on_overmap {
-                            gamelog::Logger
-                                ::new()
-                                .append("You can't use items on the overmap.")
-                                .log();
-                        } else {
-                            return (
-                                ItemMenuResult::Selected,
-                                Some(
-                                    player_inventory
-                                        .iter()
-                                        .nth(selection as usize)
-                                        .unwrap().1.0
-                                ),
-                            );
-                        }
+    let key = &ctx.keyboard;
+    for keycode in key.pressed.iter() {
+        match *keycode {
+            KeyCode::Escape => {
+                return (ItemMenuResult::Cancel, None);
+            }
+            _ => {
+                let shift = key.shift();
+                let selection = letter_to_option::letter_to_option(*keycode, shift);
+                if selection > -1 && selection < (count as i32) {
+                    if on_overmap {
+                        gamelog::Logger::new().append("You can't use items on the overmap.").log();
+                    } else {
+                        return (
+                            ItemMenuResult::Selected,
+                            Some(
+                                player_inventory
+                                    .iter()
+                                    .nth(selection as usize)
+                                    .unwrap().1.0
+                            ),
+                        );
                     }
-                    (ItemMenuResult::NoResponse, None)
                 }
             }
+        }
     }
+    return (ItemMenuResult::NoResponse, None);
 }
 
 pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
@@ -1381,7 +1388,6 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
     let y = 3 + y_offset;
     let width = get_max_inventory_width(&player_inventory);
     ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
-    print_options(&player_inventory, x + 1, y + 1, ctx);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),

@@ -133,7 +133,7 @@ pub fn identify(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Enti
         "Identify which item? [aA-zZ][Esc.]"
     );
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
-    print_options(&player_inventory, x + 1, y + 1, ctx);
+
     // Input
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
