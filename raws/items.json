@@ -186,6 +186,15 @@
         "equip": { "flag": "STRENGTH", "damage": "1d8", "to_hit": 0 }
     },
     {
+        "id": "artifact_icingdeath",
+        "name": { "name": "Icingdeath", "plural": "Icingdeath" },
+        "renderable": { "glyph": ")", "fg": "#37aecc", "bg": "#000000", "order": 4 },
+        "weight": 3,
+        "value": 300,
+        "flags": ["EQUIP_MELEE"],
+        "equip": { "flag": "FINESSE", "damage": "1d8+3;cold", "to_hit": 3 }
+    },
+    {
         "id": "equip_smallshield",
         "name": { "name": "buckler", "plural": "bucklers" },
         "renderable": { "glyph": "[", "fg": "#808080", "bg": "#000000", "order": 4 },
