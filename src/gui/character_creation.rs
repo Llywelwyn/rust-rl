@@ -190,143 +190,50 @@ fn get_colour<T>(selected: T, desired: T) -> Color where T: PartialEq {
 }
 
 /// Handles the player character creation screen.
-pub fn character_creation(gs: &mut State, ctx: &mut BTerm) -> CharCreateResult {
-    ctx.set_active_console(TEXT_LAYER);
+pub fn character_creation(gs: &mut State, ctx: &mut App) -> CharCreateResult {
     let runstate = gs.ecs.fetch::<RunState>();
+    let (ancestry, class) = match *runstate {
+        RunState::CharacterCreation { ancestry, class } => (ancestry, class),
+        _ => unreachable!("character_creation() called outside of CharacterCreation runstate."),
+    };
 
-    let mut x = 2;
-    let mut y = 11;
-    let column_width = 20;
-
-    ctx.print_color(x, y, RGB::named(WHITE), RGB::named(BLACK), CHAR_CREATE_HEADER);
-    y += 2;
-
-    if let RunState::CharacterCreation { ancestry, class } = *runstate {
-        let selected_fg = RGB::named(GREEN);
-        let unselected_fg = RGB::named(WHITE);
-        let mut fg;
-        let bg = RGB::named(BLACK);
-
-        // Ancestry
-        ctx.print_color(x, y, bg, unselected_fg, "Ancestry");
-        ctx.print_color(x + column_width, y, bg, unselected_fg, "Class");
-        y += 1;
-        let mut race_str = "human";
-        if ancestry == Ancestry::Human {
-            fg = selected_fg;
-        } else {
-            fg = unselected_fg;
-        }
-        ctx.print_color(x, y, fg, bg, "h. Human");
-        if ancestry == Ancestry::Elf {
-            fg = selected_fg;
-            race_str = "elf";
-        } else {
-            fg = unselected_fg;
-        }
-        ctx.print_color(x, y + 1, fg, bg, "e. Elf");
-        if ancestry == Ancestry::Dwarf {
-            fg = selected_fg;
-            race_str = "dwarf";
-        } else {
-            fg = unselected_fg;
-        }
-        ctx.print_color(x, y + 2, fg, bg, "d. Dwarf");
-        if ancestry == Ancestry::Catfolk {
-            fg = selected_fg;
-            race_str = "catfolk";
-        } else {
-            fg = unselected_fg;
-        }
-        ctx.print_color(x, y + 3, fg, bg, "c. Catfolk");
-        // Class
-        let mut class_str = "fighter";
-        x += column_width;
-        if class == Class::Fighter {
-            fg = selected_fg;
-        } else {
-            fg = unselected_fg;
-        }
-        ctx.print_color(x, y, fg, bg, "f. Fighter");
-        if class == Class::Rogue {
-            fg = selected_fg;
-            class_str = "rogue";
-        } else {
-            fg = unselected_fg;
-        }
-        ctx.print_color(x, y + 1, fg, bg, "r. Rogue");
-        if class == Class::Wizard {
-            fg = selected_fg;
-            class_str = "wizard";
-        } else {
-            fg = unselected_fg;
-        }
-        ctx.print_color(x, y + 2, fg, bg, "w. Wizard");
-        if class == Class::Villager {
-            fg = selected_fg;
-            class_str = "villager";
-        } else {
-            fg = unselected_fg;
-        }
-        ctx.print_color(x, y + 3, fg, bg, "v. Villager");
-        // Selected ancestry/class benefits
-        x += column_width;
-        ctx.print_color(x, y, selected_fg, bg, ANCESTRY_INFO_HEADER);
-        /*for line in ANCESTRY_CLASS_DATA.get(race_str).unwrap().iter() {
-            y += 1;
-            ctx.print_color(x + 1, y, unselected_fg, bg, line);
-        }
-        y += 2;
-        ctx.print_color(x, y, selected_fg, bg, CLASS_INFO_HEADER);
-        for line in ANCESTRY_CLASS_DATA.get(class_str).unwrap().iter() {
-            y += 1;
-            ctx.print_color(x + 1, y, unselected_fg, bg, line);
-        }*/
-
-        match ctx.key {
-            None => {
-                return CharCreateResult::NoSelection { ancestry, class };
+    let key = &ctx.keyboard;
+    for keycode in key.pressed.iter() {
+        match *keycode {
+            KeyCode::Escape => {
+                return CharCreateResult::Selected { ancestry: Ancestry::Unset, class };
             }
-            Some(key) =>
-                match key {
-                    VirtualKeyCode::Escape => {
-                        return CharCreateResult::Selected { ancestry: Ancestry::Unset, class };
-                    }
-                    VirtualKeyCode::Return => {
-                        return CharCreateResult::Selected { ancestry, class };
-                    }
-                    VirtualKeyCode::H => {
-                        return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class };
-                    }
-                    VirtualKeyCode::E => {
-                        return CharCreateResult::NoSelection { ancestry: Ancestry::Elf, class };
-                    }
-                    VirtualKeyCode::D => {
-                        return CharCreateResult::NoSelection { ancestry: Ancestry::Dwarf, class };
-                    }
-                    VirtualKeyCode::C => {
-                        return CharCreateResult::NoSelection { ancestry: Ancestry::Catfolk, class };
-                    }
-                    VirtualKeyCode::F => {
-                        return CharCreateResult::NoSelection { ancestry, class: Class::Fighter };
-                    }
-                    VirtualKeyCode::R => {
-                        return CharCreateResult::NoSelection { ancestry, class: Class::Rogue };
-                    }
-                    VirtualKeyCode::W => {
-                        return CharCreateResult::NoSelection { ancestry, class: Class::Wizard };
-                    }
-                    VirtualKeyCode::V => {
-                        return CharCreateResult::NoSelection { ancestry, class: Class::Villager };
-                    }
-                    _ => {
-                        return CharCreateResult::NoSelection { ancestry, class };
-                    }
-                }
-        }
+            KeyCode::Return => {
+                return CharCreateResult::Selected { ancestry, class };
+            }
+            KeyCode::H => {
+                return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class };
+            }
+            KeyCode::E => {
+                return CharCreateResult::NoSelection { ancestry: Ancestry::Elf, class };
+            }
+            KeyCode::D => {
+                return CharCreateResult::NoSelection { ancestry: Ancestry::Dwarf, class };
+            }
+            KeyCode::C => {
+                return CharCreateResult::NoSelection { ancestry: Ancestry::Catfolk, class };
+            }
+            KeyCode::F => {
+                return CharCreateResult::NoSelection { ancestry, class: Class::Fighter };
+            }
+            KeyCode::R => {
+                return CharCreateResult::NoSelection { ancestry, class: Class::Rogue };
+            }
+            KeyCode::W => {
+                return CharCreateResult::NoSelection { ancestry, class: Class::Wizard };
+            }
+            KeyCode::V => {
+                return CharCreateResult::NoSelection { ancestry, class: Class::Villager };
+            }
+            _ => {}
+        };
     }
-    ctx.set_active_console(TILE_LAYER);
-    return CharCreateResult::NoSelection { ancestry: Ancestry::Human, class: Class::Fighter };
+    return CharCreateResult::NoSelection { ancestry, class };
 }
 
 /// Handles player ancestry setup.

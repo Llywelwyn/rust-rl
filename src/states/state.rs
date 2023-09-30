@@ -307,7 +307,25 @@ impl State {
                         }
                 }
             }
-            // RunState::CharacterCreation
+            RunState::CharacterCreation { .. } => {
+                let result = gui::character_creation(self, ctx);
+                match result {
+                    gui::CharCreateResult::NoSelection { ancestry, class } => {
+                        new_runstate = RunState::CharacterCreation { ancestry, class };
+                    }
+                    gui::CharCreateResult::Selected { ancestry, class } => {
+                        if ancestry == gui::Ancestry::Unset {
+                            new_runstate = RunState::MainMenu {
+                                menu_selection: gui::MainMenuSelection::NewGame,
+                            };
+                        } else {
+                            gui::setup_player_ancestry(&mut self.ecs, ancestry);
+                            gui::setup_player_class(&mut self.ecs, class, ancestry);
+                            new_runstate = RunState::PreRun;
+                        }
+                    }
+                }
+            }
             RunState::SaveGame => {
                 saveload_system::save_game(&mut self.ecs);
                 new_runstate = RunState::MainMenu {
@@ -720,7 +738,10 @@ impl State {
                 }
             }
             RunState::CharacterCreation { .. } => {
-                let result = gui::character_creation(self, ctx);
+                let result = gui::CharCreateResult::NoSelection {
+                    ancestry: gui::Ancestry::Human,
+                    class: gui::Class::Fighter,
+                }; //gui::character_creation(self, ctx);
                 match result {
                     gui::CharCreateResult::NoSelection { ancestry, class } => {
                         new_runstate = RunState::CharacterCreation { ancestry, class };
