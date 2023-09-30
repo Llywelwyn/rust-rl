@@ -30,7 +30,7 @@ use specs::prelude::*;
 use std::collections::HashMap;
 use crate::consts::prelude::*;
 
-#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Ancestry {
     Unset,
     Human,
@@ -40,7 +40,7 @@ pub enum Ancestry {
     Catfolk,
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Class {
     Unset,
     Fighter,
@@ -50,48 +50,53 @@ pub enum Class {
 }
 
 lazy_static! {
-    static ref ANCESTRY_CLASS_DATA: HashMap<String, Vec<String>> = {
+    static ref ANCESTRYDATA: HashMap<Ancestry, Vec<String>> = {
         let mut m = HashMap::new();
-        // Ancestry
         m.insert(
-            "human".to_string(),
+            Ancestry::Human,
             vec![
                 "nothing".to_string()]);
         m.insert(
-            "dwarf".to_string(),
+            Ancestry::Dwarf,
             vec![
                 "a natural bonus to defence".to_string()]);
         m.insert(
-            "elf".to_string(),
+            Ancestry::Elf,
             vec![
                 "minor telepathy".to_string(),
                 "a slightly increased speed".to_string()]);
         m.insert(
-            "catfolk".to_string(),
+            Ancestry::Catfolk,
             vec![
                 "increased speed".to_string(),
                 "increased unarmed damage".to_string()]);
-        // Class
+        return m;
+    };
+}
+
+lazy_static! {
+    static ref CLASSDATA: HashMap<Class, Vec<String>> = {
+        let mut m = HashMap::new();
         m.insert(
-            "fighter".to_string(),
+            Class::Fighter,
             vec![
                 format!("a longsword, ring mail, and {} food", FIGHTER_STARTING_FOOD),
                 "10 str, 8 dex, 10 con, 6 int, 6 wis, 8 cha".to_string(),
                 "and 27 random stat points".to_string()]);
         m.insert(
-            "rogue".to_string(),
+            Class::Rogue,
             vec![
                 format!("a rapier, leather armour, and {} food", ROGUE_STARTING_FOOD),
                 "8 str, 10 dex, 8 con, 6 int, 8 wis, 10 cha".to_string(),
                 "and 35 random stat points".to_string()]);
         m.insert(
-            "wizard".to_string(),
+            Class::Wizard,
             vec![
                 format!("a dagger, random scrolls/potions, and {} food", WIZARD_STARTING_FOOD),
                 "6 str, 8 dex, 6 con, 10 int, 10 wis, 8 cha".to_string(),
                 "and 17 random stat points".to_string()]);
         m.insert(
-            "villager".to_string(),
+            Class::Villager,
             vec![
                 format!("the first weapon you could find, and {} food", VILLAGER_STARTING_FOOD),
                 "6 str, 6 dex, 6 con, 6 int, 6 wis, 6 cha".to_string(),
@@ -110,6 +115,78 @@ pub enum CharCreateResult {
         ancestry: Ancestry,
         class: Class,
     },
+}
+
+use notan::prelude::*;
+use notan::draw::{ Draw, CreateDraw, DrawTextSection, Font };
+use specs::prelude::*;
+use super::{ FONTSIZE, DISPLAYWIDTH, TILESIZE, MainMenuSelection };
+use crate::consts::DISPLAYHEIGHT;
+
+pub fn draw_charcreation(
+    ecs: &World,
+    draw: &mut Draw,
+    atlas: &HashMap<String, Texture>,
+    font: &Font
+) {
+    let runstate = ecs.read_resource::<RunState>();
+    let (class, ancestry) = match *runstate {
+        RunState::CharacterCreation { class, ancestry } => (class, ancestry),
+        _ => unreachable!("draw_charcreation() called outside of CharacterCreation runstate."),
+    };
+    let (mut x, mut y) = (2.0 * TILESIZE, ((DISPLAYHEIGHT as f32) * TILESIZE) / 4.0);
+    const COLUMN_WIDTH: f32 = 20.0 * TILESIZE;
+    draw.text(font, "Who are you?")
+        .size(FONTSIZE * 2.0)
+        .position(x, y)
+        .h_align_left();
+    y = draw.last_text_bounds().max_y();
+    let initial_y = y;
+    let ancestries = [
+        ("h. Human", Ancestry::Human),
+        ("e. Elf", Ancestry::Elf),
+        ("d. Dwarf", Ancestry::Dwarf),
+        ("c. Catfolk", Ancestry::Catfolk),
+    ];
+    for (k, v) in &ancestries {
+        draw.text(font, k)
+            .size(FONTSIZE)
+            .position(x, y)
+            .h_align_left()
+            .color(get_colour(ancestry, *v));
+        y = draw.last_text_bounds().max_y();
+    }
+    y = initial_y;
+    x += COLUMN_WIDTH;
+    let classes = [
+        ("f. Fighter", Class::Fighter),
+        ("r. Rogue", Class::Rogue),
+        ("w. Wizard", Class::Wizard),
+        ("v. Villager", Class::Villager),
+    ];
+    for (k, v) in &classes {
+        draw.text(font, k)
+            .size(FONTSIZE)
+            .position(x, y)
+            .h_align_left()
+            .color(get_colour(class, *v));
+        y = draw.last_text_bounds().max_y();
+    }
+    y = initial_y;
+    x += COLUMN_WIDTH;
+    for line in ANCESTRYDATA.get(&ancestry).unwrap().iter() {
+        draw.text(font, line).size(FONTSIZE).position(x, y).h_align_left();
+        y = draw.last_text_bounds().max_y();
+    }
+    y += TILESIZE;
+    for line in CLASSDATA.get(&class).unwrap().iter() {
+        draw.text(font, line).size(FONTSIZE).position(x, y).h_align_left();
+        y = draw.last_text_bounds().max_y();
+    }
+}
+
+fn get_colour<T>(selected: T, desired: T) -> Color where T: PartialEq {
+    if selected == desired { Color::from_rgb(0.0, 1.0, 0.0) } else { Color::WHITE }
 }
 
 /// Handles the player character creation screen.
@@ -195,7 +272,7 @@ pub fn character_creation(gs: &mut State, ctx: &mut BTerm) -> CharCreateResult {
         // Selected ancestry/class benefits
         x += column_width;
         ctx.print_color(x, y, selected_fg, bg, ANCESTRY_INFO_HEADER);
-        for line in ANCESTRY_CLASS_DATA.get(race_str).unwrap().iter() {
+        /*for line in ANCESTRY_CLASS_DATA.get(race_str).unwrap().iter() {
             y += 1;
             ctx.print_color(x + 1, y, unselected_fg, bg, line);
         }
@@ -204,7 +281,7 @@ pub fn character_creation(gs: &mut State, ctx: &mut BTerm) -> CharCreateResult {
         for line in ANCESTRY_CLASS_DATA.get(class_str).unwrap().iter() {
             y += 1;
             ctx.print_color(x + 1, y, unselected_fg, bg, line);
-        }
+        }*/
 
         match ctx.key {
             None => {

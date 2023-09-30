@@ -496,7 +496,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             gui::draw_mainmenu(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
         }
         RunState::CharacterCreation { .. } => {
-            // Draw character creation
+            gui::draw_charcreation(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
         }
         RunState::PreRun { .. } => {}
         RunState::MapGeneration => {
