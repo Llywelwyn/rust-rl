@@ -534,6 +534,9 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         RunState::GameOver => {
             corner_text("Create morgue file? [Y/N]", &mut draw, &gs.font);
         }
+        RunState::ShowInventory => {
+            gui::draw_inventory(&gs.ecs, &mut draw, &gs.font);
+        }
         _ => {}
     }
     gfx.render(&draw);

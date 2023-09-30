@@ -66,6 +66,8 @@ mod farlook;
 pub use farlook::*;
 mod main_menu;
 pub use main_menu::*;
+mod inventory;
+pub use inventory::*;
 
 /// Gives a popup box with a message and a title, and waits for a keypress.
 #[allow(unused)]
@@ -995,8 +997,7 @@ pub fn print_options(
             //let this_width = x - initial_x + (item.display_name.singular.len() as i32);
             //width = if width > this_width { width } else { this_width };
         }
-
-        y = draw.last_text_bounds().max_y();
+        y += TILESIZE;
         j += 1;
     }
     return (y, width);
@@ -1328,10 +1329,6 @@ pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
     }
 
     return player_inventory;
-}
-
-pub fn draw_inventory() {
-    // Draw
 }
 
 pub fn show_inventory(gs: &mut State, ctx: &mut App) -> (ItemMenuResult, Option<Entity>) {
