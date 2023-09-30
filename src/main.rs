@@ -493,7 +493,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let runstate = *gs.ecs.fetch::<RunState>();
     match runstate {
         RunState::MainMenu { .. } => {
-            // Draw main menu
+            gui::draw_mainmenu(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
         }
         RunState::CharacterCreation { .. } => {
             // Draw character creation

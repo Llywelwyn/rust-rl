@@ -64,6 +64,8 @@ pub use cheat_menu::*;
 use crate::consts::events::*;
 mod farlook;
 pub use farlook::*;
+mod main_menu;
+pub use main_menu::*;
 
 /// Gives a popup box with a message and a title, and waits for a keypress.
 #[allow(unused)]
