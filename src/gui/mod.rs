@@ -264,39 +264,45 @@ pub fn draw_ui2(
             stats.bac - attributes.dexterity.modifier() / 2 - skill_ac_bonus - armour_ac_bonus;
         draw.text(&font, "AC").position(x, row1).color(Color::PINK).size(FONTSIZE);
         let last_x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", armour_class)).position(last_x, row1).size(FONTSIZE);
+        draw.text(&font, &format!("{:<2}", armour_class)).position(last_x, row1).size(FONTSIZE);
         draw.text(&font, &format!("XP{}/{}", stats.level, stats.xp))
             .position(x, row2)
             .size(FONTSIZE);
         let attribute_x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
         draw.text(&font, "STR").position(attribute_x, row1).color(Color::RED).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", attributes.strength.base)).position(x, row1).size(FONTSIZE);
+        draw.text(&font, &format!("{:<2}", attributes.strength.base))
+            .position(x, row1)
+            .size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
         draw.text(&font, "DEX").position(x, row1).color(Color::GREEN).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", attributes.dexterity.base))
+        draw.text(&font, &format!("{:<2}", attributes.dexterity.base))
             .position(x, row1)
             .size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
         draw.text(&font, "CON").position(x, row1).color(Color::ORANGE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", attributes.constitution.base))
+        draw.text(&font, &format!("{:<2}", attributes.constitution.base))
             .position(x, row1)
             .size(FONTSIZE);
         draw.text(&font, "INT").position(attribute_x, row2).color(Color::BLUE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", attributes.intelligence.base))
+        draw.text(&font, &format!("{:<2}", attributes.intelligence.base))
             .position(x, row2)
             .size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
         draw.text(&font, "WIS").position(x, row2).color(Color::YELLOW).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", attributes.wisdom.base)).position(x, row2).size(FONTSIZE);
+        draw.text(&font, &format!("{:<2}", attributes.wisdom.base))
+            .position(x, row2)
+            .size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
         draw.text(&font, "CHA").position(x, row2).color(Color::PURPLE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", attributes.charisma.base)).position(x, row2).size(FONTSIZE);
+        draw.text(&font, &format!("{:<2}", attributes.charisma.base))
+            .position(x, row2)
+            .size(FONTSIZE);
         let hungertxt = match hunger.state {
             HungerState::Satiated => "Satiated",
             HungerState::Normal => "Normal",
@@ -382,14 +388,18 @@ pub fn draw_ui2(
                     .color(Color::YELLOW)
                     .size(FONTSIZE);
                 j += 1;
-                x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
+                x = draw.last_text_bounds().max_x() + 1.0 * TILESIZE;
+                let mut col = item.2;
                 draw.text(&font, &format!("{}", item.3 as u8 as char))
                     .position(x, (y as f32) * TILESIZE)
-                    .size(FONTSIZE); // Colours here - and below.
-                x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
+                    .size(FONTSIZE)
+                    .color(Color::from_rgb(col.r, col.g, col.b)); // Colours here - and below.
+                x = draw.last_text_bounds().max_x() + 1.0 * TILESIZE;
+                col = item.1;
                 draw.text(&font, &item.0)
                     .position(x, (y as f32) * TILESIZE)
-                    .size(FONTSIZE);
+                    .size(FONTSIZE)
+                    .color(Color::from_rgb(col.r, col.g, col.b));
                 x = draw.last_text_bounds().max_x() + 1.0 * TILESIZE;
                 draw.text(&font, "(worn)")
                     .position(x, (y as f32) * TILESIZE)
