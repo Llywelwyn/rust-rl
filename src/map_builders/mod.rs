@@ -1,6 +1,8 @@
 use super::{ spawner, Map, Position, Rect, TileType };
 use bracket_lib::prelude::*;
 
+mod room_accretion;
+use room_accretion::RoomAccretionBuilder;
 mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod bsp_interior;
