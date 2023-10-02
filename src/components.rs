@@ -427,9 +427,37 @@ pub enum Intrinsic {
     Speed, // 4/3x speed multiplier
 }
 
+impl Intrinsic {
+    pub fn describe(&self) -> &str {
+        match self {
+            Intrinsic::Regeneration => "regenerates health",
+            Intrinsic::Speed => "is hasted",
+        }
+    }
+}
+
 #[derive(Component, Serialize, Deserialize, Debug, Clone)]
 pub struct Intrinsics {
     pub list: HashSet<Intrinsic>,
+}
+
+impl Intrinsics {
+    pub fn describe(&self) -> String {
+        let mut descriptions = Vec::new();
+        for intrinsic in &self.list {
+            descriptions.push(intrinsic.describe());
+        }
+        match descriptions.len() {
+            0 =>
+                unreachable!("describe() should never be called on an empty Intrinsics component."),
+            1 => format!("It {}.", descriptions[0]),
+            _ => {
+                let last = descriptions.pop().unwrap();
+                let joined = descriptions.join(", ");
+                format!("It {}, and {}.", joined, last)
+            }
+        }
+    }
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]

@@ -111,6 +111,12 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm, xy: Option<(i32, i32)>) {
         if position.x == mouse_pos_adjusted.0 && position.y == mouse_pos_adjusted.1 {
             let mut tip = Tooltip::new();
             tip.add(crate::gui::obfuscate_name_ecs(ecs, entity).0, renderable.fg);
+            let intrinsics = ecs.read_storage::<crate::components::Intrinsics>();
+            if let Some(intrinsics) = intrinsics.get(entity) {
+                if !intrinsics.list.is_empty() {
+                    tip.add(intrinsics.describe(), RGB::named(WHITE));
+                }
+            }
             // Attributes
             let attr = attributes.get(entity);
             if let Some(a) = attr {
