@@ -21,21 +21,16 @@ impl RoomAccretionBuilder {
     }
 
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
-        //
+        accrete_rooms(rng, build_data);
     }
 }
 
 fn grid_with_dimensions(h: usize, w: usize, value: i32) -> Vec<Vec<i32>> {
-    let mut grid = Vec::with_capacity(h);
-    for _ in 0..h {
-        let row = vec![value; w];
-        grid.push(row);
-    }
-    grid
+    vec![vec![value; w]; h]
 }
 
-fn in_bounds(x: i32, y: i32, build_data: &BuilderMap) -> bool {
-    x > 0 && x < build_data.height && y > 0 && y < build_data.width
+fn in_bounds(row: i32, col: i32, build_data: &BuilderMap) -> bool {
+    row > 0 && row < build_data.height && col > 0 && col < build_data.width
 }
 
 fn draw_continuous_shape_on_grid(
@@ -87,10 +82,11 @@ fn get_cell_neighbours(
             }
         }
     }
+    console::log(&format!("neighbours: {:?}", neighbours));
     neighbours
 }
 
-fn make_ca_room(rng: &mut RandomNumberGenerator) -> Vec<Vec<i32>> {
+fn make_ca_room(rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) -> Vec<Vec<i32>> {
     let width = rng.range(5, 10);
     let height = rng.range(5, 10);
     let mut cells = grid_with_dimensions(height, width, 0);
@@ -121,7 +117,7 @@ fn make_ca_room(rng: &mut RandomNumberGenerator) -> Vec<Vec<i32>> {
     for _ in 0..5 {
         let mut new_cells = vec![vec![0; width]; height];
         for row in 0..height {
-            for col in 0..height {
+            for col in 0..width {
                 let neighbours = get_cell_neighbours(&cells, row, col, height, width);
                 let new_state = transform_cell(cells[row][col], &neighbours);
                 new_cells[row][col] = new_state;
@@ -150,8 +146,8 @@ fn direction_of_door(
         let opp_col = (col as i32) - dir.transform().x;
         let opp_row = (row as i32) - dir.transform().y;
         if
-            in_bounds(new_col, new_row, &build_data) &&
-            in_bounds(new_col, new_row, &build_data) &&
+            in_bounds(new_row, new_col, &build_data) &&
+            in_bounds(opp_row, opp_col, &build_data) &&
             grid[opp_row as usize][opp_col as usize] != 0
         {
             solution = dir;
@@ -160,7 +156,7 @@ fn direction_of_door(
     return solution;
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct DoorSite {
     pub x: i32,
     pub y: i32,
@@ -171,7 +167,7 @@ fn choose_random_door_site(
     room: Vec<Vec<i32>>,
     rng: &mut RandomNumberGenerator,
     build_data: &BuilderMap
-) -> Vec<DoorSite> {
+) -> Vec<Option<DoorSite>> {
     let mut grid = grid_with_dimensions(HEIGHT, WIDTH, 0);
     let mut door_sites: Vec<DoorSite> = Vec::new();
     const LEFT_OFFSET: usize = ((WIDTH as f32) / 2.0) as usize;
@@ -209,7 +205,7 @@ fn choose_random_door_site(
             }
         }
     }
-    let mut chosen_doors: Vec<DoorSite> = Vec::new();
+    let mut chosen_doors: Vec<Option<DoorSite>> = vec![None; 4];
     let mut dir_iter = DirectionIterator::new();
     for dir in &mut dir_iter {
         let doors_facing_this_dir: Vec<&DoorSite> = door_sites
@@ -218,8 +214,145 @@ fn choose_random_door_site(
             .collect();
         if !doors_facing_this_dir.is_empty() {
             let index = rng.range(0, doors_facing_this_dir.len());
-            chosen_doors.push(*doors_facing_this_dir[index]);
+            chosen_doors[dir as usize] = Some(*doors_facing_this_dir[index]);
         }
     }
     chosen_doors
+}
+
+fn shuffle<T>(list: &mut Vec<T>, rng: &mut RandomNumberGenerator) {
+    let len = list.len();
+    for i in (1..len).rev() {
+        let j = rng.range(0, i + 1);
+        list.swap(i, j);
+    }
+}
+
+fn attach_hallway_to(
+    door_sites: &mut Vec<Option<DoorSite>>,
+    hyperspace: &mut Vec<Vec<i32>>,
+    rng: &mut RandomNumberGenerator,
+    build_data: &BuilderMap
+) {
+    let mut directions = vec![Direction::North, Direction::East, Direction::South, Direction::West];
+    shuffle(&mut directions, rng);
+    let mut hallway_dir: Direction = Direction::NoDir;
+    for i in 0..4 {
+        hallway_dir = directions[i];
+        console::log(
+            &format!(
+                "i: {:?} | hallway_dir: {:?} (as usize: {:?}) | door_sites[hallway_dir]: {:?}",
+                i,
+                hallway_dir,
+                hallway_dir as usize,
+                door_sites[hallway_dir as usize]
+            )
+        );
+        if
+            door_sites[hallway_dir as usize].is_some() &&
+            in_bounds(
+                door_sites[hallway_dir as usize].unwrap().y +
+                    hallway_dir.transform().y * VERTICAL_CORRIDOR_MAX_LENGTH,
+                door_sites[hallway_dir as usize].unwrap().x +
+                    hallway_dir.transform().x * HORIZONTAL_CORRIDOR_MAX_LENGTH,
+                &build_data
+            )
+        {
+            break;
+        }
+    }
+    let transform = hallway_dir.transform();
+    let hallway_len: i32 = match hallway_dir {
+        Direction::NoDir => {
+            console::log("no hallway_dir");
+            return;
+        }
+        Direction::North | Direction::South =>
+            rng.range(VERTICAL_CORRIDOR_MIN_LENGTH, VERTICAL_CORRIDOR_MAX_LENGTH + 1),
+        Direction::East | Direction::West =>
+            rng.range(HORIZONTAL_CORRIDOR_MIN_LENGTH, HORIZONTAL_CORRIDOR_MAX_LENGTH + 1),
+    };
+    console::log(&format!("hallway_len: {:?}", hallway_len));
+    let mut x = door_sites[hallway_dir as usize].unwrap().x;
+    let mut y = door_sites[hallway_dir as usize].unwrap().y;
+    for _i in 0..hallway_len {
+        if in_bounds(y, x, &build_data) {
+            hyperspace[y as usize][x as usize] = 1; // Dig out corridor.
+        }
+        x += transform.x;
+        y += transform.y;
+    }
+    let new_site = DoorSite {
+        x,
+        y,
+        dir: hallway_dir,
+    };
+    console::log(&format!("new_site: {:?}", new_site));
+    door_sites[hallway_dir as usize] = Some(new_site); // Move door to end of corridor.
+}
+
+fn design_room_in_hyperspace(
+    rng: &mut RandomNumberGenerator,
+    build_data: &mut BuilderMap
+) -> Vec<Vec<i32>> {
+    // Project onto hyperspace
+    let mut hyperspace = grid_with_dimensions(HEIGHT, WIDTH, 0);
+    let room_type = rng.range(0, 1);
+    let room = match room_type {
+        0 => make_ca_room(rng, build_data),
+        _ => unreachable!("Invalid room type."),
+    };
+    draw_continuous_shape_on_grid(&room, HEIGHT / 2, WIDTH / 2, &mut hyperspace);
+    let mut door_sites = choose_random_door_site(room, rng, &build_data);
+    let roll: f32 = rng.rand();
+    if roll < HALLWAY_CHANCE {
+        attach_hallway_to(&mut door_sites, &mut hyperspace, rng, &build_data);
+    }
+    let coords: Vec<Coordinate> = door_sites
+        .iter()
+        .filter(|&door| door.is_some())
+        .map(|&door| Coordinate {
+            location: Point::new(door.unwrap().x, door.unwrap().y),
+            value: 2,
+        })
+        .collect();
+    draw_individual_coordinates_on_grid(&coords, &mut hyperspace);
+    hyperspace
+}
+
+fn map_i32_to_tiletype(val: i32, build_data: &mut BuilderMap) -> TileType {
+    match val {
+        0 => TileType::Wall,
+        1 => TileType::Floor,
+        2 => TileType::Floor, // With door.
+        _ => unreachable!("Unknown TileType"),
+    }
+}
+
+fn flatten_hyperspace_into_dungeon(
+    hyperspace: Vec<Vec<i32>>,
+    build_data: &mut BuilderMap
+) -> Vec<TileType> {
+    let flattened_hyperspace: Vec<i32> = hyperspace.into_iter().flatten().collect();
+    flattened_hyperspace
+        .into_iter()
+        .enumerate()
+        .map(|(idx, cell)| {
+            if cell != 0 {
+                match cell {
+                    2 => build_data.spawn_list.push((idx, "door".to_string())),
+                    _ => {}
+                }
+                map_i32_to_tiletype(cell, build_data)
+            } else {
+                build_data.map.tiles[idx % (build_data.map.width as usize)]
+            }
+        })
+        .collect()
+}
+
+fn accrete_rooms(rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    let hyperspace = design_room_in_hyperspace(rng, build_data);
+    build_data.map.tiles = flatten_hyperspace_into_dungeon(hyperspace, build_data);
+    build_data.take_snapshot();
 }

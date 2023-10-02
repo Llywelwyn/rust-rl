@@ -3,6 +3,11 @@ use bracket_lib::prelude::*;
 
 pub const HEIGHT: usize = 64;
 pub const WIDTH: usize = 64;
+pub const HALLWAY_CHANCE: f32 = 0.5;
+pub const VERTICAL_CORRIDOR_MIN_LENGTH: i32 = 2;
+pub const VERTICAL_CORRIDOR_MAX_LENGTH: i32 = 9;
+pub const HORIZONTAL_CORRIDOR_MIN_LENGTH: i32 = 5;
+pub const HORIZONTAL_CORRIDOR_MAX_LENGTH: i32 = 15;
 
 pub enum Operator {
     LessThan,
@@ -53,11 +58,11 @@ impl CellRules {
 
 lazy_static! {
     pub static ref CA: Vec<Vec<CellRules>> = vec![
+        vec![CellRules::new(1, 1, Operator::GreaterThanEqualTo, 4)],
         vec![
-            CellRules::new(1, 1, Operator::GreaterThanEqualTo, 5),
-            CellRules::new(0, 1, Operator::LessThan, 2)
-        ],
-        vec![CellRules::new(1, 1, Operator::GreaterThanEqualTo, 5)]
+            CellRules::new(0, 0, Operator::GreaterThanEqualTo, 5),
+            CellRules::new(1, 0, Operator::LessThan, 2)
+        ]
     ];
 }
 
