@@ -1,4 +1,4 @@
-use super::{ add_effect, get_noncursed, particles, spatial, EffectType, Entity, Targets, World };
+use super::{ add_effect, particles, spatial, EffectType, Entity, Targets, World };
 use crate::{
     gamelog,
     gui::item_colour_ecs,
@@ -205,7 +205,7 @@ fn handle_healing(
             healing_item.modifier;
         add_effect(
             event.source,
-            EffectType::Healing { amount: roll, increment_max: get_noncursed(&event.buc) },
+            EffectType::Healing { amount: roll, increment_max: event.buc.noncursed() },
             event.target.clone()
         );
         for target in get_entity_targets(&event.target) {

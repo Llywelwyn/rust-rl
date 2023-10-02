@@ -243,6 +243,15 @@ pub enum BUC {
     Blessed,
 }
 
+impl BUC {
+    pub fn noncursed(&self) -> bool {
+        match self {
+            BUC::Cursed => false,
+            _ => true,
+        }
+    }
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Clone)]
 pub struct Beatitude {
     pub buc: BUC,
