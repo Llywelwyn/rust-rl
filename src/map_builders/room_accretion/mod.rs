@@ -134,7 +134,7 @@ fn make_ca_room(rng: &mut RandomNumberGenerator) -> Vec<Vec<i32>> {
 }
 
 fn direction_of_door(
-    grid: Vec<Vec<i32>>,
+    grid: &Vec<Vec<i32>>,
     row: usize,
     col: usize,
     build_data: &BuilderMap
@@ -158,4 +158,68 @@ fn direction_of_door(
         }
     }
     return solution;
+}
+
+#[derive(Copy, Clone, PartialEq)]
+pub struct DoorSite {
+    pub x: i32,
+    pub y: i32,
+    pub dir: Direction,
+}
+
+fn choose_random_door_site(
+    room: Vec<Vec<i32>>,
+    rng: &mut RandomNumberGenerator,
+    build_data: &BuilderMap
+) -> Vec<DoorSite> {
+    let mut grid = grid_with_dimensions(HEIGHT, WIDTH, 0);
+    let mut door_sites: Vec<DoorSite> = Vec::new();
+    const LEFT_OFFSET: usize = ((WIDTH as f32) / 2.0) as usize;
+    const TOP_OFFSET: usize = ((HEIGHT as f32) / 2.0) as usize;
+    draw_continuous_shape_on_grid(&room, TOP_OFFSET, LEFT_OFFSET, &mut grid);
+    for row in 0..HEIGHT {
+        for col in 0..WIDTH {
+            if grid[row][col] == 0 {
+                let door_dir = direction_of_door(&grid, row, col, &build_data);
+                if door_dir == Direction::NoDir {
+                    continue;
+                }
+                let mut door_failed = false;
+                let (mut trace_row, mut trace_col) = (
+                    (row as i32) + door_dir.transform().y,
+                    (col as i32) + door_dir.transform().x,
+                );
+                let mut i = 0;
+                while i < 10 && in_bounds(trace_row, trace_col, &build_data) && !door_failed {
+                    if grid[trace_row as usize][trace_col as usize] != 0 {
+                        door_failed = true;
+                    }
+                    trace_col += door_dir.transform().x;
+                    trace_row += door_dir.transform().y;
+                    i += 1;
+                }
+                if !door_failed {
+                    // May need more information here.
+                    door_sites.push(DoorSite {
+                        x: col as i32,
+                        y: row as i32,
+                        dir: door_dir,
+                    });
+                }
+            }
+        }
+    }
+    let mut chosen_doors: Vec<DoorSite> = Vec::new();
+    let mut dir_iter = DirectionIterator::new();
+    for dir in &mut dir_iter {
+        let doors_facing_this_dir: Vec<&DoorSite> = door_sites
+            .iter()
+            .filter(|&door| door.dir == dir)
+            .collect();
+        if !doors_facing_this_dir.is_empty() {
+            let index = rng.range(0, doors_facing_this_dir.len());
+            chosen_doors.push(*doors_facing_this_dir[index]);
+        }
+    }
+    chosen_doors
 }

@@ -1,6 +1,9 @@
 use lazy_static::lazy_static;
 use bracket_lib::prelude::*;
 
+pub const HEIGHT: usize = 64;
+pub const WIDTH: usize = 64;
+
 pub enum Operator {
     LessThan,
     GreaterThan,
@@ -58,7 +61,7 @@ lazy_static! {
     ];
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Direction {
     NoDir = -1,
     North = 0,
