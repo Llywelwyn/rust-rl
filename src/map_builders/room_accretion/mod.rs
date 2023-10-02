@@ -87,8 +87,8 @@ fn get_cell_neighbours(
 }
 
 fn make_ca_room(rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) -> Vec<Vec<i32>> {
-    let width = rng.range(5, 10);
-    let height = rng.range(5, 10);
+    let width = rng.range(5, 12);
+    let height = rng.range(5, 12);
     let mut cells = grid_with_dimensions(height, width, 0);
     cells = cells
         .into_iter()
@@ -125,8 +125,42 @@ fn make_ca_room(rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) ->
         }
         cells = new_cells;
     }
-
+    // TODO: Floodfill to keep largest contiguous blob
     cells
+}
+
+fn room_fits_at(
+    hyperspace: Vec<Vec<i32>>,
+    top_offset: usize,
+    left_offset: usize,
+    build_data: &BuilderMap
+) -> bool {
+    let mut x_dungeon: usize;
+    let mut y_dungeon: usize;
+    for y in 0..HEIGHT {
+        for x in 0..WIDTH {
+            if hyperspace[y][x] != 2 {
+                y_dungeon = y + top_offset;
+                x_dungeon = x + left_offset;
+                for i in y_dungeon.saturating_sub(1)..=std::cmp::min(y_dungeon + 1, WIDTH - 1) {
+                    for j in x_dungeon.saturating_sub(1)..=std::cmp::min(
+                        x_dungeon + 1,
+                        HEIGHT - 1
+                    ) {
+                        let pt = build_data.map.xy_idx(i as i32, j as i32);
+                        if
+                            !in_bounds(i as i32, j as i32, &build_data) ||
+                            !(build_data.map.tiles[pt] == TileType::Wall) ||
+                            build_data.spawn_list.contains(&(pt, "door".to_string()))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return true;
 }
 
 fn direction_of_door(
@@ -228,6 +262,10 @@ fn shuffle<T>(list: &mut Vec<T>, rng: &mut RandomNumberGenerator) {
     }
 }
 
+fn clamp<T: Ord>(x: T, min: T, max: T) -> T {
+    if x < min { min } else if x > max { max } else { x }
+}
+
 fn attach_hallway_to(
     door_sites: &mut Vec<Option<DoorSite>>,
     hyperspace: &mut Vec<Vec<i32>>,
@@ -239,15 +277,6 @@ fn attach_hallway_to(
     let mut hallway_dir: Direction = Direction::NoDir;
     for i in 0..4 {
         hallway_dir = directions[i];
-        console::log(
-            &format!(
-                "i: {:?} | hallway_dir: {:?} (as usize: {:?}) | door_sites[hallway_dir]: {:?}",
-                i,
-                hallway_dir,
-                hallway_dir as usize,
-                door_sites[hallway_dir as usize]
-            )
-        );
         if
             door_sites[hallway_dir as usize].is_some() &&
             in_bounds(
@@ -264,7 +293,6 @@ fn attach_hallway_to(
     let transform = hallway_dir.transform();
     let hallway_len: i32 = match hallway_dir {
         Direction::NoDir => {
-            console::log("no hallway_dir");
             return;
         }
         Direction::North | Direction::South =>
@@ -272,7 +300,6 @@ fn attach_hallway_to(
         Direction::East | Direction::West =>
             rng.range(HORIZONTAL_CORRIDOR_MIN_LENGTH, HORIZONTAL_CORRIDOR_MAX_LENGTH + 1),
     };
-    console::log(&format!("hallway_len: {:?}", hallway_len));
     let mut x = door_sites[hallway_dir as usize].unwrap().x;
     let mut y = door_sites[hallway_dir as usize].unwrap().y;
     for _i in 0..hallway_len {
@@ -282,13 +309,25 @@ fn attach_hallway_to(
         x += transform.x;
         y += transform.y;
     }
-    let new_site = DoorSite {
-        x,
-        y,
-        dir: hallway_dir,
-    };
-    console::log(&format!("new_site: {:?}", new_site));
-    door_sites[hallway_dir as usize] = Some(new_site); // Move door to end of corridor.
+
+    y = clamp(y - transform.y, 0, (HEIGHT as i32) - 1);
+    x = clamp(x - transform.x, 0, (WIDTH as i32) - 1);
+
+    let mut dir_iter = DirectionIterator::new();
+    for dir in &mut dir_iter {
+        if dir != hallway_dir.opposite_dir() {
+            let door_y = y + dir.transform().y;
+            let door_x = x + dir.transform().x;
+            door_sites[dir as usize] = Some(DoorSite {
+                x: door_x,
+                y: door_y,
+                dir,
+            });
+        } else {
+            door_sites[dir as usize] = None;
+        }
+    }
+    console::log(&format!("door_sites: {:?}", door_sites));
 }
 
 fn design_room_in_hyperspace(

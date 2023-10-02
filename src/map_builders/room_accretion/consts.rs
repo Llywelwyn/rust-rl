@@ -85,6 +85,15 @@ impl Direction {
             Direction::West => Point::new(-1, 0),
         }
     }
+    pub fn opposite_dir(&self) -> Direction {
+        match self {
+            Direction::NoDir => unreachable!("Direction::NoDir has no opposite."),
+            Direction::North => Direction::South,
+            Direction::East => Direction::West,
+            Direction::South => Direction::North,
+            Direction::West => Direction::East,
+        }
+    }
 }
 
 pub struct DirectionIterator {
