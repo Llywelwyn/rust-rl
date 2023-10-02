@@ -460,6 +460,12 @@ impl Intrinsics {
     }
 }
 
+#[derive(Component, Serialize, Deserialize, Debug, Clone)]
+pub struct IntrinsicChanged {
+    pub gained: HashSet<Intrinsic>,
+    pub lost: HashSet<Intrinsic>,
+}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InflictsDamage {
     pub damage_type: DamageType,

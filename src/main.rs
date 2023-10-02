@@ -111,6 +111,7 @@ fn main() -> BError {
     gs.ecs.register::<SpawnParticleLine>();
     gs.ecs.register::<HasDamageModifiers>();
     gs.ecs.register::<Intrinsics>();
+    gs.ecs.register::<IntrinsicChanged>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<DMSerializationHelper>();
