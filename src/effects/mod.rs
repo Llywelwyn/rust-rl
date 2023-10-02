@@ -4,13 +4,14 @@ use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::VecDeque;
 use std::sync::Mutex;
-use crate::components::DamageType;
+use crate::components::*;
 
 mod damage;
 mod hunger;
 mod particles;
 mod targeting;
 mod triggers;
+mod intrinsics;
 
 pub use targeting::aoe_tiles;
 
@@ -50,6 +51,9 @@ pub enum EffectType {
     },
     ModifyNutrition {
         amount: i32,
+    },
+    AddIntrinsic {
+        intrinsic: Intrinsic,
     },
     TriggerFire {
         trigger: Entity,
@@ -153,6 +157,7 @@ fn tile_effect_hits_entities(effect: &EffectType) -> bool {
         EffectType::Healing { .. } => true,
         EffectType::ModifyNutrition { .. } => true,
         EffectType::Confusion { .. } => true,
+        EffectType::AddIntrinsic { .. } => true,
         _ => false,
     }
 }
@@ -175,6 +180,7 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
         }
         EffectType::EntityDeath => damage::entity_death(ecs, effect, target),
         EffectType::ModifyNutrition { .. } => hunger::modify_nutrition(ecs, effect, target),
+        EffectType::AddIntrinsic { .. } => intrinsics::add_intrinsic(ecs, effect, target),
         _ => {}
     }
 }
