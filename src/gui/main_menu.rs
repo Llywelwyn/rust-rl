@@ -4,8 +4,9 @@ use specs::prelude::*;
 use std::collections::HashMap;
 use super::{ FONTSIZE, RunState, DISPLAYWIDTH, TILESIZE, MainMenuSelection };
 use crate::consts::DISPLAYHEIGHT;
+use crate::Fonts;
 
-pub fn draw_mainmenu(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, font: &Font) {
+pub fn draw_mainmenu(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, font: &Fonts) {
     let runstate = ecs.read_resource::<RunState>();
     let selected = match *runstate {
         RunState::MainMenu { menu_selection } => menu_selection,
@@ -15,26 +16,26 @@ pub fn draw_mainmenu(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Textu
     const MID_X: f32 = ((DISPLAYWIDTH as f32) * TILESIZE) / 2.0;
 
     let (x, mut y) = (MID_X, ((DISPLAYHEIGHT as f32) * TILESIZE) / 4.0);
-    draw.text(font, "RUST-RL")
+    draw.text(&font.ib(), "RUST-RL")
         .size(FONTSIZE * 2.0)
         .position(x, y)
         .h_align_center();
     y = draw.last_text_bounds().max_y();
-    draw.text(font, "New Game")
+    draw.text(&font.n(), "New Game")
         .size(FONTSIZE)
         .position(x, y)
         .h_align_center()
         .color(get_colour(selected, MainMenuSelection::NewGame));
     if save_exists {
         y = draw.last_text_bounds().max_y();
-        draw.text(font, "Load Game")
+        draw.text(font.n(), "Load Game")
             .size(FONTSIZE)
             .position(x, y)
             .h_align_center()
             .color(get_colour(selected, MainMenuSelection::LoadGame));
     }
     y = draw.last_text_bounds().max_y();
-    draw.text(font, "Quit")
+    draw.text(&font.n(), "Quit")
         .size(FONTSIZE)
         .position(x, y)
         .h_align_center()

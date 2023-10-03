@@ -13,6 +13,6 @@ pub mod prelude {
 }
 
 pub const TILESIZE: f32 = 16.0;
-pub const FONTSIZE: f32 = 24.0;
+pub const FONTSIZE: f32 = 16.0;
 pub const DISPLAYWIDTH: u32 = 100;
 pub const DISPLAYHEIGHT: u32 = 56;

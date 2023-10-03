@@ -45,12 +45,14 @@ use crate::consts::visuals::{
     VIEWPORT_H,
 };
 use crate::consts::{ TILESIZE, FONTSIZE, DISPLAYWIDTH };
+use crate::Fonts;
 use notan::prelude::*;
 use notan::draw::{ Draw, DrawTextSection, DrawImages, DrawShapes };
 use std::collections::HashMap;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
+
 mod character_creation;
 mod cheat_menu;
 mod letter_to_option;
@@ -162,12 +164,7 @@ pub fn draw_bar(
         .width(height);
 }
 
-pub fn draw_ui2(
-    ecs: &World,
-    draw: &mut Draw,
-    atlas: &HashMap<String, Texture>,
-    font: &notan::draw::Font
-) {
+pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, font: &Fonts) {
     let pools = ecs.read_storage::<Pools>();
     let attributes = ecs.read_storage::<Attributes>();
     let players = ecs.read_storage::<Player>();
@@ -227,26 +224,26 @@ pub fn draw_ui2(
             mp_colours.0,
             (stats.mana.current as f32) / (stats.mana.max as f32)
         );
-        draw.text(&font, "HP").position(x, row1).size(FONTSIZE);
+        draw.text(&font.b(), "HP").position(x, row1).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", stats.hit_points.current))
+        draw.text(&font.n(), &format!("{}", stats.hit_points.current))
             .position(x, row1)
             .size(FONTSIZE)
             .color(Color::from_rgb(hp.r, hp.g, hp.b));
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("({})", stats.hit_points.max))
+        draw.text(&font.n(), &format!("({})", stats.hit_points.max))
             .position(x, row1)
             .size(FONTSIZE)
             .color(Color::from_rgb(hp_colours.2.r, hp_colours.2.g, hp_colours.2.b));
         x = initial_x;
-        draw.text(&font, "MP").position(x, row2).size(FONTSIZE);
+        draw.text(&font.b(), "MP").position(x, row2).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{}", stats.mana.current))
+        draw.text(&font.n(), &format!("{}", stats.mana.current))
             .position(x, row2)
             .size(FONTSIZE)
             .color(Color::from_rgb(mp.r, mp.g, mp.b));
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("({})", stats.mana.max))
+        draw.text(&font.n(), &format!("({})", stats.mana.max))
             .position(x, row2)
             .size(FONTSIZE)
             .color(Color::from_rgb(mp_colours.2.r, mp_colours.2.g, mp_colours.2.b));
@@ -264,45 +261,47 @@ pub fn draw_ui2(
         x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
         let armour_class =
             stats.bac - attributes.dexterity.modifier() / 2 - skill_ac_bonus - armour_ac_bonus;
-        draw.text(&font, "AC").position(x, row1).color(Color::PINK).size(FONTSIZE);
+        draw.text(&font.b(), "AC").position(x, row1).color(Color::PINK).size(FONTSIZE);
         let last_x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{:<2}", armour_class)).position(last_x, row1).size(FONTSIZE);
-        draw.text(&font, &format!("XP{}/{}", stats.level, stats.xp))
-            .position(x, row2)
+        draw.text(&font.n(), &format!("{:<2}", armour_class)).position(last_x, row1).size(FONTSIZE);
+        draw.text(&font.b(), &format!("XP")).position(x, row2).size(FONTSIZE);
+        let last_x = draw.last_text_bounds().max_x();
+        draw.text(&font.n(), &format!("{}/{}", stats.level, stats.xp))
+            .position(last_x, row2)
             .size(FONTSIZE);
         let attribute_x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
-        draw.text(&font, "STR").position(attribute_x, row1).color(Color::RED).size(FONTSIZE);
+        draw.text(&font.b(), "STR").position(attribute_x, row1).color(Color::RED).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{:<2}", attributes.strength.base))
+        draw.text(&font.n(), &format!("{:<2}", attributes.strength.base))
             .position(x, row1)
             .size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
-        draw.text(&font, "DEX").position(x, row1).color(Color::GREEN).size(FONTSIZE);
+        draw.text(&font.b(), "DEX").position(x, row1).color(Color::GREEN).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{:<2}", attributes.dexterity.base))
+        draw.text(&font.n(), &format!("{:<2}", attributes.dexterity.base))
             .position(x, row1)
             .size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
-        draw.text(&font, "CON").position(x, row1).color(Color::ORANGE).size(FONTSIZE);
+        draw.text(&font.b(), "CON").position(x, row1).color(Color::ORANGE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{:<2}", attributes.constitution.base))
+        draw.text(&font.n(), &format!("{:<2}", attributes.constitution.base))
             .position(x, row1)
             .size(FONTSIZE);
-        draw.text(&font, "INT").position(attribute_x, row2).color(Color::BLUE).size(FONTSIZE);
+        draw.text(&font.b(), "INT").position(attribute_x, row2).color(Color::BLUE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{:<2}", attributes.intelligence.base))
+        draw.text(&font.n(), &format!("{:<2}", attributes.intelligence.base))
             .position(x, row2)
             .size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
-        draw.text(&font, "WIS").position(x, row2).color(Color::YELLOW).size(FONTSIZE);
+        draw.text(&font.b(), "WIS").position(x, row2).color(Color::YELLOW).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{:<2}", attributes.wisdom.base))
+        draw.text(&font.n(), &format!("{:<2}", attributes.wisdom.base))
             .position(x, row2)
             .size(FONTSIZE);
         x = draw.last_text_bounds().max_x() + TILESIZE;
-        draw.text(&font, "CHA").position(x, row2).color(Color::PURPLE).size(FONTSIZE);
+        draw.text(&font.b(), "CHA").position(x, row2).color(Color::PURPLE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
-        draw.text(&font, &format!("{:<2}", attributes.charisma.base))
+        draw.text(&font.n(), &format!("{:<2}", attributes.charisma.base))
             .position(x, row2)
             .size(FONTSIZE);
         let hungertxt = match hunger.state {
@@ -317,7 +316,7 @@ pub fn draw_ui2(
             HungerState::Normal => {}
             _ => {
                 let col = get_hunger_colour(hunger.state);
-                draw.text(&font, hungertxt)
+                draw.text(&font.n(), hungertxt)
                     .position(((VIEWPORT_W + 1) as f32) * TILESIZE, row1)
                     .color(Color::from_bytes(col.0, col.1, col.2, 255))
                     .size(FONTSIZE)
@@ -330,14 +329,14 @@ pub fn draw_ui2(
         } else {
             format!("{}", map.short_name)
         };
-        draw.text(&font, &id)
+        draw.text(&font.n(), &id)
             .position(((VIEWPORT_W + 1) as f32) * TILESIZE, row2)
             .color(Color::WHITE) // get_local_col()
             .size(FONTSIZE)
             .h_align_right();
         let turns = crate::gamelog::get_event_count(EVENT::COUNT_TURN);
         x = draw.last_text_bounds().min_x() - TILESIZE;
-        draw.text(&font, &format!("T{}", turns))
+        draw.text(&font.n(), &format!("T{}", turns))
             .position(x, row2)
             .color(Color::YELLOW)
             .size(FONTSIZE)
@@ -349,14 +348,14 @@ pub fn draw_ui2(
                 BurdenLevel::Strained => ("Strained", RGB::named(ORANGE)),
                 BurdenLevel::Overloaded => ("Overloaded", RGB::named(RED)),
             };
-            draw.text(&font, &text)
+            draw.text(&font.n(), &text)
                 .position((VIEWPORT_W as f32) * TILESIZE, 50.0 * TILESIZE)
                 .color(Color::from_rgb(colour.r, colour.g, colour.b))
                 .size(FONTSIZE)
                 .h_align_right();
         }
         if stats.god {
-            draw.text(&font, "--- GODMODE: ON ---")
+            draw.text(&font.n(), "--- GODMODE: ON ---")
                 .position(20.0 * TILESIZE, 20.0 * TILESIZE)
                 .color(Color::YELLOW)
                 .size(FONTSIZE);
@@ -378,32 +377,32 @@ pub fn draw_ui2(
         let mut y = 1;
         // TODO: Fix all of this to work with notan colours, and sprites.
         if !equipment.is_empty() {
-            draw.text(&font, "Equipment")
+            draw.text(&font.b(), "Equipment")
                 .position(((VIEWPORT_W + 3) as f32) * TILESIZE, (y as f32) * TILESIZE)
                 .size(FONTSIZE);
             let mut j: u8 = 0;
             for item in equipment {
                 y += 1;
                 x = ((VIEWPORT_W + 3) as f32) * TILESIZE;
-                draw.text(&font, &format!("{}", (97 + j) as char))
+                draw.text(&font.b(), &format!("{} ", (97 + j) as char))
                     .position(x, (y as f32) * TILESIZE)
                     .color(Color::YELLOW)
                     .size(FONTSIZE);
                 j += 1;
-                x = draw.last_text_bounds().max_x() + 1.0 * TILESIZE;
+                x = draw.last_text_bounds().max_x();
                 let mut col = item.2;
-                draw.text(&font, &format!("{}", item.3 as u8 as char))
+                draw.text(&font.n(), &format!("{} ", item.3 as u8 as char))
                     .position(x, (y as f32) * TILESIZE)
                     .size(FONTSIZE)
                     .color(Color::from_rgb(col.r, col.g, col.b)); // Colours here - and below.
-                x = draw.last_text_bounds().max_x() + 1.0 * TILESIZE;
+                x = draw.last_text_bounds().max_x();
                 col = item.1;
-                draw.text(&font, &item.0)
+                draw.text(&font.n(), &item.0)
                     .position(x, (y as f32) * TILESIZE)
                     .size(FONTSIZE)
                     .color(Color::from_rgb(col.r, col.g, col.b));
-                x = draw.last_text_bounds().max_x() + 1.0 * TILESIZE;
-                draw.text(&font, "(worn)")
+                x = draw.last_text_bounds().max_x();
+                draw.text(&font.n(), " (worn)")
                     .position(x, (y as f32) * TILESIZE)
                     .size(FONTSIZE);
             }
@@ -411,11 +410,11 @@ pub fn draw_ui2(
         }
         // Backpack
         x = ((VIEWPORT_W + 3) as f32) * TILESIZE;
-        draw.text(&font, "Backpack")
+        draw.text(&font.b(), "Backpack")
             .position(x, (y as f32) * TILESIZE)
             .size(FONTSIZE);
         draw.text(
-            &font,
+            &font.b(),
             &format!(
                 "[{:.1}/{} lbs]",
                 stats.weight,
@@ -916,7 +915,7 @@ pub enum ItemMenuResult {
 
 pub fn print_options(
     draw: &mut Draw,
-    font: &notan::draw::Font,
+    font: &Fonts,
     inventory: &PlayerInventory,
     mut x: f32,
     mut y: f32
@@ -928,28 +927,28 @@ pub fn print_options(
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
         if j < 26 {
-            draw.text(font, &format!("{}", (97 + j) as u8 as char))
+            draw.text(&font.b(), &format!("{} ", (97 + j) as u8 as char))
                 .position(x, y)
                 .color(Color::YELLOW)
                 .size(FONTSIZE);
         } else {
             // If we somehow have more than 26, start using capitals
-            draw.text(font, &format!("{}", (65 - 26 + j) as u8 as char))
+            draw.text(&font.b(), &format!("{} ", (65 - 26 + j) as u8 as char))
                 .position(x, y)
                 .color(Color::YELLOW)
                 .size(FONTSIZE);
         }
-        x = draw.last_text_bounds().max_x() + TILESIZE;
+        x = draw.last_text_bounds().max_x();
         let fg = RGB::from_u8(item.renderables.0, item.renderables.1, item.renderables.2);
-        draw.text(font, &format!("{}", item.glyph as u8 as char))
+        draw.text(&font.n(), &format!("{} ", item.glyph as u8 as char))
             .position(x, y)
             .size(FONTSIZE)
             .color(Color::from_rgb(fg.r, fg.g, fg.b));
-        x = draw.last_text_bounds().max_x() + TILESIZE;
+        x = draw.last_text_bounds().max_x();
 
         let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
         if item_count > &1 {
-            draw.text(font, &format!("{} {}", item_count, item.display_name.plural))
+            draw.text(&font.n(), &format!("{} {}", item_count, item.display_name.plural))
                 .position(x, y)
                 .color(Color::from_rgb(fg.r, fg.g, fg.b))
                 .size(FONTSIZE);
@@ -965,7 +964,7 @@ pub fn print_options(
             } else {
                 "a"
             };
-            draw.text(font, &format!("{} {}", prefix, item.display_name.singular))
+            draw.text(&font.n(), &format!("{} {}", prefix, item.display_name.singular))
                 .position(x, y)
                 .color(Color::from_rgb(fg.r, fg.g, fg.b))
                 .size(FONTSIZE);

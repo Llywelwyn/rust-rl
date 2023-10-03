@@ -2,8 +2,9 @@ use notan::prelude::*;
 use notan::draw::{ Draw, Font };
 use specs::prelude::*;
 use super::TILESIZE;
+use crate::Fonts;
 
-pub fn draw_inventory(ecs: &World, draw: &mut Draw, font: &Font) {
+pub fn draw_inventory(ecs: &World, draw: &mut Draw, font: &Fonts) {
     let inv = super::get_player_inventory(ecs);
     let offsets = crate::camera::get_offset();
     super::print_options(

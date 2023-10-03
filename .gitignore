@@ -3,6 +3,7 @@ target
 wasm/index.css
 wasm/index.html
 docs/gifs/*
+resources/archived resources
 
 # VSCode/IDE config files
 Cargo.lock

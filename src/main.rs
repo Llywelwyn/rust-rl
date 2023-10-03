@@ -7,6 +7,7 @@ use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 use bracket_lib::prelude::*;
 use std::collections::HashMap;
 use crate::consts::{ DISPLAYHEIGHT, DISPLAYWIDTH, TILESIZE, FONTSIZE };
+use crate::states::state::Fonts;
 
 #[notan_main]
 fn main() -> Result<(), String> {
@@ -33,7 +34,15 @@ fn setup(gfx: &mut Graphics) -> State {
         .unwrap();
     let data = include_bytes!("../resources/td.json");
     let atlas = create_textures_from_atlas(data, &texture).unwrap();
-    let font = gfx.create_font(include_bytes!("../resources/Ac437_ATT_PC6300.ttf")).unwrap();
+    let font = Fonts::new(
+        gfx.create_font(include_bytes!("../resources/fonts/Greybeard-16px.ttf")).unwrap(),
+        Some(
+            gfx.create_font(include_bytes!("../resources/fonts/Greybeard-16px-Bold.ttf")).unwrap()
+        ),
+        Some(
+            gfx.create_font(include_bytes!("../resources/fonts/Greybeard-16px-Italic.ttf")).unwrap()
+        )
+    );
     let mut gs = State {
         ecs: World::new(),
         base_texture: texture,
@@ -173,7 +182,7 @@ fn draw_camera(
     ecs: &World,
     draw: &mut Draw,
     atlas: &HashMap<String, Texture>,
-    font: &notan::draw::Font
+    font: &Fonts
 ) {
     render_map_in_view(&*map, ecs, draw, atlas, false);
     {
@@ -283,7 +292,7 @@ fn draw_camera(
                     } else {
                         // Fallback to drawing text.
                         draw.text(
-                            &font,
+                            &font.b(),
                             &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
                         )
                             .position(
@@ -547,9 +556,9 @@ fn update(ctx: &mut App, state: &mut State) {
     state.update(ctx);
 }
 
-fn corner_text(text: &str, draw: &mut Draw, font: &notan::draw::Font) {
+fn corner_text(text: &str, draw: &mut Draw, font: &Fonts) {
     let offset = crate::camera::get_offset();
-    draw.text(&font, &text)
+    draw.text(&font.n(), &text)
         .position(((offset.x + 1) as f32) * TILESIZE, ((offset.y + 1) as f32) * TILESIZE)
         .size(FONTSIZE);
 }

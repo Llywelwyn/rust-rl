@@ -47,7 +47,7 @@ pub fn show_cheat_menu(_gs: &mut State, ctx: &mut App) -> CheatMenuResult {
 pub fn draw_cheat_menu(
     draw: &mut notan::draw::Draw,
     _atlas: &HashMap<String, Texture>,
-    font: &notan::draw::Font
+    font: &crate::Fonts
 ) {
     let offsets = crate::camera::get_offset();
     const DEBUG_MENU: &str =
@@ -58,7 +58,7 @@ pub fn draw_cheat_menu(
     h - HEAL TO FULL
     m - MAGIC MAP REVEAL
     g - GOD MODE"#;
-    draw.text(&font, DEBUG_MENU)
+    draw.text(&font.n(), DEBUG_MENU)
         .position((1.0 + (offsets.x as f32)) * TILESIZE, (1.0 + (offsets.y as f32)) * TILESIZE)
         .color(Color::RED)
         .size(FONTSIZE);

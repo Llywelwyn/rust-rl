@@ -26,12 +26,44 @@ use crate::damage_system;
 use std::collections::HashMap;
 use notan::prelude::*;
 
+pub struct Fonts {
+    normal: notan::draw::Font,
+    bold: Option<notan::draw::Font>,
+    italic: Option<notan::draw::Font>,
+}
+
+impl Fonts {
+    pub fn new(
+        normal: notan::draw::Font,
+        bold: Option<notan::draw::Font>,
+        italic: Option<notan::draw::Font>
+    ) -> Self {
+        Self { normal, bold, italic }
+    }
+    /// Returns the regular weight font.
+    pub fn n(&self) -> &notan::draw::Font {
+        &self.normal
+    }
+    /// Returns the bold weight font, or the regular weight font if no bold font is available.
+    pub fn b(&self) -> notan::draw::Font {
+        if self.bold.is_some() { self.bold.unwrap() } else { self.normal }
+    }
+    /// Returns the italic weight font, or the regular weight font if no italic font is available.
+    pub fn i(&self) -> notan::draw::Font {
+        if self.italic.is_some() { self.italic.unwrap() } else { self.normal }
+    }
+    /// Returns in order of preference: italic, bold, regular font weights, depending on what is available.
+    pub fn ib(&self) -> notan::draw::Font {
+        if self.italic.is_some() { self.italic.unwrap() } else { self.b() }
+    }
+}
+
 #[derive(AppState)]
 pub struct State {
     pub ecs: World,
     pub base_texture: Texture,
     pub atlas: HashMap<String, Texture>,
-    pub font: notan::draw::Font,
+    pub font: Fonts,
     pub mapgen_next_state: Option<RunState>,
     pub mapgen_history: Vec<Map>,
     pub mapgen_index: usize,

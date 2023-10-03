@@ -6,23 +6,30 @@ use notan::prelude::*;
 use notan::text::CreateText;
 use crate::consts::{ TILESIZE, FONTSIZE };
 use crate::consts::visuals::VIEWPORT_W;
+use crate::Fonts;
 
 lazy_static! {
     pub static ref LOG: Mutex<BTreeMap<i32, Vec<LogFragment>>> = Mutex::new(BTreeMap::new());
 }
 
 /// Render with defaults, to avoid having to pass so many args.
-pub fn render(draw: bool, gfx: &mut Graphics, font: &notan::draw::Font) {
+pub fn render(draw: bool, gfx: &mut Graphics, font: &Fonts) {
     if draw {
-        render_log(gfx, &font, &(TILESIZE, TILESIZE * 8.0 + 4.0), (VIEWPORT_W as f32) * TILESIZE);
+        render_log(
+            gfx,
+            &font,
+            &(TILESIZE, TILESIZE * 8.0 + 4.0),
+            (VIEWPORT_W as f32) * TILESIZE,
+            7
+        );
     }
 }
 
 /// Render with specificied params.
-pub fn render_log(gfx: &mut Graphics, font: &notan::draw::Font, pos: &(f32, f32), width: f32) {
+pub fn render_log(gfx: &mut Graphics, font: &Fonts, pos: &(f32, f32), width: f32, entries: usize) {
     let mut text = gfx.create_text();
     let log = LOG.lock().unwrap();
-    let latest: Vec<_> = log.iter().rev().take(5).collect();
+    let latest: Vec<_> = log.iter().rev().take(entries).collect();
     let mut initialised = false;
     let mut y = pos.1;
     for (_, entries) in latest {
@@ -30,7 +37,7 @@ pub fn render_log(gfx: &mut Graphics, font: &notan::draw::Font, pos: &(f32, f32)
         for frag in entries.iter() {
             if !written_on_line {
                 text.add(&frag.text)
-                    .font(font)
+                    .font(font.n())
                     .position(pos.0, y)
                     .size(FONTSIZE)
                     .max_width(width)

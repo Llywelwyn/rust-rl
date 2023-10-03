@@ -119,15 +119,15 @@ pub enum CharCreateResult {
 
 use notan::prelude::*;
 use notan::draw::{ Draw, CreateDraw, DrawTextSection, Font };
-use specs::prelude::*;
 use super::{ FONTSIZE, DISPLAYWIDTH, TILESIZE, MainMenuSelection };
 use crate::consts::DISPLAYHEIGHT;
+use crate::Fonts;
 
 pub fn draw_charcreation(
     ecs: &World,
     draw: &mut Draw,
     atlas: &HashMap<String, Texture>,
-    font: &Font
+    font: &Fonts
 ) {
     let runstate = ecs.read_resource::<RunState>();
     let (class, ancestry) = match *runstate {
@@ -136,7 +136,7 @@ pub fn draw_charcreation(
     };
     let (mut x, mut y) = (2.0 * TILESIZE, ((DISPLAYHEIGHT as f32) * TILESIZE) / 4.0);
     const COLUMN_WIDTH: f32 = 20.0 * TILESIZE;
-    draw.text(font, "Who are you?")
+    draw.text(&font.ib(), "Who are you?")
         .size(FONTSIZE * 2.0)
         .position(x, y)
         .h_align_left();
@@ -149,7 +149,7 @@ pub fn draw_charcreation(
         ("c. Catfolk", Ancestry::Catfolk),
     ];
     for (k, v) in &ancestries {
-        draw.text(font, k)
+        draw.text(font.n(), k)
             .size(FONTSIZE)
             .position(x, y)
             .h_align_left()
@@ -165,7 +165,7 @@ pub fn draw_charcreation(
         ("v. Villager", Class::Villager),
     ];
     for (k, v) in &classes {
-        draw.text(font, k)
+        draw.text(font.n(), k)
             .size(FONTSIZE)
             .position(x, y)
             .h_align_left()
@@ -175,12 +175,12 @@ pub fn draw_charcreation(
     y = initial_y;
     x += COLUMN_WIDTH;
     for line in ANCESTRYDATA.get(&ancestry).unwrap().iter() {
-        draw.text(font, line).size(FONTSIZE).position(x, y).h_align_left();
+        draw.text(font.n(), line).size(FONTSIZE).position(x, y).h_align_left();
         y = draw.last_text_bounds().max_y();
     }
     y += TILESIZE;
     for line in CLASSDATA.get(&class).unwrap().iter() {
-        draw.text(font, line).size(FONTSIZE).position(x, y).h_align_left();
+        draw.text(font.n(), line).size(FONTSIZE).position(x, y).h_align_left();
         y = draw.last_text_bounds().max_y();
     }
 }
