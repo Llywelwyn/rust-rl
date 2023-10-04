@@ -82,6 +82,7 @@ pub fn delete_the_dead(ecs: &mut World) {
     // For everything that died, increment the event log, and delete.
     for victim in dead {
         gamelog::record_event(events::EVENT::Turn(1));
+        // TODO: Delete stuff from inventory? This should be handled elsewhere.
         ecs.delete_entity(victim).expect("Unable to delete.");
     }
 }

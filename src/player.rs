@@ -30,6 +30,7 @@ use super::{
     Viewshed,
     WantsToMelee,
     WantsToPickupItem,
+    WantsToAssignKey,
     get_dest,
     Destination,
     DamageType,
@@ -640,7 +641,9 @@ fn get_item(ecs: &mut World) -> RunState {
             return RunState::AwaitingInput;
         }
         Some(item) => {
+            let mut assignkey = ecs.write_storage::<WantsToAssignKey>();
             let mut pickup = ecs.write_storage::<WantsToPickupItem>();
+            assignkey.insert(item, WantsToAssignKey {}).expect("Unable to insert WantsToAssignKey");
             pickup
                 .insert(*player_entity, WantsToPickupItem { collected_by: *player_entity, item })
                 .expect("Unable to insert want to pickup item.");

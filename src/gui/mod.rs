@@ -1238,13 +1238,13 @@ pub fn show_help(ctx: &mut BTerm) -> YesNoResult {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct DisplayName {
     singular: String,
     plural: String,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct UniqueInventoryItem {
     display_name: DisplayName,
     rgb: (u8, u8, u8),
@@ -1255,6 +1255,75 @@ pub struct UniqueInventoryItem {
 }
 
 pub type PlayerInventory = BTreeMap<UniqueInventoryItem, (Entity, i32)>;
+
+pub fn unique(
+    entity: Entity,
+    names: &ReadStorage<Name>,
+    obfuscated_names: &ReadStorage<ObfuscatedName>,
+    renderables: &ReadStorage<Renderable>,
+    beatitudes: &ReadStorage<Beatitude>,
+    magic_items: &ReadStorage<MagicItem>,
+    charges: Option<&ReadStorage<Charges>>,
+    dm: &MasterDungeonMap
+) -> UniqueInventoryItem {
+    let item_colour = item_colour(entity, beatitudes);
+    let (singular, plural) = obfuscate_name(
+        entity,
+        names,
+        magic_items,
+        obfuscated_names,
+        beatitudes,
+        dm,
+        charges
+    );
+    let (renderables, glyph) = if let Some(renderable) = renderables.get(entity) {
+        (
+            (
+                (renderable.fg.r * 255.0) as u8,
+                (renderable.fg.g * 255.0) as u8,
+                (renderable.fg.b * 255.0) as u8,
+            ),
+            renderable.glyph,
+        )
+    } else {
+        unreachable!("Item has no renderable component.")
+    };
+    let name = if let Some(name) = names.get(entity) {
+        name
+    } else {
+        unreachable!("Item has no name component.")
+    };
+    let beatitude_status = if let Some(beatitude) = beatitudes.get(entity) {
+        match beatitude.buc {
+            BUC::Blessed => 1,
+            BUC::Uncursed => 2,
+            BUC::Cursed => 3,
+        }
+    } else {
+        0
+    };
+    UniqueInventoryItem {
+        display_name: DisplayName { singular: singular.clone(), plural },
+        rgb: item_colour,
+        renderables,
+        glyph,
+        beatitude_status,
+        name: name.name.clone(),
+    }
+}
+
+pub fn unique_ecs(ecs: &World, entity: Entity) -> UniqueInventoryItem {
+    return unique(
+        entity,
+        &ecs.read_storage::<Name>(),
+        &ecs.read_storage::<ObfuscatedName>(),
+        &ecs.read_storage::<Renderable>(),
+        &ecs.read_storage::<Beatitude>(),
+        &ecs.read_storage::<MagicItem>(),
+        Some(&ecs.read_storage::<Charges>()),
+        &ecs.fetch::<MasterDungeonMap>()
+    );
+}
 
 pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
     let player_entity = ecs.fetch::<Entity>();
@@ -1338,55 +1407,39 @@ pub fn show_inventory(gs: &mut State, ctx: &mut App) -> (ItemMenuResult, Option<
     return (ItemMenuResult::NoResponse, None);
 }
 
-pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
+pub fn drop_item_menu(gs: &mut State, ctx: &mut App) -> (ItemMenuResult, Option<Entity>) {
     let player_inventory = get_player_inventory(&gs.ecs);
     let count = player_inventory.len();
-
-    let (x_offset, y_offset) = (1, 10);
-
     let on_overmap = gs.ecs.fetch::<Map>().overmap;
-    let message = if !on_overmap {
-        "Drop what? [aA-zZ][Esc.]"
-    } else {
-        "You can't drop items on the overmap [Esc.]"
-    };
 
-    ctx.print_color(1 + x_offset, 1 + y_offset, RGB::named(WHITE), RGB::named(BLACK), message);
-
-    let x = 1 + x_offset;
-    let y = 3 + y_offset;
-    let width = get_max_inventory_width(&player_inventory);
-    ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
-
-    match ctx.key {
-        None => (ItemMenuResult::NoResponse, None),
-        Some(key) =>
-            match key {
-                VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
-                _ => {
-                    let selection = letter_to_option(key);
-                    if selection > -1 && selection < (count as i32) {
-                        if on_overmap {
-                            gamelog::Logger
-                                ::new()
-                                .append("You can't drop items on the overmap.")
-                                .log();
-                        } else {
-                            return (
-                                ItemMenuResult::Selected,
-                                Some(
-                                    player_inventory
-                                        .iter()
-                                        .nth(selection as usize)
-                                        .unwrap().1.0
-                                ),
-                            );
-                        }
+    let key = &ctx.keyboard;
+    for keycode in key.pressed.iter() {
+        match *keycode {
+            KeyCode::Escape => {
+                return (ItemMenuResult::Cancel, None);
+            }
+            _ => {
+                let shift = key.shift();
+                let selection = letter_to_option::letter_to_option(*keycode, shift);
+                if selection > -1 && selection < (count as i32) {
+                    if on_overmap {
+                        gamelog::Logger::new().append("You can't drop items on the overmap.").log();
+                    } else {
+                        return (
+                            ItemMenuResult::Selected,
+                            Some(
+                                player_inventory
+                                    .iter()
+                                    .nth(selection as usize)
+                                    .unwrap().1.0
+                            ),
+                        );
                     }
-                    (ItemMenuResult::NoResponse, None)
                 }
             }
+        }
     }
+    (ItemMenuResult::NoResponse, None)
 }
 
 pub fn remove_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {

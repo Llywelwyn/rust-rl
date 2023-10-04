@@ -299,7 +299,7 @@ fn random_shape_builder(
     end: bool
 ) -> bool {
     // Pick an initial builder
-    let builder_roll = rng.roll_dice(1, 16);
+    let builder_roll = rng.roll_dice(1, 13);
     let mut want_doors = true;
     match builder_roll {
         1 => builder.start_with(CellularAutomataBuilder::new()),
@@ -317,11 +317,7 @@ fn random_shape_builder(
         10 => builder.start_with(DLABuilder::central_attractor()),
         11 => builder.start_with(DLABuilder::insectoid()),
         12 => builder.start_with(VoronoiBuilder::pythagoras()),
-        13 => builder.start_with(VoronoiBuilder::manhattan()),
-        _ =>
-            builder.start_with(
-                PrefabBuilder::constant(prefab_builder::prefab_levels::WFC_POPULATED)
-            ),
+        _ => builder.start_with(VoronoiBuilder::manhattan()),
     }
 
     // 'Select' the centre by placing a starting position, and cull everywhere unreachable.

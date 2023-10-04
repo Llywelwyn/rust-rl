@@ -102,12 +102,13 @@ impl State {
 
     fn resolve_entity_decisions(&mut self) {
         let mut trigger_system = trigger_system::TriggerSystem {};
-        let mut inventory_system = inventory::ItemCollectionSystem {};
         let mut item_equip_system = inventory::ItemEquipSystem {};
         let mut item_use_system = inventory::ItemUseSystem {};
         let mut item_drop_system = inventory::ItemDropSystem {};
         let mut item_remove_system = inventory::ItemRemoveSystem {};
+        let mut inventory_system = inventory::ItemCollectionSystem {};
         let mut item_id_system = inventory::ItemIdentificationSystem {};
+        let mut key_system = inventory::KeyHandling {};
         let mut melee_system = MeleeCombatSystem {};
         trigger_system.run_now(&self.ecs);
         inventory_system.run_now(&self.ecs);
@@ -116,6 +117,7 @@ impl State {
         item_drop_system.run_now(&self.ecs);
         item_remove_system.run_now(&self.ecs);
         item_id_system.run_now(&self.ecs);
+        key_system.run_now(&self.ecs);
         melee_system.run_now(&self.ecs);
 
         effects::run_effects_queue(&mut self.ecs);
@@ -351,7 +353,29 @@ impl State {
                     }
                 }
             }
-            // RunState::ShowDropItem
+            RunState::ShowDropItem => {
+                let result = gui::drop_item_menu(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item = result.1.unwrap();
+                        let mut removekey = self.ecs.write_storage::<WantsToRemoveKey>();
+                        let mut intent = self.ecs.write_storage::<WantsToDropItem>();
+                        removekey
+                            .insert(item, WantsToRemoveKey {})
+                            .expect("Unable to insert WantsToRemoveKey");
+                        intent
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToDropItem {
+                                item,
+                            })
+                            .expect("Unable to insert WantsToDropItem");
+                        new_runstate = RunState::Ticking;
+                    }
+                }
+            }
             // RunState::ShowRemoveItem
             // RunState::ShowTargeting
             // RunState::ShowRemoveCurse
@@ -648,7 +672,7 @@ impl State {
                 }
             }
             RunState::ShowDropItem => {
-                let result = gui::drop_item_menu(self, ctx);
+                let result = (gui::ItemMenuResult::Cancel, None); //gui::drop_item_menu(self, ctx);
                 match result.0 {
                     gui::ItemMenuResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;

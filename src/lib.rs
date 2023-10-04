@@ -35,6 +35,7 @@ pub mod rex_assets;
 pub mod spatial;
 pub mod morgue;
 pub mod states;
+pub mod invkeys;
 
 pub use components::*;
 use particle_system::ParticleBuilder;

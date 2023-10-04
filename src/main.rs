@@ -133,6 +133,10 @@ fn setup(gfx: &mut Graphics) -> State {
     gs.ecs.register::<SpawnParticleLine>();
     gs.ecs.register::<HasDamageModifiers>();
     gs.ecs.register::<Intrinsics>();
+    gs.ecs.register::<Stackable>();
+    gs.ecs.register::<WantsToAssignKey>();
+    gs.ecs.register::<Key>();
+    gs.ecs.register::<WantsToRemoveKey>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<DMSerializationHelper>();
@@ -544,7 +548,12 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             corner_text("Create morgue file? [Y/N]", &mut draw, &gs.font);
         }
         RunState::ShowInventory => {
-            gui::draw_inventory(&gs.ecs, &mut draw, &gs.font);
+            corner_text("Use what? [aA-zZ]/[Esc.]", &mut draw, &gs.font);
+            gui::draw_inventory(&gs.ecs, &mut draw, &gs.font, 1, 3);
+        }
+        RunState::ShowDropItem => {
+            corner_text("Drop what? [aA-zZ]/[Esc.]", &mut draw, &gs.font);
+            gui::draw_inventory(&gs.ecs, &mut draw, &gs.font, 1, 3);
         }
         _ => {}
     }
@@ -558,7 +567,7 @@ fn update(ctx: &mut App, state: &mut State) {
 
 fn corner_text(text: &str, draw: &mut Draw, font: &Fonts) {
     let offset = crate::camera::get_offset();
-    draw.text(&font.n(), &text)
+    draw.text(&font.b(), &text)
         .position(((offset.x + 1) as f32) * TILESIZE, ((offset.y + 1) as f32) * TILESIZE)
         .size(FONTSIZE);
 }

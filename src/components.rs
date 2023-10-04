@@ -469,7 +469,18 @@ pub struct IdentifiedItem {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Stackable {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct EquipmentChanged {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToRemoveKey {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Key {
+    pub idx: usize,
+}
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum BurdenLevel {
@@ -653,6 +664,9 @@ pub struct MagicMapper {}
 pub struct InBackpack {
     pub owner: Entity,
 }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct WantsToAssignKey {}
 
 #[derive(Component, Debug, ConvertSaveload)]
 pub struct WantsToPickupItem {

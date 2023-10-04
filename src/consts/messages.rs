@@ -25,6 +25,7 @@ pub const NUTRITION_BLESSED: &str = "Delicious";
 
 pub const LEVELUP_PLAYER: &str = "Welcome to experience level";
 pub const YOU_PICKUP_ITEM: &str = "You pick up the";
+pub const NO_MORE_KEYS: &str = "Your backpack cannot accomodate any more items";
 pub const YOU_DROP_ITEM: &str = "You drop the";
 pub const YOU_EQUIP_ITEM: &str = "You equip the";
 pub const YOU_REMOVE_ITEM: &str = "You unequip your";
