@@ -5,23 +5,14 @@ use super::TILESIZE;
 use crate::{ Fonts, camera::get_offset };
 use super::{ items, Filter, print_options, ItemType };
 
-pub fn draw_inventory(ecs: &World, draw: &mut Draw, font: &Fonts, x: i32, y: i32) {
-    let inv = items(ecs, Filter::Backpack);
-    let offsets = crate::camera::get_offset();
-    print_options(
-        ecs,
-        draw,
-        font,
-        &inv,
-        ((x as f32) + (offsets.x as f32)) * TILESIZE,
-        ((y as f32) + (offsets.y as f32)) * TILESIZE
-    );
+pub enum Location {
+    All,
+    Backpack,
+    Equipped,
 }
 
-pub fn draw_all(ecs: &World, draw: &mut Draw, font: &Fonts, x: f32, y: f32) {
-    let mut y = y;
-
-    let itemtypes = vec![
+pub fn all_itemtypes() -> Vec<ItemType> {
+    vec![
         ItemType::Weapon,
         ItemType::Armour,
         ItemType::Comestible,
@@ -31,10 +22,26 @@ pub fn draw_all(ecs: &World, draw: &mut Draw, font: &Fonts, x: f32, y: f32) {
         ItemType::Wand,
         ItemType::Amulet,
         ItemType::Ring
-    ];
+    ]
+}
 
+pub fn draw_items(
+    ecs: &World,
+    draw: &mut Draw,
+    font: &Fonts,
+    x: f32,
+    y: f32,
+    loc: Location,
+    itemtypes: Vec<ItemType>
+) {
+    let mut y = y;
     for itemtype in itemtypes {
-        let inv = items(ecs, Filter::Category(itemtype));
+        let filter = match loc {
+            Location::All => Filter::All(Some(itemtype)),
+            Location::Backpack => Filter::Backpack(Some(itemtype)),
+            Location::Equipped => Filter::Equipped,
+        };
+        let inv = items(ecs, filter);
         if inv.is_empty() {
             continue;
         }
@@ -42,4 +49,12 @@ pub fn draw_all(ecs: &World, draw: &mut Draw, font: &Fonts, x: f32, y: f32) {
         y += TILESIZE;
         y = print_options(ecs, draw, font, &inv, x, y) + TILESIZE;
     }
+}
+
+pub fn draw_all_items(ecs: &World, draw: &mut Draw, font: &Fonts, x: f32, y: f32) {
+    draw_items(ecs, draw, font, x, y, Location::All, all_itemtypes());
+}
+
+pub fn draw_backpack_items(ecs: &World, draw: &mut Draw, font: &Fonts, x: f32, y: f32) {
+    draw_items(ecs, draw, font, x, y, Location::Backpack, all_itemtypes());
 }

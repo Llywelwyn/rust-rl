@@ -365,7 +365,7 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
                 .size(FONTSIZE);
         }
         // Equipment
-        draw_all(ecs, draw, font, ((VIEWPORT_W + 3) as f32) * TILESIZE, TILESIZE);
+        draw_all_items(ecs, draw, font, ((VIEWPORT_W + 3) as f32) * TILESIZE, TILESIZE);
         /*let renderables = ecs.read_storage::<Renderable>();
         let mut equipment: Vec<(String, RGB, RGB, FontCharType)> = Vec::new();
         let entities = ecs.entities();
@@ -981,7 +981,7 @@ pub fn print_options(
                     EquipmentSlot::Melee | EquipmentSlot::Shield => "being held",
                     _ => "being worn",
                 };
-                draw.text(&font.ib(), &format!(" ({})", text))
+                draw.text(&font.b(), &format!(" ({})", text))
                     .position(x, y)
                     .color(Color::WHITE)
                     .size(FONTSIZE);
@@ -1355,10 +1355,9 @@ pub struct InventorySlot {
 pub type PlayerInventory = HashMap<UniqueInventoryItem, InventorySlot>;
 
 pub enum Filter {
-    All,
-    Backpack,
+    All(Option<ItemType>),
+    Backpack(Option<ItemType>),
     Equipped,
-    Category(ItemType),
 }
 
 macro_rules! includeitem {
@@ -1382,28 +1381,38 @@ pub fn items(ecs: &World, filter: Filter) -> HashMap<UniqueInventoryItem, Invent
     let mut inv: HashMap<UniqueInventoryItem, InventorySlot> = HashMap::new();
 
     match filter {
-        Filter::All => {
-            for (e, k) in (&entities, &keys).join() {
-                includeitem!(inv, ecs, e, k);
+        Filter::All(itemtype) => {
+            if itemtype.is_some() {
+                let items = ecs.read_storage::<Item>();
+                for (e, k, _i) in (&entities, &keys, &items)
+                    .join()
+                    .filter(|e| e.2.category == itemtype.unwrap()) {
+                    includeitem!(inv, ecs, e, k);
+                }
+            } else {
+                for (e, k) in (&entities, &keys).join() {
+                    includeitem!(inv, ecs, e, k);
+                }
             }
         }
-        Filter::Backpack => {
+        Filter::Backpack(itemtype) => {
             let backpack = ecs.read_storage::<InBackpack>();
-            for (e, k, _b) in (&entities, &keys, &backpack).join() {
-                includeitem!(inv, ecs, e, k);
+            if itemtype.is_some() {
+                let items = ecs.read_storage::<Item>();
+                for (e, k, _i, _b) in (&entities, &keys, &items, &backpack)
+                    .join()
+                    .filter(|e| e.2.category == itemtype.unwrap()) {
+                    includeitem!(inv, ecs, e, k);
+                }
+            } else {
+                for (e, k, _b) in (&entities, &keys, &backpack).join() {
+                    includeitem!(inv, ecs, e, k);
+                }
             }
         }
         Filter::Equipped => {
             let equipped = ecs.read_storage::<Equipped>();
             for (e, k, _e) in (&entities, &keys, &equipped).join() {
-                includeitem!(inv, ecs, e, k);
-            }
-        }
-        Filter::Category(itemtype) => {
-            let items = ecs.read_storage::<Item>();
-            for (e, k, _i) in (&entities, &keys, &items)
-                .join()
-                .filter(|e| e.2.category == itemtype) {
                 includeitem!(inv, ecs, e, k);
             }
         }

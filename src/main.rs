@@ -550,11 +550,15 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         }
         RunState::ShowInventory => {
             corner_text("Use what? [aA-zZ]/[Esc.]", &mut draw, &gs.font);
-            gui::draw_inventory(&gs.ecs, &mut draw, &gs.font, 1, 3);
+            let offset = crate::camera::get_offset();
+            let (x, y) = (((1 + offset.x) as f32) * TILESIZE, ((3 + offset.y) as f32) * TILESIZE);
+            gui::draw_backpack_items(&gs.ecs, &mut draw, &gs.font, x, y);
         }
         RunState::ShowDropItem => {
             corner_text("Drop what? [aA-zZ]/[Esc.]", &mut draw, &gs.font);
-            gui::draw_inventory(&gs.ecs, &mut draw, &gs.font, 1, 3);
+            let offset = crate::camera::get_offset();
+            let (x, y) = (((1 + offset.x) as f32) * TILESIZE, ((3 + offset.y) as f32) * TILESIZE);
+            gui::draw_backpack_items(&gs.ecs, &mut draw, &gs.font, x, y);
         }
         _ => {}
     }
