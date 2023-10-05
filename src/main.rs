@@ -183,14 +183,13 @@ struct DrawInfo {
     draw_type: DrawType,
 }
 
-fn draw_camera(
+fn draw_entities(
     map: &Map,
     ecs: &World,
     draw: &mut Draw,
     atlas: &HashMap<String, Texture>,
     font: &Fonts
 ) {
-    render_map_in_view(&*map, ecs, draw, atlas, false);
     {
         let bounds = crate::camera::get_screen_bounds(ecs, false);
         let positions = ecs.read_storage::<Position>();
@@ -530,7 +529,12 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         _ => {
             let map = gs.ecs.fetch::<Map>();
             draw_bg(&gs.ecs, &mut draw, &gs.atlas);
-            draw_camera(&*map, &gs.ecs, &mut draw, &gs.atlas, &gs.font);
+            render_map_in_view(&*map, &gs.ecs, &mut draw, &gs.atlas, false);
+            // Special case: targeting needs to be drawn *below* entities, but above tiles.
+            if let RunState::ShowTargeting { range, item: _, x, y, aoe } = runstate {
+                gui::draw_targeting(&gs.ecs, &mut draw, &gs.atlas, x, y, range, aoe);
+            }
+            draw_entities(&*map, &gs.ecs, &mut draw, &gs.atlas, &gs.font);
             gui::draw_ui2(&gs.ecs, &mut draw, &gs.atlas, &gs.font);
             log = true;
         }
@@ -560,6 +564,15 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             let offset = crate::camera::get_offset();
             let (x, y) = (((1 + offset.x) as f32) * TILESIZE, ((3 + offset.y) as f32) * TILESIZE);
             gui::draw_backpack_items(&gs.ecs, &mut draw, &gs.font, x, y);
+        }
+        RunState::ShowRemoveItem => {
+            corner_text("Unequip which item? [aA-zZ]/[Esc.]", &mut draw, &gs.font);
+            let offset = crate::camera::get_offset();
+            let (x, y) = (((1 + offset.x) as f32) * TILESIZE, ((3 + offset.y) as f32) * TILESIZE);
+            gui::draw_items(&gs.ecs, &mut draw, &gs.font, x, y, gui::Location::Equipped, None);
+        }
+        RunState::ShowTargeting { range, item, x, y, aoe } => {
+            corner_text("Targeting which tile? [0-9]/[YUHJKLBN]", &mut draw, &gs.font);
         }
         _ => {}
     }

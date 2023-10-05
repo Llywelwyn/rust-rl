@@ -1500,70 +1500,37 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut App) -> (ItemMenuResult, Option<
     (ItemMenuResult::NoResponse, None)
 }
 
-pub fn remove_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
-    let player_entity = gs.ecs.fetch::<Entity>();
-    let backpack = gs.ecs.read_storage::<Equipped>();
-    let entities = gs.ecs.entities();
-    let inventory = (&backpack).join().filter(|item| item.owner == *player_entity);
-    let count = inventory.count();
-
-    let (x_offset, y_offset) = (1, 10);
-
-    ctx.print_color(
-        1 + x_offset,
-        1 + y_offset,
-        RGB::named(WHITE),
-        RGB::named(BLACK),
-        "Unequip what? [aA-zZ][Esc.]"
-    );
-
-    let mut equippable: Vec<(Entity, String)> = Vec::new();
-    let mut width = 2;
-    for (entity, _pack) in (&entities, &backpack)
-        .join()
-        .filter(|item| item.1.owner == *player_entity) {
-        let this_name = &obfuscate_name_ecs(&gs.ecs, entity).0;
-        let this_width = 5 + this_name.len();
-        width = if width > this_width { width } else { this_width };
-        equippable.push((entity, this_name.to_string()));
-    }
-
-    let x = 1 + x_offset;
-    let mut y = 3 + y_offset;
-
-    ctx.draw_box(x, y, width, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
-    y += 1;
-
-    let mut j = 0;
-    let renderables = gs.ecs.read_storage::<Renderable>();
-    for (e, name) in &equippable {
-        let (mut fg, glyph) = if let Some(renderable) = renderables.get(*e) {
-            (renderable.fg, renderable.glyph)
-        } else {
-            (RGB::named(WHITE), to_cp437('-'))
-        };
-        ctx.set(x + 1, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + (j as FontCharType));
-        ctx.set(x + 3, y, fg, RGB::named(BLACK), glyph);
-        fg = RGB::named(item_colour_ecs(&gs.ecs, *e));
-        ctx.print_color(x + 5, y, fg, RGB::named(BLACK), name);
-        y += 1;
-        j += 1;
-    }
-
-    match ctx.key {
-        None => (ItemMenuResult::NoResponse, None),
-        Some(key) =>
-            match key {
-                VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
-                _ => {
-                    let selection = letter_to_option(key);
-                    if selection > -1 && selection < (count as i32) {
-                        return (ItemMenuResult::Selected, Some(equippable[selection as usize].0));
+pub fn remove_item_menu(gs: &mut State, ctx: &mut App) -> (ItemMenuResult, Option<Entity>) {
+    let key = &ctx.keyboard;
+    for keycode in key.pressed.iter() {
+        match *keycode {
+            KeyCode::Escape => {
+                return (ItemMenuResult::Cancel, None);
+            }
+            _ => {
+                let shift = key.shift();
+                let selection = if
+                    let Some(key) = letter_to_option::letter_to_option(*keycode, shift)
+                {
+                    key
+                } else {
+                    continue;
+                };
+                if check_key(selection) {
+                    // Get the first entity with a Key {} component that has an idx matching "selection".
+                    let entities = gs.ecs.entities();
+                    let keyed_items = gs.ecs.read_storage::<Key>();
+                    let equipped = gs.ecs.read_storage::<Equipped>();
+                    for (e, key, _e) in (&entities, &keyed_items, &equipped).join() {
+                        if key.idx == selection {
+                            return (ItemMenuResult::Selected, Some(e));
+                        }
                     }
-                    (ItemMenuResult::NoResponse, None)
                 }
             }
+        }
     }
+    (ItemMenuResult::NoResponse, None)
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -1576,26 +1543,29 @@ pub enum TargetResult {
     Selected,
 }
 
-pub fn ranged_target(
-    gs: &mut State,
-    ctx: &mut BTerm,
+pub fn draw_targeting(
+    ecs: &World,
+    draw: &mut Draw,
+    atlas: &HashMap<String, Texture>,
     x: i32,
     y: i32,
     range: i32,
     aoe: i32
-) -> (TargetResult, Option<Point>) {
-    let bounds = camera::get_screen_bounds(&gs.ecs, false);
-    let player_entity = gs.ecs.fetch::<Entity>();
-    let player_pos = gs.ecs.fetch::<Point>();
-    let viewsheds = gs.ecs.read_storage::<Viewshed>();
+) {
+    let bounds = camera::get_screen_bounds(ecs, false);
+    let player_entity = ecs.fetch::<Entity>();
+    let player_pos = ecs.fetch::<Point>();
+    let viewsheds = ecs.read_storage::<Viewshed>();
 
-    ctx.print_color(
-        1 + bounds.x_offset,
-        1 + bounds.y_offset,
-        RGB::named(WHITE),
-        RGB::named(BLACK),
-        "Targeting which tile? [mouse input]"
-    );
+    enum DrawType {
+        AvailableCell,
+        AOE,
+        LineToCursor,
+        Cursor,
+        CursorUnavailable,
+    }
+
+    let mut needs_draw: HashMap<Point, DrawType> = HashMap::new();
 
     // Highlight available cells
     let mut available_cells = Vec::new();
@@ -1613,36 +1583,29 @@ pub fn ranged_target(
                     screen_y > 1 &&
                     screen_y < bounds.max_y - bounds.min_y - 1
                 {
-                    ctx.set_bg(
-                        screen_x + bounds.x_offset,
-                        screen_y + bounds.y_offset,
-                        TARGETING_VALID_COL
+                    needs_draw.insert(
+                        Point::new(screen_x + bounds.x_offset, screen_y + bounds.y_offset),
+                        DrawType::AvailableCell
                     );
                     available_cells.push(idx);
                 }
             }
         }
-    } else {
-        return (TargetResult::Cancel, None);
     }
 
     // Draw mouse cursor
     let mouse_pos = (x, y);
-    let bounds = camera::get_screen_bounds(&gs.ecs, false);
-    let x = x.clamp(bounds.x_offset, bounds.x_offset - 1 + VIEWPORT_W);
-    let y = y.clamp(bounds.y_offset, bounds.y_offset - 1 + VIEWPORT_H);
-
+    let bounds = camera::get_screen_bounds(ecs, false);
     let mut mouse_pos_adjusted = mouse_pos;
     mouse_pos_adjusted.0 += bounds.min_x - bounds.x_offset;
     mouse_pos_adjusted.1 += bounds.min_y - bounds.y_offset;
-    let map = gs.ecs.fetch::<Map>();
+    let map = ecs.fetch::<Map>();
     let mut valid_target = false;
     for idx in available_cells.iter() {
         if idx.x == mouse_pos_adjusted.0 && idx.y == mouse_pos_adjusted.1 {
             valid_target = true;
         }
     }
-    let mut result = (TargetResult::NoResponse { x, y }, None);
     if valid_target {
         let path = line2d(
             LineAlg::Bresenham,
@@ -1653,12 +1616,12 @@ pub fn ranged_target(
             if i == 0 || i == path.len() - 1 {
                 continue;
             }
-            ctx.set(
-                point.x + bounds.x_offset - bounds.min_x,
-                point.y + bounds.y_offset - bounds.min_y,
-                RGB::named(TARGETING_LINE_COL),
-                RGB::named(TARGETING_VALID_COL),
-                to_cp437('~')
+            needs_draw.insert(
+                Point::new(
+                    point.x + bounds.x_offset - bounds.min_x,
+                    point.y + bounds.y_offset - bounds.min_y
+                ),
+                DrawType::LineToCursor
             );
         }
         if aoe > 0 {
@@ -1673,58 +1636,126 @@ pub fn ranged_target(
                 |p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1
             );
             for tile in blast_tiles.iter() {
-                let bg = if available_cells.contains(&tile) {
-                    let col1 = TARGETING_AOE_COL;
-                    let col2 = TARGETING_VALID_COL;
-                    ((col1.0 + col2.0) / 2, (col1.1 + col2.1) / 2, (col1.2 + col2.2) / 2)
-                } else {
-                    let col1 = TARGETING_AOE_COL;
-                    let col2 = BLACK;
-                    ((col1.0 + col2.0) / 2, (col1.1 + col2.1) / 2, (col1.2 + col2.2) / 2)
-                };
-                ctx.set_bg(
-                    tile.x - bounds.min_x + bounds.x_offset,
-                    tile.y - bounds.min_y + bounds.y_offset,
-                    bg
+                needs_draw.insert(
+                    Point::new(
+                        tile.x - bounds.min_x + bounds.x_offset,
+                        tile.y - bounds.min_y + bounds.y_offset
+                    ),
+                    DrawType::AOE
                 );
             }
         }
-
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(TARGETING_CURSOR_COL));
-        result = match ctx.key {
-            None => result,
-            Some(key) =>
-                match key {
-                    VirtualKeyCode::Return => {
-                        return (
-                            TargetResult::Selected,
-                            Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)),
-                        );
-                    }
-                    _ => result,
-                }
-        };
+        needs_draw.insert(Point::new(mouse_pos.0, mouse_pos.1), DrawType::Cursor);
     } else {
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(RED));
+        needs_draw.insert(Point::new(mouse_pos.0, mouse_pos.1), DrawType::CursorUnavailable);
     }
 
-    result = match ctx.key {
-        None => result,
-        Some(key) =>
-            match key {
-                VirtualKeyCode::Escape => (TargetResult::Cancel, None),
-                VirtualKeyCode::Numpad9 => (TargetResult::NoResponse { x: x + 1, y: y - 1 }, None),
-                VirtualKeyCode::Numpad7 => (TargetResult::NoResponse { x: x - 1, y: y - 1 }, None),
-                VirtualKeyCode::Numpad6 => (TargetResult::NoResponse { x: x + 1, y }, None),
-                VirtualKeyCode::Numpad4 => (TargetResult::NoResponse { x: x - 1, y }, None),
-                VirtualKeyCode::Numpad8 => (TargetResult::NoResponse { x, y: y - 1 }, None),
-                VirtualKeyCode::Numpad3 => (TargetResult::NoResponse { x: x + 1, y: y + 1 }, None),
-                VirtualKeyCode::Numpad2 => (TargetResult::NoResponse { x, y: y + 1 }, None),
-                VirtualKeyCode::Numpad1 => (TargetResult::NoResponse { x: x - 1, y: y + 1 }, None),
-                _ => result,
+    for (k, v) in needs_draw {
+        let (image, alpha, colour) = match v {
+            DrawType::AvailableCell => ("217", 0.2, Color::WHITE),
+            DrawType::AOE => ("175", 0.3, Color::YELLOW),
+            DrawType::LineToCursor => ("217", 0.3, Color::YELLOW),
+            DrawType::Cursor => ("217", 0.5, Color::YELLOW),
+            DrawType::CursorUnavailable => ("217", 0.4, Color::RED),
+        };
+        let texture = atlas.get(image).unwrap();
+        draw.image(texture)
+            .position((k.x as f32) * TILESIZE, (k.y as f32) * TILESIZE)
+            .alpha(alpha)
+            .color(colour);
+    }
+}
+
+pub fn ranged_target(
+    gs: &mut State,
+    ctx: &mut App,
+    x: i32,
+    y: i32,
+    range: i32,
+    _aoe: i32
+) -> (TargetResult, Option<Point>) {
+    let bounds = camera::get_screen_bounds(&gs.ecs, false);
+    let x = x.clamp(bounds.x_offset, bounds.x_offset - 1 + VIEWPORT_W);
+    let y = y.clamp(bounds.y_offset, bounds.y_offset - 1 + VIEWPORT_H);
+
+    let key = &ctx.keyboard;
+    for keycode in key.pressed.iter() {
+        match *keycode {
+            KeyCode::Escape => {
+                return (TargetResult::Cancel, None);
             }
-    };
-    return result;
+            KeyCode::Numpad1 => {
+                return (TargetResult::NoResponse { x: x - 1, y: y + 1 }, None);
+            }
+            KeyCode::Numpad2 => {
+                return (TargetResult::NoResponse { x, y: y + 1 }, None);
+            }
+            KeyCode::Numpad3 => {
+                return (TargetResult::NoResponse { x: x + 1, y: y + 1 }, None);
+            }
+            KeyCode::Numpad4 => {
+                return (TargetResult::NoResponse { x: x - 1, y }, None);
+            }
+            KeyCode::Numpad6 => {
+                return (TargetResult::NoResponse { x: x + 1, y }, None);
+            }
+            KeyCode::Numpad7 => {
+                return (TargetResult::NoResponse { x: x - 1, y: y - 1 }, None);
+            }
+            KeyCode::Numpad8 => {
+                return (TargetResult::NoResponse { x, y: y - 1 }, None);
+            }
+            KeyCode::Numpad9 => {
+                return (TargetResult::NoResponse { x: x + 1, y: y - 1 }, None);
+            }
+            KeyCode::Return => {
+                let bounds = camera::get_screen_bounds(&gs.ecs, false);
+                let player_entity = gs.ecs.fetch::<Entity>();
+                let player_pos = gs.ecs.fetch::<Point>();
+                let viewsheds = gs.ecs.read_storage::<Viewshed>();
+
+                let mut available_cells = Vec::new();
+                let visible = viewsheds.get(*player_entity);
+                if let Some(visible) = visible {
+                    // We have a viewshed
+                    for idx in visible.visible_tiles.iter() {
+                        let distance = DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
+                        if distance <= (range as f32) {
+                            let screen_x = idx.x - bounds.min_x;
+                            let screen_y = idx.y - bounds.min_y;
+                            if
+                                screen_x > 1 &&
+                                screen_x < bounds.max_x - bounds.min_x - 1 &&
+                                screen_y > 1 &&
+                                screen_y < bounds.max_y - bounds.min_y - 1
+                            {
+                                available_cells.push(idx);
+                            }
+                        }
+                    }
+                }
+                let mouse_pos = (x, y);
+                let bounds = camera::get_screen_bounds(&gs.ecs, false);
+                let mut mouse_pos_adjusted = mouse_pos;
+                mouse_pos_adjusted.0 += bounds.min_x - bounds.x_offset;
+                mouse_pos_adjusted.1 += bounds.min_y - bounds.y_offset;
+                let mut valid_target = false;
+                for idx in available_cells.iter() {
+                    if idx.x == mouse_pos_adjusted.0 && idx.y == mouse_pos_adjusted.1 {
+                        valid_target = true;
+                    }
+                }
+                if valid_target {
+                    return (
+                        TargetResult::Selected,
+                        Some(Point::new(mouse_pos_adjusted.0, mouse_pos_adjusted.1)),
+                    );
+                }
+            }
+            _ => {}
+        }
+    }
+    (TargetResult::NoResponse { x, y }, None)
 }
 
 #[derive(PartialEq, Copy, Clone)]

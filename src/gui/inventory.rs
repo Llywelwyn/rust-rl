@@ -32,29 +32,42 @@ pub fn draw_items(
     x: f32,
     y: f32,
     loc: Location,
-    itemtypes: Vec<ItemType>
+    itemtypes: Option<Vec<ItemType>>
 ) {
     let mut y = y;
-    for itemtype in itemtypes {
+    if let Some(itemtypes) = itemtypes {
+        for itemtype in itemtypes {
+            let filter = match loc {
+                Location::All => Filter::All(Some(itemtype)),
+                Location::Backpack => Filter::Backpack(Some(itemtype)),
+                Location::Equipped => Filter::Equipped,
+            };
+            let inv = items(ecs, filter);
+            if inv.is_empty() {
+                continue;
+            }
+            draw.text(&font.b(), itemtype.string()).position(x, y).color(Color::WHITE);
+            y += TILESIZE;
+            y = print_options(ecs, draw, font, &inv, x, y) + TILESIZE;
+        }
+    } else {
         let filter = match loc {
-            Location::All => Filter::All(Some(itemtype)),
-            Location::Backpack => Filter::Backpack(Some(itemtype)),
+            Location::All => Filter::All(None),
+            Location::Backpack => Filter::Backpack(None),
             Location::Equipped => Filter::Equipped,
         };
         let inv = items(ecs, filter);
         if inv.is_empty() {
-            continue;
+            return;
         }
-        draw.text(&font.b(), itemtype.string()).position(x, y).color(Color::WHITE);
-        y += TILESIZE;
         y = print_options(ecs, draw, font, &inv, x, y) + TILESIZE;
     }
 }
 
 pub fn draw_all_items(ecs: &World, draw: &mut Draw, font: &Fonts, x: f32, y: f32) {
-    draw_items(ecs, draw, font, x, y, Location::All, all_itemtypes());
+    draw_items(ecs, draw, font, x, y, Location::All, Some(all_itemtypes()));
 }
 
 pub fn draw_backpack_items(ecs: &World, draw: &mut Draw, font: &Fonts, x: f32, y: f32) {
-    draw_items(ecs, draw, font, x, y, Location::Backpack, all_itemtypes());
+    draw_items(ecs, draw, font, x, y, Location::Backpack, Some(all_itemtypes()));
 }

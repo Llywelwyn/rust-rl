@@ -376,8 +376,46 @@ impl State {
                     }
                 }
             }
-            // RunState::ShowRemoveItem
-            // RunState::ShowTargeting
+            RunState::ShowRemoveItem => {
+                let result = gui::remove_item_menu(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        let mut intent = self.ecs.write_storage::<WantsToRemoveItem>();
+                        intent
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToRemoveItem {
+                                item: item_entity,
+                            })
+                            .expect("Unable to insert intent");
+                        new_runstate = RunState::Ticking;
+                    }
+                }
+            }
+            RunState::ShowTargeting { x, y, range, item, aoe } => {
+                let result = gui::ranged_target(self, ctx, x, y, range, aoe);
+                match result.0 {
+                    gui::TargetResult::Cancel => {
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                    gui::TargetResult::NoResponse { x, y } => {
+                        new_runstate = RunState::ShowTargeting { x, y, range, item, aoe };
+                    }
+                    gui::TargetResult::Selected => {
+                        let mut intent = self.ecs.write_storage::<WantsToUseItem>();
+                        intent
+                            .insert(*self.ecs.fetch::<Entity>(), WantsToUseItem {
+                                item,
+                                target: result.1,
+                            })
+                            .expect("Unable to insert intent.");
+                        new_runstate = RunState::Ticking;
+                    }
+                }
+            }
             // RunState::ShowRemoveCurse
             // RunState::ShowIdentify
             RunState::ActionWithDirection { function } => {
@@ -682,7 +720,7 @@ impl State {
                 }
             }
             RunState::ShowRemoveItem => {
-                let result = gui::remove_item_menu(self, ctx);
+                let result = (gui::ItemMenuResult::Cancel, None); //gui::remove_item_menu(self, ctx);
                 match result.0 {
                     gui::ItemMenuResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;
@@ -701,7 +739,7 @@ impl State {
                 }
             }
             RunState::ShowTargeting { x, y, range, item, aoe } => {
-                let result = gui::ranged_target(self, ctx, x, y, range, aoe);
+                let result = (gui::TargetResult::Cancel, None); //gui::ranged_target(self, ctx, x, y, range, aoe);
                 match result.0 {
                     gui::TargetResult::Cancel => {
                         new_runstate = RunState::AwaitingInput;
