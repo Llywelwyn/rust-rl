@@ -20,7 +20,7 @@ use crate::invkeys::*;
 
 pub struct KeyHandling {}
 
-const DEBUG_KEYHANDLING: bool = true;
+const DEBUG_KEYHANDLING: bool = false;
 
 impl<'a> System<'a> for KeyHandling {
     #[allow(clippy::type_complexity)]
@@ -75,28 +75,40 @@ impl<'a> System<'a> for KeyHandling {
                 ),
             );
             if stacks {
-                console::log(&format!("KEYHANDLING: Item is stackable."));
+                if DEBUG_KEYHANDLING {
+                    console::log(&format!("KEYHANDLING: Item is stackable."));
+                }
                 let maybe_key = item_exists(&unique);
                 if maybe_key.is_some() {
-                    console::log(&format!("KEYHANDLING: Existing stack found for this item."));
+                    if DEBUG_KEYHANDLING {
+                        console::log(&format!("KEYHANDLING: Existing stack found for this item."));
+                    }
                     let key = maybe_key.unwrap();
                     keys.insert(e, Key { idx: key }).expect("Unable to insert Key.");
-                    console::log(&format!("KEYHANDLING: Assigned key idx {} to item.", key));
+                    if DEBUG_KEYHANDLING {
+                        console::log(&format!("KEYHANDLING: Assigned key idx {} to item.", key));
+                    }
                     handled = true;
                 }
             }
             if !handled {
-                console::log(
-                    &format!("KEYHANDLING: Item is not stackable, or no existing stack found.")
-                );
-                if let Some(idx) = assign_next_available() {
+                if DEBUG_KEYHANDLING {
                     console::log(
-                        &format!("KEYHANDLING: Assigned next available index {} to item.", idx)
+                        &format!("KEYHANDLING: Item is not stackable, or no existing stack found.")
                     );
+                }
+                if let Some(idx) = assign_next_available() {
+                    if DEBUG_KEYHANDLING {
+                        console::log(
+                            &format!("KEYHANDLING: Assigned next available index {} to item.", idx)
+                        );
+                    }
                     keys.insert(e, Key { idx }).expect("Unable to insert Key.");
                     register_stackable(stacks, unique, idx);
                 } else {
-                    console::log(&format!("KEYHANDLING: No more keys available."));
+                    if DEBUG_KEYHANDLING {
+                        console::log(&format!("KEYHANDLING: No more keys available."));
+                    }
                     gamelog::Logger
                         ::new()
                         .append(messages::NO_MORE_KEYS)
@@ -113,37 +125,47 @@ impl<'a> System<'a> for KeyHandling {
             }
             // If the item is *not* stackable, then we can just remove the key and clear the index.
             if let None = stackable.get(e) {
-                console::log(
-                    &format!("KEYHANDLING: Item is not stackable, clearing index {}.", idx)
-                );
+                if DEBUG_KEYHANDLING {
+                    console::log(
+                        &format!("KEYHANDLING: Item is not stackable, clearing index {}.", idx)
+                    );
+                }
                 clear_idx(idx);
                 keys.remove(e);
                 continue;
             }
             // If the item *is* stackable, then we need to check if there are any other items that
             // share this key assignment, before clearing the index.
-            console::log(
-                &format!(
-                    "KEYHANDLING: Item is stackable, checking if any other items share this key."
-                )
-            );
+            if DEBUG_KEYHANDLING {
+                console::log(
+                    &format!(
+                        "KEYHANDLING: Item is stackable, checking if any other items share this key."
+                    )
+                );
+            }
             let mut sole_item_with_key = true;
             for (entity, key) in (&entities, &keys).join() {
                 if entity != e && key.idx == idx {
-                    console::log(&format!("KEYHANDLING: Another item shares index {}", idx));
+                    if DEBUG_KEYHANDLING {
+                        console::log(&format!("KEYHANDLING: Another item shares index {}", idx));
+                    }
                     sole_item_with_key = false;
                     break;
                 }
             }
             // If no other items shared this key, free up the index.
             if sole_item_with_key {
-                console::log(
-                    &format!("KEYHANDLING: No other items found, clearing index {}.", idx)
-                );
+                if DEBUG_KEYHANDLING {
+                    console::log(
+                        &format!("KEYHANDLING: No other items found, clearing index {}.", idx)
+                    );
+                }
                 clear_idx(idx);
             }
             // Either way, remove the key component from this item, because we're dropping it.
-            console::log(&format!("KEYHANDLING: Removing key component from item."));
+            if DEBUG_KEYHANDLING {
+                console::log(&format!("KEYHANDLING: Removing key component from item."));
+            }
             keys.remove(e);
         }
 
