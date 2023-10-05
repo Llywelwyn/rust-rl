@@ -126,7 +126,7 @@ pub fn record_event(event: EVENT) {
             new_event = format!("Discovered {}", name);
         }
         EVENT::Identified(name) => {
-            new_event = format!("Identified {}", crate::gui::with_article(name));
+            new_event = format!("Identified {}", crate::gui::with_article(&name));
         }
         EVENT::PlayerDied(str) => {
             // Generating the String is handled in the death effect, to avoid passing the ecs here.
