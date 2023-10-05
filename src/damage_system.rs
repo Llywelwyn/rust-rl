@@ -11,6 +11,8 @@ use super::{
     Position,
     Renderable,
     RunState,
+    WantsToRemoveKey,
+    WantsToDelete,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -65,7 +67,17 @@ pub fn delete_the_dead(ecs: &mut World) {
             }
         }
     }
-    let (items_to_delete, loot_to_spawn) = handle_dead_entity_items(ecs, &dead);
+    let (mut items_to_delete, loot_to_spawn) = handle_dead_entity_items(ecs, &dead);
+    {
+        let entities = ecs.entities();
+        let removekeys = ecs.read_storage::<WantsToRemoveKey>();
+        let delete = ecs.read_storage::<WantsToDelete>();
+        // Add items marked for deletion to the list, but only if they've already had their key
+        // assignments handled, to ensure we don't leave any dangling references behind.
+        for (e, _d, _r) in (&entities, &delete, !&removekeys).join() {
+            items_to_delete.push(e);
+        }
+    }
     for loot in loot_to_spawn {
         crate::raws::spawn_named_entity(
             &crate::raws::RAWS.lock().unwrap(),

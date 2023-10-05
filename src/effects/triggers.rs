@@ -33,6 +33,8 @@ use crate::{
     KnownSpells,
     Position,
     Viewshed,
+    WantsToRemoveKey,
+    WantsToDelete,
 };
 use crate::consts::messages::*;
 use bracket_lib::prelude::*;
@@ -57,7 +59,10 @@ pub fn item_trigger(source: Option<Entity>, item: Entity, target: &Targets, ecs:
     let did_something = event_trigger(source, item, target, ecs);
     // If it's a consumable, delete it
     if did_something && ecs.read_storage::<Consumable>().get(item).is_some() {
-        ecs.entities().delete(item).expect("Failed to delete item");
+        let mut removekey = ecs.write_storage::<WantsToRemoveKey>();
+        removekey.insert(item, WantsToRemoveKey {}).expect("Unable to insert WantsToRemoveKey");
+        let mut delete = ecs.write_storage::<WantsToDelete>();
+        delete.insert(item, WantsToDelete {}).expect("Unable to insert WantsToDelete");
     }
 }
 

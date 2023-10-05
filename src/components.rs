@@ -478,6 +478,9 @@ pub struct EquipmentChanged {}
 pub struct WantsToRemoveKey {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToDelete {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Key {
     pub idx: usize,
 }

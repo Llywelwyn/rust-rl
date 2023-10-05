@@ -137,6 +137,7 @@ fn setup(gfx: &mut Graphics) -> State {
     gs.ecs.register::<WantsToAssignKey>();
     gs.ecs.register::<Key>();
     gs.ecs.register::<WantsToRemoveKey>();
+    gs.ecs.register::<WantsToDelete>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<DMSerializationHelper>();
