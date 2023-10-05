@@ -495,15 +495,6 @@ impl State {
                     new_runstate = self.mapgen_next_state.unwrap();
                 } else {
                     if self.mapgen_history.len() > 0 {
-                        console::log(
-                            format!(
-                                "mapgen_index: {} -- mapgen_history.len(): {} -- mapgen_timer: {} -- ctx.timer.delta_f32(): {}",
-                                self.mapgen_index,
-                                self.mapgen_history.len(),
-                                self.mapgen_timer,
-                                ctx.timer.delta_f32()
-                            )
-                        );
                         self.mapgen_timer += ctx.timer.delta_f32();
                         if
                             self.mapgen_timer > 10.0 / (self.mapgen_history.len() as f32) ||
