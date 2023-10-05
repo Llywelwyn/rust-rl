@@ -1557,15 +1557,13 @@ pub fn draw_targeting(
     let player_pos = ecs.fetch::<Point>();
     let viewsheds = ecs.read_storage::<Viewshed>();
 
-    enum DrawType {
-        AvailableCell,
-        AOE,
-        LineToCursor,
-        Cursor,
-        CursorUnavailable,
-    }
+    let mut needs_draw: HashMap<Point, u32> = HashMap::new();
 
-    let mut needs_draw: HashMap<Point, DrawType> = HashMap::new();
+    const AVAILABLE: u32 = 0b00000001;
+    const AOE: u32 = 0b00000010;
+    const LINE_TO_CURSOR: u32 = 0b00000100;
+    const CURSOR: u32 = 0b00001000;
+    const CURSOR_UNAVAILABLE: u32 = 0b00010000;
 
     // Highlight available cells
     let mut available_cells = Vec::new();
@@ -1585,7 +1583,7 @@ pub fn draw_targeting(
                 {
                     needs_draw.insert(
                         Point::new(screen_x + bounds.x_offset, screen_y + bounds.y_offset),
-                        DrawType::AvailableCell
+                        AVAILABLE
                     );
                     available_cells.push(idx);
                 }
@@ -1616,13 +1614,14 @@ pub fn draw_targeting(
             if i == 0 || i == path.len() - 1 {
                 continue;
             }
-            needs_draw.insert(
-                Point::new(
-                    point.x + bounds.x_offset - bounds.min_x,
-                    point.y + bounds.y_offset - bounds.min_y
-                ),
-                DrawType::LineToCursor
-            );
+            *needs_draw
+                .entry(
+                    Point::new(
+                        point.x + bounds.x_offset - bounds.min_x,
+                        point.y + bounds.y_offset - bounds.min_y
+                    )
+                )
+                .or_insert(0) |= LINE_TO_CURSOR;
         }
         if aoe > 0 {
             // We adjust for camera position when getting FOV, but then we need to adjust back
@@ -1636,33 +1635,40 @@ pub fn draw_targeting(
                 |p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1
             );
             for tile in blast_tiles.iter() {
-                needs_draw.insert(
-                    Point::new(
-                        tile.x - bounds.min_x + bounds.x_offset,
-                        tile.y - bounds.min_y + bounds.y_offset
-                    ),
-                    DrawType::AOE
-                );
+                *needs_draw
+                    .entry(
+                        Point::new(
+                            tile.x - bounds.min_x + bounds.x_offset,
+                            tile.y - bounds.min_y + bounds.y_offset
+                        )
+                    )
+                    .or_insert(0) |= AOE;
             }
         }
-        needs_draw.insert(Point::new(mouse_pos.0, mouse_pos.1), DrawType::Cursor);
+        *needs_draw.entry(Point::new(mouse_pos.0, mouse_pos.1)).or_insert(0) |= CURSOR;
     } else {
-        needs_draw.insert(Point::new(mouse_pos.0, mouse_pos.1), DrawType::CursorUnavailable);
+        *needs_draw.entry(Point::new(mouse_pos.0, mouse_pos.1)).or_insert(0) |= CURSOR_UNAVAILABLE;
     }
 
     for (k, v) in needs_draw {
-        let (image, alpha, colour) = match v {
-            DrawType::AvailableCell => ("217", 0.2, Color::WHITE),
-            DrawType::AOE => ("175", 0.3, Color::YELLOW),
-            DrawType::LineToCursor => ("217", 0.3, Color::YELLOW),
-            DrawType::Cursor => ("217", 0.5, Color::YELLOW),
-            DrawType::CursorUnavailable => ("217", 0.4, Color::RED),
-        };
-        let texture = atlas.get(image).unwrap();
-        draw.image(texture)
-            .position((k.x as f32) * TILESIZE, (k.y as f32) * TILESIZE)
-            .alpha(alpha)
-            .color(colour);
+        let pos = ((k.x as f32) * TILESIZE, (k.y as f32) * TILESIZE);
+        let tex = atlas.get("217").unwrap();
+        if (v & CURSOR_UNAVAILABLE) != 0 {
+            draw.image(tex).position(pos.0, pos.1).alpha(0.5).color(Color::RED);
+            continue;
+        }
+        if (v & AVAILABLE) != 0 {
+            draw.image(tex).position(pos.0, pos.1).alpha(0.2).color(Color::WHITE);
+        }
+        if (v & CURSOR) != 0 {
+            draw.image(tex).position(pos.0, pos.1).alpha(0.2).color(Color::WHITE);
+        }
+        if (v & AOE) != 0 {
+            draw.image(tex).position(pos.0, pos.1).alpha(0.2).color(Color::YELLOW);
+        }
+        if (v & LINE_TO_CURSOR) != 0 {
+            draw.image(tex).position(pos.0, pos.1).alpha(0.2).color(Color::WHITE);
+        }
     }
 }
 

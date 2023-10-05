@@ -571,7 +571,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
             let (x, y) = (((1 + offset.x) as f32) * TILESIZE, ((3 + offset.y) as f32) * TILESIZE);
             gui::draw_items(&gs.ecs, &mut draw, &gs.font, x, y, gui::Location::Equipped, None);
         }
-        RunState::ShowTargeting { range, item, x, y, aoe } => {
+        RunState::ShowTargeting { .. } => {
             corner_text("Targeting which tile? [0-9]/[YUHJKLBN]", &mut draw, &gs.font);
         }
         _ => {}
