@@ -1,6 +1,8 @@
 use super::{ spawner, Map, Position, Rect, TileType };
 use bracket_lib::prelude::*;
 
+mod room_accretion;
+use room_accretion::RoomAccretionBuilder;
 mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod bsp_interior;
@@ -487,4 +489,11 @@ pub fn level_builder(
 
 fn diff(branch_id: i32, lvl_id: i32) -> i32 {
     return lvl_id - branch_id;
+}
+
+fn room_accretion() -> BuilderChain {
+    let mut builder = BuilderChain::new(false, 110, 64, 64, 0, "room_accretion", "accretion", 0, 1);
+    builder.start_with(RoomAccretionBuilder::new());
+    builder.with(AreaStartingPosition::new(XStart::CENTRE, YStart::CENTRE));
+    builder
 }

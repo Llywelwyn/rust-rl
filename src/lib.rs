@@ -8,6 +8,9 @@ extern crate serde;
 #[macro_use]
 extern crate lazy_static;
 
+#[macro_use]
+pub mod macros;
+
 pub mod camera;
 pub mod components;
 pub mod raws;

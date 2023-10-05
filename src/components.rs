@@ -431,6 +431,15 @@ pub enum BUC {
     Blessed,
 }
 
+impl BUC {
+    pub fn noncursed(&self) -> bool {
+        match self {
+            BUC::Cursed => false,
+            _ => true,
+        }
+    }
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Clone)]
 pub struct Beatitude {
     pub buc: BUC,
@@ -659,9 +668,43 @@ pub enum Intrinsic {
     Speed, // 4/3x speed multiplier
 }
 
+impl Intrinsic {
+    pub fn describe(&self) -> &str {
+        match self {
+            Intrinsic::Regeneration => "regenerates health",
+            Intrinsic::Speed => "is hasted",
+        }
+    }
+}
+
 #[derive(Component, Serialize, Deserialize, Debug, Clone)]
 pub struct Intrinsics {
     pub list: HashSet<Intrinsic>,
+}
+
+impl Intrinsics {
+    pub fn describe(&self) -> String {
+        let mut descriptions = Vec::new();
+        for intrinsic in &self.list {
+            descriptions.push(intrinsic.describe());
+        }
+        match descriptions.len() {
+            0 =>
+                unreachable!("describe() should never be called on an empty Intrinsics component."),
+            1 => format!("It {}.", descriptions[0]),
+            _ => {
+                let last = descriptions.pop().unwrap();
+                let joined = descriptions.join(", ");
+                format!("It {}, and {}.", joined, last)
+            }
+        }
+    }
+}
+
+#[derive(Component, Serialize, Deserialize, Debug, Clone)]
+pub struct IntrinsicChanged {
+    pub gained: HashSet<Intrinsic>,
+    pub lost: HashSet<Intrinsic>,
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
