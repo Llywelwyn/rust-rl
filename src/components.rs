@@ -437,10 +437,40 @@ pub struct Beatitude {
     pub known: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq)]
+pub enum ItemType {
+    Amulet,
+    Weapon,
+    Armour,
+    Comestible,
+    Scroll,
+    Spellbook,
+    Potion,
+    Ring,
+    Wand,
+}
+
+impl ItemType {
+    pub fn string(&self) -> &str {
+        match self {
+            ItemType::Amulet => "Amulets",
+            ItemType::Weapon => "Weapons",
+            ItemType::Armour => "Armour",
+            ItemType::Comestible => "Comestibles",
+            ItemType::Scroll => "Scrolls",
+            ItemType::Spellbook => "Spellbooks",
+            ItemType::Potion => "Potions",
+            ItemType::Ring => "Rings",
+            ItemType::Wand => "Wands",
+        }
+    }
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Item {
     pub weight: f32, // in lbs
     pub value: f32, // base
+    pub category: ItemType,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]

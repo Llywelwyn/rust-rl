@@ -18,6 +18,11 @@ pub fn restore_invkeys(invkeys: HashMap<UniqueInventoryItem, usize>) {
     INVKEYS.lock().unwrap().extend(invkeys);
 }
 
+pub fn check_key(idx: usize) -> bool {
+    let lock = ASSIGNEDKEYS.lock().unwrap();
+    lock[idx]
+}
+
 pub fn item_exists(item: &UniqueInventoryItem) -> Option<usize> {
     let invkeys = INVKEYS.lock().unwrap();
     use bracket_lib::prelude::*;

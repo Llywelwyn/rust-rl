@@ -290,6 +290,18 @@ pub fn spawn_named_item(
         eb = eb.with(Item {
             weight: item_template.weight.unwrap_or(0.0),
             value: item_template.value.unwrap_or(0.0),
+            category: match item_template.class.as_str() {
+                "amulet" => ItemType::Amulet,
+                "weapon" => ItemType::Weapon,
+                "armour" => ItemType::Armour,
+                "comestible" => ItemType::Comestible,
+                "scroll" => ItemType::Scroll,
+                "spellbook" => ItemType::Spellbook,
+                "potion" => ItemType::Potion,
+                "ring" => ItemType::Ring,
+                "wand" => ItemType::Wand,
+                _ => unreachable!("Unknown item type."),
+            },
         });
         eb = spawn_position(pos, eb, key, raws);
         if needs_key {

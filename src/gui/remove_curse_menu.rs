@@ -3,9 +3,11 @@ use super::{
     item_colour_ecs,
     obfuscate_name_ecs,
     print_options,
+    unique_ecs,
     renderable_colour,
     ItemMenuResult,
     UniqueInventoryItem,
+    InventorySlot,
 };
 use crate::{
     gamelog,
@@ -18,10 +20,11 @@ use crate::{
     Renderable,
     states::state::*,
     BUC,
+    Key,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 /// Handles the Remove Curse menu.
 pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
@@ -33,11 +36,12 @@ pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<
     let beatitudes = gs.ecs.read_storage::<Beatitude>();
     let names = gs.ecs.read_storage::<Name>();
     let renderables = gs.ecs.read_storage::<Renderable>();
+    let keys = gs.ecs.read_storage::<Key>();
 
     let build_cursed_iterator = || {
-        (&entities, &items, &beatitudes, &renderables, &names)
+        (&entities, &items, &beatitudes, &renderables, &names, &keys)
             .join()
-            .filter(|(item_entity, _i, b, _r, _n)| {
+            .filter(|(item_entity, _i, b, _r, _n, _k)| {
                 // Set all items to FALSE initially.
                 let mut keep = false;
                 // If found in the player's backpack, set to TRUE
@@ -86,8 +90,8 @@ pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<
             .log();
         return (ItemMenuResult::Selected, Some(item));
     }
-    let mut player_inventory: super::PlayerInventory = BTreeMap::new();
-    for (entity, _i, _b, renderable, name) in build_cursed_iterator() {
+    let mut player_inventory: super::PlayerInventory = HashMap::new();
+    for (entity, _i, _b, renderable, name, key) in build_cursed_iterator() {
         let (singular, plural) = obfuscate_name_ecs(&gs.ecs, entity);
         let beatitude_status = if
             let Some(beatitude) = gs.ecs.read_storage::<Beatitude>().get(entity)
@@ -100,20 +104,17 @@ pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<
         } else {
             0
         };
-        let unique_item = UniqueInventoryItem {
-            display_name: super::DisplayName { singular: singular.clone(), plural: plural.clone() },
-            rgb: item_colour_ecs(&gs.ecs, entity),
-            renderables: renderable_colour(&renderables, entity),
-            glyph: renderable.glyph,
-            beatitude_status: beatitude_status,
-            name: name.name.clone(),
-        };
+        let unique_item = unique_ecs(&gs.ecs, entity);
         player_inventory
             .entry(unique_item)
-            .and_modify(|(_e, count)| {
-                *count += 1;
+            .and_modify(|slot| {
+                slot.count += 1;
             })
-            .or_insert((entity, 1));
+            .or_insert(InventorySlot {
+                item: entity,
+                count: 1,
+                idx: key.idx,
+            });
     }
     // Get display args
     let width = get_max_inventory_width(&player_inventory);
@@ -130,7 +131,7 @@ pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
 
     // Input
-    match ctx.key {
+    /*match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
         Some(key) =>
             match key {
@@ -155,5 +156,6 @@ pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<
                     (ItemMenuResult::NoResponse, None)
                 }
             }
-    }
+    }*/
+    (ItemMenuResult::NoResponse, None)
 }
