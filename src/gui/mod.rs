@@ -187,7 +187,7 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         draw_bar(
             draw,
             BAR_X,
-            54.5,
+            55.5,
             BAR_WIDTH,
             TILESIZE.x,
             stats.hit_points.current,
@@ -198,7 +198,7 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         draw_bar(
             draw,
             BAR_X,
-            55.5,
+            56.5,
             BAR_WIDTH,
             TILESIZE.x,
             stats.mana.current,
@@ -208,7 +208,7 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         );
         let initial_x = 24.0 * TILESIZE.x;
         let mut x = initial_x;
-        let row1 = 54.0 * TILESIZE.x;
+        let row1 = 55.0 * TILESIZE.x;
         let row2 = row1 + TILESIZE.x;
         let hp_colours: (RGB, RGB, RGB) = (
             RGB::named(GREEN),

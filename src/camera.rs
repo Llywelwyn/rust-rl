@@ -13,7 +13,7 @@ pub struct Offsets {
 }
 
 pub fn get_offset() -> Offsets {
-    return Offsets { x: 1, y: 10 };
+    return Offsets { x: 1, y: 8 };
 }
 
 pub struct ScreenBounds {
@@ -59,7 +59,7 @@ pub fn get_screen_bounds(ecs: &World, debug: bool) -> ScreenBounds {
         TILES_IN_VIEWPORT_W,
         TILES_IN_VIEWPORT_H,
         1,
-        10,
+        8,
     );
 
     let centre_x = (x_chars / 2) as i32;

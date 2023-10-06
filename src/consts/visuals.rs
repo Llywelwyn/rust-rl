@@ -8,10 +8,10 @@ pub const WITH_DARKEN_BY_DISTANCE: bool = true; // If further away tiles should 
 // the viewport itself uses 16x24 sprites - so this translates to 70x28 tiles drawn.
 // It also works nicely for zooming in, displaying 35x14 tiles cleanly onscreen.
 pub const VIEWPORT_W: i32 = 70;
-pub const VIEWPORT_H: i32 = 42;
+pub const VIEWPORT_H: i32 = 45;
 
 pub const TILES_IN_VIEWPORT_W: i32 = 70 / (ZOOM_FACTOR as i32);
-pub const TILES_IN_VIEWPORT_H: i32 = 28 / (ZOOM_FACTOR as i32);
+pub const TILES_IN_VIEWPORT_H: i32 = 30 / (ZOOM_FACTOR as i32);
 
 pub const TILE_LAYER: usize = 1;
 pub const ENTITY_LAYER: usize = 2;
@@ -24,7 +24,7 @@ pub const GLOBAL_OFFSET_MAX_CLAMP: f32 = 1.0;
 pub const SPRITE_OFFSET_MIN_CLAMP: f32 = 0.85;
 pub const SPRITE_OFFSET_MAX_CLAMP: f32 = 1.0;
 pub const WITH_SCANLINES_BRIGHTEN_AMOUNT: f32 = 0.1; // 0.0 = no brightening, 1.0 = full brightening.
-pub const NON_VISIBLE_MULTIPLIER: f32 = 0.2; // 0.0 = black, 1.0 = full colour.
+pub const NON_VISIBLE_MULTIPLIER: f32 = 0.1; // 0.0 = black, 1.0 = full colour.
 pub const NON_VISIBLE_MULTIPLIER_IF_SCANLINES: f32 = 0.8; // as above, but when using scanlines. should be higher.
 pub const MAX_DARKENING: f32 = 0.2; // 0.0 = black, 1.0 = full colour - only used if WITH_DARKEN_BY_DISTANCE is true.
 pub const MAX_DARKENING_IF_SCANLINES: f32 = 0.9; // as above, but when using scanlines. should be higher.

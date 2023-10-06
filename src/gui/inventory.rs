@@ -3,7 +3,7 @@ use notan::draw::{ Draw, Font, DrawTextSection };
 use specs::prelude::*;
 use super::TILESIZE;
 use crate::{ Fonts, camera::get_offset };
-use super::{ items, Filter, print_options, ItemType };
+use super::{ items, Filter, print_options, ItemType, FONTSIZE };
 
 pub enum Location {
     All,
@@ -46,7 +46,10 @@ pub fn draw_items(
             if inv.is_empty() {
                 continue;
             }
-            draw.text(&font.b(), itemtype.string()).position(x, y).color(Color::WHITE);
+            draw.text(&font.b(), itemtype.string())
+                .position(x, y)
+                .color(Color::WHITE)
+                .size(FONTSIZE);
             y += TILESIZE.x;
             y = print_options(ecs, draw, font, &inv, x, y) + TILESIZE.x;
         }
