@@ -74,6 +74,7 @@ pub const SHALLOW_WATER_OFFSETS: (i32, i32, i32) = (3, 10, 45);
 pub const DEEP_WATER_COLOUR: (u8, u8, u8) = (18, 33, 63);
 pub const DEEP_WATER_OFFSETS: (i32, i32, i32) = (5, 10, 32);
 pub const BARS_COLOUR: (u8, u8, u8) = (100, 100, 100);
+pub const BARS_OFFSETS: (i32, i32, i32) = (10, 10, 10);
 pub const IMPASSABLE_MOUNTAIN_COLOUR: (u8, u8, u8) = (20, 23, 20);
 pub const IMPASSABLE_MOUNTAIN_OFFSETS: (i32, i32, i32) = (4, 4, 4);
 // FOREST THEME

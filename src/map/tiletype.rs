@@ -1,4 +1,6 @@
 use serde::{ Deserialize, Serialize };
+use bracket_lib::prelude::*;
+use crate::consts::visuals::*;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum TileType {
@@ -29,42 +31,96 @@ pub enum TileType {
 }
 
 impl TileType {
-    pub fn sprite(&self, base: bool, float: f32) -> &str {
+    pub fn sprite(&self, base: bool, float: f32, bloody: Option<RGB>) -> &str {
         if base {
-            return self.h(float);
+            return self.h(float, bloody);
         }
-        return self.v(float);
+        return self.v(float, bloody);
     }
-    fn h(&self, float: f32) -> &str {
+    fn h(&self, float: f32, _bloody: Option<RGB>) -> &str {
         let options = match self {
-            TileType::Wall => vec!["wall_b"],
+            TileType::Wall => vec!["wall_b", "wall_b_cracked"],
             _ => unreachable!("Tried to get a h (base) sprite for a non-wall tile."),
         };
         return options[(float * (options.len() as f32)) as usize];
     }
-    fn v(&self, float: f32) -> &str {
-        let options = match self {
+    fn v(&self, float: f32, bloody: Option<RGB>) -> &str {
+        let mut options = match self {
             TileType::ImpassableMountain => vec!["wall_b"],
-            TileType::Wall => vec!["wall_top"],
+            TileType::Wall => vec!["wall"],
             TileType::DeepWater => vec!["water", "water2"],
-            TileType::Fence => vec!["wall_b"],
+            TileType::Fence => vec!["fence"],
             TileType::Bars => vec!["wall_b"],
-            TileType::Floor => vec!["fluff", "fluff2"],
-            TileType::WoodFloor => vec!["fluff", "fluff2"],
+            TileType::Floor => vec!["dot", "fluff", "fluff2"],
+            TileType::WoodFloor => vec!["planks", "planks_missing", "planks_missing2"],
             TileType::Gravel => vec!["fluff", "fluff2"],
-            TileType::Road => vec!["fluff", "fluff2"],
+            TileType::Road => vec!["tiles"],
             TileType::Grass => vec!["fluff", "fluff2"],
-            TileType::Foliage => vec!["fluff", "fluff2"],
-            TileType::HeavyFoliage => vec!["fluff", "fluff2"],
+            TileType::Foliage => vec!["grass_small", "grass"],
+            TileType::HeavyFoliage => vec!["grass_flower"],
             TileType::Sand => vec!["fluff", "fluff2"],
             TileType::ShallowWater => vec!["water", "water2"],
-            TileType::Bridge => vec!["wall_b"],
+            TileType::Bridge => vec!["planks"],
             TileType::DownStair => vec!["wall_b"],
             TileType::UpStair => vec!["wall_b"],
             TileType::ToLocal(_) => vec!["wall_b"],
             TileType::ToOvermap(_) => vec!["wall_b"],
         };
+        if bloody.is_some() && tile_walkable(*self) {
+            options.extend(
+                vec!["blood1", "blood2", "blood3", "blood4", "blood5", "blood6", "blood7"]
+            );
+        }
         return options[(float * (options.len() as f32)) as usize];
+    }
+    pub fn offset(&self) -> (i32, i32, i32) {
+        match self {
+            TileType::ImpassableMountain => IMPASSABLE_MOUNTAIN_OFFSETS,
+            TileType::Wall => WALL_OFFSETS,
+            TileType::DeepWater => DEEP_WATER_OFFSETS,
+            TileType::Fence => FENCE_OFFSETS,
+            TileType::Bars => BARS_OFFSETS,
+            TileType::Floor => FLOOR_OFFSETS,
+            TileType::WoodFloor => WOOD_FLOOR_OFFSETS,
+            TileType::Gravel => GRAVEL_OFFSETS,
+            TileType::Road => ROAD_OFFSETS,
+            TileType::Grass => GRASS_OFFSETS,
+            TileType::Foliage => FOLIAGE_OFFSETS,
+            TileType::HeavyFoliage => HEAVY_FOLIAGE_OFFSETS,
+            TileType::Sand => SAND_OFFSETS,
+            TileType::ShallowWater => SHALLOW_WATER_OFFSETS,
+            TileType::Bridge => BRIDGE_OFFSETS,
+            TileType::DownStair => STAIR_OFFSETS,
+            TileType::UpStair => STAIR_OFFSETS,
+            TileType::ToLocal(_) => WALL_OFFSETS,
+            TileType::ToOvermap(_) => WALL_OFFSETS,
+        }
+    }
+    pub fn col(&self, bloody: Option<RGB>) -> RGB {
+        if let Some(bloody) = bloody {
+            return bloody;
+        }
+        RGB::named(match self {
+            TileType::ImpassableMountain => IMPASSABLE_MOUNTAIN_COLOUR,
+            TileType::Wall => WALL_COLOUR,
+            TileType::DeepWater => DEEP_WATER_COLOUR,
+            TileType::Fence => FENCE_COLOUR,
+            TileType::Bars => BARS_COLOUR,
+            TileType::Floor => FLOOR_COLOUR,
+            TileType::WoodFloor => WOOD_FLOOR_COLOUR,
+            TileType::Gravel => GRAVEL_COLOUR,
+            TileType::Road => ROAD_COLOUR,
+            TileType::Grass => GRASS_COLOUR,
+            TileType::Foliage => FOLIAGE_COLOUR,
+            TileType::HeavyFoliage => HEAVY_FOLIAGE_COLOUR,
+            TileType::Sand => SAND_COLOUR,
+            TileType::ShallowWater => SHALLOW_WATER_COLOUR,
+            TileType::Bridge => BRIDGE_COLOUR,
+            TileType::DownStair => STAIR_COLOUR,
+            TileType::UpStair => STAIR_COLOUR,
+            TileType::ToLocal(_) => WALL_COLOUR,
+            TileType::ToOvermap(_) => WALL_COLOUR,
+        })
     }
 }
 

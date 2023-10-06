@@ -7,12 +7,28 @@ use std::ops::{ Add, Mul };
 use notan::prelude::*;
 
 pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&str, Color) {
-    let f = map.colour_offset[idx].0.0; // Using offset as a source of random.
-    let sprite = match map.tiles[idx] {
-        TileType::Wall => map.tiles[idx].sprite(check_if_base(TileType::Wall, idx, map), f),
-        _ => map.tiles[idx].sprite(false, f),
+    let bloody = if map.bloodstains.contains_key(&idx) {
+        Some(map.bloodstains[&idx])
+    } else {
+        None
     };
-    let base = if !map.visible_tiles[idx] {
+    let f = map.colour_offset[idx].0.0; // Using offset as a source of random.
+    let (sprite, offset, mut colour) = match map.tiles[idx] {
+        TileType::Wall =>
+            (
+                map.tiles[idx].sprite(check_if_base(TileType::Wall, idx, map), f, bloody),
+                map.tiles[idx].offset(),
+                map.tiles[idx].col(bloody),
+            ),
+        _ =>
+            (
+                map.tiles[idx].sprite(false, f, bloody),
+                map.tiles[idx].offset(),
+                map.tiles[idx].col(bloody),
+            ),
+    };
+    // Get the right modifier for visibility - darkened by distance from POV, or full dark for out-of-view.
+    let visibility = if !map.visible_tiles[idx] {
         NON_VISIBLE_MULTIPLIER
     } else {
         if other_pos.is_some() {
@@ -24,16 +40,13 @@ pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&s
             1.0
         }
     };
-    let offsets = get_normalised_offsets(idx, map);
-    let tint = Color::from_rgb(base * offsets.0, base * offsets.1, base * offsets.2);
+    // Apply our offsets to our base colour.
+    colour = apply_colour_offset(colour, map, idx, offset, false);
+    // Apply our visibility modifier
+    colour = colour.mul(visibility);
+    // Convert to a notan colour.
+    let tint = Color::from_rgb(colour.r, colour.g, colour.b);
     return (sprite, tint);
-}
-
-fn get_normalised_offsets(idx: usize, map: &Map) -> (f32, f32, f32) {
-    let offsets = map.colour_offset[idx].1;
-    let max = f32::max(f32::max(offsets.0, offsets.1), offsets.2);
-    let normalised = (offsets.0 / max, offsets.1 / max, offsets.2 / max);
-    normalised
 }
 
 /// Gets the renderables for a tile, with darkening/offset/post-processing/etc. Passing a val for "debug" will ignore viewshed.
