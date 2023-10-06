@@ -12,7 +12,7 @@ use crate::states::state::Fonts;
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = WindowConfig::new()
-        .set_size(DISPLAYWIDTH * (TILESIZE as u32), DISPLAYHEIGHT * (TILESIZE as u32))
+        .set_size(DISPLAYWIDTH * (TILESIZE.x as u32), DISPLAYHEIGHT * (TILESIZE.x as u32))
         .set_title("RUST-RL")
         .set_resizable(false)
         .set_taskbar_icon_data(Some(include_bytes!("../resources/icon.png")))
@@ -29,11 +29,18 @@ fn main() -> Result<(), String> {
 fn setup(gfx: &mut Graphics) -> State {
     let texture = gfx
         .create_texture()
+        .from_image(include_bytes!("../resources/atlas.png"))
+        .build()
+        .unwrap();
+    let data = include_bytes!("../resources/atlas.json");
+    let atlas = create_textures_from_atlas(data, &texture).unwrap();
+    let texture = gfx
+        .create_texture()
         .from_image(include_bytes!("../resources/td.png"))
         .build()
         .unwrap();
     let data = include_bytes!("../resources/td.json");
-    let atlas = create_textures_from_atlas(data, &texture).unwrap();
+    let interface = create_textures_from_atlas(data, &texture).unwrap();
     let font = Fonts::new(
         gfx.create_font(include_bytes!("../resources/fonts/Greybeard-16px.ttf")).unwrap(),
         Some(
@@ -45,8 +52,8 @@ fn setup(gfx: &mut Graphics) -> State {
     );
     let mut gs = State {
         ecs: World::new(),
-        base_texture: texture,
         atlas,
+        interface,
         font,
         mapgen_next_state: Some(RunState::MainMenu {
             menu_selection: gui::MainMenuSelection::NewGame,
@@ -192,6 +199,9 @@ fn draw_entities(
 ) {
     {
         let bounds = crate::camera::get_screen_bounds(ecs, false);
+        let bounds_to_px = bounds.to_px();
+        let offset_x = bounds_to_px.x_offset - bounds_to_px.min_x;
+        let offset_y = bounds_to_px.y_offset - bounds_to_px.min_y;
         let positions = ecs.read_storage::<Position>();
         let renderables = ecs.read_storage::<Renderable>();
         let hidden = ecs.read_storage::<Hidden>();
@@ -202,8 +212,6 @@ fn draw_entities(
         let mut to_draw: HashMap<DrawKey, DrawInfo> = HashMap::new();
         for (pos, render, e, _h) in data.iter() {
             let idx = map.xy_idx(pos.x, pos.y);
-            let offset_x = pos.x - bounds.min_x + bounds.x_offset;
-            let offset_y = pos.y - bounds.min_y + bounds.y_offset;
             if
                 crate::camera::in_bounds(
                     pos.x,
@@ -236,7 +244,7 @@ fn draw_entities(
                     DrawType::None => {}
                     _ => {
                         to_draw.insert(
-                            DrawKey { x: offset_x, y: offset_y, render_order: render.render_order },
+                            DrawKey { x: pos.x, y: pos.y, render_order: render.render_order },
                             DrawInfo { e: *e, draw_type }
                         );
                     }
@@ -250,66 +258,47 @@ fn draw_entities(
             match entry.1.draw_type {
                 DrawType::Visible | DrawType::Telepathy => {
                     let renderable = renderables.get(entry.1.e).unwrap();
-                    if let Some(spriteinfo) = &renderable.sprite {
-                        let id = if let Some(sprite) = atlas.get(&spriteinfo.id) {
-                            sprite
-                        } else {
-                            panic!("No entity sprite found for ID: {}", spriteinfo.id);
-                        };
-                        draw.image(id)
-                            .position(
-                                ((entry.0.x as f32) + spriteinfo.offset.0) * TILESIZE,
-                                ((entry.0.y as f32) + spriteinfo.offset.1) * TILESIZE
-                            )
-                            .color(
-                                if spriteinfo.recolour {
-                                    Color::from_rgb(
-                                        renderable.fg.r,
-                                        renderable.fg.g,
-                                        renderable.fg.b
-                                    )
-                                } else {
-                                    let mul = themes::darken_by_distance(
-                                        Point::new(
-                                            entry.0.x + bounds.min_x - bounds.x_offset,
-                                            entry.0.y + bounds.min_y - bounds.y_offset
-                                        ),
-                                        *ecs.fetch::<Point>()
-                                    );
-                                    Color::from_rgb(mul, mul, mul)
-                                }
-                            );
-                        if let Some(pool) = pools.get(entry.1.e) {
-                            if pool.hit_points.current < pool.hit_points.max {
-                                gui::draw_bar(
-                                    draw,
-                                    entry.0.x as f32,
-                                    entry.0.y as f32,
-                                    1.0,
-                                    1.0,
-                                    pool.hit_points.current,
-                                    pool.hit_points.max,
-                                    Color::GREEN,
-                                    Color::RED
-                                );
-                            }
-                        }
+                    let id = if let Some(sprite) = atlas.get(&renderable.sprite) {
+                        sprite
                     } else {
-                        // Fallback to drawing text.
-                        draw.text(
-                            &font.b(),
-                            &format!("{}", bracket_lib::terminal::to_char(renderable.glyph as u8))
+                        panic!("No entity sprite found for ID: {}", &renderable.sprite);
+                    };
+                    console::log(&format!("offset_x: {}, offset_y: {}", offset_x, offset_y));
+                    let x_pos = (entry.0.x as f32) * TILESIZE.sprite_x + offset_x;
+                    let y_pos = (entry.0.y as f32) * TILESIZE.sprite_y + offset_y;
+                    let mul = themes::darken_by_distance(
+                        Point::new(
+                            entry.0.x + bounds.min_x - bounds.x_offset,
+                            entry.0.y + bounds.min_y - bounds.y_offset
+                        ),
+                        *ecs.fetch::<Point>()
+                    );
+                    let col = Color::from_rgb(
+                        renderable.fg.r * mul,
+                        renderable.fg.g * mul,
+                        renderable.fg.b * mul
+                    );
+                    draw.image(id)
+                        .position(
+                            x_pos + renderable.offset.0 * TILESIZE.sprite_x,
+                            y_pos + renderable.offset.1 * TILESIZE.sprite_y
                         )
-                            .position(
-                                ((entry.0.x as f32) + 0.5) * TILESIZE,
-                                ((entry.0.y as f32) + 0.5) * TILESIZE
-                            )
-                            .color(
-                                Color::from_rgb(renderable.fg.r, renderable.fg.g, renderable.fg.b)
-                            )
-                            .size(FONTSIZE)
-                            .h_align_center()
-                            .v_align_middle();
+                        .color(col)
+                        .size(TILESIZE.sprite_x, TILESIZE.sprite_y);
+                    if let Some(pool) = pools.get(entry.1.e) {
+                        if pool.hit_points.current < pool.hit_points.max {
+                            gui::draw_bar(
+                                draw,
+                                x_pos,
+                                y_pos,
+                                1.0,
+                                1.0,
+                                pool.hit_points.current,
+                                pool.hit_points.max,
+                                Color::GREEN,
+                                Color::RED
+                            );
+                        }
                     }
                 }
                 _ => {}
@@ -333,6 +322,10 @@ fn render_map_in_view(
             if crate::camera::in_bounds(tile_x, tile_y, 0, 0, map.width, map.height) {
                 let idx = map.xy_idx(tile_x, tile_y);
                 if map.revealed_tiles[idx] || mapgen {
+                    let draw_x =
+                        (x as f32) * TILESIZE.sprite_x + (bounds.x_offset as f32) * TILESIZE.x;
+                    let draw_y =
+                        (y as f32) * TILESIZE.sprite_y + (bounds.y_offset as f32) * TILESIZE.x;
                     if ASCII_MODE {
                         let (glyph, fg, bg) = crate::map::themes::get_tile_renderables_for_id(
                             idx,
@@ -353,11 +346,9 @@ fn render_map_in_view(
                             panic!("No sprite found for ID: {}", id);
                         };
                         draw.image(sprite)
-                            .position(
-                                ((x + bounds.x_offset) as f32) * TILESIZE,
-                                ((y + bounds.y_offset) as f32) * TILESIZE
-                            )
-                            .color(tint);
+                            .position(draw_x, draw_y)
+                            .color(tint)
+                            .size(TILESIZE.sprite_x, TILESIZE.sprite_y);
                     }
                     if !map.visible_tiles[idx] {
                         // Recall map memory. TODO: Improve this? Optimize? Do we need to remember more fields?
@@ -365,6 +356,12 @@ fn render_map_in_view(
                             let mut sorted: Vec<_> = memories.iter().collect();
                             sorted.sort_by(|a, b| a.render_order.cmp(&b.render_order));
                             for memory in sorted.iter() {
+                                let mult = 0.3;
+                                let col = Color::from_rgb(
+                                    memory.fg.r * mult,
+                                    memory.fg.g * mult,
+                                    memory.fg.b * mult
+                                );
                                 let sprite = if let Some(sprite) = atlas.get(&memory.sprite) {
                                     sprite
                                 } else {
@@ -372,19 +369,11 @@ fn render_map_in_view(
                                 };
                                 draw.image(sprite)
                                     .position(
-                                        (((x + bounds.x_offset) as f32) + memory.offset.0) *
-                                            TILESIZE,
-                                        (((y + bounds.y_offset) as f32) + memory.offset.1) *
-                                            TILESIZE
+                                        draw_x + memory.offset.0 * TILESIZE.sprite_x,
+                                        draw_y + memory.offset.1 * TILESIZE.sprite_y
                                     )
-                                    .color(
-                                        if memory.recolour {
-                                            Color::from_rgb(memory.fg.r, memory.fg.g, memory.fg.b)
-                                        } else {
-                                            let mult = 0.3;
-                                            Color::from_rgb(mult, mult, mult)
-                                        }
-                                    );
+                                    .color(col)
+                                    .size(TILESIZE.sprite_x, TILESIZE.sprite_y);
                             }
                         }
                     }
@@ -408,54 +397,54 @@ struct BoxDraw {
 }
 fn draw_spritebox(panel: BoxDraw, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     draw.image(atlas.get(&format!("{}_1", panel.frame)).unwrap()).position(
-        (panel.top_left.0 as f32) * TILESIZE,
-        (panel.top_left.1 as f32) * TILESIZE
+        (panel.top_left.0 as f32) * TILESIZE.x,
+        (panel.top_left.1 as f32) * TILESIZE.x
     );
     for i in panel.top_left.0 + 1..panel.top_right.0 {
         draw.image(atlas.get(&format!("{}_2", panel.frame)).unwrap()).position(
-            (i as f32) * TILESIZE,
-            (panel.top_left.1 as f32) * TILESIZE
+            (i as f32) * TILESIZE.x,
+            (panel.top_left.1 as f32) * TILESIZE.x
         );
     }
     draw.image(atlas.get(&format!("{}_3", panel.frame)).unwrap()).position(
-        (panel.top_right.0 as f32) * TILESIZE,
-        (panel.top_right.1 as f32) * TILESIZE
+        (panel.top_right.0 as f32) * TILESIZE.x,
+        (panel.top_right.1 as f32) * TILESIZE.x
     );
     for i in panel.top_left.1 + 1..panel.bottom_left.1 {
         draw.image(atlas.get(&format!("{}_4", panel.frame)).unwrap()).position(
-            (panel.top_left.0 as f32) * TILESIZE,
-            (i as f32) * TILESIZE
+            (panel.top_left.0 as f32) * TILESIZE.x,
+            (i as f32) * TILESIZE.x
         );
     }
     if panel.fill {
         for i in panel.top_left.0 + 1..panel.top_right.0 {
             for j in panel.top_left.1 + 1..panel.bottom_left.1 {
                 draw.image(atlas.get(&format!("{}_5", panel.frame)).unwrap()).position(
-                    (i as f32) * TILESIZE,
-                    (j as f32) * TILESIZE
+                    (i as f32) * TILESIZE.x,
+                    (j as f32) * TILESIZE.x
                 );
             }
         }
     }
     for i in panel.top_right.1 + 1..panel.bottom_right.1 {
         draw.image(atlas.get(&format!("{}_6", panel.frame)).unwrap()).position(
-            (panel.top_right.0 as f32) * TILESIZE,
-            (i as f32) * TILESIZE
+            (panel.top_right.0 as f32) * TILESIZE.x,
+            (i as f32) * TILESIZE.x
         );
     }
     draw.image(atlas.get(&format!("{}_7", panel.frame)).unwrap()).position(
-        (panel.bottom_left.0 as f32) * TILESIZE,
-        (panel.bottom_left.1 as f32) * TILESIZE
+        (panel.bottom_left.0 as f32) * TILESIZE.x,
+        (panel.bottom_left.1 as f32) * TILESIZE.x
     );
     for i in panel.bottom_left.0 + 1..panel.bottom_right.0 {
         draw.image(atlas.get(&format!("{}_8", panel.frame)).unwrap()).position(
-            (i as f32) * TILESIZE,
-            (panel.bottom_left.1 as f32) * TILESIZE
+            (i as f32) * TILESIZE.x,
+            (panel.bottom_left.1 as f32) * TILESIZE.x
         );
     }
     draw.image(atlas.get(&format!("{}_9", panel.frame)).unwrap()).position(
-        (panel.bottom_right.0 as f32) * TILESIZE,
-        (panel.bottom_right.1 as f32) * TILESIZE
+        (panel.bottom_right.0 as f32) * TILESIZE.x,
+        (panel.bottom_right.1 as f32) * TILESIZE.x
     );
 }
 
@@ -514,7 +503,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         }
         RunState::PreRun { .. } => {}
         RunState::MapGeneration => {
-            draw_bg(&gs.ecs, &mut draw, &gs.atlas);
+            draw_bg(&gs.ecs, &mut draw, &gs.interface);
             if config::CONFIG.logging.show_mapgen && gs.mapgen_history.len() > 0 {
                 render_map_in_view(
                     &gs.mapgen_history[gs.mapgen_index],
@@ -528,7 +517,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         }
         _ => {
             let map = gs.ecs.fetch::<Map>();
-            draw_bg(&gs.ecs, &mut draw, &gs.atlas);
+            draw_bg(&gs.ecs, &mut draw, &gs.interface);
             render_map_in_view(&*map, &gs.ecs, &mut draw, &gs.atlas, false);
             // Special case: targeting needs to be drawn *below* entities, but above tiles.
             if let RunState::ShowTargeting { range, item: _, x, y, aoe } = runstate {
@@ -556,19 +545,28 @@ fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         RunState::ShowInventory => {
             corner_text("Use what? [aA-zZ]/[Esc.]", &mut draw, &gs.font);
             let offset = crate::camera::get_offset();
-            let (x, y) = (((1 + offset.x) as f32) * TILESIZE, ((3 + offset.y) as f32) * TILESIZE);
+            let (x, y) = (
+                ((1 + offset.x) as f32) * TILESIZE.x,
+                ((3 + offset.y) as f32) * TILESIZE.x,
+            );
             gui::draw_backpack_items(&gs.ecs, &mut draw, &gs.font, x, y);
         }
         RunState::ShowDropItem => {
             corner_text("Drop what? [aA-zZ]/[Esc.]", &mut draw, &gs.font);
             let offset = crate::camera::get_offset();
-            let (x, y) = (((1 + offset.x) as f32) * TILESIZE, ((3 + offset.y) as f32) * TILESIZE);
+            let (x, y) = (
+                ((1 + offset.x) as f32) * TILESIZE.x,
+                ((3 + offset.y) as f32) * TILESIZE.x,
+            );
             gui::draw_backpack_items(&gs.ecs, &mut draw, &gs.font, x, y);
         }
         RunState::ShowRemoveItem => {
             corner_text("Unequip which item? [aA-zZ]/[Esc.]", &mut draw, &gs.font);
             let offset = crate::camera::get_offset();
-            let (x, y) = (((1 + offset.x) as f32) * TILESIZE, ((3 + offset.y) as f32) * TILESIZE);
+            let (x, y) = (
+                ((1 + offset.x) as f32) * TILESIZE.x,
+                ((3 + offset.y) as f32) * TILESIZE.x,
+            );
             gui::draw_items(&gs.ecs, &mut draw, &gs.font, x, y, gui::Location::Equipped, None);
         }
         RunState::ShowTargeting { .. } => {
@@ -587,6 +585,6 @@ fn update(ctx: &mut App, state: &mut State) {
 fn corner_text(text: &str, draw: &mut Draw, font: &Fonts) {
     let offset = crate::camera::get_offset();
     draw.text(&font.b(), &text)
-        .position(((offset.x + 1) as f32) * TILESIZE, ((offset.y + 1) as f32) * TILESIZE)
+        .position(((offset.x + 1) as f32) * TILESIZE.x, ((offset.y + 1) as f32) * TILESIZE.x)
         .size(FONTSIZE);
 }

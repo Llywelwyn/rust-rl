@@ -49,8 +49,8 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
                     None,
                     EffectType::Particle {
                         glyph: to_cp437('‼'),
+                        sprite: "gnome".to_string(), // FIXME: REMOVE THE GNOMES
                         fg: RGB::named(ORANGE),
-                        bg: RGB::named(BLACK),
                         lifespan: DEFAULT_PARTICLE_LIFETIME,
                         delay: 0.0,
                     },
@@ -83,10 +83,10 @@ pub fn heal_damage(ecs: &mut World, heal: &EffectSpawner, target: Entity) {
             }
             add_effect(
                 None,
-                EffectType::Particle {
+                EffectType::Particle { // GNOMES
                     glyph: to_cp437('♥'),
+                    sprite: "gnome".to_string(),
                     fg: RGB::named(BLUE),
-                    bg: RGB::named(BLACK),
                     lifespan: DEFAULT_PARTICLE_LIFETIME,
                     delay: 0.0,
                 },
@@ -266,11 +266,11 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                     for i in 0..5 {
                         if player_pos.y - i > 1 {
                             add_effect(
-                                None,
+                                None, // FIXME: REMOVE THE GNOMES
                                 EffectType::Particle {
                                     glyph: to_cp437('░'),
+                                    sprite: "gnome".to_string(),
                                     fg: RGB::named(GOLD),
-                                    bg: RGB::named(BLACK),
                                     lifespan: LONG_PARTICLE_LIFETIME,
                                     delay: (i as f32) * 100.0,
                                 },
@@ -281,8 +281,8 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                                     None,
                                     EffectType::Particle {
                                         glyph: to_cp437('░'),
+                                        sprite: "gnome".to_string(),
                                         fg: RGB::named(GOLD),
-                                        bg: RGB::named(BLACK),
                                         lifespan: LONG_PARTICLE_LIFETIME,
                                         delay: (i as f32) * 100.0,
                                     },
@@ -297,8 +297,8 @@ pub fn entity_death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                                     None,
                                     EffectType::Particle {
                                         glyph: to_cp437('░'),
+                                        sprite: "gnome".to_string(),
                                         fg: RGB::named(GOLD),
-                                        bg: RGB::named(BLACK),
                                         lifespan: LONG_PARTICLE_LIFETIME,
                                         delay: (i as f32) * 100.0,
                                     },

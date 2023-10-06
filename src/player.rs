@@ -338,8 +338,8 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                                         None,
                                         EffectType::Particle {
                                             glyph: to_cp437('‼'),
+                                            sprite: "gnome".to_string(), // FIXME: REMOVE THE GNOMES
                                             fg: RGB::named(CHOCOLATE),
-                                            bg: RGB::named(BLACK),
                                             lifespan: 150.0,
                                             delay: 0.0,
                                         },
@@ -398,8 +398,8 @@ pub fn kick(i: i32, j: i32, ecs: &mut World) -> RunState {
                             None,
                             EffectType::Particle {
                                 glyph: to_cp437('‼'),
+                                sprite: "gnome".to_string(), // FIXME: REMOVE THE GNOMES
                                 fg: RGB::named(CHOCOLATE),
-                                bg: RGB::named(BLACK),
                                 lifespan: 150.0,
                                 delay: 0.0,
                             },

@@ -1,9 +1,17 @@
 use bracket_lib::prelude::*;
+use super::ZOOM_FACTOR;
 
 // POST-PROCESSING
 pub const WITH_DARKEN_BY_DISTANCE: bool = true; // If further away tiles should get darkened, instead of a harsh transition to non-visible.
-pub const VIEWPORT_W: i32 = 69;
-pub const VIEWPORT_H: i32 = 41;
+
+// Counted in 16x16 tiles, because that's how most of the screen is drawn. However,
+// the viewport itself uses 16x24 sprites - so this translates to 70x28 tiles drawn.
+// It also works nicely for zooming in, displaying 35x14 tiles cleanly onscreen.
+pub const VIEWPORT_W: i32 = 70;
+pub const VIEWPORT_H: i32 = 42;
+
+pub const TILES_IN_VIEWPORT_W: i32 = 70 / (ZOOM_FACTOR as i32);
+pub const TILES_IN_VIEWPORT_H: i32 = 28 / (ZOOM_FACTOR as i32);
 
 pub const TILE_LAYER: usize = 1;
 pub const ENTITY_LAYER: usize = 2;

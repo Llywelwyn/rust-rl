@@ -38,57 +38,17 @@ pub struct OtherLevelPosition {
     pub id: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SpriteInfo {
-    pub id: String,
-    pub recolour: bool,
-    pub alt: Option<String>,
-    pub offset: (f32, f32),
-    pub alt_offset: (f32, f32),
-}
-
-impl SpriteInfo {
-    pub fn new(id: &str) -> Self {
-        Self {
-            id: id.to_string(),
-            recolour: false,
-            alt: None,
-            offset: (0.0, 0.0),
-            alt_offset: (0.0, 0.0),
-        }
-    }
-    pub fn colourable(id: &str) -> Self {
-        Self {
-            id: id.to_string(),
-            recolour: true,
-            alt: None,
-            offset: (0.0, 0.0),
-            alt_offset: (0.0, 0.0),
-        }
-    }
-    fn swap(&self) -> Self {
-        if let Some(alt_sprite) = &self.alt {
-            Self {
-                id: alt_sprite.clone(),
-                recolour: self.recolour,
-                alt: Some(self.id.clone()),
-                offset: self.alt_offset,
-                alt_offset: self.offset,
-            }
-        } else {
-            unreachable!("Tried to call .swap() on a sprite with no alt: {:?}", self);
-        }
-    }
-}
-
 #[derive(Debug, Component, ConvertSaveload, Clone)]
 pub struct Renderable {
-    pub glyph: FontCharType,
-    pub sprite: Option<SpriteInfo>,
+    pub glyph: FontCharType, // Legacy, and for drawing the morgue map.
+    pub sprite: String,
+    pub sprite_alt: Option<String>,
     pub fg: RGB,
-    pub bg: RGB,
+    pub fg_alt: Option<RGB>,
     pub render_order: i32,
-    pub alt_render_order: Option<i32>,
+    pub render_order_alt: Option<i32>,
+    pub offset: (f32, f32),
+    pub offset_alt: Option<(f32, f32)>,
     // 0 = always on top: particle effects
     // 1 = things that should appear infront of the player: railings, etc.
     // 2 = the player
@@ -98,22 +58,59 @@ pub struct Renderable {
 }
 
 impl Renderable {
+    pub fn new(glyph: FontCharType, sprite: String, fg: RGB, render_order: i32) -> Self {
+        Self {
+            glyph,
+            sprite,
+            sprite_alt: None,
+            fg,
+            fg_alt: None,
+            render_order,
+            render_order_alt: None,
+            offset: (0.0, 0.0),
+            offset_alt: None,
+        }
+    }
     pub fn swap(&mut self) {
-        let mut did_something = false;
-        if let Some(alt_render_order) = &mut self.alt_render_order {
-            std::mem::swap(&mut self.render_order, alt_render_order);
-            did_something = true;
-        }
-        if let Some(sprite) = &mut self.sprite {
-            *sprite = sprite.swap();
-            did_something = true;
-        }
+        let sprite = self.swap_sprite();
+        let fg = self.swap_fg();
+        let render_order = self.swap_render_order();
+        let offset = self.swap_offset();
+        let did_something = sprite || fg || render_order || offset;
         if !did_something {
             unreachable!(
                 ".swap() was called on a Renderable component, but nothing happened. {:?}",
                 self
             );
         }
+    }
+    pub fn swap_sprite(&mut self) -> bool {
+        if let Some(sprite_alt) = &mut self.sprite_alt {
+            std::mem::swap(&mut self.sprite, sprite_alt);
+            return true;
+        }
+        false
+    }
+    pub fn swap_fg(&mut self) -> bool {
+        if let Some(fg_alt) = &mut self.fg_alt {
+            std::mem::swap(&mut self.fg, fg_alt);
+            return true;
+        }
+        false
+    }
+    pub fn swap_render_order(&mut self) -> bool {
+        if let Some(render_order_alt) = &mut self.render_order_alt {
+            std::mem::swap(&mut self.render_order, render_order_alt);
+            return true;
+        }
+        false
+    }
+    pub fn swap_offset(&mut self) -> bool {
+        if let Some(offset_alt) = &mut self.offset_alt {
+            std::mem::swap(&mut self.offset, offset_alt);
+            return true;
+        }
+        false
     }
 }
 
@@ -793,7 +790,9 @@ pub struct Charges {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleLine {
     pub glyph: FontCharType,
+    pub sprite: String,
     pub tail_glyph: FontCharType,
+    pub tail_sprite: String,
     pub colour: RGB,
     pub lifetime_ms: f32,
     pub trail_colour: RGB,
@@ -803,6 +802,7 @@ pub struct SpawnParticleLine {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleSimple {
     pub glyph: FontCharType,
+    pub sprite: String,
     pub colour: RGB,
     pub lifetime_ms: f32,
 }
@@ -810,8 +810,11 @@ pub struct SpawnParticleSimple {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleBurst {
     pub glyph: FontCharType,
+    pub sprite: String,
     pub head_glyph: FontCharType,
+    pub head_sprite: String,
     pub tail_glyph: FontCharType,
+    pub tail_sprite: String,
     pub colour: RGB,
     pub lerp: RGB,
     pub lifetime_ms: f32,

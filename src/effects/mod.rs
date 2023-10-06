@@ -45,8 +45,8 @@ pub enum EffectType {
     },
     Particle {
         glyph: FontCharType,
+        sprite: String,
         fg: RGB,
-        bg: RGB,
         lifespan: f32,
         delay: f32,
     },

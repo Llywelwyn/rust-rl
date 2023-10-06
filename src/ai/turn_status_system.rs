@@ -83,8 +83,8 @@ impl<'a> System<'a> for TurnStatusSystem {
                     None,
                     EffectType::Particle {
                         glyph: to_cp437('!'),
+                        sprite: "gnome".to_string(), // FIXME: REMOVE THE GNOMES
                         fg: RGB::named(LIGHT_BLUE),
-                        bg: RGB::named(BLACK),
                         lifespan: 200.0,
                         delay: 0.0,
                     },
@@ -113,8 +113,8 @@ impl<'a> System<'a> for TurnStatusSystem {
                     None,
                     EffectType::Particle {
                         glyph: to_cp437('?'),
+                        sprite: "gnome".to_string(), // FIXME: REMOVE THE GNOMES
                         fg: RGB::named(MAGENTA),
-                        bg: RGB::named(BLACK),
                         lifespan: 200.0,
                         delay: 0.0,
                     },

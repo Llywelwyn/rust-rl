@@ -18,8 +18,8 @@ pub fn render(draw: bool, gfx: &mut Graphics, font: &Fonts) {
         render_log(
             gfx,
             &font,
-            &(TILESIZE, TILESIZE * 8.0 + 4.0),
-            (VIEWPORT_W as f32) * TILESIZE,
+            &(TILESIZE.x, TILESIZE.x * 8.0 + 4.0),
+            (VIEWPORT_W as f32) * TILESIZE.x,
             7
         );
     }

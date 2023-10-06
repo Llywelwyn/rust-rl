@@ -29,7 +29,6 @@ use super::{
     Intrinsics,
     HasAncestry,
     HasClass,
-    SpriteInfo,
 };
 use crate::gui::{ Ancestry, Class };
 use crate::consts::entity;
@@ -55,15 +54,8 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     let player = ecs
         .create_entity()
         .with(Position { x: player_x, y: player_y })
-        .with(BlocksTile {})
-        .with(Renderable {
-            glyph: to_cp437('@'),
-            sprite: Some(SpriteInfo::colourable("@")),
-            fg: RGB::named(YELLOW),
-            bg: RGB::named(BLACK),
-            render_order: 2,
-            alt_render_order: None,
-        })
+        .with(BlocksTile {}) // FIXME: Put in actual player sprite
+        .with(Renderable::new(to_cp437('@'), "gnome".to_string(), RGB::named(YELLOW), 2))
         .with(Bleeds { colour: RGB::named(BLOODSTAIN_COLOUR) })
         .with(Player {})
         .with(Mind {})

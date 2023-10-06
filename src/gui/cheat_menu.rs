@@ -59,7 +59,7 @@ pub fn draw_cheat_menu(
     m - MAGIC MAP REVEAL
     g - GOD MODE"#;
     draw.text(&font.n(), DEBUG_MENU)
-        .position((1.0 + (offsets.x as f32)) * TILESIZE, (1.0 + (offsets.y as f32)) * TILESIZE)
+        .position((1.0 + (offsets.x as f32)) * TILESIZE.x, (1.0 + (offsets.y as f32)) * TILESIZE.x)
         .color(Color::RED)
         .size(FONTSIZE);
 }

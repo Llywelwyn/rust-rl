@@ -2,7 +2,7 @@ use super::{ Hidden, Map, Mind, Position, Prop, Renderable, Pools };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::ops::Mul;
-use super::consts::visuals::{ VIEWPORT_W, VIEWPORT_H };
+use super::consts::visuals::{ TILES_IN_VIEWPORT_H, TILES_IN_VIEWPORT_W };
 use super::consts::prelude::*;
 
 const SHOW_BOUNDARIES: bool = false;
@@ -25,6 +25,28 @@ pub struct ScreenBounds {
     pub y_offset: i32,
 }
 
+pub struct ScreenBoundsf32 {
+    pub min_x: f32,
+    pub max_x: f32,
+    pub min_y: f32,
+    pub max_y: f32,
+    pub x_offset: f32,
+    pub y_offset: f32,
+}
+
+impl ScreenBounds {
+    pub fn to_px(&self) -> ScreenBoundsf32 {
+        ScreenBoundsf32 {
+            min_x: (self.min_x as f32) * TILESIZE.sprite_x,
+            max_x: (self.max_x as f32) * TILESIZE.sprite_x,
+            min_y: (self.min_y as f32) * TILESIZE.sprite_y,
+            max_y: (self.max_y as f32) * TILESIZE.sprite_y,
+            x_offset: (self.x_offset as f32) * TILESIZE.x,
+            y_offset: (self.y_offset as f32) * TILESIZE.x,
+        }
+    }
+}
+
 pub fn get_screen_bounds(ecs: &World, debug: bool) -> ScreenBounds {
     let map = ecs.fetch::<Map>();
     let player_pos = if !debug {
@@ -33,7 +55,12 @@ pub fn get_screen_bounds(ecs: &World, debug: bool) -> ScreenBounds {
         Point::new(map.width / 2, map.height / 2)
     };
 
-    let (x_chars, y_chars, mut x_offset, mut y_offset) = (VIEWPORT_W, VIEWPORT_H, 1, 10);
+    let (x_chars, y_chars, mut x_offset, mut y_offset) = (
+        TILES_IN_VIEWPORT_W,
+        TILES_IN_VIEWPORT_H,
+        1,
+        10,
+    );
 
     let centre_x = (x_chars / 2) as i32;
     let centre_y = (y_chars / 2) as i32;
@@ -55,6 +82,8 @@ pub fn get_screen_bounds(ecs: &World, debug: bool) -> ScreenBounds {
 
     ScreenBounds { min_x, max_x, min_y, max_y, x_offset, y_offset }
 }
+
+use crate::consts::TILESIZE;
 
 pub fn in_bounds(x: i32, y: i32, min_x: i32, min_y: i32, upper_x: i32, upper_y: i32) -> bool {
     x >= min_x && x < upper_x && y >= min_y && y < upper_y

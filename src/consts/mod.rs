@@ -12,7 +12,20 @@ pub mod prelude {
     pub use super::visuals::{ VIEWPORT_H, VIEWPORT_W };
 }
 
-pub const TILESIZE: f32 = 16.0;
+pub struct Spritesize {
+    pub x: f32,
+    pub y: f32,
+    pub sprite_x: f32,
+    pub sprite_y: f32,
+}
+
+pub const TILESIZE: Spritesize = Spritesize {
+    x: 16.0,
+    y: 24.0,
+    sprite_x: 16.0 * ZOOM_FACTOR,
+    sprite_y: 24.0 * ZOOM_FACTOR,
+};
+pub const ZOOM_FACTOR: f32 = 2.0;
 pub const FONTSIZE: f32 = 16.0;
 pub const DISPLAYWIDTH: u32 = 100;
-pub const DISPLAYHEIGHT: u32 = 56;
+pub const DISPLAYHEIGHT: u32 = 57;

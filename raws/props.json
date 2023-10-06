@@ -2,89 +2,89 @@
     {
         "id": "door",
         "name": "door",
-        "renderable": { "glyph": "+", "sprite": { "id": "door_wood_h_closed", "alt": "door_wood_h_open", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "+", "sprite": "door", "alt": "door_open", "fg": "#00FFFF", "order": 5 },
         "door": { "open": false, "locked": false, "blocks_vis": true, "blocks_move": true }
     },
     {
         "id": "trapdoor",
         "name": "trapdoor",
-        "renderable": { "glyph": "+", "sprite": { "id": "trapdoor_closed", "alt": "trapdoor_open2", "colour": false, "alt_y": 1.0 }, "fg": "#00FFFF", "bg": "#000000", "order": 5, "alt_order": 1 },
+        "renderable": { "glyph": "+", "sprite": "trapdoor", "alt": "trapdoor_open", "fg": "#00FFFF", "order": 5, "alt_order": 1 },
         "door": { "open": false, "locked": false, "blocks_vis": false, "blocks_move": false }
     },
     {
         "id": "prop_altar",
         "name": "altar",
-        "renderable": { "glyph": "_", "sprite": { "id": "tombstone", "colour": false }, "fg": "#FFFFFF", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "_", "sprite": "altar", "fg": "#FFFFFF", "order": 5 },
         "flags": ["ENTRY_TRIGGER"],
         "effects": { "heal": "8d8" }
     },
     {
         "id": "prop_keg",
         "name": "keg",
-        "renderable": { "glyph": "φ", "fg": "#AAAAAA", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "φ", "sprite": "gnome", "fg": "#AAAAAA", "order": 5 },
         "flags": []
     },
     {
         "id": "prop_table",
         "name": "table",
-        "renderable": { "glyph": "-", "sprite": { "id": "table", "colour": false }, "fg": "#AAAAAA", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "-", "sprite": "table", "fg": "#a76d3d", "order": 5 },
         "flags": []
     },
     {
         "id": "prop_hay",
         "name": "hay",
-        "renderable": { "glyph": "%", "sprite": { "id": "%" }, "fg": "#c7ad39", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "%", "sprite": "plants", "fg": "#e2b82f", "order": 5 },
         "flags": []
     },
     {
         "id": "prop_statue",
         "name": "statue",
-        "renderable": { "glyph": "@", "sprite": { "id": "statue_warrior", "colour": false }, "fg": "#ffffff", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "@", "sprite": "altar", "fg": "#ffffff", "order": 5 },
         "flags": []
     },
     {
         "id": "prop_bed",
         "name": "bed",
-        "renderable": { "glyph": "=", "sprite": { "id": "bed", "colour": false }, "fg": "#AAAAAA", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "=", "sprite": "bed", "fg": "#a55d33", "order": 5 },
         "flags": []
     },
     {
         "id": "prop_chair",
         "name": "chair",
-        "renderable": { "glyph": "└", "sprite": { "id": "chair", "colour": false }, "fg": "#AAAAAA", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "└", "sprite": "chair_r", "fg": "#a76d3d", "order": 5 },
         "flags": []
     },
     {
         "id": "prop_candle",
         "name": "candle",
-        "renderable": { "glyph": "Ä", "sprite": { "id": "candles_a1", "colour": false }, "fg": "#FFA500", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "Ä", "sprite": "candelabra", "fg": "#FFA500", "order": 4 },
         "flags": []
     },
     {
         "id": "trap_bear",
         "name": "bear trap",
-        "renderable": { "glyph": "^", "sprite": { "id": "trap", "colour": false }, "fg": "#e6e6e6", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "^", "sprite": "beartrap", "fg": "#e6e6e6", "order": 5 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "damage": "2d4" }
     },
     {
         "id": "trap_mini_mine",
         "name": "mini-mine",
-        "renderable": { "glyph": "^", "sprite": { "id": "^" }, "fg": "#ff1e00", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "^", "sprite": "minimine", "fg": "#ff1e00", "order": 5 },
         "flags": ["ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "damage": "2d4", "aoe": "3" }
     },
     {
         "id": "trap_stonefall",
         "name": "stonefall trap",
-        "renderable": { "glyph": "^", "sprite": { "id": "^" }, "fg": "#beb5a7", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "^", "sprite": "stones", "fg": "#beb5a7", "order": 5 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "damage": "2d10" }
     },
     {
         "id": "trap_confusion",
         "name": "magic trap",
-        "renderable": { "glyph": "^", "sprite": { "id": "magic_e1", "colour": false }, "fg": "#df07df", "bg": "#000000", "order": 5 },
+        "renderable": { "glyph": "^", "sprite": "magic_trap", "fg": "#df07df", "order": 5 },
         "flags": ["HIDDEN", "ENTRY_TRIGGER", "SINGLE_ACTIVATION"],
         "effects": { "confusion": "3" }
     }

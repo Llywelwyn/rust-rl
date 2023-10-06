@@ -4,27 +4,27 @@ use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub fn particle_to_tile(ecs: &mut World, target: i32, effect: &EffectSpawner) {
-    if let EffectType::Particle { glyph, fg, bg, lifespan, delay } = effect.effect_type {
+    if let EffectType::Particle { glyph, sprite, fg, lifespan, delay } = &effect.effect_type {
         let map = ecs.fetch::<Map>();
         let mut particle_builder = ecs.fetch_mut::<ParticleBuilder>();
-        if delay <= 0.0 {
+        if delay <= &0.0 {
             particle_builder.request(
                 target % map.width,
                 target / map.width,
-                fg,
-                bg,
-                glyph,
-                lifespan
+                *fg,
+                *glyph,
+                sprite.clone(),
+                *lifespan
             );
         } else {
             particle_builder.delay(
                 target % map.width,
                 target / map.width,
-                fg,
-                bg,
-                glyph,
-                lifespan,
-                delay
+                *fg,
+                *glyph,
+                sprite.clone(),
+                *lifespan,
+                *delay
             );
         }
     }
@@ -36,8 +36,8 @@ pub fn handle_simple_particles(ecs: &World, entity: Entity, target: &Targets) {
             None,
             EffectType::Particle {
                 glyph: part.glyph,
+                sprite: part.sprite.clone(),
                 fg: part.colour,
-                bg: RGB::named(BLACK),
                 lifespan: part.lifetime_ms,
                 delay: 0.0,
             },
@@ -56,7 +56,9 @@ pub fn handle_burst_particles(ecs: &World, entity: Entity, target: &Targets) {
                 end_pos,
                 &(SpawnParticleLine {
                     glyph: part.head_glyph,
+                    sprite: part.head_sprite.clone(),
                     tail_glyph: part.tail_glyph,
+                    tail_sprite: part.tail_sprite.clone(),
                     colour: part.colour,
                     trail_colour: part.trail_colour,
                     lifetime_ms: part.trail_lifetime_ms, // 75.0 is good here.
@@ -75,8 +77,8 @@ pub fn handle_burst_particles(ecs: &World, entity: Entity, target: &Targets) {
                     None,
                     EffectType::Particle {
                         glyph: part.glyph,
+                        sprite: part.sprite.clone(),
                         fg: part.colour.lerp(part.lerp, (i as f32) * 0.1),
-                        bg: RGB::named(BLACK),
                         lifespan: part.lifetime_ms / 10.0, // ~50-80 is good here.
                         delay: burst_delay + ((i as f32) * part.lifetime_ms) / 10.0, // above + burst_delay
                     },
@@ -163,8 +165,8 @@ fn spawn_line_particles(ecs: &World, start: i32, end: i32, part: &SpawnParticleL
             None,
             EffectType::Particle {
                 glyph: part.glyph,
+                sprite: part.sprite.clone(),
                 fg: part.colour,
-                bg: RGB::named(BLACK),
                 lifespan: part.lifetime_ms,
                 delay: (i as f32) * part.lifetime_ms,
             },
@@ -175,8 +177,8 @@ fn spawn_line_particles(ecs: &World, start: i32, end: i32, part: &SpawnParticleL
                 None,
                 EffectType::Particle {
                     glyph: part.tail_glyph,
+                    sprite: part.tail_sprite.clone(),
                     fg: part.trail_colour,
-                    bg: RGB::named(BLACK),
                     lifespan: part.trail_lifetime_ms,
                     delay: (i as f32) * part.lifetime_ms,
                 },

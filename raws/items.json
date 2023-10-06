@@ -2,7 +2,7 @@
     {
         "id": "potion_health",
         "name": { "name": "potion of health", "plural": "potions of health" },
-        "renderable": { "glyph": "!", "fg": "#FF00FF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "!", "sprite": "potion", "fg": "#FF00FF", "order": 4 },
         "class": "potion",
         "weight": 1,
         "value": 50,
@@ -13,7 +13,7 @@
     {
         "id": "potion_health_weak",
         "name": { "name": "potion of lesser health", "plural": "potions of lesser health" },
-        "renderable": { "glyph": "!", "fg": "#FF00FF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "!", "sprite": "potion", "fg": "#FF00FF", "order": 4 },
         "class": "potion",
         "weight": 1,
         "value": 25,
@@ -24,7 +24,7 @@
     {
         "id": "scroll_identify",
         "name": { "name": "scroll of identify", "plural": "scrolls of identify" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#0FFFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#0FFFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 100,
@@ -34,7 +34,7 @@
     {
         "id": "scroll_removecurse",
         "name": { "name": "scroll of remove curse", "plural": "scrolls of remove curse" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#0FFFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#0FFFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 200,
@@ -44,7 +44,7 @@
     {
         "id": "scroll_health",
         "name": { "name": "scroll of healing word", "plural": "scrolls of healing word" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#00FFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 50,
@@ -55,7 +55,7 @@
     {
         "id": "scroll_mass_health",
         "name": { "name": "scroll of mass healing word", "plural": "scrolls of mass healing word" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#00FFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 200,
@@ -66,7 +66,7 @@
     {
         "id": "scroll_magicmissile",
         "name": { "name": "scroll of magic missile", "plural": "scrolls of magic missile" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#00FFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 50,
@@ -77,7 +77,7 @@
     {
         "id": "scroll_embers",
         "name": { "name": "scroll of embers", "plural": "scrolls of embers" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#00FFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 100,
@@ -88,7 +88,7 @@
     {
         "id": "scroll_fireball",
         "name": { "name": "scroll of fireball", "plural": "scrolls of fireball" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#00FFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 200,
@@ -104,7 +104,7 @@
     {
         "id": "scroll_confusion",
         "name": { "name": "scroll of confusion", "plural": "scrolls of confusion" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#00FFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 100,
@@ -115,7 +115,7 @@
     {
         "id": "scroll_mass_confusion",
         "name": { "name": "scroll of mass confusion", "plural": "scrolls of mass confusion" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#00FFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 200,
@@ -126,7 +126,7 @@
     {
         "id": "scroll_magicmap",
         "name": { "name": "scroll of magic mapping", "plural": "scrolls of magic mapping" },
-        "renderable": { "glyph": "?", "sprite": { "id": "scroll", "colour": false }, "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "?", "sprite": "scroll_writing", "fg": "#00FFFF", "order": 4 },
         "class": "scroll",
         "weight": 0.5,
         "value": 50,
@@ -137,7 +137,7 @@
     {
         "id": "equip_dagger",
         "name": { "name": "dagger", "plural": "daggers" },
-        "renderable": { "glyph": ")", "fg": "#808080", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": ")", "sprite": "dagger", "fg": "#808080", "order": 4 },
         "class": "weapon",
         "weight": 1,
         "value": 2,
@@ -147,7 +147,7 @@
     {
         "id": "equip_shortsword",
         "name": { "name": "shortsword", "plural": "shortswords" },
-        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": ")", "sprite": "shortsword", "fg": "#C0C0C0", "order": 4 },
         "class": "weapon",
         "weight": 2,
         "value": 10,
@@ -157,7 +157,7 @@
     {
         "id": "equip_rapier",
         "name": { "name": "rapier", "plural": "rapiers" },
-        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": ")", "sprite": "gnome", "fg": "#C0C0C0", "order": 4 },
         "class": "weapon",
         "weight": 2,
         "value": 10,
@@ -167,7 +167,7 @@
     {
         "id": "equip_pitchfork",
         "name": { "name": "pitchfork", "plural": "pitchforks" },
-        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": ")", "sprite": "trident", "fg": "#C0C0C0", "order": 4 },
         "class": "weapon",
         "weight": 2,
         "value": 5,
@@ -177,7 +177,7 @@
     {
         "id": "equip_sickle",
         "name": { "name": "sickle", "plural": "sickles" },
-        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": ")", "sprite": "gnome", "fg": "#C0C0C0", "order": 4 },
         "class": "weapon",
         "weight": 2,
         "value": 5,
@@ -187,7 +187,7 @@
     {
         "id": "equip_handaxe",
         "name": { "name": "handaxe", "plural": "handaxes" },
-        "renderable": { "glyph": ")", "fg": "#C0C0C0", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": ")", "sprite": "handaxe", "fg": "#C0C0C0", "order": 4 },
         "class": "weapon",
         "weight": 2,
         "value": 5,
@@ -197,7 +197,7 @@
     {
         "id": "equip_longsword",
         "name": { "name": "longsword", "plural": "longswords" },
-        "renderable": { "glyph": ")", "fg": "#FFF8DC", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": ")", "sprite": "longsword", "fg": "#FFF8DC", "order": 4 },
         "class": "weapon",
         "weight": 3,
         "value": 15,
@@ -207,7 +207,7 @@
     {
         "id": "artifact_icingdeath",
         "name": { "name": "Icingdeath", "plural": "Icingdeath" },
-        "renderable": { "glyph": ")", "fg": "#37aecc", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": ")", "sprite": "scimitar", "fg": "#37aecc", "order": 4 },
         "class": "weapon",
         "weight": 3,
         "value": 300,
@@ -217,7 +217,7 @@
     {
         "id": "equip_smallshield",
         "name": { "name": "buckler", "plural": "bucklers" },
-        "renderable": { "glyph": "[", "fg": "#808080", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "shield_small", "fg": "#808080", "order": 4 },
         "class": "armour",
         "weight": 2,
         "value": 5,
@@ -227,7 +227,7 @@
     {
         "id": "equip_mediumshield",
         "name": { "name": "medium shield", "plural": "medium shields" },
-        "renderable": { "glyph": "[", "fg": "#C0C0C0", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "shield_round", "fg": "#C0C0C0", "order": 4 },
         "class": "armour",
         "weight": 6,
         "value": 10,
@@ -237,7 +237,7 @@
     {
         "id": "equip_largeshield",
         "name": { "name": "large shield", "plural": "large shields" },
-        "renderable": { "glyph": "[", "fg": "#FFF8DC", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "shield_large", "fg": "#FFF8DC", "order": 4 },
         "class": "armour",
         "weight": 12,
         "value": 35,
@@ -247,7 +247,7 @@
     {
         "id": "equip_body_weakleather",
         "name": { "name": "leather jacket", "plural": "leather jackets" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 8,
         "value": 5,
@@ -257,7 +257,7 @@
     {
         "id": "equip_body_leather",
         "name": { "name": "leather chestpiece", "plural": "leather chestpiece" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 10,
         "value": 10,
@@ -267,7 +267,7 @@
     {
         "id": "equip_body_studdedleather",
         "name": { "name": "studded leather chestpiece", "plural": "studded leather chestpieces" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 13,
         "value": 45,
@@ -277,7 +277,7 @@
     {
         "id": "equip_body_ringmail_o",
         "name": { "name": "orcish ring mail", "plural": "orcish ring mail" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 45,
         "value": 50,
@@ -287,7 +287,7 @@
     {
         "id": "equip_body_ringmail",
         "name": { "name": "ring mail", "plural": "ring mail" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 45,
         "value": 70,
@@ -297,7 +297,7 @@
     {
         "id": "equip_head_leather",
         "name": { "name": "leather cap", "plural": "leather caps" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 2,
         "value": 10,
@@ -307,7 +307,7 @@
     {
         "id": "equip_head_elvish",
         "name": { "name": "elvish leather helm", "plural": "elvish leather helms" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 2,
         "value": 25,
@@ -317,7 +317,7 @@
     {
         "id": "equip_head_o",
         "name": { "name": "orcish helm", "plural": "orcish helm" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 6,
         "value": 25,
@@ -327,7 +327,7 @@
     {
         "id": "equip_head_iron",
         "name": { "name": "iron helm", "plural": "iron helm" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 10,
         "value": 45,
@@ -337,7 +337,7 @@
     {
         "id": "equip_feet_leather",
         "name": { "name": "leather shoes", "plural": "leather shoes" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 2,
         "value": 10,
@@ -346,7 +346,7 @@
     {
         "id": "equip_feet_elvish",
         "name": { "name": "elvish leather shoes", "plural": "elvish leather shoes" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 2,
         "value": 25,
@@ -356,7 +356,7 @@
     {
         "id": "equip_feet_o",
         "name": { "name": "orcish boots", "plural": "orcish boots" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 6,
         "value": 25,
@@ -366,7 +366,7 @@
     {
         "id": "equip_feet_iron",
         "name": { "name": "iron boots", "plural": "iron boots" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 10,
         "value": 45,
@@ -376,7 +376,7 @@
     {
         "id": "equip_neck_protection",
         "name": { "name": "amulet of protection", "plural": "amulets of protection" },
-        "renderable": { "glyph": "\"", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "\"", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "amulet",
         "weight": 1,
         "value": 200,
@@ -386,7 +386,7 @@
     {
         "id": "equip_back_protection",
         "name": { "name": "cloak of protection", "plural": "cloaks of protection" },
-        "renderable": { "glyph": "[", "fg": "#aa6000", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "[", "sprite": "body_leather", "fg": "#aa6000", "order": 4 },
         "class": "armour",
         "weight": 1,
         "value": 200,
@@ -396,7 +396,7 @@
     {
         "id": "wand_magicmissile",
         "name": { "name": "wand of magic missile", "plural": "wands of magic missile" },
-        "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "/", "sprite": "body_leather", "fg": "#00FFFF", "order": 4 },
         "class": "wand",
         "weight": 2,
         "value": 100,
@@ -407,7 +407,7 @@
     {
         "id": "wand_fireball",
         "name": { "name": "wand of fireball", "plural": "wands of fireball" },
-        "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "/", "sprite": "body_leather", "fg": "#00FFFF", "order": 4 },
         "class": "wand",
         "weight": 2,
         "value": 300,
@@ -418,7 +418,7 @@
     {
         "id": "wand_confusion",
         "name": { "name": "wand of confusion", "plural": "wands of confusion" },
-        "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "/", "sprite": "body_leather", "fg": "#00FFFF", "order": 4 },
         "class": "wand",
         "weight": 2,
         "value": 200,
@@ -429,7 +429,7 @@
     {
         "id": "wand_digging",
         "name": { "name": "wand of digging", "plural": "wands of digging" },
-        "renderable": { "glyph": "/", "fg": "#00FFFF", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "/", "sprite": "body_leather", "fg": "#00FFFF", "order": 4 },
         "class": "wand",
         "weight": 2,
         "value": 300,
@@ -440,7 +440,7 @@
     {
         "id": "food_rations",
         "name": { "name": "rations", "plural": "rations" },
-        "renderable": { "glyph": "%", "fg": "#FFA07A", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "%", "sprite": "meat", "fg": "#FFA07A", "order": 4 },
         "class": "comestible",
         "weight": 1,
         "value": 1,
@@ -449,7 +449,7 @@
     {
         "id": "food_apple",
         "name": { "name": "apple", "plural": "apples" },
-        "renderable": { "glyph": "%", "fg": "#00FF00", "bg": "#000000", "order": 4 },
+        "renderable": { "glyph": "%", "sprite": "body_leather", "fg": "#00FF00", "order": 4 },
         "class": "comestible",
         "weight": 0.5,
         "value": 1,

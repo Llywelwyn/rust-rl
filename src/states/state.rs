@@ -61,8 +61,8 @@ impl Fonts {
 #[derive(AppState)]
 pub struct State {
     pub ecs: World,
-    pub base_texture: Texture,
     pub atlas: HashMap<String, Texture>,
+    pub interface: HashMap<String, Texture>,
     pub font: Fonts,
     pub mapgen_next_state: Option<RunState>,
     pub mapgen_history: Vec<Map>,

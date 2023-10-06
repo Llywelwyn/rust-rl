@@ -118,8 +118,8 @@ pub enum CharCreateResult {
 }
 
 use notan::prelude::*;
-use notan::draw::{ Draw, CreateDraw, DrawTextSection, Font };
-use super::{ FONTSIZE, DISPLAYWIDTH, TILESIZE, MainMenuSelection };
+use notan::draw::{ Draw, DrawTextSection };
+use super::{ FONTSIZE, TILESIZE };
 use crate::consts::DISPLAYHEIGHT;
 use crate::Fonts;
 
@@ -134,8 +134,8 @@ pub fn draw_charcreation(
         RunState::CharacterCreation { class, ancestry } => (class, ancestry),
         _ => unreachable!("draw_charcreation() called outside of CharacterCreation runstate."),
     };
-    let (mut x, mut y) = (2.0 * TILESIZE, ((DISPLAYHEIGHT as f32) * TILESIZE) / 4.0);
-    const COLUMN_WIDTH: f32 = 20.0 * TILESIZE;
+    let (mut x, mut y) = (2.0 * TILESIZE.x, ((DISPLAYHEIGHT as f32) * TILESIZE.x) / 4.0);
+    const COLUMN_WIDTH: f32 = 20.0 * TILESIZE.x;
     draw.text(&font.ib(), "Who are you?")
         .size(FONTSIZE * 2.0)
         .position(x, y)
@@ -178,7 +178,7 @@ pub fn draw_charcreation(
         draw.text(font.n(), line).size(FONTSIZE).position(x, y).h_align_left();
         y = draw.last_text_bounds().max_y();
     }
-    y += TILESIZE;
+    y += TILESIZE.x;
     for line in CLASSDATA.get(&class).unwrap().iter() {
         draw.text(font.n(), line).size(FONTSIZE).position(x, y).h_align_left();
         y = draw.last_text_bounds().max_y();
@@ -256,27 +256,29 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
         Ancestry::Human => {}
         Ancestry::Dwarf => {
             renderables
-                .insert(*player, Renderable {
-                    glyph: to_cp437(DWARF_GLYPH),
-                    sprite: None, // TODO: Dwarf sprite
-                    fg: RGB::named(DWARF_COLOUR),
-                    bg: RGB::named(BLACK),
-                    render_order: 0,
-                    alt_render_order: None,
-                })
+                .insert(
+                    *player,
+                    Renderable::new(
+                        to_cp437(DWARF_GLYPH),
+                        "gnome".to_string(),
+                        RGB::named(DWARF_COLOUR),
+                        2
+                    )
+                )
                 .expect("Unable to insert renderable component");
             *player_skills.skills.entry(Skill::Defence).or_insert(0) += DWARF_DEFENCE_MOD;
         }
         Ancestry::Elf => {
             renderables
-                .insert(*player, Renderable {
-                    glyph: to_cp437(ELF_GLYPH),
-                    sprite: None, // TODO: Elf sprite
-                    fg: RGB::named(ELF_COLOUR),
-                    bg: RGB::named(BLACK),
-                    render_order: 0,
-                    alt_render_order: None,
-                })
+                .insert(
+                    *player,
+                    Renderable::new(
+                        to_cp437(ELF_GLYPH),
+                        "gnome".to_string(),
+                        RGB::named(ELF_COLOUR),
+                        2
+                    )
+                )
                 .expect("Unable to insert renderable component");
             let mut telepaths = ecs.write_storage::<Telepath>();
             telepaths
@@ -296,14 +298,15 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
         }
         Ancestry::Catfolk => {
             renderables
-                .insert(*player, Renderable {
-                    glyph: to_cp437(CATFOLK_GLYPH),
-                    sprite: None, // TODO: Catfolk sprite
-                    fg: RGB::named(CATFOLK_COLOUR),
-                    bg: RGB::named(BLACK),
-                    render_order: 0,
-                    alt_render_order: None,
-                })
+                .insert(
+                    *player,
+                    Renderable::new(
+                        to_cp437(CATFOLK_GLYPH),
+                        "gnome".to_string(),
+                        RGB::named(CATFOLK_COLOUR),
+                        2
+                    )
+                )
                 .expect("Unable to insert renderable component");
             let mut speeds = ecs.write_storage::<Energy>();
             speeds

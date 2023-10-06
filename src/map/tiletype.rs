@@ -37,74 +37,32 @@ impl TileType {
     }
     fn h(&self, float: f32) -> &str {
         let options = match self {
-            TileType::Wall =>
-                vec![
-                    "wall_cave_h_a",
-                    "wall_cave_h_b",
-                    "wall_cave_h_c",
-                    "wall_cave_h_d",
-                    "wall_cave_h_crack"
-                ],
+            TileType::Wall => vec!["wall_b"],
             _ => unreachable!("Tried to get a h (base) sprite for a non-wall tile."),
         };
         return options[(float * (options.len() as f32)) as usize];
     }
     fn v(&self, float: f32) -> &str {
         let options = match self {
-            TileType::ImpassableMountain => vec!["statue_warrior"],
-            TileType::Wall =>
-                vec![
-                    "wall_cave_v_a",
-                    "wall_cave_v_b",
-                    "wall_cave_v_c",
-                    "wall_cave_v_d",
-                    "wall_cave_v_crack"
-                ],
-            TileType::DeepWater => vec!["water", "water_a1", "water_a2"],
-            TileType::Fence => vec!["wall_cave_h_a"],
-            TileType::Bars => vec!["wall_cave_h_a"],
-            TileType::Floor =>
-                vec![
-                    "floor_cobble_a",
-                    "floor_cobble_b",
-                    "floor_cobble_c",
-                    "floor_cobble_d",
-                    "floor_cobble_e",
-                    "floor_cobble_f"
-                ],
-            TileType::WoodFloor =>
-                vec!["floor_wood_a", "floor_wood_b", "floor_wood_c", "floor_wood_d"],
-            TileType::Gravel => vec!["floor_cobble_b"],
-            TileType::Road =>
-                vec![
-                    "floor_tile_a",
-                    "floor_tile_b",
-                    "floor_tile_c",
-                    "floor_tile_d",
-                    "floor_mossy_a",
-                    "floor_mossy_b",
-                    "floor_mossy_c",
-                    "floor_mossy_d",
-                    "floor_mossy_e"
-                ],
-            TileType::Grass =>
-                vec![
-                    "floor_grass_a",
-                    "floor_grass_b",
-                    "floor_grass_c",
-                    "floor_grass_d",
-                    "floor_grass_e",
-                    "floor_grass_f"
-                ],
-            TileType::Foliage => vec!["floor_grass_b"],
-            TileType::HeavyFoliage => vec!["floor_grass_c"],
-            TileType::Sand => vec!["floor_cobble_c"],
-            TileType::ShallowWater => vec!["water"],
-            TileType::Bridge => vec!["floor_cobble_a"],
-            TileType::DownStair => vec!["wall_cave_stair_down"],
-            TileType::UpStair => vec!["wall_cave_stair_up"],
-            TileType::ToLocal(_) => vec!["wall_crypt_stair_down"],
-            TileType::ToOvermap(_) => vec!["wall_crypt_stair_up"],
+            TileType::ImpassableMountain => vec!["wall_b"],
+            TileType::Wall => vec!["wall_top"],
+            TileType::DeepWater => vec!["water", "water2"],
+            TileType::Fence => vec!["wall_b"],
+            TileType::Bars => vec!["wall_b"],
+            TileType::Floor => vec!["fluff", "fluff2"],
+            TileType::WoodFloor => vec!["fluff", "fluff2"],
+            TileType::Gravel => vec!["fluff", "fluff2"],
+            TileType::Road => vec!["fluff", "fluff2"],
+            TileType::Grass => vec!["fluff", "fluff2"],
+            TileType::Foliage => vec!["fluff", "fluff2"],
+            TileType::HeavyFoliage => vec!["fluff", "fluff2"],
+            TileType::Sand => vec!["fluff", "fluff2"],
+            TileType::ShallowWater => vec!["water", "water2"],
+            TileType::Bridge => vec!["wall_b"],
+            TileType::DownStair => vec!["wall_b"],
+            TileType::UpStair => vec!["wall_b"],
+            TileType::ToLocal(_) => vec!["wall_b"],
+            TileType::ToOvermap(_) => vec!["wall_b"],
         };
         return options[(float * (options.len() as f32)) as usize];
     }

@@ -142,7 +142,7 @@ fn draw_bar_sprite(
         } else {
             panic!("No sprite found in atlas: {}_{}_{}", sprite, fill, suffix)
         };
-        draw.image(sprite).position(sx + (x as f32) * TILESIZE, y);
+        draw.image(sprite).position(sx + (x as f32) * TILESIZE.x, y);
     }
 }
 
@@ -160,10 +160,10 @@ pub fn draw_bar(
     empty: Color
 ) {
     let fill: f32 = (f32::max(current as f32, 0.0) / (max as f32)) * width;
-    draw.line((x * TILESIZE, y * TILESIZE), ((x + fill) * TILESIZE, y * TILESIZE))
+    draw.line((x * TILESIZE.x, y * TILESIZE.x), ((x + fill) * TILESIZE.x, y * TILESIZE.x))
         .color(full)
         .width(height);
-    draw.line(((x + fill) * TILESIZE, y * TILESIZE), ((x + width) * TILESIZE, y * TILESIZE))
+    draw.line(((x + fill) * TILESIZE.x, y * TILESIZE.x), ((x + width) * TILESIZE.x, y * TILESIZE.x))
         .color(empty)
         .width(height);
 }
@@ -187,9 +187,9 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         draw_bar(
             draw,
             BAR_X,
-            53.5,
+            54.5,
             BAR_WIDTH,
-            TILESIZE,
+            TILESIZE.x,
             stats.hit_points.current,
             stats.hit_points.max,
             Color::GREEN,
@@ -198,18 +198,18 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         draw_bar(
             draw,
             BAR_X,
-            54.5,
+            55.5,
             BAR_WIDTH,
-            TILESIZE,
+            TILESIZE.x,
             stats.mana.current,
             stats.mana.max,
             Color::BLUE,
             Color::BLACK
         );
-        let initial_x = 24.0 * TILESIZE;
+        let initial_x = 24.0 * TILESIZE.x;
         let mut x = initial_x;
-        let row1 = 53.0 * TILESIZE;
-        let row2 = row1 + TILESIZE;
+        let row1 = 54.0 * TILESIZE.x;
+        let row2 = row1 + TILESIZE.x;
         let hp_colours: (RGB, RGB, RGB) = (
             RGB::named(GREEN),
             RGB::named(RED),
@@ -262,7 +262,7 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
                 armour_ac_bonus += ac.amount;
             }
         }
-        x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
+        x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE.x;
         let armour_class =
             stats.bac - attributes.dexterity.modifier() / 2 - skill_ac_bonus - armour_ac_bonus;
         draw.text(&font.b(), "AC").position(x, row1).color(Color::PINK).size(FONTSIZE);
@@ -273,19 +273,19 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         draw.text(&font.n(), &format!("{}/{}", stats.level, stats.xp))
             .position(last_x, row2)
             .size(FONTSIZE);
-        let attribute_x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE;
+        let attribute_x = draw.last_text_bounds().max_x() + 2.0 * TILESIZE.x;
         draw.text(&font.b(), "STR").position(attribute_x, row1).color(Color::RED).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
         draw.text(&font.n(), &format!("{:<2}", attributes.strength.base))
             .position(x, row1)
             .size(FONTSIZE);
-        x = draw.last_text_bounds().max_x() + TILESIZE;
+        x = draw.last_text_bounds().max_x() + TILESIZE.x;
         draw.text(&font.b(), "DEX").position(x, row1).color(Color::GREEN).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
         draw.text(&font.n(), &format!("{:<2}", attributes.dexterity.base))
             .position(x, row1)
             .size(FONTSIZE);
-        x = draw.last_text_bounds().max_x() + TILESIZE;
+        x = draw.last_text_bounds().max_x() + TILESIZE.x;
         draw.text(&font.b(), "CON").position(x, row1).color(Color::ORANGE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
         draw.text(&font.n(), &format!("{:<2}", attributes.constitution.base))
@@ -296,13 +296,13 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         draw.text(&font.n(), &format!("{:<2}", attributes.intelligence.base))
             .position(x, row2)
             .size(FONTSIZE);
-        x = draw.last_text_bounds().max_x() + TILESIZE;
+        x = draw.last_text_bounds().max_x() + TILESIZE.x;
         draw.text(&font.b(), "WIS").position(x, row2).color(Color::YELLOW).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
         draw.text(&font.n(), &format!("{:<2}", attributes.wisdom.base))
             .position(x, row2)
             .size(FONTSIZE);
-        x = draw.last_text_bounds().max_x() + TILESIZE;
+        x = draw.last_text_bounds().max_x() + TILESIZE.x;
         draw.text(&font.b(), "CHA").position(x, row2).color(Color::PURPLE).size(FONTSIZE);
         x = draw.last_text_bounds().max_x();
         draw.text(&font.n(), &format!("{:<2}", attributes.charisma.base))
@@ -321,7 +321,7 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
             _ => {
                 let col = get_hunger_colour(hunger.state);
                 draw.text(&font.n(), hungertxt)
-                    .position(((VIEWPORT_W + 1) as f32) * TILESIZE, row1)
+                    .position(((VIEWPORT_W + 1) as f32) * TILESIZE.x, row1)
                     .color(Color::from_bytes(col.0, col.1, col.2, 255))
                     .size(FONTSIZE)
                     .h_align_right();
@@ -334,12 +334,12 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
             format!("{}", map.short_name)
         };
         draw.text(&font.n(), &id)
-            .position(((VIEWPORT_W + 1) as f32) * TILESIZE, row2)
+            .position(((VIEWPORT_W + 1) as f32) * TILESIZE.x, row2)
             .color(Color::WHITE) // get_local_col()
             .size(FONTSIZE)
             .h_align_right();
         let turns = crate::gamelog::get_event_count(EVENT::COUNT_TURN);
-        x = draw.last_text_bounds().min_x() - TILESIZE;
+        x = draw.last_text_bounds().min_x() - TILESIZE.x;
         draw.text(&font.n(), &format!("T{}", turns))
             .position(x, row2)
             .color(Color::YELLOW)
@@ -353,19 +353,19 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
                 BurdenLevel::Overloaded => ("Overloaded", RGB::named(RED)),
             };
             draw.text(&font.n(), &text)
-                .position((VIEWPORT_W as f32) * TILESIZE, 50.0 * TILESIZE)
+                .position((VIEWPORT_W as f32) * TILESIZE.x, 50.0 * TILESIZE.x)
                 .color(Color::from_rgb(colour.r, colour.g, colour.b))
                 .size(FONTSIZE)
                 .h_align_right();
         }
         if stats.god {
             draw.text(&font.n(), "--- GODMODE: ON ---")
-                .position(20.0 * TILESIZE, 20.0 * TILESIZE)
+                .position(20.0 * TILESIZE.x, 20.0 * TILESIZE.x)
                 .color(Color::YELLOW)
                 .size(FONTSIZE);
         }
         // Equipment
-        draw_all_items(ecs, draw, font, ((VIEWPORT_W + 3) as f32) * TILESIZE, TILESIZE);
+        draw_all_items(ecs, draw, font, ((VIEWPORT_W + 3) as f32) * TILESIZE.x, TILESIZE.x);
         /*let renderables = ecs.read_storage::<Renderable>();
         let mut equipment: Vec<(String, RGB, RGB, FontCharType)> = Vec::new();
         let entities = ecs.entities();
@@ -383,40 +383,40 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         // TODO: Fix all of this to work with notan colours, and sprites.
         if !equipment.is_empty() {
             draw.text(&font.b(), "Equipment")
-                .position(((VIEWPORT_W + 3) as f32) * TILESIZE, (y as f32) * TILESIZE)
+                .position(((VIEWPORT_W + 3) as f32) * TILESIZE.x, (y as f32) * TILESIZE.x)
                 .size(FONTSIZE);
             let mut j: u8 = 0;
             for item in equipment {
                 y += 1;
-                x = ((VIEWPORT_W + 3) as f32) * TILESIZE;
+                x = ((VIEWPORT_W + 3) as f32) * TILESIZE.x;
                 draw.text(&font.b(), &format!("{} ", (97 + j) as char))
-                    .position(x, (y as f32) * TILESIZE)
+                    .position(x, (y as f32) * TILESIZE.x)
                     .color(Color::YELLOW)
                     .size(FONTSIZE);
                 j += 1;
                 x = draw.last_text_bounds().max_x();
                 let mut col = item.2;
                 draw.text(&font.n(), &format!("{} ", item.3 as u8 as char))
-                    .position(x, (y as f32) * TILESIZE)
+                    .position(x, (y as f32) * TILESIZE.x)
                     .size(FONTSIZE)
                     .color(Color::from_rgb(col.r, col.g, col.b)); // Colours here - and below.
                 x = draw.last_text_bounds().max_x();
                 col = item.1;
                 draw.text(&font.n(), &item.0)
-                    .position(x, (y as f32) * TILESIZE)
+                    .position(x, (y as f32) * TILESIZE.x)
                     .size(FONTSIZE)
                     .color(Color::from_rgb(col.r, col.g, col.b));
                 x = draw.last_text_bounds().max_x();
                 draw.text(&font.n(), " (worn)")
-                    .position(x, (y as f32) * TILESIZE)
+                    .position(x, (y as f32) * TILESIZE.x)
                     .size(FONTSIZE);
             }
             y += 2;
         }
         // Backpack
-        x = ((VIEWPORT_W + 3) as f32) * TILESIZE;
+        x = ((VIEWPORT_W + 3) as f32) * TILESIZE.x;
         draw.text(&font.b(), "Backpack")
-            .position(x, (y as f32) * TILESIZE)
+            .position(x, (y as f32) * TILESIZE.x)
             .size(FONTSIZE);
         draw.text(
             &font.b(),
@@ -427,7 +427,7 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
                     CARRY_CAPACITY_PER_STRENGTH
             )
         )
-            .position(((DISPLAYWIDTH - 1) as f32) * TILESIZE, (y as f32) * TILESIZE)
+            .position(((DISPLAYWIDTH - 1) as f32) * TILESIZE.x, (y as f32) * TILESIZE.x)
             .size(FONTSIZE)
             .h_align_right();*/
         //let player_inventory = get_player_inventory(&ecs);
@@ -987,7 +987,7 @@ pub fn print_options(
                     .size(FONTSIZE);
             };
         }
-        y += TILESIZE;
+        y += TILESIZE.x;
     }
     return y;
 }
@@ -1651,7 +1651,7 @@ pub fn draw_targeting(
     }
 
     for (k, v) in needs_draw {
-        let pos = ((k.x as f32) * TILESIZE, (k.y as f32) * TILESIZE);
+        let pos = ((k.x as f32) * TILESIZE.x, (k.y as f32) * TILESIZE.x);
         let tex = atlas.get("217").unwrap();
         if (v & CURSOR_UNAVAILABLE) != 0 {
             draw.image(tex).position(pos.0, pos.1).alpha(0.5).color(Color::RED);

@@ -63,7 +63,7 @@ pub fn show_farlook(gs: &mut State, ctx: &mut App) -> FarlookResult {
 
 pub fn draw_farlook(x: i32, y: i32, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     draw.image(atlas.get("ui_select_c1").unwrap()).position(
-        (x as f32) * TILESIZE,
-        (y as f32) * TILESIZE
+        (x as f32) * TILESIZE.x,
+        (y as f32) * TILESIZE.x
     );
 }

@@ -29,24 +29,18 @@ pub struct Equippable {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct SpriteInfo {
-    pub id: String,
-    pub alt: Option<String>,
-    pub colour: Option<bool>,
-    pub x: Option<f32>,
-    pub y: Option<f32>,
-    pub alt_x: Option<f32>,
-    pub alt_y: Option<f32>,
-}
-
-#[derive(Deserialize, Debug)]
 pub struct Renderable {
     pub glyph: String,
-    pub sprite: Option<SpriteInfo>,
+    pub sprite: String,
+    pub alt: Option<String>,
     pub fg: String,
-    pub bg: String,
+    pub fg_alt: Option<String>,
     pub order: i32,
-    pub alt_order: Option<i32>,
+    pub order_alt: Option<i32>,
+    pub x: Option<f32>,
+    pub x_alt: Option<f32>,
+    pub y: Option<f32>,
+    pub y_alt: Option<f32>,
 }
 
 #[derive(Deserialize, Debug)]

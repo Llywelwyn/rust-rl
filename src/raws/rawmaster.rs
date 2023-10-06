@@ -740,35 +740,50 @@ fn is_player_owned(player: &Entity, pos: &SpawnType) -> bool {
 fn get_renderable_component(
     renderable: &super::item_structs::Renderable
 ) -> crate::components::Renderable {
+    let glyph = to_cp437(renderable.glyph.chars().next().unwrap());
+    let sprite = renderable.sprite.clone();
+    let sprite_alt = if let Some(sprite_alt) = &renderable.alt {
+        Some(sprite_alt.clone())
+    } else {
+        None
+    };
+    let fg = RGB::from_hex(&renderable.fg).expect("Invalid RGB");
+    let fg_alt = if let Some(fg_alt) = &renderable.fg_alt {
+        Some(RGB::from_hex(&fg_alt).expect("Invalid RGB"))
+    } else {
+        None
+    };
+    let render_order = renderable.order;
+    let render_order_alt = if let Some(order_alt) = renderable.order_alt {
+        Some(order_alt)
+    } else {
+        None
+    };
+    let offset_x = if let Some(x) = renderable.x { x } else { 0.0 };
+    let offset_y = if let Some(y) = renderable.y { -y } else { 0.0 };
+
+    let offset_alt: Option<(f32, f32)> = if
+        renderable.x_alt.is_some() ||
+        renderable.y_alt.is_some()
+    {
+        Some((
+            if let Some(x) = renderable.x_alt { x } else { 0.0 },
+            if let Some(y) = renderable.y_alt { -y } else { 0.0 },
+        ))
+    } else {
+        None
+    };
+
     crate::components::Renderable {
-        glyph: to_cp437(renderable.glyph.chars().next().unwrap()),
-        sprite: if let Some(spriteinfo) = &renderable.sprite {
-            let x = spriteinfo.x.unwrap_or(0.0);
-            let y = spriteinfo.y.unwrap_or(0.0);
-            let alt_x = spriteinfo.alt_x.unwrap_or(0.0);
-            let alt_y = spriteinfo.alt_y.unwrap_or(0.0);
-            Some(SpriteInfo {
-                id: spriteinfo.id.clone(),
-                recolour: if let Some(colour) = spriteinfo.colour {
-                    colour
-                } else {
-                    true
-                },
-                alt: spriteinfo.alt.clone(),
-                offset: (x, -y), // Invert y so that positive y = move upwards.
-                alt_offset: (alt_x, -alt_y),
-            })
-        } else {
-            None
-        },
-        fg: RGB::from_hex(&renderable.fg).expect("Invalid RGB"),
-        bg: RGB::from_hex(&renderable.bg).expect("Invalid RGB"),
-        render_order: renderable.order,
-        alt_render_order: if let Some(alt_order) = renderable.alt_order {
-            Some(alt_order)
-        } else {
-            None
-        },
+        glyph,
+        sprite,
+        sprite_alt,
+        fg,
+        fg_alt,
+        render_order,
+        render_order_alt,
+        offset: (offset_x, offset_y),
+        offset_alt,
     }
 }
 
@@ -1101,35 +1116,41 @@ fn get_ancestry_string(ancestry: Ancestry) -> &'static str {
 fn parse_particle_line(n: &str) -> SpawnParticleLine {
     let tokens: Vec<_> = n.split(';').collect();
     SpawnParticleLine {
-        glyph: to_cp437(tokens[0].chars().next().unwrap()),
-        tail_glyph: to_cp437(tokens[1].chars().next().unwrap()),
-        colour: RGB::from_hex(tokens[2]).expect("Invalid RGB"),
-        lifetime_ms: tokens[3].parse::<f32>().unwrap(),
-        trail_colour: RGB::from_hex(tokens[4]).expect("Invalid trail RGB"),
-        trail_lifetime_ms: tokens[5].parse::<f32>().unwrap(),
+        sprite: tokens[0].to_string(),
+        tail_sprite: tokens[1].to_string(),
+        glyph: to_cp437(tokens[2].chars().next().unwrap()),
+        tail_glyph: to_cp437(tokens[3].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[4]).expect("Invalid RGB"),
+        lifetime_ms: tokens[5].parse::<f32>().unwrap(),
+        trail_colour: RGB::from_hex(tokens[6]).expect("Invalid trail RGB"),
+        trail_lifetime_ms: tokens[7].parse::<f32>().unwrap(),
     }
 }
 
 fn parse_particle(n: &str) -> SpawnParticleSimple {
     let tokens: Vec<_> = n.split(';').collect();
     SpawnParticleSimple {
-        glyph: to_cp437(tokens[0].chars().next().unwrap()),
-        colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
-        lifetime_ms: tokens[2].parse::<f32>().unwrap(),
+        sprite: tokens[0].to_string(),
+        glyph: to_cp437(tokens[1].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[2]).expect(&format!("Invalid RGB: {}", n)),
+        lifetime_ms: tokens[3].parse::<f32>().unwrap(),
     }
 }
 
 fn parse_particle_burst(n: &str) -> SpawnParticleBurst {
     let tokens: Vec<_> = n.split(';').collect();
     SpawnParticleBurst {
-        glyph: to_cp437(tokens[0].chars().next().unwrap()),
-        head_glyph: to_cp437(tokens[1].chars().next().unwrap()),
-        tail_glyph: to_cp437(tokens[2].chars().next().unwrap()),
-        colour: RGB::from_hex(tokens[3]).expect("Invalid RGB"),
-        lerp: RGB::from_hex(tokens[4]).expect("Invalid LERP RGB"),
-        lifetime_ms: tokens[5].parse::<f32>().unwrap(),
-        trail_colour: RGB::from_hex(tokens[6]).expect("Invalid trail RGB"),
-        trail_lifetime_ms: tokens[7].parse::<f32>().unwrap(),
+        sprite: tokens[0].to_string(),
+        head_sprite: tokens[1].to_string(),
+        tail_sprite: tokens[2].to_string(),
+        glyph: to_cp437(tokens[3].chars().next().unwrap()),
+        head_glyph: to_cp437(tokens[4].chars().next().unwrap()),
+        tail_glyph: to_cp437(tokens[5].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[6]).expect("Invalid RGB"),
+        lerp: RGB::from_hex(tokens[7]).expect("Invalid LERP RGB"),
+        lifetime_ms: tokens[8].parse::<f32>().unwrap(),
+        trail_colour: RGB::from_hex(tokens[9]).expect("Invalid trail RGB"),
+        trail_lifetime_ms: tokens[10].parse::<f32>().unwrap(),
     }
 }
 

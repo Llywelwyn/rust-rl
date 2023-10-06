@@ -165,15 +165,12 @@ impl<'a> System<'a> for VisibilitySystem {
                 if prop.get(e).is_some() || item.get(e).is_some() {
                     let idx = map.xy_idx(p.x, p.y);
                     if map.visible_tiles[idx] {
-                        if let Some(spriteinfo) = &r.sprite {
-                            map.memory.entry(idx).or_insert(Vec::new()).push(crate::MapMemory {
-                                sprite: spriteinfo.id.clone(),
-                                fg: r.fg,
-                                recolour: spriteinfo.recolour,
-                                offset: spriteinfo.offset,
-                                render_order: r.render_order,
-                            });
-                        }
+                        map.memory.entry(idx).or_insert(Vec::new()).push(crate::MapMemory {
+                            sprite: r.sprite.clone(),
+                            fg: r.fg,
+                            offset: r.offset,
+                            render_order: r.render_order,
+                        });
                     }
                 }
             }

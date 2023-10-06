@@ -50,8 +50,8 @@ fn create_delayed_particles(ecs: &mut World, ctx: &App) {
                 x: delayed_particle.particle.x,
                 y: delayed_particle.particle.y,
                 fg: delayed_particle.particle.fg,
-                bg: delayed_particle.particle.bg,
                 glyph: delayed_particle.particle.glyph,
+                sprite: delayed_particle.particle.sprite.clone(),
                 lifetime: delayed_particle.particle.lifetime,
             });
         }
@@ -81,14 +81,7 @@ fn create_delayed_particles(ecs: &mut World, ctx: &App) {
             .insert(p, Position { x: handled.x, y: handled.y })
             .expect("Could not insert position");
         renderables
-            .insert(p, Renderable {
-                sprite: None, // TODO: Particle sprite
-                fg: handled.fg,
-                bg: handled.bg,
-                glyph: handled.glyph,
-                render_order: 0,
-                alt_render_order: None,
-            })
+            .insert(p, Renderable::new(handled.glyph, handled.sprite, handled.fg, 0))
             .expect("Could not insert renderables");
         particles
             .insert(p, ParticleLifetime { lifetime_ms: handled.lifetime })
@@ -101,8 +94,8 @@ pub struct ParticleRequest {
     x: i32,
     y: i32,
     fg: RGB,
-    bg: RGB,
     glyph: FontCharType,
+    sprite: String,
     lifetime: f32,
 }
 
@@ -129,11 +122,11 @@ impl ParticleBuilder {
         x: i32,
         y: i32,
         fg: RGB,
-        bg: RGB,
         glyph: FontCharType,
+        sprite: String,
         lifetime: f32
     ) {
-        self.requests.push(ParticleRequest { x, y, fg, bg, glyph, lifetime });
+        self.requests.push(ParticleRequest { x, y, fg, glyph, sprite, lifetime });
     }
 
     pub fn delay(
@@ -141,149 +134,42 @@ impl ParticleBuilder {
         x: i32,
         y: i32,
         fg: RGB,
-        bg: RGB,
         glyph: FontCharType,
+        sprite: String,
         lifetime: f32,
         delay: f32
     ) {
         self.delayed_requests.push(DelayedParticleRequest {
             delay: delay,
-            particle: ParticleRequest { x, y, fg, bg, glyph, lifetime },
+            particle: ParticleRequest { x, y, fg, glyph, sprite, lifetime },
         });
     }
 
+    // MASSIVE TODO: Animate these, or make them random. PLACEHOLDER.
     pub fn damage_taken(&mut self, x: i32, y: i32) {
-        self.request(
-            x,
-            y,
-            RGB::named(ORANGE),
-            RGB::named(BLACK),
-            to_cp437('‼'),
-            DEFAULT_PARTICLE_LIFETIME
-        );
+        self.request(x, y, RGB::named(RED), to_cp437('‼'), "slash1".to_string(), 75.0);
+        self.delay(x, y, RGB::named(RED), to_cp437('‼'), "slash2".to_string(), 75.0, 75.0);
+        self.delay(x, y, RGB::named(RED), to_cp437('‼'), "slash3".to_string(), 75.0, 150.0);
     }
-
     pub fn attack_miss(&mut self, x: i32, y: i32) {
         self.request(
             x,
             y,
             RGB::named(CYAN),
-            RGB::named(BLACK),
             to_cp437('‼'),
+            "slash1".to_string(),
             DEFAULT_PARTICLE_LIFETIME
         );
     }
-
     pub fn kick(&mut self, x: i32, y: i32) {
         self.request(
             x,
             y,
             RGB::named(CHOCOLATE),
-            RGB::named(BLACK),
             to_cp437('‼'),
+            "kick".to_string(),
             SHORT_PARTICLE_LIFETIME
         );
-    }
-
-    // Makes a particle request in the shape of an 'x'. Sort of.
-    #[allow(dead_code)]
-    pub fn request_star(
-        &mut self,
-        x: i32,
-        y: i32,
-        fg: RGB,
-        bg: RGB,
-        glyph: FontCharType,
-        lifetime: f32,
-        secondary_fg: RGB
-    ) {
-        let eighth_l = lifetime / 8.0;
-        let quarter_l = eighth_l * 2.0;
-        self.request(x, y, fg, bg, glyph, lifetime);
-        self.delay(
-            x + 1,
-            y + 1,
-            secondary_fg.lerp(bg, 0.8),
-            bg,
-            to_cp437('/'),
-            quarter_l,
-            eighth_l
-        );
-        self.delay(
-            x + 1,
-            y - 1,
-            secondary_fg.lerp(bg, 0.6),
-            bg,
-            to_cp437('\\'),
-            quarter_l,
-            quarter_l
-        );
-        self.delay(
-            x - 1,
-            y - 1,
-            secondary_fg.lerp(bg, 0.2),
-            bg,
-            to_cp437('/'),
-            quarter_l,
-            eighth_l * 3.0
-        );
-        self.delay(
-            x - 1,
-            y + 1,
-            secondary_fg.lerp(bg, 0.4),
-            bg,
-            to_cp437('\\'),
-            quarter_l,
-            lifetime
-        );
-    }
-
-    // Makes a rainbow particle request in the shape of an 'x'. Sort of.
-    #[allow(dead_code)]
-    pub fn request_rainbow_star(&mut self, x: i32, y: i32, glyph: FontCharType, lifetime: f32) {
-        let bg = RGB::named(BLACK);
-        let eighth_l = lifetime / 8.0;
-        let quarter_l = eighth_l * 2.0;
-        let half_l = quarter_l * 2.0;
-
-        self.request(x, y, RGB::named(CYAN), bg, glyph, lifetime);
-        self.delay(x + 1, y + 1, RGB::named(RED), bg, to_cp437('\\'), half_l, eighth_l);
-        self.delay(x + 1, y - 1, RGB::named(ORANGE), bg, to_cp437('/'), half_l, quarter_l);
-        self.delay(x - 1, y - 1, RGB::named(GREEN), bg, to_cp437('\\'), half_l, eighth_l * 3.0);
-        self.delay(x - 1, y + 1, RGB::named(YELLOW), bg, to_cp437('/'), half_l, half_l);
-    }
-
-    // Makes a rainbow particle request. Sort of.
-    #[allow(dead_code)]
-    pub fn request_rainbow(&mut self, x: i32, y: i32, glyph: FontCharType, lifetime: f32) {
-        let bg = RGB::named(BLACK);
-        let eighth_l = lifetime / 8.0;
-
-        self.request(x, y, RGB::named(RED), bg, glyph, eighth_l);
-        self.delay(x, y, RGB::named(ORANGE), bg, glyph, eighth_l, eighth_l);
-        self.delay(x, y, RGB::named(YELLOW), bg, glyph, eighth_l, eighth_l * 2.0);
-        self.delay(x, y, RGB::named(GREEN), bg, glyph, eighth_l, eighth_l * 3.0);
-        self.delay(x, y, RGB::named(BLUE), bg, glyph, eighth_l, eighth_l * 4.0);
-        self.delay(x, y, RGB::named(INDIGO), bg, glyph, eighth_l, eighth_l * 5.0);
-        self.delay(x, y, RGB::named(VIOLET), bg, glyph, eighth_l, eighth_l * 6.0);
-    }
-
-    /// Makes a particle request in the shape of a +.
-    #[allow(dead_code)]
-    pub fn request_plus(
-        &mut self,
-        x: i32,
-        y: i32,
-        fg: RGB,
-        bg: RGB,
-        glyph: FontCharType,
-        lifetime: f32
-    ) {
-        self.request(x, y, fg, bg, glyph, lifetime * 2.0);
-        self.request(x + 1, y, fg, bg, to_cp437('─'), lifetime);
-        self.request(x - 1, y, fg, bg, to_cp437('─'), lifetime);
-        self.request(x, y + 1, fg, bg, to_cp437('│'), lifetime);
-        self.request(x, y - 1, fg, bg, to_cp437('│'), lifetime);
     }
 }
 
@@ -308,14 +194,15 @@ impl<'a> System<'a> for ParticleSpawnSystem {
                 .insert(p, Position { x: new_particle.x, y: new_particle.y })
                 .expect("Could not insert position");
             renderables
-                .insert(p, Renderable {
-                    sprite: None, // TODO: Particle sprites
-                    fg: new_particle.fg,
-                    bg: new_particle.bg,
-                    glyph: new_particle.glyph,
-                    render_order: 0,
-                    alt_render_order: None,
-                })
+                .insert(
+                    p,
+                    Renderable::new(
+                        new_particle.glyph,
+                        new_particle.sprite.clone(),
+                        new_particle.fg,
+                        0
+                    )
+                )
                 .expect("Could not insert renderables");
             particles
                 .insert(p, ParticleLifetime { lifetime_ms: new_particle.lifetime })

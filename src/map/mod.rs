@@ -32,7 +32,6 @@ use super::consts::visuals::{
 pub struct MapMemory {
     pub sprite: String,
     pub fg: RGB,
-    pub recolour: bool,
     pub offset: (f32, f32),
     pub render_order: i32,
 }

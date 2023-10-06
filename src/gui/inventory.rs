@@ -47,8 +47,8 @@ pub fn draw_items(
                 continue;
             }
             draw.text(&font.b(), itemtype.string()).position(x, y).color(Color::WHITE);
-            y += TILESIZE;
-            y = print_options(ecs, draw, font, &inv, x, y) + TILESIZE;
+            y += TILESIZE.x;
+            y = print_options(ecs, draw, font, &inv, x, y) + TILESIZE.x;
         }
     } else {
         let filter = match loc {
@@ -60,7 +60,7 @@ pub fn draw_items(
         if inv.is_empty() {
             return;
         }
-        y = print_options(ecs, draw, font, &inv, x, y) + TILESIZE;
+        y = print_options(ecs, draw, font, &inv, x, y) + TILESIZE.x;
     }
 }
 

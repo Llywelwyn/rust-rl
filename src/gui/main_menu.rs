@@ -13,9 +13,9 @@ pub fn draw_mainmenu(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Textu
         _ => unreachable!("draw_mainmenu() called outside of MainMenu runstate."),
     };
     let save_exists = crate::saveload_system::does_save_exist();
-    const MID_X: f32 = ((DISPLAYWIDTH as f32) * TILESIZE) / 2.0;
+    const MID_X: f32 = ((DISPLAYWIDTH as f32) * TILESIZE.x) / 2.0;
 
-    let (x, mut y) = (MID_X, ((DISPLAYHEIGHT as f32) * TILESIZE) / 4.0);
+    let (x, mut y) = (MID_X, ((DISPLAYHEIGHT as f32) * TILESIZE.x) / 4.0);
     draw.text(&font.ib(), "RUST-RL")
         .size(FONTSIZE * 2.0)
         .position(x, y)
