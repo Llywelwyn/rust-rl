@@ -61,6 +61,7 @@ impl Fonts {
 #[derive(AppState)]
 pub struct State {
     pub ecs: World,
+    //pub audio: HashMap<String, AudioSource>,
     pub atlas: HashMap<String, Texture>,
     pub interface: HashMap<String, Texture>,
     pub font: Fonts,

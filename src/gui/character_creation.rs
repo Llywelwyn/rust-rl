@@ -255,31 +255,9 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
     match ancestry {
         Ancestry::Human => {}
         Ancestry::Dwarf => {
-            renderables
-                .insert(
-                    *player,
-                    Renderable::new(
-                        to_cp437(DWARF_GLYPH),
-                        "gnome".to_string(),
-                        RGB::named(DWARF_COLOUR),
-                        2
-                    )
-                )
-                .expect("Unable to insert renderable component");
             *player_skills.skills.entry(Skill::Defence).or_insert(0) += DWARF_DEFENCE_MOD;
         }
         Ancestry::Elf => {
-            renderables
-                .insert(
-                    *player,
-                    Renderable::new(
-                        to_cp437(ELF_GLYPH),
-                        "gnome".to_string(),
-                        RGB::named(ELF_COLOUR),
-                        2
-                    )
-                )
-                .expect("Unable to insert renderable component");
             let mut telepaths = ecs.write_storage::<Telepath>();
             telepaths
                 .insert(*player, Telepath {
@@ -297,17 +275,6 @@ pub fn setup_player_ancestry(ecs: &mut World, ancestry: Ancestry) {
                 .expect("Unable to insert energy component");
         }
         Ancestry::Catfolk => {
-            renderables
-                .insert(
-                    *player,
-                    Renderable::new(
-                        to_cp437(CATFOLK_GLYPH),
-                        "gnome".to_string(),
-                        RGB::named(CATFOLK_COLOUR),
-                        2
-                    )
-                )
-                .expect("Unable to insert renderable component");
             let mut speeds = ecs.write_storage::<Energy>();
             speeds
                 .insert(*player, Energy {

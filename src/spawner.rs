@@ -55,7 +55,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .create_entity()
         .with(Position { x: player_x, y: player_y })
         .with(BlocksTile {}) // FIXME: Put in actual player sprite
-        .with(Renderable::new(to_cp437('@'), "gnome".to_string(), RGB::named(YELLOW), 2))
+        .with(Renderable::new(to_cp437('@'), "avatar".to_string(), RGB::named(WHITE), 2))
         .with(Bleeds { colour: RGB::named(BLOODSTAIN_COLOUR) })
         .with(Player {})
         .with(Mind {})

@@ -26,7 +26,14 @@ fn main() -> Result<(), String> {
         .build()
 }
 
-fn setup(gfx: &mut Graphics) -> State {
+fn setup(app: &mut App, gfx: &mut Graphics) -> State {
+    /*
+    let sound = app.audio.create_source(include_bytes!("../resources/sounds/hit.wav")).unwrap();
+    let sounds: HashMap<String, AudioSource> = vec![("hit".to_string(), sound)]
+        .into_iter()
+        .collect();
+    */
+
     let texture = gfx
         .create_texture()
         .from_image(include_bytes!("../resources/atlas.png"))
@@ -52,6 +59,7 @@ fn setup(gfx: &mut Graphics) -> State {
     );
     let mut gs = State {
         ecs: World::new(),
+        //audio: sounds,
         atlas,
         interface,
         font,
@@ -263,14 +271,10 @@ fn draw_entities(
                     } else {
                         panic!("No entity sprite found for ID: {}", &renderable.sprite);
                     };
-                    console::log(&format!("offset_x: {}, offset_y: {}", offset_x, offset_y));
                     let x_pos = (entry.0.x as f32) * TILESIZE.sprite_x + offset_x;
                     let y_pos = (entry.0.y as f32) * TILESIZE.sprite_y + offset_y;
                     let mul = themes::darken_by_distance(
-                        Point::new(
-                            entry.0.x + bounds.min_x - bounds.x_offset,
-                            entry.0.y + bounds.min_y - bounds.y_offset
-                        ),
+                        Point::new(entry.0.x, entry.0.y),
                         *ecs.fetch::<Point>()
                     );
                     let col = Color::from_rgb(
@@ -356,7 +360,7 @@ fn render_map_in_view(
                             let mut sorted: Vec<_> = memories.iter().collect();
                             sorted.sort_by(|a, b| a.render_order.cmp(&b.render_order));
                             for memory in sorted.iter() {
-                                let mult = 0.3;
+                                let mult = consts::visuals::NON_VISIBLE_MULTIPLIER;
                                 let col = Color::from_rgb(
                                     memory.fg.r * mult,
                                     memory.fg.g * mult,
@@ -489,7 +493,7 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     draw_spritebox(sidebox, draw, atlas);
 }
 
-fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
+fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
     let mut log = false;
