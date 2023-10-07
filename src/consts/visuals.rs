@@ -20,7 +20,7 @@ pub const HP_BAR_LAYER: usize = 4;
 
 pub const BRIGHTEN_FG_COLOUR_BY: i32 = 16;
 pub const GLOBAL_OFFSET_MIN_CLAMP: f32 = -0.5;
-pub const GLOBAL_OFFSET_MAX_CLAMP: f32 = 1.0;
+pub const GLOBAL_OFFSET_MAX_CLAMP: f32 = 0.5;
 pub const SPRITE_OFFSET_MIN_CLAMP: f32 = 0.85;
 pub const SPRITE_OFFSET_MAX_CLAMP: f32 = 1.0;
 pub const WITH_SCANLINES_BRIGHTEN_AMOUNT: f32 = 0.1; // 0.0 = no brightening, 1.0 = full brightening.
