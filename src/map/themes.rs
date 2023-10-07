@@ -41,7 +41,7 @@ pub fn get_sprite_for_id(idx: usize, map: &Map, other_pos: Option<Point>) -> (&s
         }
     };
     // Apply our offsets to our base colour.
-    colour = apply_colour_offset(colour, map, idx, offset, false);
+    colour = apply_colour_offset(colour, map, idx, offset, true);
     // Apply our visibility modifier
     colour = colour.mul(visibility);
     // Convert to a notan colour.
