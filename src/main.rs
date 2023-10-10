@@ -297,17 +297,7 @@ fn draw_entities(
                         .size(TILESIZE.sprite_x, TILESIZE.sprite_y);
                     if let Some(pool) = pools.get(entry.1.e) {
                         if pool.hit_points.current < pool.hit_points.max {
-                            gui::draw_bar(
-                                draw,
-                                x_pos,
-                                y_pos,
-                                1.0,
-                                1.0,
-                                pool.hit_points.current,
-                                pool.hit_points.max,
-                                Color::GREEN,
-                                Color::RED
-                            );
+                            draw_entity_hp(x_pos, y_pos, pool, draw);
                         }
                     }
                 }
@@ -315,6 +305,17 @@ fn draw_entities(
             }
         }
     }
+}
+
+// Draws a HP bar LINE_WIDTH pixels thick centered above the entity.
+fn draw_entity_hp(x: f32, y: f32, hp: &Pools, draw: &mut Draw) {
+    const LINE_WIDTH: f32 = 3.0;
+    let y = y + LINE_WIDTH + 1.0;
+    let x = x;
+    let fill_pct = (hp.hit_points.current as f32) / (hp.hit_points.max as f32);
+    draw.line((x + 1.0, y), (x + (TILESIZE.sprite_x - 1.0) * fill_pct, y))
+        .width(LINE_WIDTH)
+        .color(Color::GREEN);
 }
 
 fn render_map_in_view(
