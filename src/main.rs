@@ -1,5 +1,6 @@
 use rust_rl::*;
 use notan::prelude::*;
+use notan::math::{ vec2, vec3, Mat4, Vec2 };
 use notan::draw::create_textures_from_atlas;
 use notan::draw::{ CreateFont, CreateDraw, DrawImages, Draw, DrawTextSection, DrawShapes };
 use specs::prelude::*;
@@ -9,12 +10,17 @@ use std::collections::HashMap;
 use crate::consts::{ DISPLAYHEIGHT, DISPLAYWIDTH, TILESIZE, FONTSIZE };
 use crate::states::state::Fonts;
 
+const WORK_SIZE: Vec2 = vec2(
+    (DISPLAYWIDTH as f32) * TILESIZE.x,
+    (DISPLAYHEIGHT as f32) * TILESIZE.x
+);
+
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = WindowConfig::new()
         .set_size(DISPLAYWIDTH * (TILESIZE.x as u32), DISPLAYHEIGHT * (TILESIZE.x as u32))
         .set_title("RUST-RL")
-        .set_resizable(false)
+        .set_resizable(true)
         .set_taskbar_icon_data(Some(include_bytes!("../resources/icon.png")))
         .set_vsync(true);
     notan
@@ -494,8 +500,12 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
+    let (width, height) = gfx.size();
+    let win_size = vec2(width as f32, height as f32);
+    let (projection, _) = calc_projection(win_size, WORK_SIZE);
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
+    draw.set_projection(Some(projection));
     let mut log = false;
     let runstate = *gs.ecs.fetch::<RunState>();
     match runstate {
@@ -591,4 +601,17 @@ fn corner_text(text: &str, draw: &mut Draw, font: &Fonts) {
     draw.text(&font.b(), &text)
         .position(((offset.x + 1) as f32) * TILESIZE.x, ((offset.y + 1) as f32) * TILESIZE.x)
         .size(FONTSIZE);
+}
+
+fn calc_projection(win_size: Vec2, work_size: Vec2) -> (Mat4, f32) {
+    let ratio = (win_size.x / work_size.x).min(win_size.y / work_size.y);
+    let proj = Mat4::orthographic_rh_gl(0.0, win_size.x, win_size.y, 0.0, -1.0, 1.0);
+    let scale = Mat4::from_scale(vec3(ratio, ratio, 1.0));
+    let position = vec3(
+        (win_size.x - work_size.x * ratio) * 0.5,
+        (win_size.y - work_size.y * ratio) * 0.5,
+        1.0
+    );
+    let trans = Mat4::from_translation(position);
+    (proj * trans * scale, ratio)
 }
