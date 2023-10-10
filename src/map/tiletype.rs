@@ -70,10 +70,10 @@ impl TileType {
             TileType::Sand => vec!["fluff", "fluff2"],
             TileType::ShallowWater => vec!["water", "water2"],
             TileType::Bridge => vec!["planks"],
-            TileType::DownStair => vec!["wall_b"],
-            TileType::UpStair => vec!["wall_b"],
-            TileType::ToLocal(_) => vec!["wall_b"],
-            TileType::ToOvermap(_) => vec!["wall_b"],
+            TileType::DownStair => vec!["stair_down"],
+            TileType::UpStair => vec!["stair_up"],
+            TileType::ToLocal(_) => vec!["stair_down"],
+            TileType::ToOvermap(_) => vec!["stair_up"],
         };
         if bloody.is_some() && tile_walkable(*self) {
             options.extend(
