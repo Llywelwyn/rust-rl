@@ -1882,7 +1882,7 @@ pub fn with_article(name: &String) -> String {
 }
 
 /// Returns the map index of a tile in the viewport.
-pub fn viewport_to_map_idx(ecs: &World, x: i32, y: i32) -> usize {
+pub fn viewport_to_idx(ecs: &World, x: i32, y: i32) -> usize {
     let bounds = crate::camera::get_screen_bounds(ecs, false);
     let x = x + bounds.min_x;
     let y = y + bounds.min_y;
