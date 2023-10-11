@@ -67,10 +67,10 @@ pub fn draw_farlook(
     draw: &mut Draw,
     atlas: &HashMap<String, Texture>
 ) {
-    let placement = super::viewport_tile_to_px(x, y);
+    let placement = super::viewport_to_px(x, y);
     draw.image(atlas.get("select1").unwrap())
         .position(placement.x, placement.y)
         .size(TILESIZE.sprite_x, TILESIZE.sprite_y);
-    let _idx = super::viewport_tile_to_map_idx(ecs, x, y);
+    let _idx = super::viewport_to_map_idx(ecs, x, y);
     // Get tooltip for idx, etc.
 }
