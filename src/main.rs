@@ -20,8 +20,8 @@ fn main() -> Result<(), String> {
     let win_config = WindowConfig::new()
         .set_size(DISPLAYWIDTH * (TILESIZE.x as u32), DISPLAYHEIGHT * (TILESIZE.x as u32))
         .set_title("RUST-RL")
-        .set_resizable(false)
-        //.set_fullscreen(true) -- this can be uncommented once the log scales too. Ditto for set_resizable(true).
+        .set_resizable(true)
+        .set_fullscreen(true)
         .set_taskbar_icon_data(Some(include_bytes!("../resources/icon.png")))
         .set_vsync(true);
     notan

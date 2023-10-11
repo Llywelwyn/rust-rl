@@ -47,7 +47,7 @@ use crate::consts::visuals::{
     VIEWPORT_W,
     VIEWPORT_H,
 };
-use crate::consts::{ TILESIZE, FONTSIZE, DISPLAYWIDTH };
+use crate::consts::{ TILESIZE, FONTSIZE, DISPLAYWIDTH, DISPLAYHEIGHT };
 use crate::Fonts;
 use notan::prelude::*;
 use notan::draw::{ Draw, DrawTextSection, DrawImages, DrawShapes };
@@ -159,11 +159,12 @@ pub fn draw_bar(
     full: Color,
     empty: Color
 ) {
-    let fill: f32 = (f32::max(current as f32, 0.0) / (max as f32)) * width;
-    draw.line((x * TILESIZE.x, y * TILESIZE.x), ((x + fill) * TILESIZE.x, y * TILESIZE.x))
+    // % full * maximum width in tiles * tile size, to get width in px
+    let fill: f32 = (f32::max(current as f32, 0.0) / (max as f32)) * width * TILESIZE.x;
+    draw.line((x, y), (x + fill, y))
         .color(full)
         .width(height);
-    draw.line(((x + fill) * TILESIZE.x, y * TILESIZE.x), ((x + width) * TILESIZE.x, y * TILESIZE.x))
+    draw.line((x + fill, y), (x + width * TILESIZE.x, y))
         .color(empty)
         .width(height);
 }
@@ -182,34 +183,34 @@ pub fn draw_ui2(ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>, 
         &hunger,
         &skills,
     ).join() {
-        const BAR_X: f32 = 1.0;
+        let initial_x = 24.0 * TILESIZE.x;
+        let mut x = initial_x;
+        let row1 = ((DISPLAYHEIGHT as f32) - 3.0) * TILESIZE.x; // 2 tiles from the bottom, in px.
+        let row2 = row1 + TILESIZE.x; // 1 tile below row2.
+        const BAR_X: f32 = 1.0 * TILESIZE.x;
         const BAR_WIDTH: f32 = 22.0;
         draw_bar(
             draw,
             BAR_X,
-            55.5,
+            row1 + 8.0,
             BAR_WIDTH,
             TILESIZE.x,
             stats.hit_points.current,
             stats.hit_points.max,
             Color::GREEN,
-            Color::BLACK
+            Color::RED
         );
         draw_bar(
             draw,
             BAR_X,
-            56.5,
+            row2 + 8.0,
             BAR_WIDTH,
             TILESIZE.x,
             stats.mana.current,
             stats.mana.max,
             Color::BLUE,
-            Color::BLACK
+            Color::RED
         );
-        let initial_x = 24.0 * TILESIZE.x;
-        let mut x = initial_x;
-        let row1 = 55.0 * TILESIZE.x;
-        let row2 = row1 + TILESIZE.x;
         let hp_colours: (RGB, RGB, RGB) = (
             RGB::named(GREEN),
             RGB::named(RED),

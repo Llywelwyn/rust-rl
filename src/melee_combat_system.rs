@@ -295,13 +295,6 @@ impl<'a> System<'a> for MeleeCombatSystem {
                             );
                         }
                     }
-                    // TODO: Take out these animations (and for missing too), and turn
-                    //       them into effects - can use the damage type that gets passed in
-                    //       to determine the effect, colour, etc.
-                    let pos = positions.get(wants_melee.target);
-                    if let Some(pos) = pos {
-                        particle_builder.damage_taken(pos.x, pos.y);
-                    }
                     add_effect(
                         Some(entity),
                         EffectType::Damage { amount: damage, damage_type: weapon_info.damage_type },

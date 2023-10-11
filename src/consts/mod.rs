@@ -28,5 +28,5 @@ pub const TILESIZE: Spritesize = Spritesize {
 pub const ZOOM_FACTOR: f32 = 2.0;
 pub const FONTSIZE: f32 = 16.0;
 
-pub const DISPLAYWIDTH: u32 = 100;
-pub const DISPLAYHEIGHT: u32 = 58;
+pub const DISPLAYWIDTH: u32 = 120;
+pub const DISPLAYHEIGHT: u32 = 67;
