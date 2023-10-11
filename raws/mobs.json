@@ -205,7 +205,6 @@
         "flags": ["MINDLESS"],
         "level": 1,
         "speed": 6,
-        "vision_range": 12,
         "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d4" }],
         "loot": { "table": "wands", "chance": 0.05 }
     },
@@ -235,7 +234,6 @@
         "flags": ["MINDLESS"],
         "level": 1,
         "speed": 6,
-        "vision_range": 12,
         "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d4" }],
         "loot": { "table": "scrolls", "chance": 0.05 }
     },
@@ -246,7 +244,6 @@
         "flags": [],
         "level": 1,
         "speed": 6,
-        "vision_range": 12,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "1d6" }],
         "loot": { "table": "food", "chance": 0.05 }
     },
@@ -258,7 +255,6 @@
         "level": 2,
         "bac": 9,
         "speed": 6,
-        "vision_range": 12,
         "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d6" }],
         "loot": { "table": "potions", "chance": 0.05 }
     },
@@ -282,7 +278,6 @@
         "level": 2,
         "bac": 9,
         "speed": 6,
-        "vision_range": 12,
         "attacks": [{ "name": "claws", "hit_bonus": 0, "damage": "1d6" }],
         "loot": { "table": "equipment", "chance": 0.05 }
     },
@@ -293,7 +288,6 @@
         "flags": [],
         "level": 2,
         "speed": 6,
-        "vision_range": 12,
         "attacks": [{ "name": "hits", "hit_bonus": 0, "damage": "2d4" }],
         "loot": { "table": "food", "chance": 0.05 }
     },
