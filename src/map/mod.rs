@@ -1,4 +1,5 @@
 use bracket_lib::prelude::*;
+use specs::prelude::*;
 use serde::{ Deserialize, Serialize };
 use std::collections::{ HashSet, HashMap };
 mod tiletype;

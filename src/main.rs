@@ -542,7 +542,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     }
     match runstate {
         RunState::Farlook { x, y } => {
-            gui::draw_farlook(x, y, &mut draw, &gs.atlas);
+            gui::draw_farlook(&gs.ecs, x, y, &mut draw, &gs.atlas);
             //draw_tooltips(&gs.ecs, ctx, Some((x, y))); TODO: Put this in draw loop
         }
         RunState::ShowCheatMenu => {

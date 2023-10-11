@@ -1880,3 +1880,32 @@ pub fn with_article(name: &String) -> String {
     }
     format!("a {}", name)
 }
+
+/// Returns the map index of a tile in the viewport.
+pub fn viewport_tile_to_map_idx(ecs: &World, x: i32, y: i32) -> usize {
+    let bounds = crate::camera::get_screen_bounds(ecs, false);
+    let x = x + bounds.min_x;
+    let y = y + bounds.min_y;
+    return ecs.fetch::<Map>().xy_idx(x, y);
+}
+
+/// Denotes a pixel location on the screen.
+pub struct Px {
+    x: f32,
+    y: f32,
+}
+
+impl Px {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
+
+/// Returns the pixel location of a tile in the viewport.
+pub fn viewport_tile_to_px(x: i32, y: i32) -> Px {
+    let offsets = crate::camera::get_offset();
+    Px::new(
+        (x as f32) * TILESIZE.sprite_x + (offsets.x as f32) * TILESIZE.x,
+        (y as f32) * TILESIZE.sprite_y + (offsets.y as f32) * TILESIZE.y
+    )
+}

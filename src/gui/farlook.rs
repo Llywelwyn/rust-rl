@@ -1,8 +1,9 @@
-use super::{ State, RunState, tooltip::draw_tooltips, camera::get_offset, VIEWPORT_H, VIEWPORT_W };
+use super::{ State, RunState, World, tooltip::draw_tooltips, camera::get_offset };
 use bracket_lib::prelude::*;
 use notan::prelude::*;
 use notan::draw::{ Draw, DrawImages };
 use std::collections::HashMap;
+use crate::consts::visuals::{ TILES_IN_VIEWPORT_H, TILES_IN_VIEWPORT_W };
 use crate::consts::TILESIZE;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -16,10 +17,9 @@ pub enum FarlookResult {
 
 pub fn show_farlook(gs: &mut State, ctx: &mut App) -> FarlookResult {
     let runstate = gs.ecs.fetch::<RunState>();
-    let offsets = get_offset();
     if let RunState::Farlook { x, y } = *runstate {
-        let x = x.clamp(offsets.x, offsets.x - 1 + VIEWPORT_W);
-        let y = y.clamp(offsets.y, offsets.y - 1 + VIEWPORT_H);
+        let x = x.clamp(0, TILES_IN_VIEWPORT_W - 1);
+        let y = y.clamp(0, TILES_IN_VIEWPORT_H - 1);
         let key = &ctx.keyboard;
         // Movement
         for keycode in key.pressed.iter() {
@@ -56,14 +56,21 @@ pub fn show_farlook(gs: &mut State, ctx: &mut App) -> FarlookResult {
         }
         return FarlookResult::NoResponse { x, y };
     } else {
-        let ppos = gs.ecs.fetch::<Point>();
-        return FarlookResult::NoResponse { x: ppos.x + offsets.x, y: ppos.x + offsets.y };
+        return FarlookResult::NoResponse { x: TILES_IN_VIEWPORT_W / 2, y: TILES_IN_VIEWPORT_H / 2 };
     }
 }
 
-pub fn draw_farlook(x: i32, y: i32, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
-    draw.image(atlas.get("ui_select_c1").unwrap()).position(
-        (x as f32) * TILESIZE.x,
-        (y as f32) * TILESIZE.x
-    );
+pub fn draw_farlook(
+    ecs: &World,
+    x: i32,
+    y: i32,
+    draw: &mut Draw,
+    atlas: &HashMap<String, Texture>
+) {
+    let placement = super::viewport_tile_to_px(x, y);
+    draw.image(atlas.get("select1").unwrap())
+        .position(placement.x, placement.y)
+        .size(TILESIZE.sprite_x, TILESIZE.sprite_y);
+    let _idx = super::viewport_tile_to_map_idx(ecs, x, y);
+    // Get tooltip for idx, etc.
 }

@@ -21,7 +21,7 @@ pub struct Spritesize {
 
 pub const TILESIZE: Spritesize = Spritesize {
     x: 16.0,
-    y: 24.0,
+    y: 16.0,
     sprite_x: 16.0 * ZOOM_FACTOR,
     sprite_y: 24.0 * ZOOM_FACTOR,
 };
