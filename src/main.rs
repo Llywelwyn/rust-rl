@@ -20,7 +20,8 @@ fn main() -> Result<(), String> {
     let win_config = WindowConfig::new()
         .set_size(DISPLAYWIDTH * (TILESIZE.x as u32), DISPLAYHEIGHT * (TILESIZE.x as u32))
         .set_title("RUST-RL")
-        .set_resizable(true)
+        .set_resizable(false)
+        //.set_fullscreen(true) -- this can be uncommented once the log scales too. Ditto for set_resizable(true).
         .set_taskbar_icon_data(Some(include_bytes!("../resources/icon.png")))
         .set_vsync(true);
     notan
@@ -32,7 +33,7 @@ fn main() -> Result<(), String> {
         .build()
 }
 
-fn setup(app: &mut App, gfx: &mut Graphics) -> State {
+fn setup(_app: &mut App, gfx: &mut Graphics) -> State {
     /*
     let sound = app.audio.create_source(include_bytes!("../resources/sounds/hit.wav")).unwrap();
     let sounds: HashMap<String, AudioSource> = vec![("hit".to_string(), sound)]
@@ -501,12 +502,8 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
-    let (width, height) = gfx.size();
-    let win_size = vec2(width as f32, height as f32);
-    let (projection, _) = calc_projection(win_size, WORK_SIZE);
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
-    draw.set_projection(Some(projection));
     let mut log = false;
     let runstate = *gs.ecs.fetch::<RunState>();
     match runstate {
@@ -589,8 +586,40 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         }
         _ => {}
     }
+    // TODO: Once the rest of drawing is finalised, this should be abstracted
+    // into some functions that make it easier to tell what is going on. But
+    // for the short-term:
+    // 1. notan::Text is required for rich text drawing, rather than just the
+    //    basics that are accessible with notan::Draw's .text() method.
+    // 2. notan::Text cannot be projected, and rendering both Draw and Text
+    //    requires two GPU calls instead of just one.
+    // 3. To fix this, our log is drawn to notan::Text, then rendered to a
+    //    render texture, and applied as any other image to notan::Draw.
+    // 4. notan::Draw is projected, and then rendered, and everything works.
+    // Further stuff: Make the render texture only as large as is required,
+    //                so text cannot escape the bounds of the logbox.
+    let (width, height) = gfx.size();
+    let win_size = vec2(width as f32, height as f32);
+    let (projection, _) = calc_projection(win_size, WORK_SIZE);
+    if log {
+        let buffer = gfx
+            .create_render_texture(width, height)
+            .build()
+            .expect("Failed to create render texture");
+        gamelog::render_log(
+            &buffer,
+            gfx,
+            &gs.font,
+            &(TILESIZE.x, TILESIZE.x * 6.0 + 4.0),
+            (VIEWPORT_W as f32) * TILESIZE.x,
+            5
+        );
+        draw.image(&buffer)
+            .position(0.0, 0.0)
+            .size(width as f32, height as f32);
+    }
+    draw.set_projection(Some(projection));
     gfx.render(&draw);
-    gamelog::render(log, gfx, &gs.font);
 }
 
 fn update(ctx: &mut App, state: &mut State) {

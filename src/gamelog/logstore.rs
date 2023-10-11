@@ -12,21 +12,15 @@ lazy_static! {
     pub static ref LOG: Mutex<BTreeMap<i32, Vec<LogFragment>>> = Mutex::new(BTreeMap::new());
 }
 
-/// Render with defaults, to avoid having to pass so many args.
-pub fn render(draw: bool, gfx: &mut Graphics, font: &Fonts) {
-    if draw {
-        render_log(
-            gfx,
-            &font,
-            &(TILESIZE.x, TILESIZE.x * 6.0 + 4.0),
-            (VIEWPORT_W as f32) * TILESIZE.x,
-            5
-        );
-    }
-}
-
 /// Render with specificied params.
-pub fn render_log(gfx: &mut Graphics, font: &Fonts, pos: &(f32, f32), width: f32, entries: usize) {
+pub fn render_log(
+    draw: &RenderTexture,
+    gfx: &mut Graphics,
+    font: &Fonts,
+    pos: &(f32, f32),
+    width: f32,
+    entries: usize
+) {
     let mut text = gfx.create_text();
     let log = LOG.lock().unwrap();
     let latest: Vec<_> = log.iter().rev().take(entries).collect();
@@ -55,7 +49,7 @@ pub fn render_log(gfx: &mut Graphics, font: &Fonts, pos: &(f32, f32), width: f32
             y = text.last_bounds().min_y();
         }
     }
-    gfx.render(&text);
+    gfx.render_to(draw, &text);
 }
 
 pub fn append_entry(turn: i32, fragments: Vec<LogFragment>) {
