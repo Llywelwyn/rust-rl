@@ -26,7 +26,6 @@ pub fn check_key(idx: usize) -> bool {
 pub fn item_exists(item: &UniqueInventoryItem) -> Option<usize> {
     let invkeys = INVKEYS.lock().unwrap();
     use bracket_lib::prelude::*;
-    console::log(&format!("{:?}", item));
     if invkeys.contains_key(item) {
         Some(*invkeys.get(item).unwrap())
     } else {
