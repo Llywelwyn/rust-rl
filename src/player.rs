@@ -34,6 +34,7 @@ use super::{
     get_dest,
     Destination,
     DamageType,
+    effects::sound,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -93,6 +94,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                     if door.open == true {
                         let renderables = ecs.read_storage::<Renderable>();
                         if multiple_tile_content {
+                            sound::door_resist(destination_idx);
                             if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger
                                     ::new()
@@ -104,6 +106,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                                     .log();
                             }
                         } else if rng.roll_dice(1, 6) + attributes.strength.modifier() < 2 {
+                            sound::door_resist(destination_idx);
                             if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger
                                     ::new()
@@ -115,6 +118,7 @@ pub fn try_door(i: i32, j: i32, ecs: &mut World) -> RunState {
                                     .log();
                             }
                         } else {
+                            sound::door_close(destination_idx);
                             door.open = false;
                             if door.blocks_vis {
                                 blocks_visibility
@@ -210,6 +214,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                     if door.open == false {
                         let renderables = ecs.read_storage::<Renderable>();
                         if rng.roll_dice(1, 6) + attributes.strength.modifier() < 2 {
+                            sound::door_resist(destination_idx);
                             if let Some(name) = names.get(potential_target) {
                                 gamelog::Logger
                                     ::new()
@@ -221,6 +226,7 @@ pub fn open(i: i32, j: i32, ecs: &mut World) -> RunState {
                                     .log();
                             }
                         } else {
+                            sound::door_open(destination_idx);
                             door.open = true;
                             blocks_visibility.remove(potential_target);
                             blocks_movement.remove(potential_target);

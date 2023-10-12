@@ -3,7 +3,7 @@ use notan::prelude::*;
 use specs::prelude::*;
 use std::sync::Mutex;
 use std::collections::HashMap;
-use super::{ EffectSpawner, EffectType };
+use super::{ EffectSpawner, EffectType, Targets, add_effect };
 use crate::Map;
 
 lazy_static::lazy_static! {
@@ -53,6 +53,17 @@ pub fn play_sound(app: &mut App, ecs: &mut World, effect: &EffectSpawner, target
     }
 }
 
+pub fn stop(app: &mut App) {
+    let mut ambience = AMBIENCE.lock().unwrap();
+    if let Some(old) = ambience.take() {
+        app.audio.stop(&old);
+    }
+}
+
+pub fn ambience(sound: &str) {
+    add_effect(None, EffectType::Sound { sound: sound.to_string() }, Targets::Tile { target: 0 })
+}
+
 pub fn replace_ambience(app: &mut App, sound: &Sound) {
     let mut ambience = AMBIENCE.lock().unwrap();
     if let Some(old) = ambience.take() {
@@ -62,12 +73,21 @@ pub fn replace_ambience(app: &mut App, sound: &Sound) {
 }
 
 pub fn init_sounds(app: &mut App) {
-    let list: Vec<(&str, (&[u8], AudioType))> = vec![
-        //key, (bytes, type) - audiotype determines final volume, looping, etc.
-        ("hit", (include_bytes!("../../resources/sounds/hit.wav"), AudioType::SFX))
+    let sound_data: &[(&str, &[u8], AudioType)] = &[
+        // (key, file_path, audiotype)
+        ("a_relax", include_bytes!("../../resources/sounds/amb/relaxed.wav"), AudioType::Ambient),
+        ("d_blocked1", include_bytes!("../../resources/sounds/door/blocked1.wav"), AudioType::SFX),
+        ("d_blocked2", include_bytes!("../../resources/sounds/door/blocked2.wav"), AudioType::SFX),
+        ("d_blocked3", include_bytes!("../../resources/sounds/door/blocked3.wav"), AudioType::SFX),
+        ("d_open1", include_bytes!("../../resources/sounds/door/open1.wav"), AudioType::SFX),
+        ("d_open2", include_bytes!("../../resources/sounds/door/open2.wav"), AudioType::SFX),
+        ("d_open3", include_bytes!("../../resources/sounds/door/open3.wav"), AudioType::SFX),
+        ("d_close1", include_bytes!("../../resources/sounds/door/close1.wav"), AudioType::SFX),
+        ("d_close2", include_bytes!("../../resources/sounds/door/close2.wav"), AudioType::SFX),
+        ("d_close3", include_bytes!("../../resources/sounds/door/close3.wav"), AudioType::SFX),
     ];
     let mut sounds = SOUNDS.lock().unwrap();
-    for (k, (bytes, audiotype)) in list.iter() {
+    for (k, bytes, audiotype) in sound_data {
         sounds.insert(k.to_string(), (app.audio.create_source(bytes).unwrap(), *audiotype));
     }
 }
@@ -75,4 +95,43 @@ pub fn init_sounds(app: &mut App) {
 pub fn set_volume(vol: f32) {
     let mut volume = VOLUME.lock().unwrap();
     *volume = vol;
+}
+
+pub fn clean(app: &mut App) {
+    app.audio.clean();
+}
+
+// Shorthand functions for adding generic, frequent SFX to the effect queue.
+pub fn door_open(idx: usize) {
+    let mut rng = RandomNumberGenerator::new();
+    let sound = (
+        match rng.range(0, 3) {
+            0 => "d_open1",
+            1 => "d_open2",
+            _ => "d_open3",
+        }
+    ).to_string();
+    super::add_effect(None, EffectType::Sound { sound }, Targets::Tile { target: idx });
+}
+pub fn door_resist(idx: usize) {
+    let mut rng = RandomNumberGenerator::new();
+    let sound = (
+        match rng.range(0, 3) {
+            0 => "d_blocked1",
+            1 => "d_blocked2",
+            _ => "d_blocked3",
+        }
+    ).to_string();
+    add_effect(None, EffectType::Sound { sound }, Targets::Tile { target: idx });
+}
+pub fn door_close(idx: usize) {
+    let mut rng = RandomNumberGenerator::new();
+    let sound = (
+        match rng.range(0, 3) {
+            0 => "d_close1",
+            1 => "d_close2",
+            _ => "d_close3",
+        }
+    ).to_string();
+    add_effect(None, EffectType::Sound { sound }, Targets::Tile { target: idx });
 }

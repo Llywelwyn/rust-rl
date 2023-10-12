@@ -35,6 +35,7 @@ fn main() -> Result<(), String> {
 
 fn setup(app: &mut App, gfx: &mut Graphics) -> State {
     effects::sound::init_sounds(app);
+    effects::sound::ambience("a_relax");
     let texture = gfx
         .create_texture()
         .from_image(include_bytes!("../resources/atlas.png"))
