@@ -75,7 +75,7 @@ pub fn replace_ambience(app: &mut App, sound: &Sound) {
 pub fn init_sounds(app: &mut App) {
     let sound_data: &[(&str, &[u8], AudioType)] = &[
         // (key, file_path, audiotype)
-        ("a_relax", include_bytes!("../../resources/sounds/amb/relaxed.wav"), AudioType::Ambient),
+        ("a_relax", include_bytes!("../../resources/sounds/amb/relaxed.ogg"), AudioType::Ambient),
         ("d_blocked1", include_bytes!("../../resources/sounds/door/blocked1.wav"), AudioType::SFX),
         ("d_blocked2", include_bytes!("../../resources/sounds/door/blocked2.wav"), AudioType::SFX),
         ("d_blocked3", include_bytes!("../../resources/sounds/door/blocked3.wav"), AudioType::SFX),
