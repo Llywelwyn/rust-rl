@@ -9,6 +9,7 @@ use crate::Map;
 lazy_static::lazy_static! {
     pub static ref SOUNDS: Mutex<HashMap<String, (AudioSource, AudioType)>> = Mutex::new(HashMap::new());
     pub static ref VOLUME: Mutex<f32> = Mutex::new(1.0);
+    pub static ref AMBIENCE: Mutex<Option<Sound>> = Mutex::new(None);
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -16,6 +17,9 @@ pub enum AudioType {
     Ambient,
     SFX,
 }
+
+const AMBIENCE_VOL_MUL: f32 = 0.8;
+const SFX_VOL_MUL: f32 = 1.0;
 
 pub fn play_sound(app: &mut App, ecs: &mut World, effect: &EffectSpawner, target: usize) {
     // Extract sound from the EffectType, or panic if we somehow called this with the wrong effect.
@@ -29,7 +33,7 @@ pub fn play_sound(app: &mut App, ecs: &mut World, effect: &EffectSpawner, target
     let volume = VOLUME.lock().unwrap();
     let source = sounds.get(sound).unwrap();
     let (vol, repeat) = match source.1 {
-        AudioType::Ambient => (*volume * 0.5, true),
+        AudioType::Ambient => (*volume * AMBIENCE_VOL_MUL, true),
         AudioType::SFX => {
             let map = ecs.fetch::<Map>();
             let ppos = ecs.fetch::<Point>();
@@ -39,19 +43,28 @@ pub fn play_sound(app: &mut App, ecs: &mut World, effect: &EffectSpawner, target
                 Point::new((target as i32) % map.width, (target as i32) / map.width)
             );
             // Play sound at volume proportional to distance.
-            (*volume * (1.0 - (dist as f32) / 14.0), false)
+            (*volume * SFX_VOL_MUL * (1.0 - (dist as f32) / 14.0), false)
         }
     };
     // Play the sound.
-    app.audio.play_sound(&source.0, vol, repeat);
+    let sound: Sound = app.audio.play_sound(&source.0, vol, repeat);
+    if repeat {
+        replace_ambience(app, &sound);
+    }
+}
+
+pub fn replace_ambience(app: &mut App, sound: &Sound) {
+    let mut ambience = AMBIENCE.lock().unwrap();
+    if let Some(old) = ambience.take() {
+        app.audio.stop(&old);
+    }
+    *ambience = Some(sound.clone());
 }
 
 pub fn init_sounds(app: &mut App) {
     let list: Vec<(&str, (&[u8], AudioType))> = vec![
         //key, (bytes, type) - audiotype determines final volume, looping, etc.
-        ("hit", (include_bytes!("../../resources/sounds/hit.wav"), AudioType::Ambient)),
-        ("other", (include_bytes!("../../resources/sounds/hit.wav"), AudioType::SFX)),
-        ("another", (include_bytes!("../../resources/sounds/hit.wav"), AudioType::SFX))
+        ("hit", (include_bytes!("../../resources/sounds/hit.wav"), AudioType::SFX))
     ];
     let mut sounds = SOUNDS.lock().unwrap();
     for (k, (bytes, audiotype)) in list.iter() {
