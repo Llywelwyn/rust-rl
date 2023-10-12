@@ -2,6 +2,7 @@ use super::BUC;
 use crate::spatial;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
+use notan::prelude::*;
 use std::collections::VecDeque;
 use std::sync::Mutex;
 use crate::components::*;
@@ -13,6 +14,7 @@ mod targeting;
 mod triggers;
 mod attr;
 mod intrinsics;
+pub mod sound;
 
 pub use targeting::aoe_tiles;
 
@@ -63,6 +65,9 @@ pub enum EffectType {
     TriggerFire {
         trigger: Entity,
     },
+    Sound {
+        sound: String,
+    },
 }
 
 #[derive(Clone)]
@@ -95,7 +100,7 @@ pub fn add_effect(source: Option<Entity>, effect_type: EffectType, target: Targe
 }
 
 /// Iterates through the effects queue, applying each effect to their target.
-pub fn run_effects_queue(ecs: &mut World) {
+pub fn run_effects_queue(app: &mut App, ecs: &mut World) {
     // First removes any effect in the EFFECT_QUEUE with a dead entity as its source.
     loop {
         let dead_entity: Option<Entity> = DEAD_ENTITIES.lock().unwrap().pop_front();
@@ -111,7 +116,7 @@ pub fn run_effects_queue(ecs: &mut World) {
     loop {
         let effect: Option<EffectSpawner> = EFFECT_QUEUE.lock().unwrap().pop_front();
         if let Some(effect) = effect {
-            target_applicator(ecs, &effect);
+            target_applicator(app, ecs, &effect);
         } else {
             break;
         }
@@ -119,7 +124,7 @@ pub fn run_effects_queue(ecs: &mut World) {
 }
 
 /// Applies an effect to the correct target(s).
-fn target_applicator(ecs: &mut World, effect: &EffectSpawner) {
+fn target_applicator(app: &mut App, ecs: &mut World, effect: &EffectSpawner) {
     // Item use is handled differently - it creates other effects with itself
     // as the source, passing all effects attached to the item into the queue.
     if let EffectType::ItemUse { item } = effect.effect_type {
@@ -131,25 +136,26 @@ fn target_applicator(ecs: &mut World, effect: &EffectSpawner) {
     }
     // Otherwise, just match the effect and enact it directly.
     match &effect.target {
-        Targets::Tile { target } => affect_tile(ecs, effect, *target),
+        Targets::Tile { target } => affect_tile(app, ecs, effect, *target),
         Targets::TileList { targets } =>
-            targets.iter().for_each(|target| affect_tile(ecs, effect, *target)),
-        Targets::Entity { target } => affect_entity(ecs, effect, *target),
+            targets.iter().for_each(|target| affect_tile(app, ecs, effect, *target)),
+        Targets::Entity { target } => affect_entity(app, ecs, effect, *target),
         Targets::EntityList { targets } =>
-            targets.iter().for_each(|target| affect_entity(ecs, effect, *target)),
+            targets.iter().for_each(|target| affect_entity(app, ecs, effect, *target)),
     }
 }
 
 /// Runs an effect on a given tile index
-fn affect_tile(ecs: &mut World, effect: &EffectSpawner, target: usize) {
+fn affect_tile(app: &mut App, ecs: &mut World, effect: &EffectSpawner, target: usize) {
     if tile_effect_hits_entities(&effect.effect_type) {
         spatial::for_each_tile_content(target, |entity| {
-            affect_entity(ecs, effect, entity);
+            affect_entity(app, ecs, effect, entity);
         });
     }
 
     match &effect.effect_type {
         EffectType::Particle { .. } => particles::particle_to_tile(ecs, target as i32, &effect),
+        EffectType::Sound { .. } => sound::play_sound(app, ecs, &effect, target),
         _ => {}
     }
     // Run the effect
@@ -168,7 +174,7 @@ fn tile_effect_hits_entities(effect: &EffectType) -> bool {
 }
 
 /// Runs an effect on a given entity
-fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
+fn affect_entity(app: &mut App, ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     match &effect.effect_type {
         EffectType::Damage { .. } => damage::inflict_damage(ecs, effect, target),
         EffectType::Healing { .. } => damage::heal_damage(ecs, effect, target),
@@ -187,6 +193,11 @@ fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
         EffectType::EntityDeath => damage::entity_death(ecs, effect, target),
         EffectType::ModifyNutrition { .. } => hunger::modify_nutrition(ecs, effect, target),
         EffectType::AddIntrinsic { .. } => intrinsics::add_intrinsic(ecs, effect, target),
+        EffectType::Sound { .. } => {
+            if let Some(pos) = targeting::entity_position(ecs, target) {
+                sound::play_sound(app, ecs, &effect, pos);
+            }
+        }
         _ => {}
     }
 }

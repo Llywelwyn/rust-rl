@@ -38,56 +38,61 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
                 };
                 target_pool.hit_points.current -= ((amount as f32) * mult) as i32;
                 let bleeders = ecs.read_storage::<Bleeds>();
-                if target_pool.hit_points.current < 1 {
-                    super::DEAD_ENTITIES.lock().unwrap().push_back(target);
-                    add_effect(damage.source, EffectType::EntityDeath, Targets::Entity { target });
-                    for i in 0..3 {
-                        let sprite = (
-                            match i {
-                                0 => "explode1",
-                                1 => "explode2",
-                                _ => "explode3",
-                            }
-                        ).to_string();
-                        add_effect(
-                            None,
-                            EffectType::Particle {
-                                glyph: to_cp437('‼'),
-                                sprite,
-                                fg: RGB::named(RED),
-                                lifespan: 75.0,
-                                delay: 75.0 * (i as f32),
-                            },
-                            Targets::Entity { target }
-                        );
-                        if let Some(bleeds) = bleeders.get(target) {
+                // If the target bleeds, handle bloodstains and use the bleed colour for sfx.
+                if let Some(bleeds) = bleeders.get(target) {
+                    if target_pool.hit_points.current < 1 {
+                        super::DEAD_ENTITIES.lock().unwrap().push_back(target);
+                        add_effect(damage.source, EffectType::EntityDeath, Targets::Entity {
+                            target,
+                        });
+                        for i in 0..3 {
+                            let sprite = (
+                                match i {
+                                    0 => "explode1",
+                                    1 => "explode2",
+                                    _ => "explode3",
+                                }
+                            ).to_string();
+                            add_effect(
+                                None,
+                                EffectType::Particle {
+                                    glyph: to_cp437('‼'),
+                                    sprite,
+                                    fg: bleeds.colour,
+                                    lifespan: 75.0,
+                                    delay: 75.0 * (i as f32),
+                                },
+                                Targets::Entity { target }
+                            );
                             add_effect(
                                 None,
                                 EffectType::Bloodstain { colour: bleeds.colour },
                                 Targets::Entity { target }
                             );
                         }
-                    }
-                } else {
-                    // Regular damage taken effect - use damagetype to determine which one to play.
-                    add_effect(
-                        None,
-                        EffectType::Particle {
-                            glyph: to_cp437('‼'),
-                            sprite: "gnome".to_string(), // FIXME: REMOVE THE GNOMES
-                            fg: RGB::named(ORANGE),
-                            lifespan: DEFAULT_PARTICLE_LIFETIME,
-                            delay: 0.0,
-                        },
-                        Targets::Entity { target }
-                    );
-                    if let Some(bleeds) = bleeders.get(target) {
+                    } else {
+                        // Regular damage taken effect - use damagetype to determine which one to play.
+                        add_effect(
+                            None,
+                            EffectType::Particle {
+                                glyph: to_cp437('‼'),
+                                sprite: "gnome".to_string(), // FIXME: REMOVE THE GNOMES
+                                fg: RGB::named(ORANGE),
+                                lifespan: DEFAULT_PARTICLE_LIFETIME,
+                                delay: 0.0,
+                            },
+                            Targets::Entity { target }
+                        );
                         add_effect(
                             None,
                             EffectType::Bloodstain { colour: bleeds.colour },
                             Targets::Entity { target }
                         );
                     }
+                } else {
+                    // TODO: Damage taken particle effects when the target does not bleed.
+                    //       Also damage types, etc.
+                    return;
                 }
             }
         }

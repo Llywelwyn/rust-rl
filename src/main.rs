@@ -33,14 +33,8 @@ fn main() -> Result<(), String> {
         .build()
 }
 
-fn setup(_app: &mut App, gfx: &mut Graphics) -> State {
-    /*
-    let sound = app.audio.create_source(include_bytes!("../resources/sounds/hit.wav")).unwrap();
-    let sounds: HashMap<String, AudioSource> = vec![("hit".to_string(), sound)]
-        .into_iter()
-        .collect();
-    */
-
+fn setup(app: &mut App, gfx: &mut Graphics) -> State {
+    effects::sound::init_sounds(app);
     let texture = gfx
         .create_texture()
         .from_image(include_bytes!("../resources/atlas.png"))

@@ -85,23 +85,23 @@ impl State {
         }
     }
 
-    fn run_systems(&mut self) {
+    fn run_systems(&mut self, ctx: &mut App) {
         let mut hunger_clock = hunger_system::HungerSystem {};
         let mut particle_system = particle_system::ParticleSpawnSystem {};
 
         // Order is *very* important here, to ensure effects take place in the right order,
         // and that the player/AI are making decisions based on the most up-to-date info.
 
-        self.resolve_entity_decisions(); //             Push Player messages of intent to effects queue, and run it.
+        self.resolve_entity_decisions(ctx); //             Push Player messages of intent to effects queue, and run it.
         self.refresh_indexes(); //                      Get up-to-date map and viewsheds prior to AI turn.
         self.run_ai(); //                               Get AI decision-making.
-        self.resolve_entity_decisions(); //             Push AI messages of intent to effects queue, and run it.
+        self.resolve_entity_decisions(ctx); //             Push AI messages of intent to effects queue, and run it.
         hunger_clock.run_now(&self.ecs); //             Tick the hunger clock (on the turn clock's turn)
         particle_system.run_now(&self.ecs); //          Spawn/delete particles (turn independent)
         self.ecs.maintain();
     }
 
-    fn resolve_entity_decisions(&mut self) {
+    fn resolve_entity_decisions(&mut self, ctx: &mut App) {
         let mut trigger_system = trigger_system::TriggerSystem {};
         let mut item_equip_system = inventory::ItemEquipSystem {};
         let mut item_use_system = inventory::ItemUseSystem {};
@@ -121,7 +121,7 @@ impl State {
         key_system.run_now(&self.ecs);
         melee_system.run_now(&self.ecs);
 
-        effects::run_effects_queue(&mut self.ecs);
+        effects::run_effects_queue(ctx, &mut self.ecs);
     }
 
     fn refresh_indexes(&mut self) {
@@ -207,13 +207,13 @@ impl State {
         particle_system::particle_ticker(&mut self.ecs, ctx);
         match new_runstate {
             RunState::PreRun => {
-                self.run_systems();
+                self.run_systems(ctx);
                 self.ecs.maintain();
                 new_runstate = RunState::AwaitingInput;
             }
             RunState::AwaitingInput => {
                 self.refresh_indexes();
-                effects::run_effects_queue(&mut self.ecs);
+                effects::run_effects_queue(ctx, &mut self.ecs);
                 let mut can_act = false;
                 {
                     let player_entity = self.ecs.fetch::<Entity>();
@@ -231,7 +231,7 @@ impl State {
             }
             RunState::Ticking => {
                 while new_runstate == RunState::Ticking && particle_system::check_queue(&self.ecs) {
-                    self.run_systems();
+                    self.run_systems(ctx);
                     self.ecs.maintain();
                     try_spawn_interval(&mut self.ecs);
                     maybe_map_message(&mut self.ecs);
@@ -585,7 +585,7 @@ impl State {
 
         match new_runstate {
             RunState::PreRun => {
-                self.run_systems();
+                //self.run_systems();
                 self.ecs.maintain();
                 new_runstate = RunState::AwaitingInput;
             }
@@ -594,7 +594,7 @@ impl State {
                 // still be in the queue, just to make 100% sure that
                 // there are no lingering effects from the last tick.
                 self.refresh_indexes();
-                effects::run_effects_queue(&mut self.ecs);
+                //effects::run_effects_queue(&mut self.ecs);
                 // Sanity-checking that the player actually *should*
                 // be taking a turn before giving them one. If they
                 // don't have a turn component, go back to ticking.
@@ -615,7 +615,7 @@ impl State {
             }
             RunState::Ticking => {
                 while new_runstate == RunState::Ticking && particle_system::check_queue(&self.ecs) {
-                    self.run_systems();
+                    //self.run_systems();
                     self.ecs.maintain();
                     try_spawn_interval(&mut self.ecs);
                     maybe_map_message(&mut self.ecs);
