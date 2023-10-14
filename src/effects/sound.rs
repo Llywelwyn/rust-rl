@@ -37,15 +37,19 @@ pub fn play_sound(app: &mut App, ecs: &mut World, effect: &EffectSpawner, target
         AudioType::SFX => {
             let map = ecs.fetch::<Map>();
             let ppos = ecs.fetch::<Point>();
+            // Get a slight variation on sound volume, just so things don't sound too uniform.
+            let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+            let vol_random = rng.range(0.9, 1.1);
             // Calc distance from player to target.
             let dist = DistanceAlg::PythagorasSquared.distance2d(
                 *ppos,
                 Point::new((target as i32) % map.width, (target as i32) / map.width)
             );
             // Play sound at volume proportional to distance.
-            (*volume * SFX_VOL_MUL * (1.0 - (dist as f32) / 14.0), false)
+            (*volume * SFX_VOL_MUL * vol_random * (1.0 - (dist as f32) / 14.0), false)
         }
     };
+
     // Play the sound.
     let sound: Sound = app.audio.play_sound(&source.0, vol, repeat);
     if repeat {
