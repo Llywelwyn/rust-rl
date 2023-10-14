@@ -15,6 +15,7 @@ use crate::{
     HungerState,
     Bleeds,
     HasDamageModifiers,
+    DamageType,
 };
 use crate::gui::with_article;
 use crate::consts::visuals::{ DEFAULT_PARTICLE_LIFETIME, LONG_PARTICLE_LIFETIME };
@@ -98,6 +99,27 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
         }
     } else if let Some(_destructible) = ecs.read_storage::<Destructible>().get(target) {
         add_effect(damage.source, EffectType::EntityDeath, Targets::Entity { target });
+    }
+    if let EffectType::Damage { amount: _, damage_type } = &damage.effect_type {
+        get_random_damage_sound(ecs, damage_type, target);
+    }
+}
+
+fn get_random_damage_sound(ecs: &World, damage_type: &DamageType, target: Entity) {
+    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+    match damage_type {
+        DamageType::Physical => {
+            let sound = (
+                match rng.roll_dice(1, 4) {
+                    1 => "whoosh1",
+                    2 => "whoosh2",
+                    3 => "whoosh3",
+                    _ => "whoosh4",
+                }
+            ).to_string();
+            add_effect(None, EffectType::Sound { sound }, Targets::Entity { target });
+        }
+        _ => {}
     }
 }
 

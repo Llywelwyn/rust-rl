@@ -76,6 +76,10 @@ pub fn init_sounds(app: &mut App) {
     let sound_data: &[(&str, &[u8], AudioType)] = &[
         // (key, file_path, audiotype)
         ("a_relax", include_bytes!("../../resources/sounds/amb/relaxed.ogg"), AudioType::Ambient),
+        ("whoosh1", include_bytes!("../../resources/sounds/hit/whoosh1.ogg"), AudioType::SFX),
+        ("whoosh2", include_bytes!("../../resources/sounds/hit/whoosh2.ogg"), AudioType::SFX),
+        ("whoosh3", include_bytes!("../../resources/sounds/hit/whoosh3.ogg"), AudioType::SFX),
+        ("whoosh4", include_bytes!("../../resources/sounds/hit/whoosh4.ogg"), AudioType::SFX),
         ("d_blocked1", include_bytes!("../../resources/sounds/door/blocked1.wav"), AudioType::SFX),
         ("d_blocked2", include_bytes!("../../resources/sounds/door/blocked2.wav"), AudioType::SFX),
         ("d_blocked3", include_bytes!("../../resources/sounds/door/blocked3.wav"), AudioType::SFX),
