@@ -311,6 +311,9 @@ pub fn spawn_named_item(
         if let Some(renderable) = &item_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
         }
+        if let Some(avatar) = &item_template.avatar {
+            eb = eb.with(Avatar::new(avatar.clone()));
+        }
         // BEATITUDE
         let buc = if let Some(buc_status) = buc {
             buc_status

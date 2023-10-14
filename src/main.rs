@@ -76,6 +76,7 @@ fn setup(app: &mut App, gfx: &mut Graphics) -> State {
     gs.ecs.register::<Position>();
     gs.ecs.register::<OtherLevelPosition>();
     gs.ecs.register::<Renderable>();
+    gs.ecs.register::<Avatar>();
     gs.ecs.register::<Burden>();
     gs.ecs.register::<Prop>();
     gs.ecs.register::<Player>();
@@ -183,8 +184,11 @@ fn setup(app: &mut App, gfx: &mut Graphics) -> State {
 }
 const ASCII_MODE: bool = false; // Change this to config setting
 const SHOW_BOUNDARIES: bool = false; // Config setting
+
+#[derive(PartialEq)]
 enum DrawType {
     None,
+    Player,
     Visible,
     Telepathy,
 }
@@ -205,7 +209,7 @@ fn draw_entities(
     ecs: &World,
     draw: &mut Draw,
     atlas: &HashMap<String, Texture>,
-    font: &Fonts
+    _font: &Fonts
 ) {
     {
         let bounds = crate::camera::get_screen_bounds(ecs, false);
@@ -218,6 +222,7 @@ fn draw_entities(
         let minds = ecs.read_storage::<Mind>();
         let pools = ecs.read_storage::<Pools>();
         let entities = ecs.entities();
+        let player = ecs.read_storage::<Player>();
         let data = (&positions, &renderables, &entities, !&hidden).join().collect::<Vec<_>>();
         let mut to_draw: HashMap<DrawKey, DrawInfo> = HashMap::new();
         for (pos, render, e, _h) in data.iter() {
@@ -234,7 +239,11 @@ fn draw_entities(
             {
                 let draw_type = if map.visible_tiles[idx] {
                     // If it's anything else, just draw it.
-                    DrawType::Visible
+                    if player.get(*e).is_some() {
+                        DrawType::Player
+                    } else {
+                        DrawType::Visible
+                    }
                 } else if map.telepath_tiles[idx] {
                     let has_mind = minds.get(*e);
                     if has_mind.is_some() {
@@ -297,10 +306,53 @@ fn draw_entities(
                         }
                     }
                 }
+                DrawType::Player => {
+                    let (x_pos, y_pos) = (
+                        (entry.0.x as f32) * TILESIZE.sprite_x + offset_x,
+                        (entry.0.y as f32) * TILESIZE.sprite_y + offset_y,
+                    );
+                    let textures = get_avatar_textures(ecs, atlas);
+                    for (tex, col) in textures.iter() {
+                        draw.image(tex)
+                            .position(x_pos, y_pos)
+                            .color(*col)
+                            .size(TILESIZE.sprite_x, TILESIZE.sprite_y);
+                    }
+                }
                 _ => {}
             }
         }
     }
+}
+
+fn get_avatar_textures(ecs: &World, atlas: &HashMap<String, Texture>) -> Vec<(Texture, Color)> {
+    let player = ecs.fetch::<Entity>();
+    let renderables = ecs.read_storage::<Renderable>();
+    let equipped = ecs.read_storage::<Equipped>();
+    let has_avatar = ecs.read_storage::<Avatar>();
+    let mut avis = Vec::new();
+    if let Some(renderables) = renderables.get(*player) {
+        if let Some(sprite) = atlas.get(&renderables.sprite) {
+            avis.push((
+                sprite.clone(),
+                Color::from_rgb(renderables.fg.r, renderables.fg.g, renderables.fg.b),
+            ));
+        } else {
+            panic!("No player sprite found for ID: {}", &renderables.sprite);
+        }
+    } else {
+        panic!("No player renderable found!");
+    }
+    for (_e, a, r) in (&equipped, &has_avatar, &renderables)
+        .join()
+        .filter(|item| item.0.owner == *player) {
+        if let Some(sprite) = atlas.get(&a.sprite) {
+            avis.push((sprite.clone(), Color::from_rgb(r.fg.r, r.fg.g, r.fg.b)));
+        } else {
+            panic!("No avatar sprite found for ID: {}", &a.sprite);
+        }
+    }
+    avis
 }
 
 // Draws a HP bar LINE_WIDTH pixels thick centered above the entity.

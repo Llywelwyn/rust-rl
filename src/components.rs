@@ -115,6 +115,17 @@ impl Renderable {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Avatar {
+    pub sprite: String,
+}
+
+impl Avatar {
+    pub fn new(sprite: String) -> Self {
+        Self { sprite }
+    }
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Bleeds {
     pub colour: RGB,
 }
