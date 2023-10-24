@@ -1,6 +1,5 @@
 use super::components::*;
 use bracket_lib::prelude::*;
-use specs::error::NoError;
 use specs::prelude::*;
 use specs::saveload::{
     DeserializeComponents,
@@ -12,11 +11,12 @@ use specs::saveload::{
 use std::fs;
 use std::fs::File;
 use std::path::Path;
+use std::convert::Infallible;
 
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $($type:ty),*) => {
         $(
-        SerializeComponents::<NoError, SimpleMarker<SerializeMe>>::serialize(
+        SerializeComponents::<Infallible, SimpleMarker<SerializeMe>>::serialize(
             &( $ecs.read_storage::<$type>(), ),
             &$data.0,
             &$data.1,
@@ -55,8 +55,8 @@ pub fn save_game(ecs: &mut World) {
     {
         let data = (ecs.entities(), ecs.read_storage::<SimpleMarker<SerializeMe>>());
 
-        let writer = File::create("./savegame.json").unwrap();
-        let mut serializer = serde_json::Serializer::new(writer);
+        let writer = File::create("./savegame.bin").unwrap();
+        let mut serializer = bincode::Serializer::new(writer, bincode::options());
         serialize_individually!(
             ecs,
             serializer,
@@ -150,13 +150,13 @@ pub fn save_game(ecs: &mut World) {
 }
 
 pub fn does_save_exist() -> bool {
-    Path::new("./savegame.json").exists()
+    Path::new("./savegame.bin").exists()
 }
 
 macro_rules! deserialize_individually {
     ($ecs:expr, $de:expr, $data:expr, $($type:ty),*) => {
         $(
-        DeserializeComponents::<NoError, _>::deserialize(
+        DeserializeComponents::<Infallible, _>::deserialize(
             &mut ( &mut $ecs.write_storage::<$type>(), ),
             &$data.0, // entities
             &mut $data.1, // marker
@@ -180,8 +180,8 @@ pub fn load_game(ecs: &mut World) {
         }
     }
 
-    let data = fs::read_to_string("./savegame.json").unwrap();
-    let mut de = serde_json::Deserializer::from_str(&data);
+    let data = fs::read("./savegame.bin").unwrap();
+    let mut de = bincode::Deserializer::with_reader(&*data, bincode::options());
 
     {
         let mut d = (
@@ -311,7 +311,7 @@ pub fn load_game(ecs: &mut World) {
 }
 
 pub fn delete_save() {
-    if Path::new("./savegame.json").exists() {
-        std::fs::remove_file("./savegame.json").expect("Unable to delete file");
+    if Path::new("./savegame.bin").exists() {
+        std::fs::remove_file("./savegame.bin").expect("Unable to delete file");
     }
 }
