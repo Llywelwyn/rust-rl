@@ -548,7 +548,7 @@ fn draw_bg(_ecs: &World, draw: &mut Draw, atlas: &HashMap<String, Texture>) {
     draw_spritebox(sidebox, draw, atlas);
 }
 
-fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
+fn draw(_app: &mut App, gfx: &mut Graphics, gs: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
     let mut log = false;
@@ -630,6 +630,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, gs: &mut State) {
         }
         RunState::ShowTargeting { .. } => {
             corner_text("Targeting which tile? [0-9]/[YUHJKLBN]", &mut draw, &gs.font);
+        }
+        RunState::HelpScreen => {
+            corner_text("The help screen is a placeholder! [?]", &mut draw, &gs.font);
         }
         _ => {}
     }

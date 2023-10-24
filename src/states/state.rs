@@ -473,7 +473,7 @@ impl State {
                 };
             }
             RunState::GameOver => {
-                let result = gui::game_over(ctx);
+                let result = gui::yes_no(ctx);
                 let write_to_morgue: Option<bool> = match result {
                     gui::YesNoResult::NoSelection => None,
                     gui::YesNoResult::No => Some(false),
@@ -495,7 +495,16 @@ impl State {
                 self.mapgen_next_state = Some(RunState::PreRun);
                 new_runstate = RunState::MapGeneration;
             }
-            // RunState::HelpScreen
+            RunState::HelpScreen => {
+                let result = gui::help_prompt(ctx);
+                match result {
+                    gui::YesNoResult::NoSelection => {}
+                    _ => {
+                        gamelog::record_event(EVENT::LookedForHelp(1));
+                        new_runstate = RunState::AwaitingInput;
+                    }
+                }
+            }
             RunState::MagicMapReveal { row, cursed } => {
                 let mut map = self.ecs.fetch_mut::<Map>();
                 // Could probably toss this into a function somewhere, and/or

@@ -75,22 +75,6 @@ pub use main_menu::*;
 mod inventory;
 pub use inventory::*;
 
-/// Gives a popup box with a message and a title, and waits for a keypress.
-#[allow(unused)]
-pub fn yes_no(ctx: &mut BTerm, question: String) -> Option<bool> {
-    ctx.print_color_centered(15, RGB::named(YELLOW), RGB::named(BLACK), question);
-    ctx.print_color_centered(17, RGB::named(CYAN), RGB::named(BLACK), "(y)es or (n)o");
-    match ctx.key {
-        None => None,
-        Some(key) =>
-            match key {
-                VirtualKeyCode::Y => Some(true),
-                VirtualKeyCode::N => Some(false),
-                _ => None,
-            }
-    }
-}
-
 pub fn draw_lerping_bar(
     ctx: &mut BTerm,
     sx: i32,
@@ -1854,13 +1838,38 @@ pub enum YesNoResult {
     No,
 }
 
-pub fn game_over(ctx: &mut App) -> YesNoResult {
+/// Prompts for a YesNoResult with default keys of 'y' and 'n'.
+pub fn yes_no(ctx: &mut App) -> YesNoResult {
+    prompt(ctx, None, None, false, false)
+}
+
+pub fn help_prompt(ctx: &mut App) -> YesNoResult {
+    prompt(ctx, Some((KeyCode::Slash, true)), Some((KeyCode::Escape, false)), false, false)
+}
+
+/// Prompts for a YesNoResult, where 'yes' and 'no' keys can either be specified,
+/// or defaulted to 'y' and 'n'.
+pub fn prompt(
+    ctx: &mut App,
+    yes: Option<(KeyCode, bool)>,
+    no: Option<(KeyCode, bool)>,
+    allow_esc: bool,
+    allow_enter: bool
+) -> YesNoResult {
+    let (y, y_shift) = yes.unwrap_or((KeyCode::Y, false));
+    let (n, n_shift) = no.unwrap_or((KeyCode::N, false));
     for keycode in &ctx.keyboard.pressed {
-        match *keycode {
-            KeyCode::N => {
+        match (keycode, ctx.keyboard.shift()) {
+            (k, s) if *k == y && s == y_shift => {
+                return YesNoResult::Yes;
+            }
+            (k, s) if *k == n && s == n_shift => {
                 return YesNoResult::No;
             }
-            KeyCode::Y => {
+            (k, _s) if *k == KeyCode::Escape && allow_esc => {
+                return YesNoResult::No;
+            }
+            (k, _s) if *k == KeyCode::Return && allow_enter => {
                 return YesNoResult::Yes;
             }
             _ => {}
