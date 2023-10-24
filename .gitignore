@@ -13,7 +13,7 @@ Cargo.lock
 .prettierrc.json
 
 # Save files, morgue files
-savegame.json
+savegame.bin
 morgue
 
 # A default user config will be written on first run, if not present
