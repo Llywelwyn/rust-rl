@@ -1,8 +1,6 @@
 use super::{ spawner, Map, Position, Rect, TileType };
 use bracket_lib::prelude::*;
 
-mod room_accretion;
-use room_accretion::RoomAccretionBuilder;
 mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod bsp_interior;
@@ -447,7 +445,7 @@ pub fn level_builder(
     initial_player_level: i32
 ) -> BuilderChain {
     match id {
-        ID_OVERMAP => room_accretion(),
+        ID_OVERMAP => overmap_builder(),
         ID_TOWN => town_builder(id, rng, width, height, 0, initial_player_level),
         ID_TOWN2 => forest_builder(id, rng, width, height, 1, initial_player_level),
         ID_TOWN3 =>
@@ -491,11 +489,4 @@ pub fn level_builder(
 
 fn diff(branch_id: i32, lvl_id: i32) -> i32 {
     return lvl_id - branch_id;
-}
-
-fn room_accretion() -> BuilderChain {
-    let mut builder = BuilderChain::new(false, 110, 64, 64, 0, "room_accretion", "accretion", 0, 1);
-    builder.start_with(RoomAccretionBuilder::new());
-    builder.with(AreaStartingPosition::new(XStart::CENTRE, YStart::CENTRE));
-    builder
 }
