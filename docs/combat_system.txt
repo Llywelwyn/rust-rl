@@ -49,3 +49,7 @@ Complex example, with negative AC:
 bloodstains: if starts on bloodied tile, remove blood + heal, gain xp, grow (little dog -> dog), etc.
 - You have negative AC, so you roll 1d14 for damage reduction, and get an 8.
 - The total damage is 6 - 8 = -2, but damage can't be negative, so you take 1 point of damage.
+
+tl;dr
+1. Lower AC is better
+2. Aim for 0 AC - it's an important breakpoint. Every point of AC before 0 counts for a lot.
