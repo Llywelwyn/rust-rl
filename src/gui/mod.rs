@@ -32,6 +32,9 @@ use super::{
     Skills,
     Viewshed,
     BUC,
+    Key,
+    Item,
+    ItemType,
     data::ids::get_local_col,
 };
 use crate::data::entity::CARRY_CAPACITY_PER_STRENGTH;
@@ -43,7 +46,9 @@ use crate::data::visuals::{
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use std::collections::BTreeMap;
+use std::collections::{ HashMap, HashSet };
+use crate::invkeys::check_key;
+
 mod character_creation;
 mod cheat_menu;
 mod letter_to_option;
@@ -271,41 +276,16 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             ctx.print_color(20, 20, RGB::named(YELLOW), RGB::named(BLACK), "--- GODMODE: ON ---");
         }
         // Draw equipment
-        let renderables = ecs.read_storage::<Renderable>();
-        let mut equipment: Vec<(String, RGB, RGB, FontCharType)> = Vec::new();
-        let entities = ecs.entities();
-        for (entity, _equipped, renderable) in (&entities, &equipped, &renderables)
-            .join()
-            .filter(|item| item.1.owner == *player_entity) {
-            equipment.push((
-                obfuscate_name_ecs(ecs, entity).0,
-                RGB::named(item_colour_ecs(ecs, entity)),
-                renderable.fg,
-                renderable.glyph,
-            ));
-        }
         let mut y = 1;
+        let equipment = items(&ecs, Filter::Equipped);
         if !equipment.is_empty() {
             ctx.print_color(72, y, RGB::named(BLACK), RGB::named(WHITE), "Equipment");
-            let mut j = 0;
-            for item in equipment {
-                y += 1;
-                ctx.set(72, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + (j as FontCharType));
-                j += 1;
-                ctx.set(74, y, item.2, RGB::named(BLACK), item.3);
-                ctx.print_color(76, y, item.1, RGB::named(BLACK), &item.0);
-                ctx.print_color(
-                    76 + &item.0.len() + 1,
-                    y,
-                    RGB::named(WHITE),
-                    RGB::named(BLACK),
-                    "(worn)"
-                );
-            }
-            y += 2;
+            y += 1;
+            y = print_options(&ecs, &equipment, 72, y, ctx);
+            y += 1;
         }
 
-        // Draw consumables
+        // Draw backpack
         ctx.print_color(72, y, RGB::named(BLACK), RGB::named(WHITE), "Backpack");
         ctx.print_color(
             81,
@@ -320,8 +300,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             )
         );
         y += 1;
-        let player_inventory = get_player_inventory(&ecs);
-        y = print_options(&player_inventory, 72, y, ctx).0;
+        let backpack = items(&ecs, Filter::Backpack);
+        y = print_options(&ecs, &backpack, 72, y, ctx);
 
         // Draw spells - if we have any -- NYI!
         if let Some(known_spells) = ecs.read_storage::<KnownSpells>().get(*player_entity) {
@@ -505,46 +485,46 @@ pub enum ItemMenuResult {
 }
 
 pub fn print_options(
+    ecs: &World,
     inventory: &PlayerInventory,
     mut x: i32,
     mut y: i32,
     ctx: &mut BTerm
-) -> (i32, i32) {
-    let mut j = 0;
+) -> i32 {
     let initial_x: i32 = x;
-    let mut width: i32 = -1;
-    for (item, (_e, item_count)) in inventory {
+    let mut sorted: Vec<_> = inventory.iter().collect();
+    sorted.sort_by(|a, b| a.1.idx.cmp(&b.1.idx));
+
+    for (info, slot) in sorted {
         x = initial_x;
         // Print the character required to access this item. i.e. (a)
-        if j < 26 {
-            ctx.set(x, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + (j as FontCharType));
+        if slot.idx < 26 {
+            ctx.set(x, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + slot.idx);
         } else {
             // If we somehow have more than 26, start using capitals
-            ctx.set(x, y, RGB::named(YELLOW), RGB::named(BLACK), 65 - 26 + (j as FontCharType));
+            ctx.set(x, y, RGB::named(YELLOW), RGB::named(BLACK), 65 - 26 + slot.idx);
         }
 
         x += 2;
-        let fg = RGB::from_u8(item.renderables.0, item.renderables.1, item.renderables.2);
-        ctx.set(x, y, fg, RGB::named(BLACK), item.glyph);
+        let fg = RGB::from_u8(info.renderables.0, info.renderables.1, info.renderables.2);
+        ctx.set(x, y, fg, RGB::named(BLACK), info.glyph);
         x += 2;
 
-        let fg = RGB::from_u8(item.rgb.0, item.rgb.1, item.rgb.2);
-        if item_count > &1 {
+        let fg = RGB::from_u8(info.rgb.0, info.rgb.1, info.rgb.2);
+        if slot.count > 1 {
             // If more than one, print the number and pluralise
             // i.e. (a) 3 daggers
-            ctx.print_color(x, y, fg, RGB::named(BLACK), item_count);
+            ctx.print_color(x, y, fg, RGB::named(BLACK), slot.count);
             x += 2;
-            ctx.print_color(x, y, fg, RGB::named(BLACK), item.display_name.plural.to_string());
-            let this_width = x - initial_x + (item.display_name.plural.len() as i32);
-            width = if width > this_width { width } else { this_width };
+            ctx.print_color(x, y, fg, RGB::named(BLACK), info.display_name.plural.to_string());
         } else {
-            if item.display_name.singular.to_lowercase().ends_with("s") {
+            if info.display_name.singular.to_lowercase().ends_with("s") {
                 ctx.print_color(x, y, fg, RGB::named(BLACK), "some");
                 x += 5;
             } else if
                 ['a', 'e', 'i', 'o', 'u']
                     .iter()
-                    .any(|&v| item.display_name.singular.to_lowercase().starts_with(v))
+                    .any(|&v| info.display_name.singular.to_lowercase().starts_with(v))
             {
                 // If one and starts with a vowel, print 'an'
                 // i.e. (a) an apple
@@ -556,40 +536,54 @@ pub fn print_options(
                 ctx.print_color(x, y, fg, RGB::named(BLACK), "a");
                 x += 2;
             }
-            ctx.print_color(x, y, fg, RGB::named(BLACK), item.display_name.singular.to_string());
-            let this_width = x - initial_x + (item.display_name.singular.len() as i32);
-            width = if width > this_width { width } else { this_width };
+            /*
+            let text = if let Some(worn) = ecs.read_storage::<Equipped>().get(slot.item) {
+                use crate::EquipmentSlot;
+                let text = match worn.slot {
+                    EquipmentSlot::Melee | EquipmentSlot::Shield => "being held",
+                    _ => "being worn",
+                };
+                format!("{} ({})", info.display_name.singular.to_string(), text)
+            } else {
+                info.display_name.singular.to_string()
+            };
+            */
+            let text = info.display_name.singular.to_string();
+            ctx.print_color(x, y, fg, RGB::named(BLACK), text);
         }
 
         y += 1;
-        j += 1;
     }
 
-    return (y, width);
+    return y;
 }
+
+const PADDING: i32 = 4;
+const SOME: i32 = 4;
+const AN: i32 = 2;
+const A: i32 = 1;
 
 pub fn get_max_inventory_width(inventory: &PlayerInventory) -> i32 {
     let mut width: i32 = 0;
-    for (item, (_e, count)) in inventory {
+    for (item, slot) in inventory {
         let mut this_width = item.display_name.singular.len() as i32;
-        // Clean this up. It should use consts.
-        this_width += 4; // The spaces before and after the character to select this item, etc.
-        if count <= &1 {
+        if slot.count <= 1 {
             if item.display_name.singular == item.display_name.plural {
-                this_width += 4; // "some".len
+                this_width += SOME;
             } else if
                 ['a', 'e', 'i', 'o', 'u'].iter().any(|&v| item.display_name.singular.starts_with(v))
             {
-                this_width += 2; // "an".len
+                this_width += AN;
             } else {
-                this_width += 1; // "a".len
+                this_width += A;
             }
         } else {
-            this_width += count.to_string().len() as i32; // i.e. "12".len
+            this_width =
+                (item.display_name.plural.len() as i32) + (slot.count.to_string().len() as i32); // i.e. "12".len
         }
         width = if width > this_width { width } else { this_width };
     }
-    return width;
+    return width + PADDING;
 }
 
 // Inside the ECS
@@ -636,7 +630,7 @@ pub fn obfuscate_name(
         if has_beatitude.known {
             let prefix = match has_beatitude.buc {
                 BUC::Cursed => Some("cursed "),
-                BUC::Uncursed => None,
+                BUC::Uncursed => Some("uncursed "),
                 BUC::Blessed => Some("blessed "),
             };
             if prefix.is_some() {
@@ -831,13 +825,13 @@ pub fn show_help(ctx: &mut BTerm) -> YesNoResult {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct DisplayName {
     singular: String,
     plural: String,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct UniqueInventoryItem {
     display_name: DisplayName,
     rgb: (u8, u8, u8),
@@ -847,57 +841,71 @@ pub struct UniqueInventoryItem {
     name: String,
 }
 
-pub type PlayerInventory = BTreeMap<UniqueInventoryItem, (Entity, i32)>;
+pub struct InventorySlot {
+    pub item: Entity,
+    pub count: i32,
+    pub idx: usize,
+}
 
-pub fn get_player_inventory(ecs: &World) -> PlayerInventory {
-    let player_entity = ecs.fetch::<Entity>();
-    let names = ecs.read_storage::<Name>();
-    let backpack = ecs.read_storage::<InBackpack>();
-    let entities = ecs.entities();
-    let renderables = ecs.read_storage::<Renderable>();
+pub type PlayerInventory = HashMap<UniqueInventoryItem, InventorySlot>;
 
-    let mut player_inventory: BTreeMap<UniqueInventoryItem, (Entity, i32)> = BTreeMap::new();
-    for (entity, _pack, name, renderable) in (&entities, &backpack, &names, &renderables)
-        .join()
-        .filter(|item| item.1.owner == *player_entity) {
-        // RGB can't be used as a key. This is converting the RGB (tuple of f32) into a tuple of u8s.
-        let item_colour = item_colour_ecs(ecs, entity);
-        let renderables = (
-            (renderable.fg.r * 255.0) as u8,
-            (renderable.fg.g * 255.0) as u8,
-            (renderable.fg.b * 255.0) as u8,
-        );
-        let (singular, plural) = obfuscate_name_ecs(ecs, entity);
-        let beatitude_status = if let Some(beatitude) = ecs.read_storage::<Beatitude>().get(entity) {
-            match beatitude.buc {
-                BUC::Blessed => 1,
-                BUC::Uncursed => 2,
-                BUC::Cursed => 3,
-            }
-        } else {
-            0
-        };
-        let unique_item = UniqueInventoryItem {
-            display_name: DisplayName { singular: singular.clone(), plural: plural },
-            rgb: item_colour,
-            renderables: renderables,
-            glyph: renderable.glyph,
-            beatitude_status: beatitude_status,
-            name: name.name.clone(),
-        };
-        player_inventory
-            .entry(unique_item)
-            .and_modify(|(_e, count)| {
-                *count += 1;
+pub enum Filter {
+    All,
+    Backpack,
+    Equipped,
+    Category(ItemType),
+}
+
+macro_rules! includeitem {
+    ($inv:expr, $ecs:expr, $e:expr, $k:expr) => {
+        $inv.entry(unique_ecs($ecs, $e))
+            .and_modify(|slot| {
+                slot.count += 1;
             })
-            .or_insert((entity, 1));
-    }
+            .or_insert(InventorySlot {
+                item: $e,
+                count: 1,
+                idx: $k.idx,
+            });
+    };
+}
 
-    return player_inventory;
+pub fn items(ecs: &World, filter: Filter) -> PlayerInventory {
+    let entities = ecs.entities();
+    let keys = ecs.read_storage::<Key>();
+    let mut inv: PlayerInventory = HashMap::new();
+    match filter {
+        Filter::All => {
+            for (e, k) in (&entities, &keys).join() {
+                includeitem!(inv, ecs, e, k);
+            }
+        }
+        Filter::Backpack => {
+            let backpack = ecs.read_storage::<InBackpack>();
+            for (e, k, _b) in (&entities, &keys, &backpack).join() {
+                includeitem!(inv, ecs, e, k);
+            }
+        }
+        Filter::Equipped => {
+            let equipped = ecs.read_storage::<Equipped>();
+            for (e, k, _e) in (&entities, &keys, &equipped).join() {
+                includeitem!(inv, ecs, e, k);
+            }
+        }
+        Filter::Category(itemtype) => {
+            let items = ecs.read_storage::<Item>();
+            for (e, k, _i) in (&entities, &keys, &items)
+                .join()
+                .filter(|e| e.2.category == itemtype) {
+                includeitem!(inv, ecs, e, k);
+            }
+        }
+    }
+    inv
 }
 
 pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
-    let player_inventory = get_player_inventory(&gs.ecs);
+    let player_inventory = items(&gs.ecs, Filter::Backpack);
     let count = player_inventory.len();
 
     let (x_offset, y_offset) = (1, 10);
@@ -915,7 +923,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
     let y = 3 + y_offset;
     let width = get_max_inventory_width(&player_inventory);
     ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
-    print_options(&player_inventory, x + 1, y + 1, ctx);
+    print_options(&gs.ecs, &player_inventory, x + 1, y + 1, ctx);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -924,22 +932,23 @@ pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
                     let selection = letter_to_option::letter_to_option(key, ctx.shift);
-                    if selection > -1 && selection < (count as i32) {
+                    if selection != -1 && check_key(selection as usize) {
                         if on_overmap {
                             gamelog::Logger
                                 ::new()
                                 .append("You can't use items on the overmap.")
                                 .log();
                         } else {
-                            return (
-                                ItemMenuResult::Selected,
-                                Some(
-                                    player_inventory
-                                        .iter()
-                                        .nth(selection as usize)
-                                        .unwrap().1.0
-                                ),
-                            );
+                            // Get the first entity with a Key {} component that has idx matching selection
+                            let entities = gs.ecs.entities();
+                            let keyed_items = gs.ecs.read_storage::<Key>();
+                            let backpack = gs.ecs.read_storage::<InBackpack>();
+                            for (e, key, _b) in (&entities, &keyed_items, &backpack).join() {
+                                if key.idx == (selection as usize) {
+                                    return (ItemMenuResult::Selected, Some(e));
+                                }
+                            }
+                            // TODO: Gamelog about not having selected item?
                         }
                     }
                     (ItemMenuResult::NoResponse, None)
@@ -949,7 +958,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
 }
 
 pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
-    let player_inventory = get_player_inventory(&gs.ecs);
+    let player_inventory = items(&gs.ecs, Filter::Backpack);
     let count = player_inventory.len();
 
     let (x_offset, y_offset) = (1, 10);
@@ -967,7 +976,7 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
     let y = 3 + y_offset;
     let width = get_max_inventory_width(&player_inventory);
     ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
-    print_options(&player_inventory, x + 1, y + 1, ctx);
+    print_options(&gs.ecs, &player_inventory, x + 1, y + 1, ctx);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -975,23 +984,23 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = letter_to_option(key);
-                    if selection > -1 && selection < (count as i32) {
+                    let selection = letter_to_option::letter_to_option(key, ctx.shift);
+                    if selection != -1 && check_key(selection as usize) {
                         if on_overmap {
                             gamelog::Logger
                                 ::new()
                                 .append("You can't drop items on the overmap.")
                                 .log();
                         } else {
-                            return (
-                                ItemMenuResult::Selected,
-                                Some(
-                                    player_inventory
-                                        .iter()
-                                        .nth(selection as usize)
-                                        .unwrap().1.0
-                                ),
-                            );
+                            // Get the first entity with a Key {} component that has an idx matching "selection".
+                            let entities = gs.ecs.entities();
+                            let keyed_items = gs.ecs.read_storage::<Key>();
+                            let backpack = gs.ecs.read_storage::<InBackpack>();
+                            for (e, key, _b) in (&entities, &keyed_items, &backpack).join() {
+                                if key.idx == (selection as usize) {
+                                    return (ItemMenuResult::Selected, Some(e));
+                                }
+                            }
                         }
                     }
                     (ItemMenuResult::NoResponse, None)
@@ -1001,11 +1010,8 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
 }
 
 pub fn remove_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
-    let player_entity = gs.ecs.fetch::<Entity>();
-    let backpack = gs.ecs.read_storage::<Equipped>();
-    let entities = gs.ecs.entities();
-    let inventory = (&backpack).join().filter(|item| item.owner == *player_entity);
-    let count = inventory.count();
+    let player_inventory = items(&gs.ecs, Filter::Equipped);
+    let count = player_inventory.len();
 
     let (x_offset, y_offset) = (1, 10);
 
@@ -1017,38 +1023,11 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Opt
         "Unequip what? [aA-zZ][Esc.]"
     );
 
-    let mut equippable: Vec<(Entity, String)> = Vec::new();
-    let mut width = 2;
-    for (entity, _pack) in (&entities, &backpack)
-        .join()
-        .filter(|item| item.1.owner == *player_entity) {
-        let this_name = &obfuscate_name_ecs(&gs.ecs, entity).0;
-        let this_width = 5 + this_name.len();
-        width = if width > this_width { width } else { this_width };
-        equippable.push((entity, this_name.to_string()));
-    }
-
     let x = 1 + x_offset;
-    let mut y = 3 + y_offset;
-
-    ctx.draw_box(x, y, width, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
-    y += 1;
-
-    let mut j = 0;
-    let renderables = gs.ecs.read_storage::<Renderable>();
-    for (e, name) in &equippable {
-        let (mut fg, glyph) = if let Some(renderable) = renderables.get(*e) {
-            (renderable.fg, renderable.glyph)
-        } else {
-            (RGB::named(WHITE), to_cp437('-'))
-        };
-        ctx.set(x + 1, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + (j as FontCharType));
-        ctx.set(x + 3, y, fg, RGB::named(BLACK), glyph);
-        fg = RGB::named(item_colour_ecs(&gs.ecs, *e));
-        ctx.print_color(x + 5, y, fg, RGB::named(BLACK), name);
-        y += 1;
-        j += 1;
-    }
+    let y = 3 + y_offset;
+    let width = get_max_inventory_width(&player_inventory);
+    ctx.draw_box(x, y, width + 2, (count + 1) as i32, RGB::named(WHITE), RGB::named(BLACK));
+    print_options(&gs.ecs, &player_inventory, x + 1, y + 1, ctx);
 
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -1056,9 +1035,17 @@ pub fn remove_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Opt
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = letter_to_option(key);
-                    if selection > -1 && selection < (count as i32) {
-                        return (ItemMenuResult::Selected, Some(equippable[selection as usize].0));
+                    let selection = letter_to_option::letter_to_option(key, ctx.shift);
+                    if selection != -1 && check_key(selection as usize) {
+                        // Get the first entity with a Key {} component that has an idx matching "selection".
+                        let entities = gs.ecs.entities();
+                        let keyed_items = gs.ecs.read_storage::<Key>();
+                        let equipped = gs.ecs.read_storage::<Equipped>();
+                        for (e, key, _e) in (&entities, &keyed_items, &equipped).join() {
+                            if key.idx == (selection as usize) {
+                                return (ItemMenuResult::Selected, Some(e));
+                            }
+                        }
                     }
                     (ItemMenuResult::NoResponse, None)
                 }
@@ -1457,4 +1444,73 @@ pub fn with_article(name: String) -> String {
         return format!("an {}", name);
     }
     format!("a {}", name)
+}
+
+pub fn unique(
+    entity: Entity,
+    names: &ReadStorage<Name>,
+    obfuscated_names: &ReadStorage<ObfuscatedName>,
+    renderables: &ReadStorage<Renderable>,
+    beatitudes: &ReadStorage<Beatitude>,
+    magic_items: &ReadStorage<MagicItem>,
+    charges: Option<&ReadStorage<Charges>>,
+    dm: &MasterDungeonMap
+) -> UniqueInventoryItem {
+    let item_colour = item_colour(entity, beatitudes);
+    let (singular, plural) = obfuscate_name(
+        entity,
+        names,
+        magic_items,
+        obfuscated_names,
+        beatitudes,
+        dm,
+        charges
+    );
+    let (renderables, glyph) = if let Some(renderable) = renderables.get(entity) {
+        (
+            (
+                (renderable.fg.r * 255.0) as u8,
+                (renderable.fg.g * 255.0) as u8,
+                (renderable.fg.b * 255.0) as u8,
+            ),
+            renderable.glyph,
+        )
+    } else {
+        unreachable!("Item has no renderable component.")
+    };
+    let name = if let Some(name) = names.get(entity) {
+        name
+    } else {
+        unreachable!("Item has no name component.")
+    };
+    let beatitude_status = if let Some(beatitude) = beatitudes.get(entity) {
+        match beatitude.buc {
+            BUC::Blessed => 1,
+            BUC::Uncursed => 2,
+            BUC::Cursed => 3,
+        }
+    } else {
+        0
+    };
+    UniqueInventoryItem {
+        display_name: DisplayName { singular: singular.clone(), plural },
+        rgb: item_colour,
+        renderables,
+        glyph,
+        beatitude_status,
+        name: name.name.clone(),
+    }
+}
+
+pub fn unique_ecs(ecs: &World, entity: Entity) -> UniqueInventoryItem {
+    return unique(
+        entity,
+        &ecs.read_storage::<Name>(),
+        &ecs.read_storage::<ObfuscatedName>(),
+        &ecs.read_storage::<Renderable>(),
+        &ecs.read_storage::<Beatitude>(),
+        &ecs.read_storage::<MagicItem>(),
+        Some(&ecs.read_storage::<Charges>()),
+        &ecs.fetch::<MasterDungeonMap>()
+    );
 }

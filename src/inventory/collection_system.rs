@@ -12,6 +12,9 @@ use crate::{
     ObfuscatedName,
     Position,
     WantsToPickupItem,
+    WantsToAssignKey,
+    Renderable,
+    Stackable,
 };
 use specs::prelude::*;
 use crate::data::messages;
@@ -30,9 +33,12 @@ impl<'a> System<'a> for ItemCollectionSystem {
         WriteStorage<'a, EquipmentChanged>,
         ReadStorage<'a, MagicItem>,
         ReadStorage<'a, ObfuscatedName>,
+        ReadStorage<'a, Renderable>,
         ReadStorage<'a, Beatitude>,
         ReadExpect<'a, MasterDungeonMap>,
         ReadStorage<'a, Charges>,
+        ReadStorage<'a, WantsToAssignKey>,
+        ReadStorage<'a, Stackable>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -45,20 +51,16 @@ impl<'a> System<'a> for ItemCollectionSystem {
             mut equipment_changed,
             magic_items,
             obfuscated_names,
+            renderables,
             beatitudes,
             dm,
             wands,
+            wants_key,
+            stackable,
         ) = data;
-
-        for pickup in wants_pickup.join() {
-            positions.remove(pickup.item);
-            backpack
-                .insert(pickup.item, InBackpack { owner: pickup.collected_by })
-                .expect("Unable to pickup item.");
-            equipment_changed
-                .insert(pickup.collected_by, EquipmentChanged {})
-                .expect("Unable to insert EquipmentChanged.");
-
+        let mut to_remove: Vec<Entity> = Vec::new();
+        // For every item that wants to be picked up that *isn't* waiting on a key assignment.
+        for (pickup, _key) in (&wants_pickup, !&wants_key).join() {
             if pickup.collected_by == *player_entity {
                 gamelog::Logger
                     ::new()
@@ -82,8 +84,17 @@ impl<'a> System<'a> for ItemCollectionSystem {
                     .period()
                     .log();
             }
+            positions.remove(pickup.item);
+            backpack
+                .insert(pickup.item, InBackpack { owner: pickup.collected_by })
+                .expect("Unable to pickup item");
+            equipment_changed
+                .insert(pickup.collected_by, EquipmentChanged {})
+                .expect("Unable to insert EquipmentChanged");
+            to_remove.push(pickup.collected_by);
         }
-
-        wants_pickup.clear();
+        for item in to_remove.iter() {
+            wants_pickup.remove(*item);
+        }
     }
 }

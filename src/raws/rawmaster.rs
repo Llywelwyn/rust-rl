@@ -66,6 +66,7 @@ macro_rules! apply_flags {
                 "IDENTIFY" => $eb = $eb.with(ProvidesIdentify {}),
                 "DIGGER" => $eb = $eb.with(Digger {}),
                 "MAGICMAP" => $eb = $eb.with(MagicMapper {}),
+                "STACKABLE" => $eb = $eb.with(Stackable {}),
                 // CAN BE DESTROYED BY DAMAGE
                 "DESTRUCTIBLE" => $eb = $eb.with(Destructible {}),
                 // --- EQUIP SLOTS ---
@@ -281,6 +282,7 @@ pub fn spawn_named_item(
         if known_beatitude && !identified_items.contains(&item_template.name.name) {
             dm.identified_items.insert(item_template.name.name.clone());
         }
+        let needs_key = is_player_owned(&player_entity, &pos);
         std::mem::drop(player_entity);
         std::mem::drop(dm);
         // -- DROP EVERYTHING THAT INVOLVES THE ECS BEFORE THIS POINT ---
@@ -293,9 +295,23 @@ pub fn spawn_named_item(
         eb = eb.with(Item {
             weight: item_template.weight.unwrap_or(0.0),
             value: item_template.value.unwrap_or(0.0),
+            category: match item_template.class.as_str() {
+                "amulet" => ItemType::Amulet,
+                "weapon" => ItemType::Weapon,
+                "armour" => ItemType::Armour,
+                "comestible" => ItemType::Comestible,
+                "scroll" => ItemType::Scroll,
+                "spellbook" => ItemType::Spellbook,
+                "potion" => ItemType::Potion,
+                "ring" => ItemType::Ring,
+                "wand" => ItemType::Wand,
+                _ => unreachable!("Unknown item type."),
+            },
         });
         eb = spawn_position(pos, eb, key, raws);
-
+        if needs_key {
+            eb = eb.with(WantsToAssignKey {});
+        }
         if let Some(renderable) = &item_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
         }
@@ -392,6 +408,7 @@ pub fn spawn_named_mob(
     if raws.mob_index.contains_key(key) {
         let mob_template = &raws.raws.mobs[raws.mob_index[key]];
         let mut player_level = 1;
+        let needs_key;
         {
             let pools = ecs.read_storage::<Pools>();
             let player_entity = ecs.fetch::<Entity>();
@@ -399,12 +416,15 @@ pub fn spawn_named_mob(
             if let Some(pool) = player_pool {
                 player_level = pool.level;
             }
+            needs_key = is_player_owned(&player_entity, &pos);
         }
-
         let mut eb;
         // New entity with a position, name, combatstats, and viewshed
         eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
         eb = spawn_position(pos, eb, key, raws);
+        if needs_key {
+            eb = eb.with(WantsToAssignKey {});
+        }
         eb = eb.with(Name { name: mob_template.name.clone(), plural: mob_template.name.clone() });
         eb = eb.with(Viewshed {
             visible_tiles: Vec::new(),
@@ -632,10 +652,18 @@ pub fn spawn_named_prop(
     pos: SpawnType
 ) -> Option<Entity> {
     if raws.prop_index.contains_key(key) {
+        let needs_key;
+        {
+            let player_entity = ecs.fetch::<Entity>();
+            needs_key = is_player_owned(&player_entity, &pos);
+        }
         // ENTITY BUILDER PREP
         let prop_template = &raws.raws.props[raws.prop_index[key]];
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
         eb = spawn_position(pos, eb, key, raws);
+        if needs_key {
+            eb = eb.with(WantsToAssignKey {});
+        }
         // APPLY MANDATORY COMPONENTS FOR A PROP:
         //  - Name
         //  - Prop {}
@@ -684,6 +712,23 @@ fn spawn_position<'a>(
     }
 
     eb
+}
+
+fn is_player_owned(player: &Entity, pos: &SpawnType) -> bool {
+    match pos {
+        SpawnType::Carried { by } => {
+            if by == player {
+                return true;
+            }
+        }
+        SpawnType::Equipped { by } => {
+            if by == player {
+                return true;
+            }
+        }
+        _ => {}
+    }
+    false
 }
 
 fn get_renderable_component(

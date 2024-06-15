@@ -3,7 +3,10 @@ use super::{
     item_colour_ecs,
     obfuscate_name_ecs,
     print_options,
+    unique_ecs,
+    check_key,
     renderable_colour,
+    letter_to_option,
     ItemMenuResult,
     UniqueInventoryItem,
     BUC,
@@ -19,11 +22,12 @@ use crate::{
     Name,
     ObfuscatedName,
     Renderable,
+    Key,
     states::state::*,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 /// Handles the Identify menu.
 pub fn identify(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
@@ -37,38 +41,41 @@ pub fn identify(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Enti
     let names = gs.ecs.read_storage::<Name>();
     let renderables = gs.ecs.read_storage::<Renderable>();
     let beatitudes = gs.ecs.read_storage::<Beatitude>();
+    let keys = gs.ecs.read_storage::<Key>();
 
     let build_identify_iterator = || {
-        (&entities, &items, &renderables, &names).join().filter(|(item_entity, _i, _r, n)| {
-            // If not owned by the player, return false.
-            let mut keep = false;
-            if let Some(bp) = backpack.get(*item_entity) {
-                if bp.owner == *player_entity {
-                    keep = true;
+        (&entities, &items, &renderables, &names, &keys)
+            .join()
+            .filter(|(item_entity, _i, _r, n, _k)| {
+                // If not owned by the player, return false.
+                let mut keep = false;
+                if let Some(bp) = backpack.get(*item_entity) {
+                    if bp.owner == *player_entity {
+                        keep = true;
+                    }
                 }
-            }
-            // If not equipped by the player, return false.
-            if let Some(equip) = equipped.get(*item_entity) {
-                if equip.owner == *player_entity {
-                    keep = true;
+                // If not equipped by the player, return false.
+                if let Some(equip) = equipped.get(*item_entity) {
+                    if equip.owner == *player_entity {
+                        keep = true;
+                    }
                 }
-            }
-            if !keep {
-                return false;
-            }
-            // If not obfuscated, or already identified, return false.
-            if
-                (!obfuscated.get(*item_entity).is_some() ||
-                    dm.identified_items.contains(&n.name)) &&
-                beatitudes
-                    .get(*item_entity)
-                    .map(|beatitude| beatitude.known)
-                    .unwrap_or(true)
-            {
-                return false;
-            }
-            return true;
-        })
+                if !keep {
+                    return false;
+                }
+                // If not obfuscated, or already identified, return false.
+                if
+                    (!obfuscated.get(*item_entity).is_some() ||
+                        dm.identified_items.contains(&n.name)) &&
+                    beatitudes
+                        .get(*item_entity)
+                        .map(|beatitude| beatitude.known)
+                        .unwrap_or(true)
+                {
+                    return false;
+                }
+                return true;
+            })
     };
 
     // Build list of items to display
@@ -91,34 +98,15 @@ pub fn identify(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Enti
             .log();
         return (ItemMenuResult::Selected, Some(build_identify_iterator().nth(0).unwrap().0));
     }
-    let mut player_inventory: super::PlayerInventory = BTreeMap::new();
-    for (entity, _i, renderable, name) in build_identify_iterator() {
-        let (singular, plural) = obfuscate_name_ecs(&gs.ecs, entity);
-        let beatitude_status = if
-            let Some(beatitude) = gs.ecs.read_storage::<Beatitude>().get(entity)
-        {
-            match beatitude.buc {
-                BUC::Blessed => 1,
-                BUC::Uncursed => 2,
-                BUC::Cursed => 3,
-            }
-        } else {
-            0
-        };
-        let unique_item = UniqueInventoryItem {
-            display_name: super::DisplayName { singular: singular.clone(), plural: plural.clone() },
-            rgb: item_colour_ecs(&gs.ecs, entity),
-            renderables: renderable_colour(&renderables, entity),
-            glyph: renderable.glyph,
-            beatitude_status: beatitude_status,
-            name: name.name.clone(),
-        };
+    let mut player_inventory: super::PlayerInventory = HashMap::new();
+    for (entity, _i, renderable, name, key) in build_identify_iterator() {
+        let unique_item = unique_ecs(&gs.ecs, entity);
         player_inventory
             .entry(unique_item)
-            .and_modify(|(_e, count)| {
-                *count += 1;
+            .and_modify(|slot| {
+                slot.count += 1;
             })
-            .or_insert((entity, 1));
+            .or_insert(super::InventorySlot { item: entity, count: 1, idx: key.idx });
     }
     // Get display args
     let width = get_max_inventory_width(&player_inventory);
@@ -133,7 +121,7 @@ pub fn identify(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Enti
         "Identify which item? [aA-zZ][Esc.]"
     );
     ctx.draw_box(x, y, width + 2, count + 1, RGB::named(WHITE), RGB::named(BLACK));
-    print_options(&player_inventory, x + 1, y + 1, ctx);
+    print_options(&gs.ecs, &player_inventory, x + 1, y + 1, ctx);
     // Input
     match ctx.key {
         None => (ItemMenuResult::NoResponse, None),
@@ -141,21 +129,17 @@ pub fn identify(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Enti
             match key {
                 VirtualKeyCode::Escape => (ItemMenuResult::Cancel, None),
                 _ => {
-                    let selection = letter_to_option(key);
-                    if selection > -1 && selection < (count as i32) {
-                        let item = player_inventory
-                            .iter()
-                            .nth(selection as usize)
-                            .unwrap().1.0;
-                        gamelog::Logger
-                            ::new()
-                            .append("You identify the")
-                            .colour(item_colour_ecs(&gs.ecs, item))
-                            .append_n(obfuscate_name_ecs(&gs.ecs, item).0)
-                            .colour(WHITE)
-                            .append("!")
-                            .log();
-                        return (ItemMenuResult::Selected, Some(item));
+                    let selection = letter_to_option::letter_to_option(key, ctx.shift);
+                    if selection != -1 && check_key(selection as usize) {
+                        // Get the first entity with a Key {} component that has an idx matching "selection".
+                        let entities = gs.ecs.entities();
+                        let keyed_items = gs.ecs.read_storage::<Key>();
+                        let backpack = gs.ecs.read_storage::<InBackpack>();
+                        for (e, key, _b) in (&entities, &keyed_items, &backpack).join() {
+                            if key.idx == (selection as usize) {
+                                return (ItemMenuResult::Selected, Some(e));
+                            }
+                        }
                     }
                     (ItemMenuResult::NoResponse, None)
                 }

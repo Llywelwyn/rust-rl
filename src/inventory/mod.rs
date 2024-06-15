@@ -4,6 +4,7 @@ mod equip_system;
 mod identification_system;
 mod remove_system;
 mod use_system;
+mod keyhandling;
 
 pub use self::{
     collection_system::ItemCollectionSystem,
@@ -12,4 +13,5 @@ pub use self::{
     identification_system::ItemIdentificationSystem,
     remove_system::ItemRemoveSystem,
     use_system::ItemUseSystem,
+    keyhandling::KeyHandling,
 };

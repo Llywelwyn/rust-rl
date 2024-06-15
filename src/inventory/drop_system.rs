@@ -12,6 +12,7 @@ use crate::{
     ObfuscatedName,
     Position,
     WantsToDropItem,
+    WantsToRemoveKey,
 };
 use specs::prelude::*;
 use crate::data::messages;
@@ -34,6 +35,7 @@ impl<'a> System<'a> for ItemDropSystem {
         ReadStorage<'a, ObfuscatedName>,
         ReadExpect<'a, MasterDungeonMap>,
         ReadStorage<'a, Charges>,
+        WriteStorage<'a, WantsToRemoveKey>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -50,6 +52,7 @@ impl<'a> System<'a> for ItemDropSystem {
             obfuscated_names,
             dm,
             wands,
+            mut keys,
         ) = data;
 
         for (entity, to_drop) in (&entities, &wants_drop).join() {
@@ -68,6 +71,9 @@ impl<'a> System<'a> for ItemDropSystem {
             backpack.remove(to_drop.item);
 
             if entity == *player_entity {
+                keys.insert(to_drop.item, WantsToRemoveKey {}).expect(
+                    "Unable to insert WantsToRemoveKey"
+                );
                 gamelog::Logger
                     ::new()
                     .append(messages::YOU_DROP_ITEM)

@@ -112,6 +112,11 @@ fn main() -> BError {
     gs.ecs.register::<HasDamageModifiers>();
     gs.ecs.register::<Intrinsics>();
     gs.ecs.register::<IntrinsicChanged>();
+    gs.ecs.register::<Stackable>();
+    gs.ecs.register::<WantsToAssignKey>();
+    gs.ecs.register::<Key>();
+    gs.ecs.register::<WantsToRemoveKey>();
+    gs.ecs.register::<WantsToDelete>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<DMSerializationHelper>();
