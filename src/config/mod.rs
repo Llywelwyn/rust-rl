@@ -34,7 +34,7 @@ impl Default for Config {
     fn default() -> Self {
         Config {
             logging: LogConfig {
-                show_mapgen: true,
+                show_mapgen: false,
                 log_combat: false,
                 log_spawning: false,
                 log_ticks: false,
