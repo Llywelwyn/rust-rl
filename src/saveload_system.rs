@@ -9,15 +9,15 @@ use specs::saveload::{
     SimpleMarker,
     SimpleMarkerAllocator,
 };
+
 use std::fs;
 use std::fs::File;
 use std::path::Path;
-use std::convert::Infallible;
 
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $($type:ty),*) => {
         $(
-        SerializeComponents::<Infallible, SimpleMarker<SerializeMe>>::serialize(
+        SerializeComponents::<NoError, SimpleMarker<SerializeMe>>::serialize(
             &( $ecs.read_storage::<$type>(), ),
             &$data.0,
             &$data.1,
@@ -157,7 +157,7 @@ pub fn does_save_exist() -> bool {
 macro_rules! deserialize_individually {
     ($ecs:expr, $de:expr, $data:expr, $($type:ty),*) => {
         $(
-        DeserializeComponents::<Infallible, _>::deserialize(
+        DeserializeComponents::<NoError, _>::deserialize(
             &mut ( &mut $ecs.write_storage::<$type>(), ),
             &$data.0, // entities
             &mut $data.1, // marker
