@@ -1,5 +1,6 @@
 use super::components::*;
 use bracket_lib::prelude::*;
+use specs::error::NoError;
 use specs::prelude::*;
 use specs::saveload::{
     DeserializeComponents,
@@ -55,8 +56,8 @@ pub fn save_game(ecs: &mut World) {
     {
         let data = (ecs.entities(), ecs.read_storage::<SimpleMarker<SerializeMe>>());
 
-        let writer = File::create("./savegame.bin").unwrap();
-        let mut serializer = bincode::Serializer::new(writer, bincode::options());
+        let writer = File::create("./savegame.json").unwrap();
+        let mut serializer = serde_json::Serializer::new(writer);
         serialize_individually!(
             ecs,
             serializer,
@@ -150,7 +151,7 @@ pub fn save_game(ecs: &mut World) {
 }
 
 pub fn does_save_exist() -> bool {
-    Path::new("./savegame.bin").exists()
+    Path::new("./savegame.json").exists()
 }
 
 macro_rules! deserialize_individually {
@@ -180,8 +181,8 @@ pub fn load_game(ecs: &mut World) {
         }
     }
 
-    let data = fs::read("./savegame.bin").unwrap();
-    let mut de = bincode::Deserializer::with_reader(&*data, bincode::options());
+    let data = fs::read_to_string("./savegame.json").unwrap();
+    let mut de = serde_json::Deserializer::from_str(&data);
 
     {
         let mut d = (
@@ -311,7 +312,7 @@ pub fn load_game(ecs: &mut World) {
 }
 
 pub fn delete_save() {
-    if Path::new("./savegame.bin").exists() {
-        std::fs::remove_file("./savegame.bin").expect("Unable to delete file");
+    if Path::new("./savegame.json").exists() {
+        std::fs::remove_file("./savegame.json").expect("Unable to delete file");
     }
 }
