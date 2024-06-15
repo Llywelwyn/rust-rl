@@ -13,8 +13,6 @@ use crate::{
     Position,
     WantsToPickupItem,
     WantsToAssignKey,
-    Renderable,
-    Stackable,
 };
 use specs::prelude::*;
 use crate::data::messages;
@@ -33,12 +31,10 @@ impl<'a> System<'a> for ItemCollectionSystem {
         WriteStorage<'a, EquipmentChanged>,
         ReadStorage<'a, MagicItem>,
         ReadStorage<'a, ObfuscatedName>,
-        ReadStorage<'a, Renderable>,
         ReadStorage<'a, Beatitude>,
         ReadExpect<'a, MasterDungeonMap>,
         ReadStorage<'a, Charges>,
         ReadStorage<'a, WantsToAssignKey>,
-        ReadStorage<'a, Stackable>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -51,12 +47,10 @@ impl<'a> System<'a> for ItemCollectionSystem {
             mut equipment_changed,
             magic_items,
             obfuscated_names,
-            renderables,
             beatitudes,
             dm,
             wands,
             wants_key,
-            stackable,
         ) = data;
         let mut to_remove: Vec<Entity> = Vec::new();
         // For every item that wants to be picked up that *isn't* waiting on a key assignment.

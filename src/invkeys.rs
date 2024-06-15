@@ -1,6 +1,5 @@
 use std::sync::Mutex;
-use std::collections::{ HashMap };
-use specs::prelude::*;
+use std::collections::HashMap;
 use crate::gui::UniqueInventoryItem;
 
 lazy_static! {

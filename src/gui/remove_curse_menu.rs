@@ -4,11 +4,9 @@ use super::{
     obfuscate_name_ecs,
     print_options,
     unique_ecs,
-    renderable_colour,
     check_key,
     letter_to_option,
     ItemMenuResult,
-    UniqueInventoryItem,
     InventorySlot,
 };
 use crate::{
@@ -93,19 +91,7 @@ pub fn remove_curse(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<
         return (ItemMenuResult::Selected, Some(item));
     }
     let mut player_inventory: super::PlayerInventory = HashMap::new();
-    for (entity, _i, _b, renderable, name, key) in build_cursed_iterator() {
-        let (singular, plural) = obfuscate_name_ecs(&gs.ecs, entity);
-        let beatitude_status = if
-            let Some(beatitude) = gs.ecs.read_storage::<Beatitude>().get(entity)
-        {
-            match beatitude.buc {
-                BUC::Blessed => 1,
-                BUC::Uncursed => 2,
-                BUC::Cursed => 3,
-            }
-        } else {
-            0
-        };
+    for (entity, _i, _b, _r, _n, key) in build_cursed_iterator() {
         let unique_item = unique_ecs(&gs.ecs, entity);
         player_inventory
             .entry(unique_item)

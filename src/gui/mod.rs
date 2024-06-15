@@ -46,7 +46,7 @@ use crate::data::visuals::{
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use std::collections::{ HashMap, HashSet };
+use std::collections::HashMap;
 use crate::invkeys::check_key;
 
 mod character_creation;
@@ -485,7 +485,7 @@ pub enum ItemMenuResult {
 }
 
 pub fn print_options(
-    ecs: &World,
+    _ecs: &World,
     inventory: &PlayerInventory,
     mut x: i32,
     mut y: i32,

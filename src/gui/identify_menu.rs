@@ -5,11 +5,8 @@ use super::{
     print_options,
     unique_ecs,
     check_key,
-    renderable_colour,
     letter_to_option,
     ItemMenuResult,
-    UniqueInventoryItem,
-    BUC,
 };
 use crate::{
     gamelog,
@@ -99,7 +96,7 @@ pub fn identify(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Enti
         return (ItemMenuResult::Selected, Some(build_identify_iterator().nth(0).unwrap().0));
     }
     let mut player_inventory: super::PlayerInventory = HashMap::new();
-    for (entity, _i, renderable, name, key) in build_identify_iterator() {
+    for (entity, _i, _r, _n, key) in build_identify_iterator() {
         let unique_item = unique_ecs(&gs.ecs, entity);
         player_inventory
             .entry(unique_item)
