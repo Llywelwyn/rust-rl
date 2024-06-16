@@ -106,6 +106,50 @@ pub fn draw_lerping_bar(
     ctx.print(sx + width, sy, "]");
 }
 
+fn draw_xp(ctx: &mut BTerm, pt: Point, pool: &Pools) {
+    ctx.print_color(
+        pt.x,
+        pt.y,
+        RGB::named(WHITE),
+        RGB::named(BLACK),
+        format!("XP{}/{}", pool.level, pool.xp)
+    );
+}
+
+fn calc_ac(ecs: &World, skills: &Skills, stats: &Pools, attr: &Attributes) -> i32 {
+    let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, skills);
+    let mut armour_ac_bonus = 0;
+    let equipped = ecs.read_storage::<Equipped>();
+    let ac = ecs.read_storage::<ArmourClassBonus>();
+    let player_entity = ecs.fetch::<Entity>();
+    for (wielded, ac) in (&equipped, &ac).join() {
+        if wielded.owner == *player_entity {
+            armour_ac_bonus += ac.amount;
+        }
+    }
+    stats.bac - attr.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus
+}
+
+fn draw_ac(ctx: &mut BTerm, pt: Point, ac: i32) {
+    ctx.print_color(pt.x, pt.y, RGB::named(PINK), RGB::named(BLACK), "AC");
+    ctx.print_color(pt.x + 2, pt.y, RGB::named(WHITE), RGB::named(BLACK), ac);
+}
+
+fn draw_attributes(ctx: &mut BTerm, pt: Point, a: &Attributes) {
+    ctx.print_color(pt.x, pt.y, RGB::named(RED), RGB::named(BLACK), "STR");
+    ctx.print_color(pt.x + 3, pt.y, RGB::named(WHITE), RGB::named(BLACK), a.strength.base);
+    ctx.print_color(pt.x + 7, pt.y, RGB::named(GREEN), RGB::named(BLACK), "DEX");
+    ctx.print_color(pt.x + 10, pt.y, RGB::named(WHITE), RGB::named(BLACK), a.dexterity.base);
+    ctx.print_color(pt.x + 14, pt.y, RGB::named(ORANGE), RGB::named(BLACK), "CON");
+    ctx.print_color(pt.x + 17, pt.y, RGB::named(WHITE), RGB::named(BLACK), a.constitution.base);
+    ctx.print_color(pt.x, 54, RGB::named(CYAN), RGB::named(BLACK), "INT");
+    ctx.print_color(pt.x + 3, pt.y + 1, RGB::named(WHITE), RGB::named(BLACK), a.intelligence.base);
+    ctx.print_color(pt.x + 7, pt.y + 1, RGB::named(YELLOW), RGB::named(BLACK), "WIS");
+    ctx.print_color(pt.x + 10, pt.y + 1, RGB::named(WHITE), RGB::named(BLACK), a.wisdom.base);
+    ctx.print_color(pt.x + 14, pt.y + 1, RGB::named(PURPLE), RGB::named(BLACK), "CHA");
+    ctx.print_color(pt.x + 17, pt.y + 1, RGB::named(WHITE), RGB::named(BLACK), a.charisma.base);
+}
+
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     // Render stats
     let pools = ecs.read_storage::<Pools>();
@@ -142,61 +186,9 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             RGB::named(BLUE),
             RGB::named(BLACK)
         );
-        // Draw AC
-        let skill_ac_bonus = gamesystem::skill_bonus(Skill::Defence, &*skills);
-        let mut armour_ac_bonus = 0;
-        let equipped = ecs.read_storage::<Equipped>();
-        let ac = ecs.read_storage::<ArmourClassBonus>();
-        let player_entity = ecs.fetch::<Entity>();
-        for (wielded, ac) in (&equipped, &ac).join() {
-            if wielded.owner == *player_entity {
-                armour_ac_bonus += ac.amount;
-            }
-        }
-        let armour_class =
-            stats.bac - attributes.dexterity.bonus / 2 - skill_ac_bonus - armour_ac_bonus;
-        ctx.print_color(26, 53, RGB::named(PINK), RGB::named(BLACK), "AC");
-        ctx.print_color(28, 53, RGB::named(WHITE), RGB::named(BLACK), armour_class);
-        // Draw level
-        ctx.print_color(
-            26,
-            54,
-            RGB::named(WHITE),
-            RGB::named(BLACK),
-            format!("XP{}/{}", stats.level, stats.xp)
-        );
-        // Draw attributes
-        let x = 38;
-        ctx.print_color(x, 53, RGB::named(RED), RGB::named(BLACK), "STR");
-        ctx.print_color(x + 3, 53, RGB::named(WHITE), RGB::named(BLACK), attributes.strength.base);
-        ctx.print_color(x + 7, 53, RGB::named(GREEN), RGB::named(BLACK), "DEX");
-        ctx.print_color(
-            x + 10,
-            53,
-            RGB::named(WHITE),
-            RGB::named(BLACK),
-            attributes.dexterity.base
-        );
-        ctx.print_color(x + 14, 53, RGB::named(ORANGE), RGB::named(BLACK), "CON");
-        ctx.print_color(
-            x + 17,
-            53,
-            RGB::named(WHITE),
-            RGB::named(BLACK),
-            attributes.constitution.base
-        );
-        ctx.print_color(x, 54, RGB::named(CYAN), RGB::named(BLACK), "INT");
-        ctx.print_color(
-            x + 3,
-            54,
-            RGB::named(WHITE),
-            RGB::named(BLACK),
-            attributes.intelligence.base
-        );
-        ctx.print_color(x + 7, 54, RGB::named(YELLOW), RGB::named(BLACK), "WIS");
-        ctx.print_color(x + 10, 54, RGB::named(WHITE), RGB::named(BLACK), attributes.wisdom.base);
-        ctx.print_color(x + 14, 54, RGB::named(PURPLE), RGB::named(BLACK), "CHA");
-        ctx.print_color(x + 17, 54, RGB::named(WHITE), RGB::named(BLACK), attributes.charisma.base);
+        draw_ac(ctx, Point::new(26, 53), calc_ac(ecs, skills, stats, attributes));
+        draw_xp(ctx, Point::new(26, 54), stats);
+        draw_attributes(ctx, Point::new(38, 53), attributes);
         // Draw hunger
         match hunger.state {
             HungerState::Satiated => {
@@ -247,6 +239,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             }
         }
         // Burden
+        let player_entity = ecs.fetch::<Entity>();
         if let Some(burden) = burden.get(*player_entity) {
             match burden.level {
                 crate::BurdenLevel::Burdened => {
