@@ -150,6 +150,57 @@ fn draw_attributes(ctx: &mut BTerm, pt: Point, a: &Attributes) {
     ctx.print_color(pt.x + 17, pt.y + 1, RGB::named(WHITE), RGB::named(BLACK), a.charisma.base);
 }
 
+fn draw_hunger(ctx: &mut BTerm, pt: Point, hunger: &HungerClock) {
+    match hunger.state {
+        HungerState::Satiated => {
+            ctx.print_color_right(
+                70,
+                53,
+                get_hunger_colour(hunger.state),
+                RGB::named(BLACK),
+                "Satiated"
+            );
+        }
+        HungerState::Normal => {}
+        HungerState::Hungry => {
+            ctx.print_color_right(
+                70,
+                53,
+                get_hunger_colour(hunger.state),
+                RGB::named(BLACK),
+                "Hungry"
+            );
+        }
+        HungerState::Weak => {
+            ctx.print_color_right(
+                70,
+                53,
+                get_hunger_colour(hunger.state),
+                RGB::named(BLACK),
+                "Weak"
+            );
+        }
+        HungerState::Fainting => {
+            ctx.print_color_right(
+                70,
+                53,
+                get_hunger_colour(hunger.state),
+                RGB::named(BLACK),
+                "Fainting"
+            );
+        }
+        HungerState::Starving => {
+            ctx.print_color_right(
+                70,
+                53,
+                get_hunger_colour(hunger.state),
+                RGB::named(BLACK),
+                "Starving"
+            );
+        }
+    }
+}
+
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     // Render stats
     let pools = ecs.read_storage::<Pools>();
@@ -189,55 +240,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         draw_ac(ctx, Point::new(26, 53), calc_ac(ecs, skills, stats, attributes));
         draw_xp(ctx, Point::new(26, 54), stats);
         draw_attributes(ctx, Point::new(38, 53), attributes);
-        // Draw hunger
-        match hunger.state {
-            HungerState::Satiated => {
-                ctx.print_color_right(
-                    70,
-                    53,
-                    get_hunger_colour(hunger.state),
-                    RGB::named(BLACK),
-                    "Satiated"
-                );
-            }
-            HungerState::Normal => {}
-            HungerState::Hungry => {
-                ctx.print_color_right(
-                    70,
-                    53,
-                    get_hunger_colour(hunger.state),
-                    RGB::named(BLACK),
-                    "Hungry"
-                );
-            }
-            HungerState::Weak => {
-                ctx.print_color_right(
-                    70,
-                    53,
-                    get_hunger_colour(hunger.state),
-                    RGB::named(BLACK),
-                    "Weak"
-                );
-            }
-            HungerState::Fainting => {
-                ctx.print_color_right(
-                    70,
-                    53,
-                    get_hunger_colour(hunger.state),
-                    RGB::named(BLACK),
-                    "Fainting"
-                );
-            }
-            HungerState::Starving => {
-                ctx.print_color_right(
-                    70,
-                    53,
-                    get_hunger_colour(hunger.state),
-                    RGB::named(BLACK),
-                    "Starving"
-                );
-            }
-        }
+        draw_hunger(ctx, Point::new(70, 53), hunger);
         // Burden
         let player_entity = ecs.fetch::<Entity>();
         if let Some(burden) = burden.get(*player_entity) {
