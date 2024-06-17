@@ -154,8 +154,8 @@ fn draw_hunger(ctx: &mut BTerm, pt: Point, hunger: &HungerClock) {
     match hunger.state {
         HungerState::Satiated => {
             ctx.print_color_right(
-                70,
-                53,
+                pt.x,
+                pt.y,
                 get_hunger_colour(hunger.state),
                 RGB::named(BLACK),
                 "Satiated"
@@ -164,8 +164,8 @@ fn draw_hunger(ctx: &mut BTerm, pt: Point, hunger: &HungerClock) {
         HungerState::Normal => {}
         HungerState::Hungry => {
             ctx.print_color_right(
-                70,
-                53,
+                pt.x,
+                pt.y,
                 get_hunger_colour(hunger.state),
                 RGB::named(BLACK),
                 "Hungry"
@@ -173,8 +173,8 @@ fn draw_hunger(ctx: &mut BTerm, pt: Point, hunger: &HungerClock) {
         }
         HungerState::Weak => {
             ctx.print_color_right(
-                70,
-                53,
+                pt.x,
+                pt.y,
                 get_hunger_colour(hunger.state),
                 RGB::named(BLACK),
                 "Weak"
@@ -182,8 +182,8 @@ fn draw_hunger(ctx: &mut BTerm, pt: Point, hunger: &HungerClock) {
         }
         HungerState::Fainting => {
             ctx.print_color_right(
-                70,
-                53,
+                pt.x,
+                pt.y,
                 get_hunger_colour(hunger.state),
                 RGB::named(BLACK),
                 "Fainting"
@@ -191,8 +191,8 @@ fn draw_hunger(ctx: &mut BTerm, pt: Point, hunger: &HungerClock) {
         }
         HungerState::Starving => {
             ctx.print_color_right(
-                70,
-                53,
+                pt.x,
+                pt.y,
                 get_hunger_colour(hunger.state),
                 RGB::named(BLACK),
                 "Starving"
