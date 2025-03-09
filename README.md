@@ -2,18 +2,18 @@
 
 #### using _rltk/bracket-lib_, and _specs_
 
-check out the page in the header for the wasm version, pick [a release of your choice](https://github.com/Llywelwyn/rust-rl/releases), or build manually with:
+[![Rust](https://github.com/Llywelwyn/rust-rl/actions/workflows/cargo-build-test.yml/badge.svg)](https://github.com/Llywelwyn/rust-rl/actions/workflows/cargo-build-test.yml)
+
+check out the page in the header for the wasm version, pick [a release](https://github.com/Llywelwyn/rust-rl/releases), or build manually with:
 
 `git clone https://github.com/Llywelwyn/rust-rl/ && cd rust-rl && cargo build --release`,
 
 ![image](https://github.com/Llywelwyn/rust-rl/assets/82828093/b05e4f0b-2062-4abe-9fee-c679f9ef420d)
 
-this year for roguelikedev does the complete tutorial, i followed along with thebracket's [_roguelike tutorial - in rust_](https://bfnightly.bracketproductions.com). the notes i made during the sprint are being kept below for posterity - further changes since then are noted in [changelog.txt](https://github.com/Llywelwyn/rust-rl/blob/9150ed39e45bee536060cdc769d274e639021012/changelog.txt), and in the release notes.
-
-i'm also working on translating over my progress into blog entries on my site @ [llyw.co.uk](https://llyw.co.uk/), with a larger focus on some of the more interesting implementation details.
-
 ---
 
+<details>
+  <summary>boring details about the sprint where this project started</summary>
 <details>
 <summary>week 1</summary>
   
@@ -156,4 +156,5 @@ i'm also working on translating over my progress into blog entries on my site @ 
     ![blindness](https://github.com/Llywelwyn/rust-rl/assets/82828093/800f7d36-3fa7-42b7-b80f-247e0d56d014)
     ![squares](https://github.com/Llywelwyn/rust-rl/assets/82828093/b752e1cb-340d-475d-84ae-68fdb4977a80)
 
+</details>
 </details>
