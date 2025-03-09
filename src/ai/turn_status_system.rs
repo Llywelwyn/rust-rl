@@ -65,9 +65,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                 not_confused.push(entity);
                 if entity == *player_entity {
                     logger = logger
-                        .colour(renderable_colour(&renderables, entity))
                         .append("You")
-                        .colour(WHITE)
                         .append("snap out of it.");
                     log = true;
                 } else {
@@ -94,9 +92,7 @@ impl<'a> System<'a> for TurnStatusSystem {
                 not_my_turn.push(entity);
                 if entity == *player_entity {
                     logger = logger
-                        .colour(renderable_colour(&renderables, entity))
                         .append("You")
-                        .colour(WHITE)
                         .append("are confused!");
                     log = true;
                     gamelog::record_event(EVENT::PlayerConfused(1));

@@ -223,9 +223,7 @@ fn handle_healing(
             let renderables = ecs.read_storage::<Renderable>();
             if ecs.read_storage::<Player>().get(target).is_some() {
                 logger = logger
-                    .colour(renderable_colour(&renderables, target))
                     .append("You")
-                    .colour(WHITE)
                     .append(HEAL_PLAYER_HIT)
                     .buc(event.buc.clone(), None, Some(HEAL_PLAYER_HIT_BLESSED));
             } else {
@@ -267,9 +265,7 @@ fn handle_damage(
             let player_viewshed = viewsheds.get(*ecs.fetch::<Entity>()).unwrap();
             if ecs.read_storage::<Player>().get(target).is_some() {
                 logger = logger
-                    .colour(renderable_colour(&renderables, target))
                     .append("You")
-                    .colour(WHITE)
                     .append(DAMAGE_PLAYER_HIT);
                 event.log = true;
             } else if
